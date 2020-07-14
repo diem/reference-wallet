@@ -1,0 +1,40 @@
+version: '3.4'
+services:
+  gateway-2:
+    build:
+      target: dynamic_conf
+    volumes:
+      - ../gateway/nginx.dev-2.conf:/etc/nginx/nginx.conf
+
+  backend-web-server-2:
+    environment:
+      - COMPOSE_ENV="development"
+    ports:
+    - "5000"
+
+  backend-worker-2:
+    environment:
+      - COMPOSE_ENV="development"
+
+  backend-pubsub-worker-2:
+    environment:
+      - COMPOSE_ENV="development"
+
+  frontend-2:
+    container_name: frontend-2
+    image: lrw_frontend
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+
+  liquidity-2:
+    environment:
+      COMPOSE_ENV: development
+    ports:
+    - "5000"
+
+  # # One test runner is good for now
+  # test-runner-2:
+  #   container_name: test-runner-2
+  #   image: lrw_backend
+  #   command: tail -f /dev/null

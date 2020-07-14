@@ -1,0 +1,105 @@
+# Default values for libra-reference-wallet.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+# XXX: fill these out
+liquidityCustodyAccountName: "liquidity"
+walletCustodyAccountName: "wallet"
+custodyPrivateKeysLiquidity: '<LIQUIDITY_KEYS>'
+custodyPrivateKeysWallet: '<WALLET_KEYS>'
+vaspAddr: "<VASP_ADDR>"
+
+images:
+  pullPolicy: Never
+  backend: lrw_backend
+  frontend: lrw_gateway
+  liquidity: lrw_liquidity
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+apiPath: "/api"
+
+peripherals:
+  redis:
+    create: false
+    image: "redis:5"
+    # if redis is created by this helm chart, there is no need to fill the following
+    host: ""
+    port: 6379
+    persistence: {}
+      # claimSize: 20Gi
+      # pvSize: 20Gi
+  database:
+    create: false
+    image: "lrw_db"
+    # if database is created by this helm chart, there is no need to fill the following
+    protocol: "postgresql"
+    adminUsername: "admin@lrw"
+    username: "backenduser"
+    password: "backendpassword"
+    port: 5432
+    dbName: "backend_db"
+    liquidityDbName: "liquidity_provider_db"
+    persistence: {}
+      # claimSize: 20Gi
+      # pvSize: 20Gi
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  host: lrw.demo
+  annotations: {}
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

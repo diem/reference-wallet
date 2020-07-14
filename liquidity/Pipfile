@@ -1,0 +1,25 @@
+[requires]
+python_version = "3.7"
+
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+black = "==19.10b0"
+pyre-check = "*"
+pyre-extensions = "*"
+pytest = "*"
+pytest-watch = "*"
+ipython = "*"
+
+[packages]
+ivtjfchcukjgtekjrnbllkfrdkvdhdkh = "==0.4.2020070101"
+Flask = ">=1.1.1"
+SQLAlchemy = "*"
+Werkzeug = "*"
+psycopg2-binary = "*"
+bech32 = "*"
+dataclasses-json = "*"
+python-dotenv = "*"

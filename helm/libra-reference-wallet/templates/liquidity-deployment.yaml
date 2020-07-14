@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "libra-reference-wallet.fullname" . }}-liquidity
+  labels:
+    app: {{ include "libra-reference-wallet.fullname" . }}-liquidity
+    {{- include "libra-reference-wallet.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      app: {{ include "libra-reference-wallet.fullname" . }}-liquidity
+      {{- include "libra-reference-wallet.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        app: {{ include "libra-reference-wallet.fullname" . }}-liquidity
+        {{- include "libra-reference-wallet.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "libra-reference-wallet.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - env:
+        - name: FLASK_APP
+          value: "app"
+        - name: COMPOSE_ENV
+          value: "production"
+        - name: LIQUIDITY_PORT
+          value: {{.Values.service.targetPort | quote}}
+        - name: LP_DB_URL
+          value: {{ include "libra-reference-wallet.peripherals.database.liquidityUrl" . }}
+        - name: ADMIN_USERNAME
+          value: {{ .Values.peripherals.database.adminUsername }}
+        - name: LIQUIDITY_CUSTODY_ACCOUNT_NAME
+          value: {{ .Values.liquidityCustodyAccountName }}
+        - name: CUSTODY_PRIVATE_KEYS
+          value: {{ .Values.custodyPrivateKeysLiquidity | toJson }}
+        - name: LIQUIDITY_SERVICE_PORT
+          value: {{ .Values.service.targetPort | quote }}
+        - name: LIQUIDITY_SERVICE_HOST
+          value: {{ include "libra-reference-wallet.fullname" . }}-liquidity
+        name: lrw-liquidity
+        image: "{{ .Values.images.liquidity }}"
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
+        ports:
+          - name: http
+            containerPort: {{.Values.service.targetPort}}
+            protocol: TCP

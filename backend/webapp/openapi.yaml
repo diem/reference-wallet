@@ -1,0 +1,589 @@
+openapi: 3.0.0
+info:
+  title: Backend API
+  version: 0.0.1
+  termsOfService: "/tos"
+security:
+  - BearerAuth: []
+
+paths:
+  /user:
+    get:
+      summary: returns user metadata information for the user_id
+      tags:
+        - user
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: User object with user metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+    post:
+      summary: Creates a new user account with a globally unique account id and password
+      tags:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+                - password
+              properties:
+                user_id:
+                  type: string
+                  description: Unique user id of the user
+                password:
+                  type: string
+      responses:
+        200:
+          description: Auth Token
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+
+    put:
+      summary: Update user information with the given info, such as name, address, DOB, nationality, and national id
+      tags:
+        - user
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: a dictionary of information to update, with keys as type of information
+              type: object
+              required:
+                - user
+                - document_type
+                - document_file
+              properties:
+                user:
+                  $ref: '#/components/schemas/User'
+                document_type:
+                  type: string
+                  description: Type of document to upload
+                  enum:
+                    - drivers_license
+                    - profile_image
+                document_file:
+                  type: string
+                  description: File of the document to upload
+                  format: binary
+      responses:
+        200:
+          description: Updated user object with user metadata
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/User"
+
+  /user/actions/signin:
+    post:
+      summary: Returns token for client session. Pass in the session for all other requests
+      tags:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+                - password
+              properties:
+                user_id:
+                  type: string
+                password:
+                  type: string
+      responses:
+        200:
+          description: Auth Token
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+
+  /user/actions/signout:
+    post:
+      summary: Logs user out and invalidates session token
+      tags:
+        - user
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Success
+
+  /user/actions/change-password:
+    post:
+      summary: Change user password
+      tags:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required:
+                    - old_password
+                    - new_password
+                  properties:
+                    old_password:
+                      type: string
+                    new_password:
+                      type: string
+                - type: object
+                  required:
+                    - token
+                    - new_password
+                  properties:
+                    token:
+                      type: string
+                      description: Password reset token
+                    new_password:
+                      type: string
+      responses:
+        200:
+          description: Success
+
+  /account:
+    get:
+      summary: Account information
+      tags:
+        - account
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Account object with account details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+
+  /account/payment-method:
+    description: When a user creates an account, the user should provide the wallet with a means to pay for the coins it would buy for the user.
+      Usually, this process involves the payment method provider to issue an authorization/capturing token (with some limitations) and storing this token for later use.
+      Here we simulate it in a way that the frontend will not run a process with the payment provider, but rather just generate a fake token and register it with a unique name under the account payment methods.
+      whenever the user will purchase coins, the payment method name will be used for capturing the funds from the user card or bank account.
+    get:
+      summary: List of payment methods registered with the account
+      tags:
+        - account
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: List of registered payment methods
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+    post:
+      summary: Register a payment method to the account
+      tags:
+        - account
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - token
+              properties:
+                name:
+                  type: string
+                  description: a name to identify this payment method (presented to the user)
+                provider:
+                  type: string
+                  description: the name of the payment method provider (PSP, Acquirer, etc). E.g. PayPal
+                token:
+                  type: string
+                  description: a token to be used to capture funds from fiat PSP
+      responses:
+        201:
+          description: Success
+
+  /account/quotes:
+    post:
+      summary: (RFQ) Request for quote
+      tags:
+        - CICO
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestForQuote'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quote"
+
+  /account/quotes/{quote_id}:
+    get:
+      summary: Get a quote execution status
+      parameters:
+        - in: path
+          name: quote_id
+          schema:
+            type: string
+          required: true
+      tags:
+        - CICO
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Quote status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  quote_id:
+                    type: string
+                  status:
+                    $ref: '#/components/schemas/QuoteStatus'
+                  status_reason:
+                    type: string
+
+  /account/quotes/{quote_id}/actions/execute:
+    post:
+      summary: Execute a given quote
+      parameters:
+        - in: path
+          name: quote_id
+          schema:
+            type: string
+          required: true
+      tags:
+        - CICO
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - payment_method
+              properties:
+                payment_method:
+                  type: string
+      responses:
+        204:
+          description: Request accepted. You should poll for status updates.
+
+  /account/transactions:
+    get:
+      summary: See all transactions made by a user
+      tags:
+        - transaction
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: All transactions made by user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+
+    post:
+      summary: Transfer money from sender to receiver
+      tags:
+        - transaction
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - receiver_address
+                - amount
+                - currency
+              properties:
+                receiver_address:
+                  type: string
+                amount:
+                  type: number
+                currency:
+                  $ref: '#/components/schemas/LibraCurrencies'
+      responses:
+        200:
+          description: Success
+
+  /account/transactions/{transaction_id}:
+    get:
+      summary: See the transaction details of a transaction
+      tags:
+        - transaction
+      security:
+        - BearerAuth: []
+      parameters:
+        - description: Transaction ID
+          in: path
+          name: transaction_id
+          schema:
+            type: string
+      responses:
+        200:
+          description: Transaction details of a transaction
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Transaction"
+
+  /valid_vasps:
+    get:
+      summary: Get a list of valid and certified VASPs
+      tags:
+        - account
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: List of VASP IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example:
+                  vasp:
+                    - vasp_1
+                    - vasp_2
+                    - vasp_3
+
+components:
+  securitySchemes:
+    BearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
+  schemas:
+    LibraCurrencies:
+      type: string
+      enum:
+        - LBRUSD
+        - LBREUR
+        - LBRGBP
+    CurrencyPairs:
+      type: string
+      enum:
+        - LBRUSD_USD
+        - LBRUSD_EUR
+        - LBRUSD_GBP
+        - LBR_USD
+        - LBR_EUR
+        - LBR_GBP
+        - LBR_LBRUSD
+    Account:
+      type: object
+      required:
+        - user_id
+        - subaddress
+        - balances
+        - created
+      properties:
+        user_id:
+          type: string
+        subaddress:
+          type: string
+        balances:
+          description: Account balance in each currency
+          type: array
+          items:
+            type: object
+            required:
+              - currency
+              - balance
+            properties:
+              currency:
+                $ref: '#/components/schemas/LibraCurrencies'
+              balance:
+                type: number
+        created:
+          type: integer
+      example:
+        user_id: sunmilee@libra.com
+        subaddress: abcde
+        balances:
+          - currency: LBRGBP
+            balance: 0
+          - currency: LBRUSD
+            balance: 100
+        created: '04052020'
+    VaspAccountDetails:
+      type: object
+      required:
+        - vasp_name
+        - user_id
+      properties:
+        vasp_name:
+          type: string
+        user_id:
+          type: string
+    BlockchainTransaction:
+      type: object
+      required:
+        - version
+        - status
+        - expirationTIme
+        - source
+        - destination
+        - amount
+        - sequenceNumber
+      properties:
+        version:
+          type: integer
+        status:
+          type: string
+        expirationTime:
+          type: string
+        source:
+          type: string
+        destination:
+          type: string
+        amount:
+          type: integer
+        sequenceNumber:
+          type: integer
+    Transaction:
+      type: object
+      required:
+        - id
+        - source
+        - destination
+        - amount
+        - blockchain_tx
+        - timestamp
+      properties:
+        id:
+          type: string
+        source:
+          $ref: '#/components/schemas/VaspAccountDetails'
+        destination:
+          $ref: '#/components/schemas/VaspAccountDetails'
+        amount:
+          type: integer
+        blockchain_tx:
+          $ref: '#/components/schemas/BlockchainTransaction'
+        timestamp:
+          type: string
+          format: date-time
+    User:
+      example:
+        user_id: user@gmail.com
+        first_name: Sherlock
+        last_name: Holmes
+        dob: 1861-01-06
+        phone_number: +972521234567
+        country: UK
+        city: London
+        address_1: 1 Hacker Way
+        zip: NW1 6XE
+      type: object
+      required:
+        - user_id
+      properties:
+        user_id:
+          type: string
+        first_name:
+          type: integer
+        last_name:
+          type: integer
+        dob:
+          type: string
+          format: date
+        phone_number:
+          type: string
+        country:
+          type: string
+        state:
+          type: string
+        city:
+          type: string
+        address_1:
+          type: string
+        address_2:
+          type: string
+        zip:
+          type: string
+    AuthToken:
+      type: object
+      required:
+        - access_token
+        - token_type
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          example: JWT
+    QuoteActions:
+      type: string
+      enum:
+        - buy
+        - sell
+    RequestForQuote:
+      type: object
+      required:
+        - action
+        - amount
+        - currency_pair
+      properties:
+        action:
+          $ref: '#/components/schemas/QuoteActions'
+        amount:
+          type: number
+        currency_pair:
+          $ref: '#/components/schemas/CurrencyPairs'
+    Quote:
+      type: object
+      required:
+        - quote_id
+        - rfq
+        - price
+        - expiration_time
+      properties:
+        quote_id:
+          type: string
+        rfq:
+          $ref: '#/components/schemas/RequestForQuote'
+        price:
+          description: price for 1 unit of the quote
+          type: number
+        expiration_time:
+          type: string
+          format: date-time
+    QuoteStatus:
+      type: string
+      enum:
+        - Pending
+        - Success
+        - Failed

@@ -1,0 +1,88 @@
+name: E2E Test
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install pipenv
+        run: |
+          pip install --upgrade pipenv
+      - name: Install dependencies for backend
+        run: |
+          cd backend && pipenv install --dev
+          cd ../liquidity && pipenv install --dev
+          cd ..
+      - name: Setup env and build docker images
+        run: |
+          ./scripts/lrw.sh setup_environment
+      - name: Spin up single wallet instance
+        run: |
+          ./scripts/lrw.sh e2e single up | tail -2 > e2e.vars
+      - name: Wait for services to boot up
+        run: |
+          cat e2e.vars
+          for attempt in {1..60} ; do
+            docker ps -a | awk '{ print $1 }' | xargs -L1 -I {} sh -c "docker logs {} 2>&1 | tail -1" | grep unreachable || exit 0
+            echo "Attempt $attempt, some services still unreachable"
+            sleep 3
+          done
+          echo "Services unhealthy"
+          exit 1
+      - name: List docker containers and sleep
+        run: |
+          docker container ls -a
+          sleep 30
+      - name: Run single-wallet tests on test-runner
+        continue-on-error: true
+        run: |
+          echo "Fetching vars from wallet setup"
+          source e2e.vars
+          ./scripts/test_e2e.sh single
+      - name: Dump container logs
+        continue-on-error: true
+        run: |
+          docker ps -a | awk '{ print $1 }' | awk 'NR>1' | xargs -L1 docker logs
+      - name: Spin up second wallet instance
+        run: |
+          ./scripts/lrw.sh e2e double up true | tail -2 >> e2e.vars
+      - name: Wait for services to boot up
+        run: |
+          cat e2e.vars
+          for attempt in {1..60} ; do
+            docker ps -a | awk '{ print $1 }' | xargs -L1 -I {} sh -c "docker logs {} 2>&1 | tail -1" | grep unreachable || exit 0
+            echo "Attempt $attempt, some services still unreachable"
+            sleep 3
+          done
+          echo "Services unhealthy"
+          exit 1
+      - name: List docker containers and sleep
+        run: |
+          docker container ls -a
+          sleep 30
+      - name: Run double-wallet tests on test-runner
+        continue-on-error: true
+        run: |
+          echo "Fetching vars from wallet setup"
+          source e2e.vars
+          ./scripts/test_e2e.sh double
+      - name: Dump container logs
+        continue-on-error: true
+        run: |
+          docker ps -a | awk '{ print $1 }' | awk 'NR>1' | xargs -L1 docker logs

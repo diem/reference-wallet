@@ -1,0 +1,10 @@
+{
+
+  "headline": "Select Digital Currency",
+  "currency_label": "Each one of your digital currencies has a different address.",
+  "currency": "Currency",
+  "scan_qr": "Scan QR",
+  "text": "You can copy your unique address and give it to the person you’d like to receive money from. Or others can read the address by scanning the QR code.",
+  "copy": "Copy Address",
+  "copied": "Copied <1 />"
+}

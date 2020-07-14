@@ -1,0 +1,14 @@
+<!doctype html>
+<head><title>Global Execution Log</title></head>
+<body>
+<h1>Global Execution Log</h1>
+{% if logs %}
+<ul>
+    {% for log in logs %}
+    <li>[{{ log.timestamp }}] {{ log.log }} </li>
+    {% endfor %}
+</ul>
+{% else %}
+<h3>No execution log to show.</h3>
+{% endif %}
+</body>

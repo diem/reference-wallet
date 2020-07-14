@@ -1,0 +1,11 @@
+# All the hidden files and directories
+**/.*
+
+# Not needed for the backend
+docker
+frontend
+gateway
+scripts
+helm/
+
+requirements.txt

@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install pipenv
+        run: |
+          pip install --upgrade pipenv
+      - name: Install dependencies for backend
+        run: |
+          cd backend && pipenv install --dev
+          cd ../liquidity && pipenv install --dev
+          cd ..
+      - name: Setup env
+        run: |
+          ./scripts/lrw.sh setup_environment
+      - name: Test with pytest
+        run: |
+          cd backend && ./test.sh
+      - name: Compile frontend
+        run: |
+          ./scripts/compile_frontend.sh

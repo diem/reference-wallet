@@ -1,0 +1,26 @@
+venv/
+.idea/
+/**/__pycache__
+/.pyre
+/.eggs
+dump.rdb
+*.egg-info
+*flask_session
+**/.DS_Store
+.env
+.env-2
+# Frontend build artifacts
+/gateway/tmp
+
+# pyenv local version
+.python-version
+
+*/fastlane/report.xml
+*/fastlane/Preview.html
+*/fastlane/screenshots
+
+# Bundle artifact
+*.jsbundle
+
+# CocoaPods
+/ios/Pods/

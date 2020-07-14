@@ -1,0 +1,181 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "libra-reference-wallet.fullname" . }}-web
+  labels:
+    app: {{ include "libra-reference-wallet.fullname" . }}-web
+    {{- include "libra-reference-wallet.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      app: {{ include "libra-reference-wallet.fullname" . }}-web
+      {{- include "libra-reference-wallet.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        app: {{ include "libra-reference-wallet.fullname" . }}-web
+        {{- include "libra-reference-wallet.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "libra-reference-wallet.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - command:
+          - /libra-wallet/run_web.sh
+        env:
+        - name: COMPOSE_ENV
+          value: "production"
+        - name: WALLET_PORT
+          value: {{.Values.service.targetPort | quote}}
+        - name: REDIS_HOST
+          value: {{ include "libra-reference-wallet.peripherals.redis.url" . }}
+        - name: DB_URL
+          value: {{ include "libra-reference-wallet.peripherals.database.url" . }}
+        - name: LP_DB_URL
+          value: {{ include "libra-reference-wallet.peripherals.database.liquidityUrl" . }}
+        - name: ADMIN_USERNAME
+          value: {{ .Values.peripherals.database.adminUsername }}
+        - name: WALLET_CUSTODY_ACCOUNT_NAME
+          value: {{ .Values.walletCustodyAccountName }}
+        - name: CUSTODY_PRIVATE_KEYS
+          value: {{ .Values.custodyPrivateKeysWallet | toJson }}
+        - name: LIQUIDITY_SERVICE_PORT
+          value: {{ .Values.service.targetPort | quote }}
+        - name: LIQUIDITY_SERVICE_HOST
+          value: {{ include "libra-reference-wallet.fullname" . }}-liquidity
+        image: "{{ .Values.images.backend }}"
+        name: lrw-web
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
+        ports:
+          - name: http
+            containerPort: {{.Values.service.targetPort}}
+            protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "libra-reference-wallet.fullname" . }}-worker
+  labels:
+    app: {{ include "libra-reference-wallet.fullname" . }}-worker
+    {{- include "libra-reference-wallet.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      app: {{ include "libra-reference-wallet.fullname" . }}-worker
+      {{- include "libra-reference-wallet.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        app: {{ include "libra-reference-wallet.fullname" . }}-worker
+        {{- include "libra-reference-wallet.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "libra-reference-wallet.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - command:
+          - /libra-wallet/run_worker.sh
+        env:
+        - name: REDIS_HOST
+          value: {{ include "libra-reference-wallet.peripherals.redis.url" . }}
+        - name: DB_URL
+          value: {{ include "libra-reference-wallet.peripherals.database.url" . }}
+        - name: LP_DB_URL
+          value: {{ include "libra-reference-wallet.peripherals.database.liquidityUrl" . }}
+        - name: ADMIN_USERNAME
+          value: {{ .Values.peripherals.database.adminUsername }}
+        - name: WALLET_CUSTODY_ACCOUNT_NAME
+          value: {{ .Values.walletCustodyAccountName }}
+        - name: CUSTODY_PRIVATE_KEYS
+          value: {{ .Values.custodyPrivateKeysWallet | toJson }}
+        - name: LIQUIDITY_SERVICE_PORT
+          value: {{ .Values.service.targetPort | quote }}
+        - name: LIQUIDITY_SERVICE_HOST
+          value: {{ include "libra-reference-wallet.fullname" . }}-liquidity
+        image: "{{ .Values.images.backend }}"
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
+        name: lrw-worker
+        ports:
+          - name: http
+            containerPort: 8080
+            protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "libra-reference-wallet.fullname" . }}-pubsub
+  labels:
+    app: {{ include "libra-reference-wallet.fullname" . }}-pubsub
+    {{- include "libra-reference-wallet.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      app: {{ include "libra-reference-wallet.fullname" . }}-pubsub
+      {{- include "libra-reference-wallet.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        app: {{ include "libra-reference-wallet.fullname" . }}-pubsub
+        {{- include "libra-reference-wallet.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "libra-reference-wallet.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - command:
+          - /libra-wallet/run_pubsub.sh
+        env:
+        - name: REDIS_HOST
+          value: {{ include "libra-reference-wallet.peripherals.redis.url" . }}
+        - name: DB_URL
+          value: {{ include "libra-reference-wallet.peripherals.database.url" . }}
+        - name: VASP_ADDR
+          value: {{ .Values.vaspAddr }}
+        - name: WALLET_CUSTODY_ACCOUNT_NAME
+          value: {{ .Values.walletCustodyAccountName }}
+        - name: CUSTODY_PRIVATE_KEYS
+          value: {{ .Values.custodyPrivateKeysWallet | toJson }}
+        - name: LIQUIDITY_SERVICE_PORT
+          value: {{ .Values.service.targetPort | quote }}
+        - name: LIQUIDITY_SERVICE_HOST
+          value: {{ include "libra-reference-wallet.fullname" . }}-liquidity
+        image: "{{ .Values.images.backend }}"
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
+        name: lrw-pubsub
+        ports:
+          - name: http
+            containerPort: 8080
+            protocol: TCP

@@ -1,0 +1,26 @@
+{
+  "name": "Cartera Libra",
+  "total_balance": "Saldo Total",
+  "balances": "Ver sus saldos",
+  "transactions": "'Últimas transacciones'",
+  "transactions_empty": "Aún no tienes ninguna transacción. Una vez que envíe, solicite o transfiera dinero, las transacciones aparecerán aquí.",
+  "all_transactions": "Todas las transacciones",
+  "all_transactions_link": "ເບິ່ງທັງໝົດ",
+  "all_currencies": "Todas las monedas",
+  "price": "Actualmente igual a",
+  "close": "Cerrar",
+  "actions": {
+    "send": "Enviar",
+    "request": "Solicitud",
+    "transfer": "Transferir",
+    "settings": "Ajustes"
+  },
+  "verification_pending": {
+    "title": "Verificación pendiente",
+    "description": "Su información está siendo revisada. Esto generalmente no toma más de 2 días hábiles. Te avisaremos cuando esté completo."
+  },
+  "feedback": {
+    "title": "Deje sus comentarios",
+    "text": "Retroalimentación"
+  }
+}

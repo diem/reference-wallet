@@ -1,0 +1,50 @@
+#!/bin/sh
+
+# Copyright (c) The Libra Core Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+. scripts/funcs.sh
+
+# Redirect output to stderr.
+exec 1>&2
+
+
+check_wallet() {
+success "🔷 Checking Python code"
+info "   If anything fails, ensure pipenv installed all requirements"
+
+sh <<"EOF"
+cd backend
+pipenv run python3 setup.py pytest --addopts="tests/wallet_tests  $@" || fail "pytest (pipenv run python3 setup.py pytest --addopts=\"tests/wallet_tests $@\") failed!"
+pipenv run python3 setup.py pytest --addopts="tests/pubsub_tests $@" || fail "pytest (pipenv run python3 setup.py pytest --addopts=\"tests/pubsub_tests $@\") failed!"
+pipenv run python3 setup.py pytest --addopts="tests/webapp_tests $@" || fail "pytest (pipenv run python3 setup.py pytest --addopts=\"tests/webapp_tests $@\") failed!"
+pipenv run black --check .  || fail "black (pipenv run black --check .) failed!"
+EOF
+}
+
+
+check_frontend() {
+  success "🔷 Checking Frontend code"
+  CI=true yarn --cwd ./frontend test || fail "Tests failed"
+
+  cd "$(git rev-parse --show-toplevel)"
+  PRETTIER="frontend/node_modules/.bin/prettier"
+  [ ! -x "$PRETTIER" ] && fail "Missing prettier"
+
+  $PRETTIER --write "frontend/src/**/*.ts" "frontend/src/**/*.tsx"
+  PRETTIER_EXIT="$?"
+
+  staged_files=$(git diff --name-only --cached)
+
+  # Re-add files since they may have been modified by prettier
+  [ -n "${staged_files}" ] && git add "${staged_files}"
+
+  if [ "${PRETTIER_EXIT}" != "0" ]; then
+    fail "Fix prettier errors and try again"
+  fi
+}
+
+
+check_wallet "$@"
+br
+check_frontend
