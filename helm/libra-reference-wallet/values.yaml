@@ -5,10 +5,10 @@
 replicaCount: 1
 
 # XXX: fill these out
-liquidityCustodyAccountName: "liquidity"
-walletCustodyAccountName: "wallet"
-custodyPrivateKeysLiquidity: '<LIQUIDITY_KEYS>'
-custodyPrivateKeysWallet: '<WALLET_KEYS>'
+custodyPrivateKeysWallet:
+  wallet: '<WALLET_KEY>'
+custodyPrivateKeysLiquidity:
+  liquidity: '<LIQUIDITY_KEY>'
 vaspAddr: "<VASP_ADDR>"
 
 images:

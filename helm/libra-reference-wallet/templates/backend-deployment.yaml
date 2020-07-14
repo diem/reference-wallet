@@ -46,10 +46,8 @@ spec:
           value: {{ include "libra-reference-wallet.peripherals.database.liquidityUrl" . }}
         - name: ADMIN_USERNAME
           value: {{ .Values.peripherals.database.adminUsername }}
-        - name: WALLET_CUSTODY_ACCOUNT_NAME
-          value: {{ .Values.walletCustodyAccountName }}
         - name: CUSTODY_PRIVATE_KEYS
-          value: {{ .Values.custodyPrivateKeysWallet | toJson }}
+          value: {{ .Values.custodyPrivateKeysWallet | toJson | quote }}
         - name: LIQUIDITY_SERVICE_PORT
           value: {{ .Values.service.targetPort | quote }}
         - name: LIQUIDITY_SERVICE_HOST
@@ -106,10 +104,8 @@ spec:
           value: {{ include "libra-reference-wallet.peripherals.database.liquidityUrl" . }}
         - name: ADMIN_USERNAME
           value: {{ .Values.peripherals.database.adminUsername }}
-        - name: WALLET_CUSTODY_ACCOUNT_NAME
-          value: {{ .Values.walletCustodyAccountName }}
         - name: CUSTODY_PRIVATE_KEYS
-          value: {{ .Values.custodyPrivateKeysWallet | toJson }}
+          value: {{ .Values.custodyPrivateKeysWallet | toJson | quote }}
         - name: LIQUIDITY_SERVICE_PORT
           value: {{ .Values.service.targetPort | quote }}
         - name: LIQUIDITY_SERVICE_HOST
@@ -164,10 +160,8 @@ spec:
           value: {{ include "libra-reference-wallet.peripherals.database.url" . }}
         - name: VASP_ADDR
           value: {{ .Values.vaspAddr }}
-        - name: WALLET_CUSTODY_ACCOUNT_NAME
-          value: {{ .Values.walletCustodyAccountName }}
         - name: CUSTODY_PRIVATE_KEYS
-          value: {{ .Values.custodyPrivateKeysWallet | toJson }}
+          value: {{ .Values.custodyPrivateKeysWallet | toJson | quote }}
         - name: LIQUIDITY_SERVICE_PORT
           value: {{ .Values.service.targetPort | quote }}
         - name: LIQUIDITY_SERVICE_HOST
