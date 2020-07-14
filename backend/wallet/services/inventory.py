@@ -12,7 +12,7 @@ from libra_utils.types.liquidity.currency import Currency, CurrencyPairs, Curren
 from libra_utils.types.liquidity.quote import QuoteData
 from libra_utils.types.liquidity.trade import TradeStatus, TradeData, TradeId
 from wallet.logging import log_execution
-from sdks.lp_client import LpClient
+from libra_utils.sdks.liquidity import LpClient
 from wallet.services import INVENTORY_ACCOUNT_NAME
 from wallet.services.account import get_deposit_address, create_account
 from wallet.services.transaction import send_transaction, get_transaction

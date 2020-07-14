@@ -9,7 +9,6 @@ set -euo pipefail
 #       instantiate dramatiq and other test dependencies in conftest.py
 pipenv run python3 setup.py pytest --addopts="tests/wallet_tests $@"
 pipenv run python3 setup.py pytest --addopts="tests/webapp_tests $@"
-pipenv run python3 setup.py pytest --addopts="tests/utils_tests $@"
 pipenv run python3 setup.py pytest --addopts="tests/pubsub_tests $@"
 
 pipenv run black --check .

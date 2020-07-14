@@ -64,7 +64,6 @@ services:
       - ADMIN_USERNAME=admin@lrw
       - LIQUIDITY_SERVICE_HOST=liquidity
       - LIQUIDITY_SERVICE_PORT=5000
-    command: sh -c "/wait.sh db 5432 && /liquidity/run.sh"
     restart: always
 
   redis:

@@ -32,7 +32,6 @@ show_help() {
   echo "run pipenv install <pkg>   Add new package both to host and backend running container in debug mode"
   echo "run pipenv uninstall <pkg> Remove package both from host and from backend running container in debug mode"
   echo "watch_test                 Run tests in watch mode"
-  echo "send_tx <amount_micro> <bech32_addr>"
   echo
 }
 
@@ -303,10 +302,6 @@ watch_test() {
   PIPENV_PIPFILE=backend/Pipfile pipenv run pytest-watch --  --disable-pytest-warnings backend/tests/$@
 }
 
-send_tx() {
-  (cd backend && pipenv run python3 libra_utils/send_tx.py $@)
-}
-
 setup_environment() {
   if ! command -v pipenv &> /dev/null
   then
@@ -314,6 +309,9 @@ setup_environment() {
     pip3 install pipenv
     exit
   fi
+
+  info "***Initializing utilities submodule***"
+  git submodule update --init --recursive
 
   info "***Installing backend dependencies***"
   sh -c "cd backend && pipenv install --dev"

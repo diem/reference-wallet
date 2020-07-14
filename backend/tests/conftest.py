@@ -18,7 +18,7 @@ from libra_utils.types.liquidity.lp import LPDetails
 from libra_utils.types.liquidity.quote import QuoteId, QuoteData, Rate
 from libra_utils.types.liquidity.settlement import DebtData
 from libra_utils.types.liquidity.trade import TradeId, TradeData, Direction, TradeStatus
-from sdks.lp_client import LpClient
+from libra_utils.sdks.liquidity import LpClient
 from tests.setup import clear_db
 from tests.wallet_tests.pylibra_mocks import (
     FaucetUtilsMock,

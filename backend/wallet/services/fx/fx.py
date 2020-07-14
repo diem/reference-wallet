@@ -3,7 +3,7 @@
 
 from libra_utils.precise_amount import Amount
 from libra_utils.types.liquidity.currency import Currency, CurrencyPair, CurrencyPairs
-from sdks.lp_client import LpClient
+from libra_utils.sdks.liquidity import LpClient
 from wallet.services.fx.fx_conversions import MULTI_STEP_CONVERSION_TABLE
 
 
