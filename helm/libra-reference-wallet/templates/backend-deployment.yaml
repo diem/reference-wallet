@@ -30,6 +30,10 @@ spec:
       serviceAccountName: {{ include "libra-reference-wallet.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+      - name: init-wait
+        image: "{{ .Values.images.backend }}"
+        command: ["sh", "-c", '/wait.sh {{ include "libra-reference-wallet.fullname" . }}-liquidity {{ .Values.service.port }} || exit 1']
       containers:
       - command:
           - /libra-wallet/run_web.sh
@@ -92,6 +96,10 @@ spec:
       serviceAccountName: {{ include "libra-reference-wallet.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+      - name: init-wait
+        image: "{{ .Values.images.backend }}"
+        command: ["sh", "-c", '/wait.sh {{ include "libra-reference-wallet.fullname" . }}-web {{ .Values.service.port }} || exit 1']
       containers:
       - command:
           - /libra-wallet/run_worker.sh
@@ -150,6 +158,10 @@ spec:
       serviceAccountName: {{ include "libra-reference-wallet.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+      - name: init-wait
+        image: "{{ .Values.images.backend }}"
+        command: ["sh", "-c", '/wait.sh {{ include "libra-reference-wallet.fullname" . }}-web {{ .Values.service.port }} || exit 1']
       containers:
       - command:
           - /libra-wallet/run_pubsub.sh

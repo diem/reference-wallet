@@ -31,8 +31,8 @@ spec:
     {{- include "libra-reference-wallet.selectorLabels" . | nindent 4 }}
   ports:
   - protocol: "TCP"
-    port: 5432
-    targetPort: 5432
+    port: {{ .Values.peripherals.database.port }}
+    targetPort: {{ .Values.peripherals.database.port }}
     name: db
 ---
 {{- end }}

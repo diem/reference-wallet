@@ -93,7 +93,7 @@ spec:
         imagePullPolicy: {{ .Values.images.pullPolicy }}
         name: db
         ports:
-        - containerPort: 5432
+        - containerPort: {{ .Values.peripherals.database.port }}
         {{- if .Values.peripherals.database.persistence }}
         volumeMounts:
           - mountPath: /data
