@@ -22,6 +22,10 @@ nameOverride: ""
 fullnameOverride: ""
 apiPath: "/api"
 
+workers:
+  numProcs: 2
+  numThreads: 2
+
 peripherals:
   redis:
     create: false

@@ -3,6 +3,12 @@
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-#export INIT_DRAMATIQ=1
+PROCS=${PROCS:-2}
+THREADS=${THREADS:-2}
 
-dramatiq wallet -p 2 -t 2 --verbose --watch . "$@"
+if [ -z "${PROCS##*[!0-9]*}" ] || [ -z "${THREADS##*[!0-9]*}" ]; then
+    echo "PROCS and THREADS env vars should be integers"
+    exit 1
+fi
+
+dramatiq wallet -p $PROCS -t $THREADS --verbose --watch . "$@"

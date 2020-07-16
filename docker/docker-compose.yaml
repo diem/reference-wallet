@@ -37,6 +37,8 @@ services:
       - DB_URL=postgresql://backenduser:backendpassword@db/backend_db
       - LP_DB_URL=postgresql://backenduser:backendpassword@db/liquidity_provider_db
       - ADMIN_USERNAME=admin@lrw
+      - PROCS=${PROCS:-2}
+      - THREADS=${THREADS:-2}
     command: sh -c "/wait.sh backend-web-server 5000 && ./run_worker.sh"
     restart: always
 
