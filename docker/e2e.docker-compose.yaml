@@ -1,10 +1,8 @@
 version: '3.4'
 services:
   gateway:
-    build:
-      target: dynamic_conf
     volumes:
-      - ../gateway/nginx.dev.conf:/etc/nginx/nginx.conf
+      - ../gateway/nginx.conf:/etc/nginx/nginx.conf
 
   backend-web-server:
     environment:
@@ -20,20 +18,8 @@ services:
     environment:
       - COMPOSE_ENV="development"
 
-  frontend:
-    container_name: frontend
-    image: lrw_frontend
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
-
   liquidity:
     environment:
       - COMPOSE_ENV="development"
     ports:
     - "5000"
-
-  test-runner:
-    container_name: test-runner
-    image: lrw_backend
-    command: tail -f /dev/null

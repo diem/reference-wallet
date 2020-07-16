@@ -24,31 +24,34 @@ jobs:
       - name: Install pipenv
         run: |
           pip install --upgrade pipenv
-      - name: Install dependencies for backend
+      - name: Setup env
         run: |
-          cd backend && pipenv install --dev
-          cd ../liquidity && pipenv install --dev
-          cd ..
-      - name: Setup env and build docker images
+          ./scripts/lrw.sh setup_environment true
+      - name: Build docker images
         run: |
-          ./scripts/lrw.sh setup_environment
+          ./scripts/lrw.sh build 8080 e2e-blind
       - name: Spin up single wallet instance
         run: |
           ./scripts/lrw.sh e2e single up | tail -2 > e2e.vars
       - name: Wait for services to boot up
         run: |
           cat e2e.vars
+          IFS=''
           for attempt in {1..60} ; do
-            docker ps -a | awk '{ print $1 }' | xargs -L1 -I {} sh -c "docker logs {} 2>&1 | tail -1" | grep unreachable || exit 0
+            unreachable=$(docker ps -a | awk '{ print $1 }' | awk 'NR>1' | xargs -L1 -I {} sh -c "docker logs {} 2>&1 | tail -1" | grep unreachable || true)
+            if [ -z "$unreachable" ]; then
+              echo "All services reachable"
+              exit 0
+            fi
             echo "Attempt $attempt, some services still unreachable"
             sleep 3
           done
           echo "Services unhealthy"
           exit 1
-      - name: List docker containers and sleep
+      - name: Sleep and list docker containers
         run: |
+          sleep 10
           docker container ls -a
-          sleep 30
       - name: Run single-wallet tests on test-runner
         continue-on-error: true
         run: |
@@ -58,24 +61,36 @@ jobs:
       - name: Dump container logs
         continue-on-error: true
         run: |
-          docker ps -a | awk '{ print $1 }' | awk 'NR>1' | xargs -L1 docker logs
+          IFS=''
+          containers=$(docker ps -a | awk '{ print $1, $NF }' | awk 'NR>1')
+          echo $containers
+          echo $containers | while read line; do
+              echo
+              echo $line | awk '{ print "============", $2, "============" }'
+              echo $line | awk '{ print $1 }' | xargs -L1 docker logs
+          done
       - name: Spin up second wallet instance
         run: |
           ./scripts/lrw.sh e2e double up true | tail -2 >> e2e.vars
       - name: Wait for services to boot up
         run: |
           cat e2e.vars
+          IFS=''
           for attempt in {1..60} ; do
-            docker ps -a | awk '{ print $1 }' | xargs -L1 -I {} sh -c "docker logs {} 2>&1 | tail -1" | grep unreachable || exit 0
+            unreachable=$(docker ps -a | awk '{ print $1 }' | awk 'NR>1' | xargs -L1 -I {} sh -c "docker logs {} 2>&1 | tail -1" | grep unreachable || true)
+            if [ -z "$unreachable" ]; then
+              echo "All services reachable"
+              exit 0
+            fi
             echo "Attempt $attempt, some services still unreachable"
             sleep 3
           done
           echo "Services unhealthy"
           exit 1
-      - name: List docker containers and sleep
+      - name: Sleep and list docker containers
         run: |
-          docker container ls -a
           sleep 30
+          docker container ls -a
       - name: Run double-wallet tests on test-runner
         continue-on-error: true
         run: |
@@ -85,4 +100,11 @@ jobs:
       - name: Dump container logs
         continue-on-error: true
         run: |
-          docker ps -a | awk '{ print $1 }' | awk 'NR>1' | xargs -L1 docker logs
+          IFS=''
+          containers=$(docker ps -a | awk '{ print $1, $NF }' | awk 'NR>1')
+          echo $containers
+          echo $containers | while read line; do
+              echo
+              echo $line | awk '{ print "============", $2, "============" }'
+              echo $line | awk '{ print $1 }' | xargs -L1 docker logs
+          done

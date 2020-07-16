@@ -44,8 +44,8 @@ run_double_e2e_test() {
 }
 
 # show environment variables primarily for debugging
-export LRW_WEB_1="http://gateway:8000"
-export LRW_WEB_2="http://gateway-2:8000"
+export LRW_WEB_1="http://lrw_gateway_1:8000"
+export LRW_WEB_2="http://lrw2_gateway_1:8000"
 echo "LRW_WEB_1 = $LRW_WEB_1"
 echo "GW_PORT_1 = $GW_PORT_1"
 echo "VASP_ADDR_1 = $VASP_ADDR_1"

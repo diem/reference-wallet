@@ -1,0 +1,8 @@
+version: '3.4'
+services:
+  # don't load the frontend, to save resources
+  gateway:
+    build:
+      context: ../gateway
+      dockerfile: Dockerfile
+      target: dynamic_conf
