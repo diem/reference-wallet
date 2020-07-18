@@ -119,9 +119,9 @@ spec:
         - name: LIQUIDITY_SERVICE_HOST
           value: {{ include "libra-reference-wallet.fullname" . }}-liquidity
         - name: PROCS
-          value: {{ .Values.workers.numProcs }}
+          value: {{ .Values.workers.numProcs | quote }}
         - name: THREADS
-          value: {{ .Values.workers.numThreads }}        
+          value: {{ .Values.workers.numThreads | quote }}        
         image: "{{ .Values.images.backend }}"
         imagePullPolicy: {{ .Values.images.pullPolicy }}
         name: lrw-worker
