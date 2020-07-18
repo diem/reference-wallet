@@ -322,7 +322,7 @@ deploy_minikube() {
 }
 
 watch_test() {
-  PIPENV_PIPFILE=backend/Pipfile pipenv run pytest-watch --  --disable-pytest-warnings backend/tests/$@
+  PIPENV_PIPFILE=backend/Pipfile backend/test.sh
 }
 
 setup_environment() {

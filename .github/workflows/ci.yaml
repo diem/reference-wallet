@@ -35,7 +35,7 @@ jobs:
           ./scripts/lrw.sh setup_environment
       - name: Test with pytest
         run: |
-          cd backend && ./test.sh
+          ./scripts/lrw.sh watch_test
       - name: Compile frontend
         run: |
           ./scripts/compile_frontend.sh
