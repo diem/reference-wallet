@@ -71,7 +71,7 @@ function UserListItem({ user, status, onBlock }: UserListItemProps) {
 
         {/* Right side container */}
         <span className="ml-auto text-nowrap">
-          <BlockButton isBlocked={status == "Blocked"} onBlock={() => onBlock(user)} />
+          <BlockButton isBlocked={status === "Blocked"} onBlock={() => onBlock(user)} />
         </span>
       </div>
     </ListGroupItem>

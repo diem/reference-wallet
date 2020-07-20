@@ -59,6 +59,7 @@ const Step2Country = ({ info, onBack, onSubmit }: Step2CountryProps) => {
                 />
               ),
             }}
+            disabled={process.env.NODE_ENV === "production"}
             defaultValue={info.country}
             as={<SelectDropdown label={t("step2.fields.country")} options={countriesList} />}
           />

@@ -321,12 +321,12 @@ export default class BackendClient {
   async createAdminUser(
     firstName: string,
     lastName: string,
-    email: string,
+    username: string,
     password: string
   ): Promise<void> {
     try {
       await this.client.post("/admin/users", {
-        username: email,
+        username: username,
         first_name: firstName,
         last_name: lastName,
         is_admin: true,

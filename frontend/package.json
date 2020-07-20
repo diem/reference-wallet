@@ -7,6 +7,7 @@
     "axios": "^0.19.2",
     "bootstrap": "4.3.1",
     "countries-list": "^2.5.4",
+    "faker": "^4.1.0",
     "font-awesome": "^4.7.0",
     "http-status-codes": "^1.4.0",
     "i18next": "^19.4.1",

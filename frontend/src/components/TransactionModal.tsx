@@ -3,12 +3,11 @@
 
 import React, { useContext } from "react";
 import { Modal, ModalBody } from "reactstrap";
-import { Trans, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { settingsContext } from "../contexts/app";
 import ExplorerLink from "./ExplorerLink";
 import { Transaction } from "../interfaces/transaction";
 import CloseButton from "./CloseButton";
-import { LibraCurrency } from "../interfaces/currencies";
 import { fiatToHumanFriendly, libraToFloat, libraToHumanFriendly } from "../utils/amount-precision";
 
 const STATUS_COLORS = {

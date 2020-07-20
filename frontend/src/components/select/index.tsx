@@ -13,6 +13,7 @@ interface SelectDropdownProps<T extends object> {
   dropdownAction?: React.ReactNode;
   textOverflow?: boolean;
   invalid?: boolean;
+  disabled?: boolean;
 
   addonType?: boolean | "prepend" | "append";
 }
@@ -25,6 +26,7 @@ function SelectDropdown<T extends object = object>({
   dropdownAction,
   textOverflow,
   invalid,
+  disabled,
   ...props
 }: SelectDropdownProps<T>) {
   let optionsList: (string | number)[];
@@ -82,8 +84,13 @@ function SelectDropdown<T extends object = object>({
   };
 
   return (
-    <UncontrolledDropdown {...props} onToggle={scrollValueToView}>
-      <DropdownToggle color="default" className={classNames(toggleStyles)} caret>
+    <UncontrolledDropdown disabled={disabled} {...props} onToggle={scrollValueToView}>
+      <DropdownToggle
+        disabled={disabled}
+        color="default"
+        className={classNames(toggleStyles)}
+        caret
+      >
         <span className={classNames(labelStyles)}>{hasValue ? options[value!] : label}</span>
       </DropdownToggle>
       <DropdownMenu className="w-100 mw-100 scrollable-menu">

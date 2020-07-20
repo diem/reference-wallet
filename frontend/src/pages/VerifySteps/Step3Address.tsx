@@ -50,6 +50,7 @@ const Step3Address = ({ info, onBack, onSubmit }: Step3AddressProps) => {
             placeholder={t("step3.fields.address_1")}
             name="address_1"
             type="text"
+            disabled={process.env.NODE_ENV === "production"}
             defaultValue={info.address_1}
           />
           {errors.address_1 && <FormText color="danger">{errors.address_1.message}</FormText>}
@@ -62,6 +63,7 @@ const Step3Address = ({ info, onBack, onSubmit }: Step3AddressProps) => {
             placeholder={t("step3.fields.address_2")}
             name="address_2"
             type="text"
+            disabled={process.env.NODE_ENV === "production"}
             defaultValue={info.address_2}
           />
           {errors.address_2 && <FormText color="danger">{errors.address_2.message}</FormText>}
@@ -78,6 +80,7 @@ const Step3Address = ({ info, onBack, onSubmit }: Step3AddressProps) => {
             placeholder={t("step3.fields.city")}
             name="city"
             type="text"
+            disabled={process.env.NODE_ENV === "production"}
             defaultValue={info.city}
           />
           {errors.city && <FormText color="danger">{errors.city.message}</FormText>}
@@ -90,6 +93,7 @@ const Step3Address = ({ info, onBack, onSubmit }: Step3AddressProps) => {
             placeholder={t("step3.fields.state")}
             name="state"
             type="text"
+            disabled={process.env.NODE_ENV === "production"}
             defaultValue={info.state}
           />
           {errors.state && <FormText color="danger">{errors.state.message}</FormText>}
@@ -102,6 +106,7 @@ const Step3Address = ({ info, onBack, onSubmit }: Step3AddressProps) => {
             placeholder={t("step3.fields.zip")}
             name="zip"
             type="text"
+            disabled={process.env.NODE_ENV === "production"}
             defaultValue={info.zip}
           />
           {errors.zip && <FormText color="danger">{errors.zip.message}</FormText>}

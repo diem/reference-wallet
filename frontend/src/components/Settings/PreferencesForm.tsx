@@ -50,10 +50,17 @@ function PreferencesForm({ onSubmit }: PreferencesFormProps) {
       <h2 className="h5 font-weight-normal text-body">{t("preferences.general.title")}</h2>
 
       <FormGroup className="mb-4">
-        <FormText>{t("preferences.general.email")}</FormText>
+        <FormText>
+          {process.env.NODE_ENV === "production"
+            ? t("preferences.general.username")
+            : t("preferences.general.email")}
+        </FormText>
         <Input
-          placeholder={t("preferences.general.email")}
-          type="email"
+          placeholder={
+            process.env.NODE_ENV === "production"
+              ? t("preferences.general.username")
+              : t("preferences.general.email")
+          }
           disabled
           value={settings.user.username}
         />

@@ -22,7 +22,6 @@ import TransactionsList from "../components/TransactionsList";
 import BackendClient from "../services/backendClient";
 import AdminHome from "../components/admin/AdminHome";
 import TransactionModal from "../components/TransactionModal";
-import { fiatToHumanFriendly } from "../utils/amount-precision";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
 

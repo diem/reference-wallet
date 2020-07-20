@@ -21,7 +21,7 @@ interface NewAdminModalProps {
 interface AdminFormData {
   firstName: string;
   lastName: string;
-  email: string;
+  username: string;
   password: string;
   passwordConfirmation: string;
 }
@@ -48,7 +48,6 @@ export default function NewAdminModal({
         <h3>{t("newAdmin.title")}</h3>
 
         <Form role="form" onSubmit={handleSubmit(onSubmit)}>
-          {/* First name */}
           <FormGroup className="mb-4">
             <Input
               innerRef={register({
@@ -76,7 +75,6 @@ export default function NewAdminModal({
             {errors.firstName && <FormText color="danger">{errors.firstName.message}</FormText>}
           </FormGroup>
 
-          {/* Last name */}
           <FormGroup className="mb-4">
             <Input
               invalid={!!errors.lastName}
@@ -101,23 +99,21 @@ export default function NewAdminModal({
             {errors.lastName && <FormText color="danger">{errors.lastName.message}</FormText>}
           </FormGroup>
 
-          {/* Email */}
           <FormGroup className="mb-4">
             <Input
-              invalid={!!errors.email}
+              invalid={!!errors.username}
               innerRef={register({
                 required: (
-                  <Trans i18nKey="validations:required" values={{ field: t("fields.email") }} />
+                  <Trans i18nKey="validations:required" values={{ field: t("fields.username") }} />
                 ),
               })}
-              placeholder={t("fields.email")}
-              name="email"
-              type="email"
+              placeholder={t("fields.username")}
+              name="username"
+              type={process.env.NODE_ENV === "production" ? "text" : "email"}
             />
-            {errors.email && <FormText color="danger">{errors.email.message}</FormText>}
+            {errors.username && <FormText color="danger">{errors.username.message}</FormText>}
           </FormGroup>
 
-          {/* Password */}
           <FormGroup className="mb-4">
             <Input
               invalid={!!errors.password}
@@ -152,7 +148,6 @@ export default function NewAdminModal({
             </FormText>
           )}
 
-          {/* Password confirmation */}
           <FormGroup className="mb-4">
             <Input
               invalid={!!errors.passwordConfirmation}

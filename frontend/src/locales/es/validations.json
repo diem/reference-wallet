@@ -10,5 +10,5 @@
   "pastDateOnly": "Por favor introduce una fecha de inicio en el pasado.",
   "noEqualCurrencies": "Por favor seleccione diferentes monedas",
   "noMoreThanBalance": "Ingrese {{field}} menos que su saldo actual de {{currency}}",
-  "passwordsDontMatch": "Las contraseñas no coinciden"
+  "passwordsDontMatch": "Las contraseñas no concuerdan"
 }

@@ -3,10 +3,12 @@
   "received": "Recibido",
   "price": "Actualmente igual a",
   "date": "Fecha",
-  "to": "Para:",
+  "to": "a",
   "from": "desde",
   "sent_to": "Enviar a",
   "sent_from": "Enviado desde",
   "status": "Estado",
-  "tx_id": "ID de transacción de Libra"
+  "tx_id": "ID de transacción de Libra",
+  "internal": "Interna",
+  "not_available": "No disponible"
 }

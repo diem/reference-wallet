@@ -26,15 +26,13 @@ interface Step1IdentityProps {
 
 const Step1Identity = ({ info, onSubmit }: Step1IdentityProps) => {
   const { t } = useTranslation("verify");
-  const { register, errors, handleSubmit, getValues, setValue, control } = useForm<IdentityInfo>();
+  const { register, errors, handleSubmit, setValue, control } = useForm<IdentityInfo>();
 
   const [phonePrefix, phoneNumber] = info.phone.split(" ");
 
   useEffect(() => {
-    const { first_name, last_name } = getValues();
-
-    setValue("first_name", first_name.length ? first_name : info.first_name);
-    setValue("last_name", last_name.length ? last_name : info.last_name);
+    setValue("first_name", info.first_name);
+    setValue("last_name", info.last_name);
     setValue("dob", info.dob);
     setValue("phone_prefix", phonePrefix);
     setValue("phone_number", phoneNumber);
@@ -52,6 +50,7 @@ const Step1Identity = ({ info, onSubmit }: Step1IdentityProps) => {
       <Form role="form" onSubmit={handleSubmit(onFormSubmit)}>
         <FormGroup className="mb-4">
           <Input
+            name="first_name"
             innerRef={register({
               required: (
                 <Trans
@@ -71,15 +70,15 @@ const Step1Identity = ({ info, onSubmit }: Step1IdentityProps) => {
             })}
             invalid={!!errors.first_name}
             placeholder={t("step1.fields.first_name")}
-            name="first_name"
             type="text"
+            disabled={process.env.NODE_ENV === "production"}
             defaultValue={info.first_name}
           />
           {errors.first_name && <FormText color="danger">{errors.first_name.message}</FormText>}
         </FormGroup>
         <FormGroup className="mb-4">
           <Input
-            invalid={!!errors.last_name}
+            name="last_name"
             innerRef={register({
               required: (
                 <Trans
@@ -97,17 +96,16 @@ const Step1Identity = ({ info, onSubmit }: Step1IdentityProps) => {
                 ),
               },
             })}
+            invalid={!!errors.last_name}
             placeholder={t("step1.fields.last_name")}
-            name="last_name"
             type="text"
+            disabled={process.env.NODE_ENV === "production"}
             defaultValue={info.last_name}
           />
           {errors.last_name && <FormText color="danger">{errors.last_name.message}</FormText>}
         </FormGroup>
         <FormGroup className="mb-4">
           <Controller
-            invalid={!!errors.dob}
-            control={control}
             name="dob"
             rules={{
               required: (
@@ -124,6 +122,9 @@ const Step1Identity = ({ info, onSubmit }: Step1IdentityProps) => {
                 return true;
               },
             }}
+            control={control}
+            invalid={!!errors.dob}
+            disabled={process.env.NODE_ENV === "production"}
             defaultValue={info.dob}
             as={
               <DateTimePicker
@@ -137,8 +138,6 @@ const Step1Identity = ({ info, onSubmit }: Step1IdentityProps) => {
         <FormGroup className="mb-4">
           <InputGroup>
             <Controller
-              invalid={!!errors.phone_prefix}
-              control={control}
               name="phone_prefix"
               rules={{
                 required: (
@@ -148,11 +147,13 @@ const Step1Identity = ({ info, onSubmit }: Step1IdentityProps) => {
                   />
                 ),
               }}
+              control={control}
+              invalid={!!errors.phone_prefix}
+              disabled={process.env.NODE_ENV === "production"}
               defaultValue={phonePrefix}
               as={<SelectDropdown addonType="prepend" options={phonePrefixes} />}
             />
             <Input
-              invalid={!!errors.phone_number}
               name="phone_number"
               innerRef={register({
                 required: (
@@ -171,8 +172,10 @@ const Step1Identity = ({ info, onSubmit }: Step1IdentityProps) => {
                   ),
                 },
               })}
+              invalid={!!errors.phone_number}
               placeholder={t("step1.fields.phone_number")}
               type="tel"
+              disabled={process.env.NODE_ENV === "production"}
               defaultValue={phoneNumber}
             />
           </InputGroup>

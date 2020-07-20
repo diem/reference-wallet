@@ -1,12 +1,12 @@
 {
   "title": "Ajustes",
-  "success_message": "Ajustes guardados correctamente.",
+  "success_message": "Ajustes guardados correctamente!",
   "payment_methods": {
-    "title": "Métodos de pago",
+    "title": "Formas de pago",
     "credit_cards": {
       "title": "Tarjetas de Crédito",
       "not_found": "Aún no ha agregado una tarjeta de crédito",
-      "add": "Añadir nuevo/a",
+      "add": "Añadir nueva",
       "form": {
         "title": "Añadir una tarjeta de crédito",
         "number": "Número de la tarjeta",
@@ -19,10 +19,10 @@
     "bank_accounts": {
       "title": "Cuentas Bancarias",
       "not_found": "Aún no ha agregado una cuenta bancaria",
-      "add": "Añadir nuevo/a",
+      "add": "Añadir nueva",
       "form": {
         "title": "Añadir cuenta bancaria",
-        "account_number": "Número de cuenta",
+        "account_number": "Numero de Tarjeta de Banco",
         "bank": "Banco",
         "name": "Nombre",
         "submit": "Nueva cuenta bancaria"
@@ -32,14 +32,15 @@
   "preferences": {
     "general": {
       "title": "General",
-      "email": "Su dirección"
+      "email": "Tu correo electrónico",
+      "username": "Tu nombre de usuario"
     },
     "form": {
       "title": "Preferencias",
       "fiat_currency": "Moneda local",
       "language": "Idioma:",
-      "submit": "Guardar cambios"
+      "submit": "Guardar Ajustes"
     }
   },
-  "signout": "Cerrar sesión"
+  "signout": "Cerrar Sesión"
 }

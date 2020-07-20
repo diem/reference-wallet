@@ -16,7 +16,7 @@ function Signup() {
 
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [submitStatus, setSubmitStatus] = useState<"edit" | "sending" | "fail" | "success">("edit");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [agreedTerms, setAgreedTerms] = useState(false);
 
@@ -32,7 +32,7 @@ function Signup() {
     try {
       setErrorMessage(undefined);
       setSubmitStatus("sending");
-      const token = await backendClient.signupUser(email, password);
+      const token = await backendClient.signupUser(username, password);
       SessionStorage.storeAccessToken(token);
       setSubmitStatus("success");
     } catch (e) {
@@ -52,12 +52,18 @@ function Signup() {
         <section className="slim-section m-auto">
           {errorMessage && <ErrorMessage message={errorMessage} />}
 
-          {submitStatus === "success" && (
-            <>
-              <h1 className="h3">{t("signup.success.headline")}</h1>
-              <p>{t("signup.success.text", { replace: { email } })}</p>
-            </>
-          )}
+          {submitStatus === "success" &&
+            (process.env.NODE_ENV === "production" ? (
+              <>
+                <h1 className="h3">{t("signup.success_username.headline")}</h1>
+                <p>{t("signup.success_username.text", { replace: { email: username } })}</p>
+              </>
+            ) : (
+              <>
+                <h1 className="h3">{t("signup.success_email.headline")}</h1>
+                <p>{t("signup.success_email.text", { replace: { username } })}</p>
+              </>
+            ))}
 
           {submitStatus !== "success" && (
             <>
@@ -74,11 +80,15 @@ function Signup() {
               <Form role="form" onSubmit={onFormSubmit}>
                 <FormGroup className="mb-4">
                   <Input
-                    placeholder={t("fields.email")}
-                    type="email"
+                    placeholder={
+                      process.env.NODE_ENV === "production"
+                        ? t("fields.username")
+                        : t("fields.email")
+                    }
+                    type={process.env.NODE_ENV === "production" ? "text" : "email"}
                     required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                   />
                 </FormGroup>
                 <FormGroup className="mb-4">

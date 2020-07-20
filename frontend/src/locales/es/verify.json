@@ -1,12 +1,12 @@
 {
-  "fill_sherlock": "🕵🏼 Rellene la información de Shelock Holmes",
+  "fill_dummy_info": "✍🏻 Rellenar información ficticia",
   "example_warning": "Sección de ejemplo. No se requieren datos reales",
   "step1": {
     "title": "Verificar tu identidad",
-    "description": "Necesitamos información para ayudar a verificar su identidad.",
+    "description": "Necesitamos cierta información para ayudar a verificar su identidad.",
     "fields": {
       "first_name": "Nombre",
-      "last_name": "Apellido",
+      "last_name": "Apellidos",
       "dob": "Fecha de nacimiento",
       "phone_prefix": "phone-prefix",
       "phone_number": "Número de teléfono"
@@ -19,7 +19,7 @@
     "fields": {
       "country": "País de residencia"
     },
-    "back": "Back",
+    "back": "Atrás",
     "continue": "Continuar"
   },
   "step3": {
@@ -29,10 +29,10 @@
       "address_1": "Dirección 1",
       "address_2": "Dirección 2",
       "city": "Ciudad",
-      "state": "Estado",
+      "state": "Departamento",
       "zip": "Código postal"
     },
-    "back": "Back",
+    "back": "Atrás",
     "continue": "Continuar"
   },
   "step4": {
@@ -43,10 +43,10 @@
       "passport": "Pasaporte",
       "drivers_license": "Licencia de conducir",
       "identity_card": "Carné de identidad",
-      "files_drop": "Deje caer archivos aquí",
+      "files_drop": "Suelta archivos aquí",
       "upload": "Arrastra y suelta o haz clic aquí para seleccionar un archivo"
     },
-    "back": "Back",
+    "back": "Atrás",
     "continue": "Continuar"
   },
   "step5": {
@@ -55,7 +55,7 @@
     "fields": {
       "fiat_currency": "Moneda Fiat predeterminada"
     },
-    "back": "Back",
+    "back": "Atrás",
     "continue": "Continuar"
   }
 }

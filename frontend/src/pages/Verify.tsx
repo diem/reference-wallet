@@ -6,6 +6,7 @@ import moment from "moment";
 import { Button, Container } from "reactstrap";
 import { Redirect } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import faker from "faker";
 import { settingsContext } from "../contexts/app";
 import BackendClient from "../services/backendClient";
 import { BackendError } from "../services/errors";
@@ -39,6 +40,7 @@ const Verify = () => {
     address_2: "",
     zip: "",
   });
+  const [dummyUserInformation, setDummyUserInformation] = useState<UserInfo[]>();
   const [documentFile, setDocumentFile] = useState<File | undefined>();
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [submitStatus, setSubmitStatus] = useState<"edit" | "sending" | "fail" | "success">("edit");
@@ -81,21 +83,25 @@ const Verify = () => {
     }
   }
 
-  const setSherlockUserInfo = () => {
-    setUserInformation({
-      ...userInformation,
-      first_name: userInformation.first_name.length ? userInformation.first_name : "Sherlock",
-      last_name: userInformation.last_name.length ? userInformation.last_name : "Holmes",
-      dob: moment("1861-06-01"),
-      phone: "44 2079460869",
-      country: "GB",
-      state: "",
-      city: "London",
-      address_1: "221B Baker Street",
-      address_2: "",
-      zip: "NW1 6XE",
-    });
-  };
+  useEffect(() => {
+    setDummyUserInformation(
+      [1, 2, 3].map(() => {
+        return {
+          ...userInformation,
+          first_name: faker.name.firstName(),
+          last_name: faker.name.lastName(),
+          dob: moment(faker.date.past()),
+          phone: "1 " + faker.phone.phoneNumberFormat(),
+          country: faker.address.countryCode(),
+          state: faker.address.state(),
+          city: faker.address.city(),
+          address_1: faker.address.streetAddress(),
+          address_2: "",
+          zip: faker.address.zipCode(),
+        };
+      })
+    );
+  }, []);
 
   return (
     <>
@@ -155,11 +161,25 @@ const Verify = () => {
                 }}
               />
             )}
-            {(step === 1 || step === 2 || step === 3) && (
-              <Button size="sm" color="dark" className="mt-4" outline onClick={setSherlockUserInfo}>
-                {t("fill_sherlock")}
-              </Button>
-            )}
+            {(step === 1 || step === 2 || step === 3) &&
+              process.env.NODE_ENV === "production" &&
+              dummyUserInformation && (
+                <>
+                  <h3 className="h5 mt-4 mb-2">{t("fill_dummy_info")}</h3>
+                  {dummyUserInformation.map((dummyInfo, i) => (
+                    <Button
+                      key={i}
+                      size="sm"
+                      color="dark"
+                      block={true}
+                      outline
+                      onClick={() => setUserInformation(dummyInfo)}
+                    >
+                      {dummyInfo.first_name} {dummyInfo.last_name} ({dummyInfo.country})
+                    </Button>
+                  ))}
+                </>
+              )}
           </section>
         )}
         {!user && <VerifyLoader />}

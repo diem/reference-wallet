@@ -12,11 +12,19 @@ interface DateTimeProps {
   value?: Moment | string;
   onChange?: (value: Moment | string) => void;
   placeholder: string;
+  disabled?: boolean;
   invalid?: boolean;
   isValidDate?: (currentDate: Moment, selectedDate?: Moment) => boolean;
 }
 
-function DateTimePicker({ value, onChange, placeholder, invalid, isValidDate }: DateTimeProps) {
+function DateTimePicker({
+  value,
+  onChange,
+  placeholder,
+  disabled,
+  invalid,
+  isValidDate,
+}: DateTimeProps) {
   return (
     <ReactDatetime
       value={value}
@@ -24,6 +32,7 @@ function DateTimePicker({ value, onChange, placeholder, invalid, isValidDate }: 
       inputProps={{
         placeholder: `${placeholder} (${DATE_FORMAT})`,
         className: "form-control" + (invalid ? " is-invalid" : ""),
+        disabled: disabled,
       }}
       isValidDate={isValidDate}
       closeOnSelect={true}

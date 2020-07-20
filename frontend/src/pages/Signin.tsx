@@ -16,7 +16,7 @@ function Signin() {
 
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [submitStatus, setSubmitStatus] = useState<"edit" | "sending" | "fail" | "success">("edit");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const backendClient = new BackendClient();
@@ -26,7 +26,7 @@ function Signin() {
     try {
       setErrorMessage(undefined);
       setSubmitStatus("sending");
-      const authToken = await backendClient.signinUser(email, password);
+      const authToken = await backendClient.signinUser(username, password);
       SessionStorage.storeAccessToken(authToken);
       setSubmitStatus("success");
     } catch (e) {
@@ -57,11 +57,13 @@ function Signin() {
           <Form role="form" onSubmit={onFormSubmit}>
             <FormGroup className="mb-4">
               <Input
-                placeholder={t("fields.email")}
-                type="email"
+                placeholder={
+                  process.env.NODE_ENV === "production" ? t("fields.username") : t("fields.email")
+                }
+                type={process.env.NODE_ENV === "production" ? "text" : "email"}
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </FormGroup>
             <FormGroup className="mb-4">

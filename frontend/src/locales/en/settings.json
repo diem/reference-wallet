@@ -32,7 +32,8 @@
   "preferences": {
     "general": {
       "title": "General",
-      "email": "Your email"
+      "email": "Your email",
+      "username": "Your username"
     },
     "form": {
       "title": "Preferences",

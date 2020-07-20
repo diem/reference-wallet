@@ -180,7 +180,7 @@ def run():
 
     args = parser.parse_args()
     current = os.getcwd()
-    locales_dir = os.path.join(current, "frontend", "backend", "locales")
+    locales_dir = os.path.join(current, "frontend", "src", "locales")
     source_dir = os.path.join(locales_dir, args.source)
     translation_dest_dir = None
     csv_dest_file = None
@@ -235,7 +235,7 @@ def run():
         step += 1
     if translation_dest_dir:
         info(
-            f'      {step}. add `import {args.destination.upper()} from "./{args.destination}";` to frontend/backend/locales/index.ts'
+            f'      {step}. add `import {args.destination.upper()} from "./{args.destination}";` to frontend/src/locales/index.ts'
         )
         step += 1
         info(

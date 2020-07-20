@@ -55,18 +55,18 @@ export default function Admins() {
     refreshUser();
   }, []);
 
-  const createNewAdmin = ({ firstName, lastName, email, password }) => {
+  const createNewAdmin = ({ firstName, lastName, username, password }) => {
     setAdminCreationStatus("sending");
 
     const asyncCreate = async () => {
       try {
-        await new BackendClient().createAdminUser(firstName, lastName, email, password);
+        await new BackendClient().createAdminUser(firstName, lastName, username, password);
         const fetchedUsers = await new BackendClient().getUsers(true);
         setAdminCreationStatus("inactive");
         setUsers(fetchedUsers);
       } catch (e) {
         if (e instanceof UsernameAlreadyExistsError) {
-          setError(`User ${email} already exists.`);
+          setError(`User ${username} already exists.`);
         } else {
           setError("Unexpected error.");
         }

@@ -1,8 +1,8 @@
 {
   "title": "Transferencia de Fondos",
   "modes": {
-    "deposit": "Agregar",
-    "withdraw": "Retirar Dinero",
+    "deposit": "Añadir",
+    "withdraw": "Retirar",
     "convert": "Convertir"
   },
   "deposit": {
@@ -15,10 +15,10 @@
       "currency": "Elija a qué saldo desea agregar fondos",
       "currency_placeholder": "moneda",
       "fiatCurrency": "Moneda Fiat",
-      "amount": "Agregando",
+      "amount": "Añadiendo",
       "price": "actualmente igual a",
       "exchange_rate": "Tipo de cambio",
-      "review": "Comentario"
+      "review": "Revisión"
     },
     "review": {
       "title": "Verificar y confirmar",
@@ -28,7 +28,8 @@
       "amount": "fondo añadido a su saldo",
       "exchange_rate": "Tipo de cambio",
       "confirm": "Confirmar",
-      "back": "Back"
+      "done": "Hecho",
+      "back": "Atrás"
     }
   },
   "withdraw": {
@@ -44,17 +45,18 @@
       "amount": "Cantidad a retirar",
       "price": "actualmente igual a",
       "exchange_rate": "Tipo de cambio",
-      "review": "Comentario"
+      "review": "Revisión"
     },
     "review": {
       "title": "Verificar y confirmar",
       "description": "Revise los detalles de su transacción antes de confirmar. Dependiendo de su fuente de financiación, las transacciones pueden tardar varios días hábiles en completarse.",
       "funding_source": "Retirarse a",
       "amount": "Debito de la fuente de financiación",
-      "price": "Transferido a su fuente de financiación",
+      "price": "Transferido a su fuente de financiamiento",
       "exchange_rate": "Tipo de cambio",
       "confirm": "Confirmar",
-      "back": "Back"
+      "done": "Hecho",
+      "back": "Atrás"
     }
   },
   "convert": {
@@ -67,7 +69,7 @@
       "amount": "Cantidad a convertir",
       "price": "actualmente igual a",
       "exchange_rate": "Tipo de cambio",
-      "review": "Comentario"
+      "review": "Revisión"
     },
     "review": {
       "title": "Verificar y confirmar",
@@ -76,7 +78,8 @@
       "price": "Nuevo importe",
       "exchange_rate": "Tipo de cambio",
       "confirm": "Confirmar",
-      "back": "Back"
+      "done": "Hecho",
+      "back": "Atrás"
     }
   }
 }

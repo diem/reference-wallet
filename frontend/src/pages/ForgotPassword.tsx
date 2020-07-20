@@ -15,7 +15,7 @@ function ForgotPassword() {
 
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [submitStatus, setSubmitStatus] = useState<"edit" | "sending" | "fail" | "success">("edit");
-  const [email, setEmail] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
   const [passwordResetToken, setPasswordResetToken] = useState<string | undefined>();
 
   const onFormSubmit = async (e: FormEvent) => {
@@ -23,7 +23,7 @@ function ForgotPassword() {
     try {
       setErrorMessage(undefined);
       setSubmitStatus("sending");
-      const token = await new BackendClient().forgotPassword(email);
+      const token = await new BackendClient().forgotPassword(username);
       setSubmitStatus("success");
 
       setTimeout(() => {
@@ -49,30 +49,51 @@ function ForgotPassword() {
 
           {errorMessage && <ErrorMessage message={errorMessage} />}
           {submitStatus === "success" && (
-            <InfoMessage message={t("forgot_password.success", { replace: { email } })} />
+            <InfoMessage
+              message={
+                process.env.NODE_ENV === "production"
+                  ? t("forgot_password.success_username", { replace: { username } })
+                  : t("forgot_password.success_email", { replace: { email: username } })
+              }
+            />
           )}
 
           {submitStatus !== "success" && (
             <>
               <p>
-                <Trans
-                  t={t}
-                  i18nKey="forgot_password.text"
-                  components={[
-                    <Link to="/signup">sign up</Link>,
-                    <Link to="/login">login here</Link>,
-                  ]}
-                />
+                {process.env.NODE_ENV === "production" ? (
+                  <Trans
+                    t={t}
+                    i18nKey="forgot_password.text_username"
+                    components={[
+                      <Link to="/signup">sign up</Link>,
+                      <Link to="/login">login here</Link>,
+                    ]}
+                  />
+                ) : (
+                  <Trans
+                    t={t}
+                    i18nKey="forgot_password.text_email"
+                    components={[
+                      <Link to="/signup">sign up</Link>,
+                      <Link to="/login">login here</Link>,
+                    ]}
+                  />
+                )}
               </p>
 
               <Form role="form" onSubmit={onFormSubmit}>
                 <FormGroup className="mb-4">
                   <Input
-                    placeholder={t("fields.email")}
-                    type="email"
+                    placeholder={
+                      process.env.NODE_ENV === "production"
+                        ? t("fields.username")
+                        : t("fields.email")
+                    }
+                    type={process.env.NODE_ENV === "production" ? "text" : "email"}
                     required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                   />
                 </FormGroup>
                 {submitStatus === "sending" && (
