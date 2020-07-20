@@ -161,25 +161,23 @@ const Verify = () => {
                 }}
               />
             )}
-            {(step === 1 || step === 2 || step === 3) &&
-              process.env.NODE_ENV === "production" &&
-              dummyUserInformation && (
-                <>
-                  <h3 className="h5 mt-4 mb-2">{t("fill_dummy_info")}</h3>
-                  {dummyUserInformation.map((dummyInfo, i) => (
-                    <Button
-                      key={i}
-                      size="sm"
-                      color="dark"
-                      block={true}
-                      outline
-                      onClick={() => setUserInformation(dummyInfo)}
-                    >
-                      {dummyInfo.first_name} {dummyInfo.last_name} ({dummyInfo.country})
-                    </Button>
-                  ))}
-                </>
-              )}
+            {(step === 1 || step === 2 || step === 3) && dummyUserInformation && (
+              <>
+                <h3 className="h5 mt-4 mb-2">{t("choose_dummy_identity")}</h3>
+                {dummyUserInformation.map((dummyInfo, i) => (
+                  <Button
+                    key={i}
+                    size="sm"
+                    color="dark"
+                    block={true}
+                    outline
+                    onClick={() => setUserInformation(dummyInfo)}
+                  >
+                    {dummyInfo.first_name} {dummyInfo.last_name} ({dummyInfo.country})
+                  </Button>
+                ))}
+              </>
+            )}
           </section>
         )}
         {!user && <VerifyLoader />}

@@ -146,6 +146,8 @@ build() {
     docker-compose -f ${COMPOSE_YAML} build  || fail 'docker-compose build failed!'
   elif [ "$build_mode" = "e2e-blind" ]; then
     docker-compose -f ${COMPOSE_YAML} -f ${COMPOSE_E2E_BLIND} build  || fail 'docker-compose build failed!'
+  elif [ "$build_mode" = "dev" ]; then
+    docker-compose -f ${COMPOSE_YAML} -f ${COMPOSE_DEV_YAML} build || fail 'docker-compose build failed!'
   else
     warn "removing old build artifacts..."
     rm -fr "${project_dir}/gateway/tmp/frontend/"
@@ -153,19 +155,20 @@ build() {
     info "build the frontend to a static production package"
     mkdir -p "${project_dir}/gateway/tmp/frontend/"
     warn "done"
+
     info "running docker to compile frontend..."
     docker build -t reference-wallet-frontend-build -f "${project_dir}/frontend/Dockerfile" "${project_dir}/frontend/" || fail 'frontend container build failed!'
     docker create --name tmp_reference_frontend reference-wallet-frontend-build || fail 'frontend compilation failed!'
     docker cp tmp_reference_frontend:/app/build/. "${project_dir}/gateway/tmp/frontend/" || fail 'frontend copy artifacts failed!'
     docker rm tmp_reference_frontend
-    info "frontend build completed"
-    docker-compose -f ${COMPOSE_YAML} -f ${COMPOSE_DEV_YAML} build || fail 'docker-compose build failed!'
-  fi
 
+    info "frontend build completed"
+    docker-compose -f ${COMPOSE_YAML} build || fail 'docker-compose build failed!'
+  fi
 }
 
 start() {
-  build "$@"
+  build $GW_PORT "prod"
   # run
   GW_PORT=$port docker-compose -f ${COMPOSE_YAML} up --detach
   docker-compose -f ${COMPOSE_YAML} logs --follow
