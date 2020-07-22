@@ -9,6 +9,7 @@ services:
   backend-web-server:
     environment:
       COMPOSE_ENV: development
+      ADMIN_LOGIN_ENABLED: 1
     ports:
     - "5000:5000"
     volumes:

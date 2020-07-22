@@ -10,6 +10,7 @@ from uuid import uuid4
 
 from libra_utils.types.currencies import FiatCurrency
 from wallet import storage
+from wallet.config import ADMIN_LOGIN_ENABLED
 from wallet.storage import (
     add_user,
     RegistrationStatus,
@@ -111,6 +112,9 @@ def authorize(
 
     if user.is_blocked:
         return LoginError.UNAUTHORIZED
+
+    if user.is_admin and not ADMIN_LOGIN_ENABLED:
+        return LoginError.ADMIN_DISABLED
 
     if is_correct_password(user, password):
         return LoginError.SUCCESS

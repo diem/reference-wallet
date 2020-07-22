@@ -4,13 +4,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """ The Accounts API layer that handles user creation, information management and updates. """
-
 from datetime import date
 from http import HTTPStatus
 
 from flask import (
     Blueprint,
     request,
+    current_app,
 )
 
 from wallet.services import user as user_service, kyc
@@ -149,6 +149,16 @@ class UserRoutes:
                 )
             elif should_authorize == LoginError.UNAUTHORIZED:
                 return self.respond_with_error(HTTPStatus.UNAUTHORIZED, "Unauthorized")
+            elif should_authorize == LoginError.ADMIN_DISABLED:
+                current_app.logger.warning(
+                    "Admin access is disabled and will be rejected"
+                )
+                current_app.logger.warning(
+                    "Enable admin access in the environment configuration"
+                )
+                return self.respond_with_error(
+                    HTTPStatus.UNAUTHORIZED, "Admin functionality is disabled"
+                )
 
     class SignOut(UserView):
         summary = "Logs user out and invalidates session token"
