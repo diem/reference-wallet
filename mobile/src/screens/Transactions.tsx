@@ -4,18 +4,14 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { Navigation, NavigationComponentProps } from "react-native-navigation";
-import { Button, Text, ThemeConsumer } from "react-native-elements";
+import { Text, ThemeConsumer } from "react-native-elements";
 import { useTranslation } from "react-i18next";
-import { RegistrationStatus } from "../interfaces/user";
 import { userContext, withUserContext } from "../contexts/user";
 import { accountContext, withAccountContext } from "../contexts/account";
 import ScreenLayout from "../components/ScreenLayout";
-import VerifyingMessage from "../components/VerifyingMessage";
 import { appTheme } from "../styles";
 import { ratesContext, withRatesContext } from "../contexts/rates";
-import TotalBalance from "../components/TotalBalance";
 import BackendClient from "../services/backendClient";
-import BalancesList from "../components/BalancesList";
 import SessionStorage from "../services/sessionStorage";
 import { Transaction, TransactionDirection } from "../interfaces/transaction";
 import TransactionsList from "../components/TransactionsList";
@@ -98,29 +94,37 @@ function Transactions({ componentId }: NavigationComponentProps) {
               <>
                 <View style={theme.SmallContainer}>
                   <Text style={theme.SubTitle}>{t("all_transactions")}</Text>
-                </View>
 
-                <View
-                  style={StyleSheet.flatten([theme.Section, theme.ButtonsGroup.containerStyle])}
-                >
-                  <SelectDropdown
-                    label={t("all_currencies")}
-                    value={libraCurrency}
-                    options={libraCurrenciesOptions()}
-                    onChange={(val) => setLibraCurrency(val)}
-                  />
-                  <SelectDropdown
-                    label={t("all_transactions")}
-                    value={direction}
-                    options={transactionDirectionsOptions()}
-                    onChange={(val) => setDirection(val)}
-                  />
-                  <SelectDropdown
-                    label={t("all_sorts")}
-                    value={sorting}
-                    options={transactionSortingOptions()}
-                    onChange={(val) => setSorting(val as string)}
-                  />
+                  <View
+                    style={StyleSheet.flatten([theme.Section, theme.ButtonsGroup.containerStyle])}
+                  >
+                    <View style={theme.ButtonsGroup.buttonStyle}>
+                      <SelectDropdown
+                        label={t("all_currencies")}
+                        value={libraCurrency}
+                        options={libraCurrenciesOptions()}
+                        onChange={(val) => setLibraCurrency(val)}
+                      />
+                    </View>
+
+                    <View style={theme.ButtonsGroup.buttonStyle}>
+                      <SelectDropdown
+                        label={t("all_transactions")}
+                        value={direction}
+                        options={transactionDirectionsOptions()}
+                        onChange={(val) => setDirection(val)}
+                      />
+                    </View>
+
+                    <View style={theme.ButtonsGroup.buttonStyle}>
+                      <SelectDropdown
+                        label={t("all_sorts")}
+                        value={sorting}
+                        options={transactionSortingOptions()}
+                        onChange={(val) => setSorting(val as string)}
+                      />
+                    </View>
+                  </View>
                 </View>
 
                 {!!transactions.length && (
