@@ -119,9 +119,7 @@ function Withdraw({ componentId }: NavigationComponentProps) {
                 </Text>
 
                 <View style={theme.Section}>
-                  <Text style={{ textTransform: "capitalize" }}>
-                    {t("withdraw.form.funding_source")}
-                  </Text>
+                  <Text>{t("withdraw.form.funding_source")}</Text>
                   <Controller
                     control={control}
                     name="fundingSource"
@@ -144,7 +142,7 @@ function Withdraw({ componentId }: NavigationComponentProps) {
                 </View>
 
                 <View style={theme.Section}>
-                  <Text style={{ textTransform: "capitalize" }}>{t("withdraw.form.currency")}</Text>
+                  <Text>{t("withdraw.form.currency")}</Text>
                   <Controller
                     control={control}
                     name="libraCurrency"
@@ -170,7 +168,7 @@ function Withdraw({ componentId }: NavigationComponentProps) {
                   style={StyleSheet.flatten([theme.Section, theme.ButtonsGroup.containerStyle])}
                 >
                   <View style={theme.ButtonsGroup.buttonStyle}>
-                    <Text style={{ textTransform: "capitalize" }}>{t("withdraw.form.amount")}</Text>
+                    <Text>{t("withdraw.form.amount")}</Text>
                     <Controller
                       control={control}
                       name="libraAmount"
@@ -219,7 +217,7 @@ function Withdraw({ componentId }: NavigationComponentProps) {
                   </View>
 
                   <View style={theme.ButtonsGroup.buttonStyle}>
-                    <Text style={{ textTransform: "capitalize" }}>{t("withdraw.form.price")}</Text>
+                    <Text>{t("withdraw.form.price")}</Text>
                     <Input
                       ref={priceRef}
                       keyboardType="numeric"
@@ -262,9 +260,7 @@ function Withdraw({ componentId }: NavigationComponentProps) {
 
                 {libraCurrency && fiatCurrency && (
                   <View style={theme.Section}>
-                    <Text style={{ textTransform: "capitalize" }}>
-                      {t("withdraw.form.exchange_rate")}
-                    </Text>
+                    <Text>{t("withdraw.form.exchange_rate")}</Text>
                     <Text>
                       1 {libraCurrency.sign} = {fiatToHumanFriendlyRate(exchangeRate)}{" "}
                       {fiatCurrency.symbol}

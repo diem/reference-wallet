@@ -24,4 +24,5 @@ export interface Transaction {
   amount: number;
   blockchain_tx?: BlockchainTransaction;
   timestamp: string;
+  is_internal: boolean;
 }

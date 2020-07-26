@@ -121,12 +121,19 @@ function SingleTransaction({
                         </View>
                       </View>
 
-                      {transaction.blockchain_tx && (
-                        <View style={theme.Section}>
-                          <Text>{t("tx_id")}</Text>
-                          <ExplorerLink blockchainTx={transaction.blockchain_tx} />
-                        </View>
-                      )}
+                      <View style={theme.Section}>
+                        <Text>{t("tx_id")}</Text>
+
+                        {transaction.is_internal && (
+                          <Text style={{ color: "#000000" }}>{t("internal")}</Text>
+                        )}
+                        {!transaction.is_internal &&
+                          (transaction.blockchain_tx && transaction.blockchain_tx.version ? (
+                            <ExplorerLink blockchainTx={transaction.blockchain_tx!} />
+                          ) : (
+                            <Text style={{ color: "#000000" }}>{t("not_available")}</Text>
+                          ))}
+                      </View>
                     </View>
                   );
                 })()}

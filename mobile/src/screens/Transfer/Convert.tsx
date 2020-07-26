@@ -110,9 +110,7 @@ function Convert({ componentId }: NavigationComponentProps) {
                 </Text>
 
                 <View style={theme.Section}>
-                  <Text style={{ textTransform: "capitalize" }}>
-                    {t("convert.form.currency_from")}
-                  </Text>
+                  <Text>{t("convert.form.currency_from")}</Text>
                   <Controller
                     control={control}
                     name="fromLibraCurrency"
@@ -135,9 +133,7 @@ function Convert({ componentId }: NavigationComponentProps) {
                 </View>
 
                 <View style={theme.Section}>
-                  <Text style={{ textTransform: "capitalize" }}>
-                    {t("convert.form.currency_to")}
-                  </Text>
+                  <Text>{t("convert.form.currency_to")}</Text>
                   <Controller
                     control={control}
                     name="toLibraCurrency"
@@ -163,7 +159,7 @@ function Convert({ componentId }: NavigationComponentProps) {
                   style={StyleSheet.flatten([theme.Section, theme.ButtonsGroup.containerStyle])}
                 >
                   <View style={theme.ButtonsGroup.buttonStyle}>
-                    <Text style={{ textTransform: "capitalize" }}>{t("convert.form.amount")}</Text>
+                    <Text>{t("convert.form.amount")}</Text>
                     <Controller
                       control={control}
                       name="libraAmount"
@@ -212,7 +208,7 @@ function Convert({ componentId }: NavigationComponentProps) {
                   </View>
 
                   <View style={theme.ButtonsGroup.buttonStyle}>
-                    <Text style={{ textTransform: "capitalize" }}>{t("convert.form.price")}</Text>
+                    <Text>{t("convert.form.price")}</Text>
                     <Input
                       ref={priceRef}
                       keyboardType="numeric"
@@ -237,9 +233,7 @@ function Convert({ componentId }: NavigationComponentProps) {
 
                 {fromLibraCurrency && toLibraCurrency && (
                   <View style={theme.Section}>
-                    <Text style={{ textTransform: "capitalize" }}>
-                      {t("convert.form.exchange_rate")}
-                    </Text>
+                    <Text>{t("convert.form.exchange_rate")}</Text>
                     <Text>
                       1 {fromLibraCurrency.sign} = {libraToHumanFriendly(exchangeRate)}{" "}
                       {toLibraCurrency.sign}

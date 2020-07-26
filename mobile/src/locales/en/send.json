@@ -6,7 +6,7 @@
     "libraCurrency": "currency",
     "libraCurrency_placeholder": "Select a currency",
     "fiatCurrency": "fiat currency",
-    "amount": "amount",
+    "amount": "Amount",
     "price": "currently equal to",
     "address": "recipient",
     "address_placeholder": "Enter an address",

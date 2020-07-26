@@ -119,9 +119,7 @@ function Deposit({ componentId }: NavigationComponentProps) {
                 </Text>
 
                 <View style={theme.Section}>
-                  <Text style={{ textTransform: "capitalize" }}>
-                    {t("deposit.form.funding_source")}
-                  </Text>
+                  <Text>{t("deposit.form.funding_source")}</Text>
                   <Controller
                     control={control}
                     name="fundingSource"
@@ -144,7 +142,7 @@ function Deposit({ componentId }: NavigationComponentProps) {
                 </View>
 
                 <View style={theme.Section}>
-                  <Text style={{ textTransform: "capitalize" }}>{t("deposit.form.currency")}</Text>
+                  <Text>{t("deposit.form.currency")}</Text>
                   <Controller
                     control={control}
                     name="libraCurrency"
@@ -170,7 +168,7 @@ function Deposit({ componentId }: NavigationComponentProps) {
                   style={StyleSheet.flatten([theme.Section, theme.ButtonsGroup.containerStyle])}
                 >
                   <View style={theme.ButtonsGroup.buttonStyle}>
-                    <Text style={{ textTransform: "capitalize" }}>{t("deposit.form.amount")}</Text>
+                    <Text>{t("deposit.form.amount")}</Text>
                     <Controller
                       control={control}
                       name="libraAmount"
@@ -201,7 +199,7 @@ function Deposit({ componentId }: NavigationComponentProps) {
                   </View>
 
                   <View style={theme.ButtonsGroup.buttonStyle}>
-                    <Text style={{ textTransform: "capitalize" }}>{t("deposit.form.price")}</Text>
+                    <Text>{t("deposit.form.price")}</Text>
                     <Input
                       ref={priceRef}
                       keyboardType="numeric"
