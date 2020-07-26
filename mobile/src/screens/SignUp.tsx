@@ -20,6 +20,7 @@ import { isProd } from "../../index";
 interface SignUpForm {
   username: string;
   password: string;
+  agreed_tou: boolean;
 }
 
 type SubmitStatuses = "edit" | "sending" | "fail" | "success";
@@ -27,11 +28,10 @@ type SubmitStatuses = "edit" | "sending" | "fail" | "success";
 function SignUp({ componentId }: NavigationComponentProps) {
   const { t } = useTranslation("auth");
 
-  const { errors, handleSubmit, control, watch } = useForm<SignUpForm>({
-    defaultValues: { username: "", password: "" },
+  const { errors, handleSubmit, control, watch, setValue } = useForm<SignUpForm>({
+    defaultValues: { username: "", password: "", agreed_tou: false },
   });
-  const [agreedTerms, setAgreedTerms] = useState(false);
-  const { username, password } = watch();
+  const { username, password, agreed_tou } = watch();
 
   const [errorMessage, setErrorMessage] = useState<string>();
   const [submitStatus, setSubmitStatus] = useState<SubmitStatuses>("edit");
@@ -181,26 +181,50 @@ function SignUp({ componentId }: NavigationComponentProps) {
             )}
 
             <View style={theme.Section}>
-              <CheckBox
-                checked={agreedTerms}
-                uncheckedIcon="square"
-                checkedIcon="check-square"
-                title={
-                  <Text style={theme.CheckBoxText}>
-                    <Trans t={t} i18nKey="fields.agree_terms">
-                      <Text
-                        style={theme.PrimaryLink}
-                        onPress={() => {
-                          Linking.openURL("http://google.com");
-                        }}
-                      >
-                        Terms and Conditions
-                      </Text>
-                    </Trans>
-                  </Text>
-                }
-                onPress={() => setAgreedTerms(!agreedTerms)}
+              <Controller
+                control={control}
+                name="agreed_tou"
+                rules={{
+                  required: t<string>("validations:required", {
+                    replace: {
+                      field: t("fields.agree_terms", {
+                        replace: [],
+                      }),
+                    },
+                  }),
+                }}
+                valueName="checked"
+                onChangeName="onPress"
+                as={(props) => {
+                  return (
+                    <CheckBox
+                      {...props}
+                      uncheckedIcon="square"
+                      checkedIcon="check-square"
+                      title={
+                        <Text style={theme.CheckBoxText}>
+                          <Trans t={t} i18nKey="fields.agree_terms">
+                            <Text
+                              style={theme.PrimaryLink}
+                              onPress={() => {
+                                Linking.openURL("http://google.com");
+                              }}
+                            >
+                              Terms and Conditions
+                            </Text>
+                          </Trans>
+                        </Text>
+                      }
+                      onPress={() => {
+                        setValue("agreed_tou", !agreed_tou);
+                      }}
+                    />
+                  );
+                }}
               />
+              {!!errors.agreed_tou && (
+                <InputErrorMessage message={errors.agreed_tou.message as string} />
+              )}
             </View>
             <Button title={t("signup.submit")} onPress={handleSubmit(onFormSubmit)} />
           </View>
