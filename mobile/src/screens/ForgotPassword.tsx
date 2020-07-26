@@ -14,9 +14,10 @@ import { BackendError } from "../services/errors";
 import ErrorMessage from "../components/Messages/ErrorMessage";
 import InfoMessage from "../components/Messages/InfoMessage";
 import InputErrorMessage from "../components/InputErrorMessage";
+import { isProd } from "../../index";
 
 interface ForgotPasswordForm {
-  email: string;
+  username: string;
 }
 
 type SubmitStatuses = "edit" | "sending" | "fail" | "success";
@@ -28,11 +29,11 @@ function ForgotPassword({ componentId }: NavigationComponentProps) {
   const [errorMessage, setErrorMessage] = useState<string>();
   const [submitStatus, setSubmitStatus] = useState<SubmitStatuses>("edit");
 
-  async function onFormSubmit({ email }: ForgotPasswordForm) {
+  async function onFormSubmit({ username }: ForgotPasswordForm) {
     try {
       setErrorMessage(undefined);
       setSubmitStatus("sending");
-      const token = await new BackendClient().forgotPassword(email);
+      const token = await new BackendClient().forgotPassword(username);
       setSubmitStatus("success");
 
       setTimeout(() => {
@@ -64,14 +65,20 @@ function ForgotPassword({ componentId }: NavigationComponentProps) {
             {errorMessage && <ErrorMessage message={errorMessage} />}
             {submitStatus === "success" && (
               <InfoMessage
-                message={t("forgot_password.success", { replace: { email: watch("email") } })}
+                message={
+                  isProd
+                    ? t("forgot_password.success_username", {
+                        replace: { username: watch("username") },
+                      })
+                    : t("forgot_password.success_email", { replace: { email: watch("email") } })
+                }
               />
             )}
 
             <Text style={theme.Section}>
               <Trans
                 t={t}
-                i18nKey="forgot_password.text"
+                i18nKey={isProd ? "forgot_password.text_username" : "forgot_password.text_email"}
                 components={[
                   <Text
                     style={theme.PrimaryLink}
@@ -99,23 +106,29 @@ function ForgotPassword({ componentId }: NavigationComponentProps) {
             <View style={theme.Section}>
               <Controller
                 control={control}
-                name="email"
+                name="username"
                 rules={{
                   required: t<string>("validations:required", {
-                    replace: { field: t("fields.email") },
+                    replace: { field: isProd ? t("fields.username") : t("fields.email") },
                   }),
                 }}
                 onChangeName="onChangeText"
                 as={
-                  <Input
-                    autoCompleteType="email"
-                    keyboardType="email-address"
-                    placeholder={t("fields.email")}
-                    renderErrorMessage={false}
-                  />
+                  isProd ? (
+                    <Input placeholder={t("fields.username")} renderErrorMessage={false} />
+                  ) : (
+                    <Input
+                      autoCompleteType="email"
+                      keyboardType="email-address"
+                      placeholder={t("fields.email")}
+                      renderErrorMessage={false}
+                    />
+                  )
                 }
               />
-              {!!errors.email && <InputErrorMessage message={errors.email.message as string} />}
+              {!!errors.username && (
+                <InputErrorMessage message={errors.username.message as string} />
+              )}
             </View>
             <Button title={t("forgot_password.submit")} onPress={handleSubmit(onFormSubmit)} />
           </View>

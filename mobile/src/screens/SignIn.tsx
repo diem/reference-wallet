@@ -15,6 +15,7 @@ import { BackendError } from "../services/errors";
 import ScreenLayout from "../components/ScreenLayout";
 import ErrorMessage from "../components/Messages/ErrorMessage";
 import InputErrorMessage from "../components/InputErrorMessage";
+import { isProd } from "../../index";
 
 interface SignInForm {
   username: string;
@@ -89,11 +90,22 @@ function SignIn({ componentId }: NavigationComponentProps) {
                 name="username"
                 rules={{
                   required: t<string>("validations:required", {
-                    replace: { field: t("fields.username") },
+                    replace: { field: isProd ? t("fields.username") : t("fields.email") },
                   }),
                 }}
                 onChangeName="onChangeText"
-                as={<Input placeholder={t("fields.username")} renderErrorMessage={false} />}
+                as={
+                  isProd ? (
+                    <Input placeholder={t("fields.username")} renderErrorMessage={false} />
+                  ) : (
+                    <Input
+                      autoCompleteType="email"
+                      keyboardType="email-address"
+                      placeholder={t("fields.email")}
+                      renderErrorMessage={false}
+                    />
+                  )
+                }
               />
               {!!errors.username && (
                 <InputErrorMessage message={errors.username.message as string} />

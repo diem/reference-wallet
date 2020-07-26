@@ -117,7 +117,7 @@ function SignUp({ componentId }: NavigationComponentProps) {
                 name="username"
                 rules={{
                   required: t<string>("validations:required", {
-                    replace: { field: t("fields.email") },
+                    replace: { field: isProd ? t("fields.username") : t("fields.email") },
                   }),
                 }}
                 onChangeName="onChangeText"
