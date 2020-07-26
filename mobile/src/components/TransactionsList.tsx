@@ -75,7 +75,7 @@ function TransactionsList({
     return (
       <Text style={{ color: "#000000" }}>
         {transaction.direction === "received" ? "+" : "-"}{" "}
-        {libraToHumanFriendly(transaction.amount)} {libraCurrency.sign}
+        {libraToHumanFriendly(transaction.amount, true)} {libraCurrency.sign}
       </Text>
     );
   };
@@ -89,7 +89,7 @@ function TransactionsList({
     return (
       <Text style={{ fontSize: 14 }}>
         {fiatCurrency.sign}
-        {fiatToHumanFriendly(price)} {fiatCurrency.symbol}
+        {fiatToHumanFriendly(price, true)} {fiatCurrency.symbol}
       </Text>
     );
   };

@@ -34,7 +34,7 @@ function TotalBalance({ balances, fiatCurrencyCode, rates }: TotalBalanceProps) 
         <View style={{ ...theme.Section, alignItems: "center" }}>
           <Text style={theme.Title}>
             {fiatCurrency.sign}
-            {fiatToHumanFriendly(totalFiatBalance)} {fiatCurrency.symbol}
+            {fiatToHumanFriendly(totalFiatBalance, true)} {fiatCurrency.symbol}
           </Text>
           <Text>{t("total_balance")}</Text>
         </View>
