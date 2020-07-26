@@ -20,6 +20,8 @@ import SessionStorage from "../services/sessionStorage";
 
 export const LIBRA_ADDR_PROTOCOL_PREFIX = "libra://";
 
+const Logo = require("../assets/logo.png");
+
 interface ReceiveProps {
   currency?: LibraCurrency;
 }
@@ -90,21 +92,21 @@ function Receive({ currency, componentId }: ReceiveProps & NavigationComponentPr
                   <Text>{t("text")}</Text>
                 </View>
 
-                <View style={{ alignItems: "center" }}>
+                <View style={StyleSheet.flatten([theme.Section, { alignItems: "center" }])}>
                   <QRCode
                     value={receivingAddress}
                     size={200}
-                    logo={require("../assets/logo.png")}
+                    logo={Logo}
                     logoBackgroundColor="white"
                   />
                   <Text style={{ textAlign: "center", fontSize: 12 }}>{addressWithIntents}</Text>
-                  <Button
-                    title={t("copy")}
-                    onPress={() => {
-                      Clipboard.setString(addressWithIntents);
-                    }}
-                  />
                 </View>
+                <Button
+                  title={t("copy")}
+                  onPress={() => {
+                    Clipboard.setString(addressWithIntents);
+                  }}
+                />
               </View>
             ) : (
               <ActivityIndicator size="large" />
