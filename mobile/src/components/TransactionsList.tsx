@@ -9,6 +9,7 @@ import { View } from "react-native";
 import { fiatCurrencies, libraCurrencies } from "../currencies";
 import { fiatToHumanFriendly, libraToFloat, libraToHumanFriendly } from "../utils/amount-precision";
 import { useTranslation } from "react-i18next";
+import { shortenLibraAddress } from "../utils/shorten-address";
 
 const STATUS_COLORS: { [key in TransactionStatus]: BadgeProps["status"] } = {
   completed: "success",
@@ -36,28 +37,28 @@ function TransactionsList({
   const TXExternalReceived = ({ transaction }: { transaction: Transaction }) => (
     <Text style={{ color: "#000000" }}>
       <Text style={{ fontWeight: "bold", color: "#000000" }}>{t("received")}</Text> {t("from")}{" "}
-      {transaction.source.full_addr}
+      {shortenLibraAddress(transaction.source.full_addr)}
     </Text>
   );
 
   const TXExternalSent = ({ transaction }: { transaction: Transaction }) => (
     <Text style={{ color: "#000000" }}>
       <Text style={{ fontWeight: "bold", color: "#000000" }}>{t("sent")}</Text> {t("to")}{" "}
-      {transaction.destination.full_addr}
+      {shortenLibraAddress(transaction.destination.full_addr)}
     </Text>
   );
 
   const TXInternalReceived = ({ transaction }: { transaction: Transaction }) => (
     <Text style={{ color: "#000000" }}>
       <Text style={{ fontWeight: "bold", color: "#000000" }}>{t("received")}</Text> {t("from")}{" "}
-      {transaction.source.full_addr}
+      {shortenLibraAddress(transaction.source.full_addr)}
     </Text>
   );
 
   const TXInternalSent = ({ transaction }: { transaction: Transaction }) => (
     <Text style={{ color: "#000000" }}>
       <Text style={{ fontWeight: "bold", color: "#000000" }}>{t("sent")}</Text> {t("to")}{" "}
-      {transaction.destination.full_addr}
+      {shortenLibraAddress(transaction.destination.full_addr)}
     </Text>
   );
 
