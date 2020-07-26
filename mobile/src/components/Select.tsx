@@ -4,8 +4,9 @@
 import React from "react";
 import { ThemeConsumer } from "react-native-elements";
 import RNPickerSelect from "react-native-picker-select";
-
 import { appTheme } from "../styles";
+// @ts-ignore
+import Chevron from "../assets/chevron.svg";
 
 type Values = Record<string | number, string | undefined> | Array<string>;
 
@@ -50,6 +51,7 @@ function SelectDropdown<V extends Values = {}>({
               label: options[option as keyof V] as string,
               value: option,
             }))}
+            Icon={() => <Chevron />}
           />
         </>
       )}

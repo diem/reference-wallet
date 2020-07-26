@@ -28,6 +28,8 @@ import {
   normalizeLibra,
 } from "../../utils/amount-precision";
 import InputErrorMessage from "../../components/InputErrorMessage";
+// @ts-ignore
+import ScanQR from "../../assets/scan-qr.svg";
 
 const VALID_VASP_ADDRESS_REGEX = new RegExp("^[a-zA-Z0-9]{50}$");
 const LIBRA_PREFIX = "libra://";
@@ -209,19 +211,20 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
                           const value = e.nativeEvent.text;
                           setAddressAndIntents(value);
                         }}
-                        rightIcon={{
-                          name: "camera",
-                          onPress: () => {
-                            Navigation.push(componentId, {
-                              component: {
-                                name: "SendScanQR",
-                                passProps: {
-                                  callback: setAddressAndIntents,
+                        rightIcon={
+                          <ScanQR
+                            onPress={() => {
+                              Navigation.push(componentId, {
+                                component: {
+                                  name: "SendScanQR",
+                                  passProps: {
+                                    callback: setAddressAndIntents,
+                                  },
                                 },
-                              },
-                            });
-                          },
-                        }}
+                              });
+                            }}
+                          />
+                        }
                       />
                     }
                   />

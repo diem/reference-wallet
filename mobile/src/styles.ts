@@ -163,7 +163,6 @@ export const appTheme: AppTheme = {
     rightIconContainerStyle: {
       height: undefined,
       paddingLeft: 0,
-      paddingRight: 8,
       marginVertical: 0,
       marginRight: 8,
     },
@@ -174,14 +173,18 @@ export const appTheme: AppTheme = {
   },
   SelectDropdown: {
     selectStyle: {
+      viewContainer: {
+        backgroundColor: "#eff1f3",
+        borderRadius: 8,
+      },
       placeholder: {
         color: "#75767f",
         fontSize: 16,
         lineHeight: 18,
       },
-      viewContainer: {
-        backgroundColor: "#eff1f3",
-        borderRadius: 8,
+      iconContainer: {
+        top: 20,
+        right: 16,
       },
       inputAndroidContainer: {
         padding: 0,
@@ -205,22 +208,27 @@ export const appTheme: AppTheme = {
       },
     },
     selectNoStyle: {
-      viewContainer: {},
+      headlessAndroidContainer: {},
       placeholder: {
         color: "#75767f",
         fontSize: 16,
         lineHeight: 18,
+      },
+      iconContainer: {
+        top: 20,
       },
       inputAndroid: {
         height: 48,
         fontSize: 16,
         lineHeight: 18,
         color: "#000000",
+        paddingRight: 16,
       },
       inputIOS: {
         fontSize: 16,
         lineHeight: 18,
         color: "#000000",
+        paddingRight: 16,
       },
     },
   },
