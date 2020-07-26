@@ -166,70 +166,80 @@ function Deposit({ componentId }: NavigationComponentProps) {
                   )}
                 </View>
 
-                <View style={theme.Section}>
-                  <Text style={{ textTransform: "capitalize" }}>{t("deposit.form.amount")}</Text>
-                  <Controller
-                    control={control}
-                    name="libraAmount"
-                    rules={{
-                      required: t<string>("validations:required", {
-                        replace: { field: t("deposit.form.amount") },
-                      }),
-                    }}
-                    onChangeName="onChangeText"
-                    as={
-                      <Input
-                        keyboardType="numeric"
-                        placeholder={t("deposit.form.amount")}
-                        renderErrorMessage={false}
-                        rightIcon={<Text>{libraCurrency?.sign}</Text>}
-                      />
-                    }
-                  />
-                  {!!errors.libraAmount && (
-                    <InputErrorMessage message={errors.libraAmount.message as string} />
-                  )}
-                </View>
-
-                <View style={theme.Section}>
-                  <Text style={{ textTransform: "capitalize" }}>{t("deposit.form.price")}</Text>
-                  <Input
-                    ref={priceRef}
-                    keyboardType="numeric"
-                    value={
-                      libraAmount ? fiatToHumanFriendly(calcPrice(parseFloat(libraAmount))) : ""
-                    }
-                    onChangeText={(price) => {
-                      if (priceRef.current && priceRef.current.isFocused()) {
-                        const newPrice = fiatFromFloat(parseFloat(price));
-                        const amount = normalizeLibra(calcAmount(newPrice));
-                        setValue("libraAmount", amount.toString());
-                      }
-                    }}
-                    rightIcon={
-                      <Controller
-                        control={control}
-                        name="fiatCurrency"
-                        defaultValue={fiatCurrency.symbol}
-                        rules={{
-                          required: t<string>("validations:required", {
-                            replace: { field: t("deposit.form.fiatCurrency") },
+                <View
+                  style={StyleSheet.flatten([theme.Section, theme.ButtonsGroup.containerStyle])}
+                >
+                  <View style={theme.ButtonsGroup.buttonStyle}>
+                    <Text style={{ textTransform: "capitalize" }}>{t("deposit.form.amount")}</Text>
+                    <Controller
+                      control={control}
+                      name="libraAmount"
+                      rules={{
+                        required: t<string>("validations:required", {
+                          replace: { field: t("deposit.form.amount") },
+                        }),
+                        min: {
+                          value: 1,
+                          message: t<string>("validations:min", {
+                            replace: { field: t("deposit.form.amount"), min: 1 },
                           }),
-                        }}
-                        onChangeName="onChange"
-                        as={
-                          <SelectDropdown
-                            label={t("deposit.form.currency_placeholder")}
-                            options={fiatCurrenciesOptions()}
-                            disableStyles={true}
-                          />
+                        },
+                      }}
+                      onChangeName="onChangeText"
+                      as={
+                        <Input
+                          keyboardType="numeric"
+                          placeholder={t("deposit.form.amount")}
+                          renderErrorMessage={false}
+                          rightIcon={<Text>{libraCurrency?.sign}</Text>}
+                        />
+                      }
+                    />
+                    {!!errors.libraAmount && (
+                      <InputErrorMessage message={errors.libraAmount.message as string} />
+                    )}
+                  </View>
+
+                  <View style={theme.ButtonsGroup.buttonStyle}>
+                    <Text style={{ textTransform: "capitalize" }}>{t("deposit.form.price")}</Text>
+                    <Input
+                      ref={priceRef}
+                      keyboardType="numeric"
+                      value={
+                        libraAmount ? fiatToHumanFriendly(calcPrice(parseFloat(libraAmount))) : ""
+                      }
+                      onChangeText={(price) => {
+                        if (priceRef.current && priceRef.current.isFocused()) {
+                          const newPrice = fiatFromFloat(parseFloat(price));
+                          const amount = normalizeLibra(calcAmount(newPrice));
+                          setValue("libraAmount", amount.toString());
                         }
-                      />
-                    }
-                  />
-                  {!!errors.fiatCurrency && (
-                    <InputErrorMessage message={errors.fiatCurrency.message as string} />
-                  )}
+                      }}
+                      rightIcon={
+                        <Controller
+                          control={control}
+                          name="fiatCurrency"
+                          defaultValue={fiatCurrency.symbol}
+                          rules={{
+                            required: t<string>("validations:required", {
+                              replace: { field: t("deposit.form.fiatCurrency") },
+                            }),
+                          }}
+                          onChangeName="onChange"
+                          as={
+                            <SelectDropdown
+                              label={t("deposit.form.currency_placeholder")}
+                              options={fiatCurrenciesOptions()}
+                              disableStyles={true}
+                            />
+                          }
+                        />
+                      }
+                    />
+                    {!!errors.fiatCurrency && (
+                      <InputErrorMessage message={errors.fiatCurrency.message as string} />
+                    )}
+                  </View>
                 </View>
 
                 {libraCurrency && fiatCurrency && (

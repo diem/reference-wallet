@@ -23,6 +23,7 @@ import {
   fiatFromFloat,
   fiatToHumanFriendly,
   fiatToHumanFriendlyRate,
+  libraFromFloat,
   libraToFloat,
   normalizeLibra,
 } from "../../utils/amount-precision";
@@ -229,73 +230,100 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
                   )}
                 </View>
 
-                <View style={theme.Section}>
-                  <Text style={{ textTransform: "capitalize" }}>{t("form.amount")}</Text>
-                  <Controller
-                    control={control}
-                    name="libraAmount"
-                    rules={{
-                      required: t<string>("validations:required", {
-                        replace: { field: t("form.amount") },
-                      }),
-                    }}
-                    onChangeName="onChangeText"
-                    as={
-                      <Input
-                        disabled={!libraCurrency || !fiatCurrency}
-                        keyboardType="numeric"
-                        placeholder={t("form.amount")}
-                        renderErrorMessage={false}
-                        rightIcon={<Text>{libraCurrency?.sign}</Text>}
-                      />
-                    }
-                  />
-                  {!!errors.libraAmount && (
-                    <InputErrorMessage message={errors.libraAmount.message as string} />
-                  )}
-                </View>
-
-                <View style={theme.Section}>
-                  <Text style={{ textTransform: "capitalize" }}>{t("form.price")}</Text>
-                  <Input
-                    ref={priceRef}
-                    disabled={!libraCurrency || !fiatCurrency}
-                    keyboardType="numeric"
-                    renderErrorMessage={false}
-                    value={
-                      libraAmount ? fiatToHumanFriendly(calcPrice(parseFloat(libraAmount))) : ""
-                    }
-                    onChangeText={(price) => {
-                      if (priceRef.current && priceRef.current.isFocused()) {
-                        const newPrice = fiatFromFloat(parseFloat(price));
-                        const amount = normalizeLibra(calcAmount(newPrice));
-                        setValue("libraAmount", amount.toString());
-                      }
-                    }}
-                    rightIcon={
-                      <Controller
-                        control={control}
-                        name="fiatCurrency"
-                        defaultValue={fiatCurrency.symbol}
-                        rules={{
-                          required: t<string>("validations:required", {
-                            replace: { field: t("form.fiatCurrency") },
+                <View
+                  style={StyleSheet.flatten([theme.Section, theme.ButtonsGroup.containerStyle])}
+                >
+                  <View style={theme.ButtonsGroup.buttonStyle}>
+                    <Text style={{ textTransform: "capitalize" }}>{t("form.amount")}</Text>
+                    <Controller
+                      control={control}
+                      name="libraAmount"
+                      rules={{
+                        required: t<string>("validations:required", {
+                          replace: { field: t("form.amount") },
+                        }),
+                        min: {
+                          value: 0.0001,
+                          message: t<string>("validations:min", {
+                            replace: { field: t("form.amount"), min: 0.0001 },
                           }),
-                        }}
-                        onChangeName="onChange"
-                        as={
-                          <SelectDropdown
-                            label={t("form.fiatCurrency")}
-                            options={fiatCurrenciesOptions()}
-                            disableStyles={true}
-                          />
+                        },
+                        validate: (enteredAmount: number) => {
+                          const selectedLibraCurrency = watch("libraCurrency");
+
+                          if (selectedLibraCurrency) {
+                            const selectedCurrencyBalance = account!.balances.find(
+                              (balance) => balance.currency === selectedLibraCurrency
+                            )!;
+                            if (libraFromFloat(enteredAmount) > selectedCurrencyBalance.balance) {
+                              return t("validations:noMoreThanBalance", {
+                                replace: {
+                                  field: t("form.amount"),
+                                  currency: selectedCurrencyBalance.currency,
+                                },
+                              })!;
+                            }
+                          }
+                          return true;
+                        },
+                      }}
+                      onChangeName="onChangeText"
+                      as={
+                        <Input
+                          keyboardType="numeric"
+                          placeholder={t("form.amount")}
+                          renderErrorMessage={false}
+                          rightIcon={<Text>{libraCurrency?.sign}</Text>}
+                        />
+                      }
+                    />
+                    {!!errors.libraAmount && (
+                      <InputErrorMessage message={errors.libraAmount.message as string} />
+                    )}
+                  </View>
+
+                  <View style={theme.ButtonsGroup.buttonStyle}>
+                    <Text style={{ textTransform: "capitalize" }}>{t("form.price")}</Text>
+                    <Input
+                      ref={priceRef}
+                      disabled={!libraCurrency || !fiatCurrency}
+                      keyboardType="numeric"
+                      renderErrorMessage={false}
+                      value={
+                        libraAmount ? fiatToHumanFriendly(calcPrice(parseFloat(libraAmount))) : ""
+                      }
+                      onChangeText={(price) => {
+                        if (priceRef.current && priceRef.current.isFocused()) {
+                          const newPrice = fiatFromFloat(parseFloat(price));
+                          const amount = normalizeLibra(calcAmount(newPrice));
+                          setValue("libraAmount", amount.toString());
                         }
-                      />
-                    }
-                  />
-                  {!!errors.fiatCurrency && (
-                    <InputErrorMessage message={errors.fiatCurrency.message as string} />
-                  )}
+                      }}
+                      rightIcon={
+                        <Controller
+                          control={control}
+                          name="fiatCurrency"
+                          defaultValue={fiatCurrency.symbol}
+                          rules={{
+                            required: t<string>("validations:required", {
+                              replace: { field: t("form.fiatCurrency") },
+                            }),
+                          }}
+                          onChangeName="onChange"
+                          as={
+                            <SelectDropdown
+                              label={t("form.fiatCurrency")}
+                              options={fiatCurrenciesOptions()}
+                              disableStyles={true}
+                            />
+                          }
+                        />
+                      }
+                    />
+                    {!!errors.fiatCurrency && (
+                      <InputErrorMessage message={errors.fiatCurrency.message as string} />
+                    )}
+                  </View>
                 </View>
 
                 {libraCurrency && fiatCurrency && (

@@ -159,52 +159,80 @@ function Convert({ componentId }: NavigationComponentProps) {
                   )}
                 </View>
 
-                <View style={theme.Section}>
-                  <Text style={{ textTransform: "capitalize" }}>{t("convert.form.amount")}</Text>
-                  <Controller
-                    control={control}
-                    name="libraAmount"
-                    rules={{
-                      required: t<string>("validations:required", {
-                        replace: { field: t("convert.form.amount") },
-                      }),
-                    }}
-                    onChangeName="onChangeText"
-                    as={
-                      <Input
-                        keyboardType="numeric"
-                        placeholder={t("convert.form.amount")}
-                        renderErrorMessage={false}
-                        rightIcon={<Text>{fromLibraCurrency?.sign}</Text>}
-                      />
-                    }
-                  />
-                  {!!errors.libraAmount && (
-                    <InputErrorMessage message={errors.libraAmount.message as string} />
-                  )}
-                </View>
+                <View
+                  style={StyleSheet.flatten([theme.Section, theme.ButtonsGroup.containerStyle])}
+                >
+                  <View style={theme.ButtonsGroup.buttonStyle}>
+                    <Text style={{ textTransform: "capitalize" }}>{t("convert.form.amount")}</Text>
+                    <Controller
+                      control={control}
+                      name="libraAmount"
+                      rules={{
+                        required: t<string>("validations:required", {
+                          replace: { field: t("convert.form.amount") },
+                        }),
+                        min: {
+                          value: 1,
+                          message: t<string>("validations:min", {
+                            replace: { field: t("convert.form.amount"), min: 1 },
+                          }),
+                        },
+                        validate: (enteredAmount: number) => {
+                          const selectedFromLibraCurrency = watch("fromLibraCurrency");
 
-                <View style={theme.Section}>
-                  <Text style={{ textTransform: "capitalize" }}>{t("convert.form.price")}</Text>
-                  <Input
-                    ref={priceRef}
-                    keyboardType="numeric"
-                    value={
-                      libraAmount ? fiatToHumanFriendly(calcPrice(parseFloat(libraAmount))) : ""
-                    }
-                    onChangeText={(price) => {
-                      if (priceRef.current && priceRef.current.isFocused()) {
-                        const newPrice = fiatFromFloat(parseFloat(price));
-                        const amount = normalizeLibra(calcAmount(newPrice));
-                        setValue("libraAmount", amount.toString());
+                          if (selectedFromLibraCurrency) {
+                            const selectedCurrencyBalance = account!.balances.find(
+                              (balance) => balance.currency === selectedFromLibraCurrency
+                            )!;
+                            if (libraFromFloat(enteredAmount) > selectedCurrencyBalance.balance) {
+                              return t("validations:noMoreThanBalance", {
+                                replace: {
+                                  field: t("convert.form.amount"),
+                                  currency: selectedCurrencyBalance.currency,
+                                },
+                              })!;
+                            }
+                          }
+                          return true;
+                        },
+                      }}
+                      onChangeName="onChangeText"
+                      as={
+                        <Input
+                          keyboardType="numeric"
+                          placeholder={t("convert.form.amount")}
+                          renderErrorMessage={false}
+                          rightIcon={<Text>{fromLibraCurrency?.sign}</Text>}
+                        />
                       }
-                    }}
-                    renderErrorMessage={false}
-                    rightIcon={<Text>{toLibraCurrency?.sign}</Text>}
-                  />
-                  {!!errors.fiatCurrency && (
-                    <InputErrorMessage message={errors.fiatCurrency.message as string} />
-                  )}
+                    />
+                    {!!errors.libraAmount && (
+                      <InputErrorMessage message={errors.libraAmount.message as string} />
+                    )}
+                  </View>
+
+                  <View style={theme.ButtonsGroup.buttonStyle}>
+                    <Text style={{ textTransform: "capitalize" }}>{t("convert.form.price")}</Text>
+                    <Input
+                      ref={priceRef}
+                      keyboardType="numeric"
+                      value={
+                        libraAmount ? fiatToHumanFriendly(calcPrice(parseFloat(libraAmount))) : ""
+                      }
+                      onChangeText={(price) => {
+                        if (priceRef.current && priceRef.current.isFocused()) {
+                          const newPrice = fiatFromFloat(parseFloat(price));
+                          const amount = normalizeLibra(calcAmount(newPrice));
+                          setValue("libraAmount", amount.toString());
+                        }
+                      }}
+                      renderErrorMessage={false}
+                      rightIcon={<Text>{toLibraCurrency?.sign}</Text>}
+                    />
+                    {!!errors.fiatCurrency && (
+                      <InputErrorMessage message={errors.fiatCurrency.message as string} />
+                    )}
+                  </View>
                 </View>
 
                 {fromLibraCurrency && toLibraCurrency && (
