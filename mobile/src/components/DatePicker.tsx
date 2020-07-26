@@ -1,37 +1,36 @@
 import React from "react";
 import ReactDatePicker from "react-native-datepicker";
+import { ThemeConsumer } from "react-native-elements";
+import { appTheme } from "../styles";
 
 interface DatePickerProps {
   value?: string | Date;
+  placeholder?: string;
   onChange?: (dateStr: string, date: Date) => void;
+  maxDate?: string | Date;
+  disabled?: boolean;
 }
 
-function DatePicker({ value, onChange }: DatePickerProps) {
+function DatePicker({ value, placeholder, onChange, maxDate, disabled }: DatePickerProps) {
   return (
-    <ReactDatePicker
-      style={{ width: 200 }}
-      date={value}
-      mode="date"
-      placeholder="select date"
-      format="YYYY-MM-DD"
-      minDate="2016-05-01"
-      maxDate="2016-06-01"
-      confirmBtnText="Confirm"
-      cancelBtnText="Cancel"
-      customStyles={{
-        dateIcon: {
-          position: "absolute",
-          left: 0,
-          top: 4,
-          marginLeft: 0,
-        },
-        dateInput: {
-          marginLeft: 36,
-        },
-        // ... You can check the source to find the other keys.
-      }}
-      onDateChange={onChange}
-    />
+    <ThemeConsumer<typeof appTheme>>
+      {({ theme }) => (
+        <ReactDatePicker
+          style={{ width: "100%" }}
+          date={value}
+          mode="date"
+          disabled={disabled}
+          placeholder={placeholder}
+          format="YYYY-MM-DD"
+          maxDate={maxDate}
+          confirmBtnText="Confirm"
+          cancelBtnText="Cancel"
+          showIcon={false}
+          customStyles={theme.DatePicker}
+          onDateChange={onChange}
+        />
+      )}
+    </ThemeConsumer>
   );
 }
 

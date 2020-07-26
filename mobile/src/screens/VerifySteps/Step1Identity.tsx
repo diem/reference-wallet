@@ -55,6 +55,7 @@ function Step1Identity({ info, onSubmit }: Step1IdentityProps) {
 
           <View style={theme.Section}>
             <Controller
+              disabled={true}
               control={control}
               name="first_name"
               rules={{
@@ -73,6 +74,7 @@ function Step1Identity({ info, onSubmit }: Step1IdentityProps) {
 
           <View style={theme.Section}>
             <Controller
+              disabled={true}
               control={control}
               name="last_name"
               rules={{
@@ -91,6 +93,7 @@ function Step1Identity({ info, onSubmit }: Step1IdentityProps) {
 
           <View style={theme.Section}>
             <Controller
+              disabled={true}
               control={control}
               name="dob"
               rules={{
@@ -109,29 +112,7 @@ function Step1Identity({ info, onSubmit }: Step1IdentityProps) {
                 },
               }}
               defaultValue={info.dob}
-              onChangeName="onChangeText"
-              as={<Input placeholder={t("step1.fields.dob")} renderErrorMessage={false} />}
-            />
-            <Controller
-              control={control}
-              name="dob"
-              rules={{
-                required: t<string>("validations:required", {
-                  replace: { field: t("step1.fields.dob") },
-                }),
-                validate: (selectedDate) => {
-                  const date = moment.isMoment(selectedDate) ? selectedDate : moment(selectedDate);
-                  if (!date.isValid()) {
-                    return t("validations:validDate")!;
-                  }
-                  if (date.isAfter()) {
-                    return t("validations:pastDateOnly")!;
-                  }
-                  return true;
-                },
-              }}
-              defaultValue={info.dob}
-              as={<DatePicker />}
+              as={<DatePicker placeholder={t("step1.fields.dob")} />}
             />
             {!!errors.dob && <InputErrorMessage message={errors.dob.message as string} />}
           </View>
@@ -139,6 +120,7 @@ function Step1Identity({ info, onSubmit }: Step1IdentityProps) {
           <View style={theme.Section}>
             <InputGroup>
               <Controller
+                disabled={true}
                 control={control}
                 name="phone_prefix"
                 rules={{
@@ -157,6 +139,7 @@ function Step1Identity({ info, onSubmit }: Step1IdentityProps) {
                 }
               />
               <Controller
+                disabled={true}
                 style={theme.InputGroup.inputStyle}
                 control={control}
                 name="phone_number"
@@ -175,6 +158,7 @@ function Step1Identity({ info, onSubmit }: Step1IdentityProps) {
                 onChangeName="onChangeText"
                 as={
                   <TextInput
+                    editable={false}
                     keyboardType="phone-pad"
                     placeholder={t("step1.fields.phone_number")}
                   />

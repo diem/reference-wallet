@@ -57,6 +57,7 @@ function Step2Country({ info, onSubmit, onBack }: Step2CountryProps) {
 
           <View style={theme.Section}>
             <Controller
+              disabled={true}
               control={control}
               name="country"
               rules={{

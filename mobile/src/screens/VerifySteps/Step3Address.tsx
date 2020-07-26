@@ -43,6 +43,7 @@ function Step3Address({ info, onSubmit, onBack }: Step3AddressProps) {
 
           <View style={theme.Section}>
             <Controller
+              disabled={true}
               control={control}
               name="address_1"
               rules={{
@@ -61,6 +62,7 @@ function Step3Address({ info, onSubmit, onBack }: Step3AddressProps) {
 
           <View style={theme.Section}>
             <Controller
+              disabled={true}
               control={control}
               name="address_2"
               defaultValue={info.address_2}
@@ -74,6 +76,7 @@ function Step3Address({ info, onSubmit, onBack }: Step3AddressProps) {
 
           <View style={theme.Section}>
             <Controller
+              disabled={true}
               control={control}
               name="city"
               rules={{
@@ -90,6 +93,7 @@ function Step3Address({ info, onSubmit, onBack }: Step3AddressProps) {
 
           <View style={theme.Section}>
             <Controller
+              disabled={true}
               control={control}
               name="state"
               defaultValue={info.state}
@@ -101,6 +105,7 @@ function Step3Address({ info, onSubmit, onBack }: Step3AddressProps) {
 
           <View style={theme.Section}>
             <Controller
+              disabled={true}
               control={control}
               name="zip"
               defaultValue={info.zip}

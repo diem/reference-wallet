@@ -4,6 +4,7 @@
 import { FullTheme } from "react-native-elements";
 import { TextStyle, ViewStyle } from "react-native";
 import { PickerStyle } from "react-native-picker-select";
+import { DatePickerCustomStylesProps } from "react-native-datepicker";
 
 interface AppTheme extends Partial<FullTheme> {
   Screen: ViewStyle;
@@ -26,6 +27,7 @@ interface AppTheme extends Partial<FullTheme> {
     selectStyle: PickerStyle;
     selectNoStyle: PickerStyle;
   };
+  DatePicker: DatePickerCustomStylesProps;
   CheckBoxText: TextStyle;
   ButtonsGroup: {
     containerStyle: ViewStyle;
@@ -220,6 +222,66 @@ export const appTheme: AppTheme = {
         lineHeight: 18,
         color: "#000000",
       },
+    },
+  },
+  DatePicker: {
+    dateTouchBody: {
+      flexDirection: "row",
+      height: "auto",
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      backgroundColor: "#eff1f3",
+      borderRadius: 8,
+    },
+    dateIcon: {
+      width: 32,
+      height: 32,
+      marginLeft: 5,
+      marginRight: 5,
+    },
+    dateInput: {
+      flex: 1,
+      height: "auto",
+      borderWidth: 0,
+      borderColor: "#aaa",
+      alignItems: "flex-start",
+      justifyContent: "center",
+      paddingVertical: 4,
+    },
+    dateText: {
+      color: "#000",
+      fontSize: 16,
+      lineHeight: 18,
+    },
+    placeholderText: {
+      color: "#75767f",
+      fontSize: 16,
+      lineHeight: 18,
+    },
+    datePickerCon: {
+      backgroundColor: "#fff",
+      height: 0,
+      overflow: "hidden",
+    },
+    btnTextCancel: {
+      color: "#666",
+    },
+    btnCancel: {
+      left: 0,
+    },
+    btnConfirm: {
+      right: 0,
+    },
+    datePicker: {
+      marginTop: 42,
+      borderTopColor: "#ccc",
+      borderTopWidth: 1,
+    },
+    disabled: {
+      backgroundColor: "transparent",
+      opacity: 0.5,
     },
   },
   CheckBox: {

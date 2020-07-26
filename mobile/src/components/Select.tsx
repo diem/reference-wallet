@@ -14,6 +14,7 @@ interface SelectDropdownProps<V extends Values> {
   options: V;
   value?: keyof V;
   onChange?: (val: keyof V) => void;
+  disabled?: boolean;
   disableStyles?: boolean;
 }
 
@@ -22,6 +23,7 @@ function SelectDropdown<V extends Values = {}>({
   options,
   value,
   onChange,
+  disabled,
   disableStyles,
 }: SelectDropdownProps<V>) {
   let optionsList: (string | number)[];
@@ -37,6 +39,7 @@ function SelectDropdown<V extends Values = {}>({
         <>
           <RNPickerSelect
             value={value}
+            disabled={disabled}
             placeholder={label ? { label, value: undefined } : undefined}
             style={
               disableStyles ? theme.SelectDropdown.selectNoStyle : theme.SelectDropdown.selectStyle
