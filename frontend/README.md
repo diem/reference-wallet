@@ -14,7 +14,7 @@ npm install
 yarn install
 ```
 
-3. Run project on iOS / Android.
+3. Run project on Browser.
 
 ```bash
 npm run start
