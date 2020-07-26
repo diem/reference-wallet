@@ -55,9 +55,7 @@ function PreferencesForm({ email, language, fiatCurrency, onSubmit }: Preference
               onChange={(val) => setSelectedLanguage(val as string)}
             />
           </View>
-          <View style={theme.Section}>
-            <Button title={t("preferences.form.submit")} onPress={onFormSubmit} />
-          </View>
+          <Button title={t("preferences.form.submit")} onPress={onFormSubmit} />
         </>
       )}
     </ThemeConsumer>

@@ -115,7 +115,7 @@ function Home({ componentId }: NavigationComponentProps) {
   });
 
   return (
-    <ScreenLayout componentId={componentId}>
+    <ScreenLayout hideHeaderBack={true} componentId={componentId}>
       <ThemeConsumer<typeof appTheme>>
         {({ theme }) => (
           <>
@@ -130,7 +130,7 @@ function Home({ componentId }: NavigationComponentProps) {
                     </Text>
                   </View>
 
-                  <View style={theme.Section}>
+                  <View style={StyleSheet.flatten([theme.Container, theme.Section])}>
                     <TotalBalance
                       balances={account.balances}
                       fiatCurrencyCode={user.selected_fiat_currency}
@@ -139,7 +139,11 @@ function Home({ componentId }: NavigationComponentProps) {
                   </View>
 
                   <View
-                    style={StyleSheet.flatten([theme.Section, theme.ButtonsGroup.containerStyle])}
+                    style={StyleSheet.flatten([
+                      theme.SmallContainer,
+                      theme.Section,
+                      theme.ButtonsGroup.containerStyle,
+                    ])}
                   >
                     <Button
                       type="outline"

@@ -92,7 +92,7 @@ function Wallet({ currencyCode, componentId }: WalletProps & NavigationComponent
                   <Text style={theme.SubTitle}>{libraCurrency.name} Wallet</Text>
                 </View>
 
-                <View style={theme.Section}>
+                <View style={StyleSheet.flatten([theme.Container, theme.Section])}>
                   <CurrencyBalance
                     balance={account.balances.find((balance) => balance.currency === currencyCode)!}
                     fiatCurrencyCode={user.selected_fiat_currency}
@@ -101,7 +101,11 @@ function Wallet({ currencyCode, componentId }: WalletProps & NavigationComponent
                 </View>
 
                 <View
-                  style={StyleSheet.flatten([theme.Section, theme.ButtonsGroup.containerStyle])}
+                  style={StyleSheet.flatten([
+                    theme.SmallContainer,
+                    theme.Section,
+                    theme.ButtonsGroup.containerStyle,
+                  ])}
                 >
                   <Button
                     type="outline"

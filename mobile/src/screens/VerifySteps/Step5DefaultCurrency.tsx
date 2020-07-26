@@ -1,7 +1,7 @@
 // Copyright (c) The Libra Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React from "react";
+import React, { useState } from "react";
 import { UserInfo } from "../../interfaces/user";
 import { Button, Text, ThemeConsumer } from "react-native-elements";
 import { appTheme } from "../../styles";
@@ -22,8 +22,10 @@ interface Step5DefaultCurrencyProps {
 function Step5DefaultCurrency({ info, onSubmit, onBack }: Step5DefaultCurrencyProps) {
   const { t } = useTranslation("verify");
   const { errors, handleSubmit, control } = useForm<DefaultSettings>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   function onFormSubmit({ default_fiat_currency }: DefaultSettings) {
+    setLoading(true);
     onSubmit({ ...info, selected_fiat_currency: default_fiat_currency });
   }
 
@@ -65,6 +67,7 @@ function Step5DefaultCurrency({ info, onSubmit, onBack }: Step5DefaultCurrencyPr
               onPress={onBack}
             />
             <Button
+              loading={loading}
               containerStyle={theme.ButtonsGroup.buttonStyle}
               title={t("step2.continue")}
               onPress={handleSubmit(onFormSubmit)}
