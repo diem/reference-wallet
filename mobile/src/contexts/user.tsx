@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, {
-  ComponentProps,
   ComponentType,
   createContext,
   PropsWithChildren,
@@ -16,6 +15,7 @@ import { User } from "../interfaces/user";
 import SessionStorage from "../services/sessionStorage";
 import BackendClient from "../services/backendClient";
 import { BackendError } from "../services/errors";
+import { ActivityIndicator } from "react-native";
 
 const REFRESH_TIMEOUT = 5000;
 
@@ -66,7 +66,11 @@ export const UserProvider = ({
     };
   }, []);
 
-  return <userContext.Provider value={user} children={children} />;
+  if (user) {
+    return <userContext.Provider value={user} children={children} />;
+  } else {
+    return <ActivityIndicator size="large" />;
+  }
 };
 
 export const withUserContext = (

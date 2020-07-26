@@ -95,7 +95,9 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
   const priceRef = useRef<Input>(null);
 
   const libraCurrency = libraCurrencyCode ? libraCurrencies[libraCurrencyCode] : undefined;
-  const fiatCurrency = fiatCurrencyCode ? fiatCurrencies[fiatCurrencyCode] : undefined;
+  const fiatCurrency = fiatCurrencyCode
+    ? fiatCurrencies[fiatCurrencyCode]
+    : fiatCurrencies[user!.selected_fiat_currency];
 
   const exchangeRate =
     rates && libraCurrencyCode && fiatCurrencyCode ? rates[libraCurrencyCode][fiatCurrencyCode] : 0;
@@ -274,6 +276,7 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
                       <Controller
                         control={control}
                         name="fiatCurrency"
+                        defaultValue={fiatCurrency.symbol}
                         rules={{
                           required: t<string>("validations:required", {
                             replace: { field: t("form.fiatCurrency") },

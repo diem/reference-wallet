@@ -57,7 +57,9 @@ function Deposit({ componentId }: NavigationComponentProps) {
   const priceRef = useRef<Input>(null);
 
   const libraCurrency = libraCurrencyCode ? libraCurrencies[libraCurrencyCode] : undefined;
-  const fiatCurrency = fiatCurrencyCode ? fiatCurrencies[fiatCurrencyCode] : undefined;
+  const fiatCurrency = fiatCurrencyCode
+    ? fiatCurrencies[fiatCurrencyCode]
+    : fiatCurrencies[user!.selected_fiat_currency];
 
   const exchangeRate =
     rates && libraCurrencyCode && fiatCurrencyCode ? rates[libraCurrencyCode][fiatCurrencyCode] : 0;
@@ -208,6 +210,7 @@ function Deposit({ componentId }: NavigationComponentProps) {
                       <Controller
                         control={control}
                         name="fiatCurrency"
+                        defaultValue={fiatCurrency.symbol}
                         rules={{
                           required: t<string>("validations:required", {
                             replace: { field: t("deposit.form.fiatCurrency") },
