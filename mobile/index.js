@@ -26,6 +26,7 @@ import SessionStorage from "./src/services/sessionStorage";
 import "./src/i18n";
 
 console.disableYellowBox = true;
+export const isProd = process.env.NODE_ENV !== "production";
 
 Navigation.registerComponent("Home", () => Home);
 Navigation.registerComponent("Wallet", () => Wallet);

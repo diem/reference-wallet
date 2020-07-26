@@ -253,8 +253,10 @@ export const appTheme: AppTheme = {
   Button: {
     buttonStyle: {
       margin: 0,
-      padding: 8,
+      paddingVertical: 8,
+      paddingHorizontal: 8,
       borderRadius: 8,
+      marginBottom: 8,
     },
     titleStyle: {
       fontSize: 16,

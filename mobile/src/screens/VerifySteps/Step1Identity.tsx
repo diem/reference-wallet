@@ -1,20 +1,20 @@
 // Copyright (c) The Libra Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React from "react";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Controller, useForm } from "react-hook-form";
-import moment from "moment";
-import { countries } from "countries-list";
-import { UserInfo } from "../../interfaces/user";
 import { Button, Input, Text, ThemeConsumer } from "react-native-elements";
+import { countries } from "countries-list";
+import moment from "moment";
+import { UserInfo } from "../../interfaces/user";
 import { appTheme } from "../../styles";
 import { IdentityInfo } from "./interfaces";
 import SelectDropdown from "../../components/Select";
 import { TextInput, View } from "react-native";
 import InputGroup from "../../components/InputGroup";
 import InputErrorMessage from "../../components/InputErrorMessage";
+import DatePicker from "../../components/DatePicker";
 
 const phonePrefixes = Object.keys(countries).reduce((list, code) => {
   const country = countries[code as keyof typeof countries];
@@ -30,15 +30,13 @@ interface Step1IdentityProps {
 
 function Step1Identity({ info, onSubmit }: Step1IdentityProps) {
   const { t } = useTranslation("verify");
-  const { errors, handleSubmit, control, getValues, setValue } = useForm<IdentityInfo>();
+  const { errors, handleSubmit, control, setValue } = useForm<IdentityInfo>();
 
   const [phonePrefix, phoneNumber] = info.phone.split(" ");
 
   useEffect(() => {
-    const { first_name, last_name } = getValues();
-
-    setValue("first_name", first_name.length ? first_name : info.first_name);
-    setValue("last_name", last_name.length ? last_name : info.last_name);
+    setValue("first_name", info.first_name);
+    setValue("last_name", info.last_name);
     setValue("dob", info.dob);
     setValue("phone_prefix", phonePrefix);
     setValue("phone_number", phoneNumber);
@@ -113,6 +111,27 @@ function Step1Identity({ info, onSubmit }: Step1IdentityProps) {
               defaultValue={info.dob}
               onChangeName="onChangeText"
               as={<Input placeholder={t("step1.fields.dob")} renderErrorMessage={false} />}
+            />
+            <Controller
+              control={control}
+              name="dob"
+              rules={{
+                required: t<string>("validations:required", {
+                  replace: { field: t("step1.fields.dob") },
+                }),
+                validate: (selectedDate) => {
+                  const date = moment.isMoment(selectedDate) ? selectedDate : moment(selectedDate);
+                  if (!date.isValid()) {
+                    return t("validations:validDate")!;
+                  }
+                  if (date.isAfter()) {
+                    return t("validations:pastDateOnly")!;
+                  }
+                  return true;
+                },
+              }}
+              defaultValue={info.dob}
+              as={<DatePicker />}
             />
             {!!errors.dob && <InputErrorMessage message={errors.dob.message as string} />}
           </View>

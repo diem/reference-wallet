@@ -6,12 +6,22 @@ import { Header } from "react-native-elements";
 import { Navigation, NavigationComponentProps } from "react-native-navigation";
 import { userContext } from "../contexts/user";
 import NetworkIndicator from "./NetworkIndicator";
+// @ts-ignore
 import Logo from "../assets/logo.svg";
+// @ts-ignore
 import Gears from "../assets/gears.svg";
 import { TouchableOpacity } from "react-native";
 
-function AppHeader({ componentId }: NavigationComponentProps) {
+interface AppHeaderProps {
+  showBackButton: boolean;
+}
+
+function AppHeader({ showBackButton, componentId }: AppHeaderProps & NavigationComponentProps) {
   const user = useContext(userContext);
+
+  async function goBack() {
+    await Navigation.pop(componentId);
+  }
 
   async function goToRoot() {
     await Navigation.popToRoot(componentId);
@@ -27,7 +37,7 @@ function AppHeader({ componentId }: NavigationComponentProps) {
 
   return (
     <Header
-      leftComponent={<NetworkIndicator />}
+      leftComponent={<NetworkIndicator showBack={showBackButton} onBackPress={goBack} />}
       centerComponent={
         <TouchableOpacity onPress={goToRoot}>
           <Logo style={{ margin: 8 }} />

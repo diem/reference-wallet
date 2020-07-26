@@ -1,11 +1,12 @@
 // Copyright (c) The Libra Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import { Navigation, NavigationComponentProps } from "react-native-navigation";
-import { Button, ThemeConsumer } from "react-native-elements";
+import { Button, ThemeConsumer, Text } from "react-native-elements";
 import { useTranslation } from "react-i18next";
+import faker from "faker";
 import { UserInfo } from "../interfaces/user";
 import { appTheme } from "../styles";
 import { withUserContext } from "../contexts/user";
@@ -20,6 +21,7 @@ import Step5DefaultCurrency from "./VerifySteps/Step5DefaultCurrency";
 import ScreenLayout from "../components/ScreenLayout";
 import ErrorMessage from "../components/Messages/ErrorMessage";
 import ExampleSectionWarning from "../components/ExampleSectionWarning";
+import moment from "moment";
 
 type SubmitStatuses = "edit" | "sending" | "fail" | "success";
 
@@ -29,6 +31,7 @@ function Verify({ componentId }: NavigationComponentProps) {
   const [step, setStep] = useState<number>(1);
   const [errorMessage, setErrorMessage] = useState<string>();
   const [submitStatus, setSubmitStatus] = useState<SubmitStatuses>("edit");
+  const [dummyUserInformation, setDummyUserInformation] = useState<UserInfo[]>();
 
   const [userInformation, setUserInformation] = useState<UserInfo>({
     selected_fiat_currency: "USD",
@@ -76,31 +79,48 @@ function Verify({ componentId }: NavigationComponentProps) {
     }
   }
 
-  const setSherlockUserInfo = () => {
-    setUserInformation({
-      ...userInformation,
-      first_name: userInformation.first_name.length ? userInformation.first_name : "Sherlock",
-      last_name: userInformation.last_name.length ? userInformation.last_name : "Holmes",
-      // dob: moment("1861-06-01"),
-      dob: "1861-06-01",
-      phone: "44 2079460869",
-      country: "GB",
-      state: "",
-      city: "London",
-      address_1: "221B Baker Street",
-      address_2: "",
-      zip: "NW1 6XE",
-    });
-  };
+  useEffect(() => {
+    setDummyUserInformation(
+      [1, 2, 3].map(() => {
+        return {
+          ...userInformation,
+          first_name: faker.name.firstName(),
+          last_name: faker.name.lastName(),
+          dob: moment(faker.date.past()),
+          phone: "1 " + faker.phone.phoneNumberFormat(),
+          country: faker.address.countryCode(),
+          state: faker.address.state(),
+          city: faker.address.city(),
+          address_1: faker.address.streetAddress(),
+          address_2: "",
+          zip: faker.address.zipCode(),
+        };
+      })
+    );
+  }, []);
 
   return (
-    <ScreenLayout componentId={componentId}>
+    <ScreenLayout hideHeaderBack={true} componentId={componentId}>
       <ThemeConsumer<typeof appTheme>>
         {({ theme }) => (
           <>
             <ExampleSectionWarning />
             <View style={theme.Container}>
               {errorMessage && <ErrorMessage message={errorMessage} />}
+
+              {(step === 1 || step === 2 || step === 3) && dummyUserInformation && (
+                <View style={theme.Section}>
+                  <Text h1>{t("choose_dummy_identity")}</Text>
+                  {dummyUserInformation.map((dummyInfo, i) => (
+                    <Button
+                      key={i}
+                      type="outline"
+                      title={`${dummyInfo.first_name} ${dummyInfo.last_name} (${dummyInfo.country})`}
+                      onPress={() => setUserInformation(dummyInfo)}
+                    />
+                  ))}
+                </View>
+              )}
 
               {step === 1 && (
                 <Step1Identity
@@ -149,10 +169,6 @@ function Verify({ componentId }: NavigationComponentProps) {
                     submit(info);
                   }}
                 />
-              )}
-
-              {(step === 1 || step === 2 || step === 3) && (
-                <Button type="outline" title={t("fill_sherlock")} onPress={setSherlockUserInfo} />
               )}
             </View>
           </>

@@ -17,7 +17,7 @@ import ErrorMessage from "../components/Messages/ErrorMessage";
 import InputErrorMessage from "../components/InputErrorMessage";
 
 interface SignInForm {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -30,11 +30,11 @@ function SignIn({ componentId }: NavigationComponentProps) {
   const [errorMessage, setErrorMessage] = useState<string>();
   const [submitStatus, setSubmitStatus] = useState<SubmitStatuses>("edit");
 
-  async function onFormSubmit({ email, password }: SignInForm) {
+  async function onFormSubmit({ username, password }: SignInForm) {
     try {
       setErrorMessage(undefined);
       setSubmitStatus("sending");
-      const authToken = await new BackendClient().signinUser(email, password);
+      const authToken = await new BackendClient().signinUser(username, password);
       await SessionStorage.storeAccessToken(authToken);
       setSubmitStatus("success");
     } catch (e) {
@@ -60,7 +60,7 @@ function SignIn({ componentId }: NavigationComponentProps) {
   redirectLoggedIn();
 
   return (
-    <ScreenLayout componentId={componentId}>
+    <ScreenLayout hideHeaderBack={true} componentId={componentId}>
       <ThemeConsumer<typeof appTheme>>
         {({ theme }) => (
           <View style={theme.Container}>
@@ -86,23 +86,18 @@ function SignIn({ componentId }: NavigationComponentProps) {
             <View style={theme.Section}>
               <Controller
                 control={control}
-                name="email"
+                name="username"
                 rules={{
                   required: t<string>("validations:required", {
-                    replace: { field: t("fields.email") },
+                    replace: { field: t("fields.username") },
                   }),
                 }}
                 onChangeName="onChangeText"
-                as={
-                  <Input
-                    autoCompleteType="email"
-                    keyboardType="email-address"
-                    placeholder={t("fields.email")}
-                    renderErrorMessage={false}
-                  />
-                }
+                as={<Input placeholder={t("fields.username")} renderErrorMessage={false} />}
               />
-              {!!errors.email && <InputErrorMessage message={errors.email.message as string} />}
+              {!!errors.username && (
+                <InputErrorMessage message={errors.username.message as string} />
+              )}
             </View>
 
             <View style={theme.Section}>

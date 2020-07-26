@@ -1,7 +1,7 @@
 // Copyright (c) The Libra Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { Linking, View } from "react-native";
 import { Navigation, NavigationComponentProps } from "react-native-navigation";
@@ -15,9 +15,10 @@ import ScreenLayout from "../components/ScreenLayout";
 import ErrorMessage from "../components/Messages/ErrorMessage";
 import { appTheme } from "../styles";
 import InputErrorMessage from "../components/InputErrorMessage";
+import { isProd } from "../../index";
 
 interface SignUpForm {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -26,14 +27,18 @@ type SubmitStatuses = "edit" | "sending" | "fail" | "success";
 function SignUp({ componentId }: NavigationComponentProps) {
   const { t } = useTranslation("auth");
 
-  const { errors, handleSubmit, control } = useForm<SignUpForm>();
+  const { errors, handleSubmit, control, watch } = useForm<SignUpForm>({
+    defaultValues: { username: "", password: "" },
+  });
+  const [agreedTerms, setAgreedTerms] = useState(false);
+  const { username, password } = watch();
+
   const [errorMessage, setErrorMessage] = useState<string>();
   const [submitStatus, setSubmitStatus] = useState<SubmitStatuses>("edit");
-  const [agreedTerms, setAgreedTerms] = useState(false);
 
   const passwordStrengthRegex = new RegExp("^(?=.*\\d)(?=.*[a-zA-Z]).{8,}$");
 
-  const onFormSubmit = async ({ email, password }: SignUpForm) => {
+  const onFormSubmit = async ({ username, password }: SignUpForm) => {
     if (!passwordStrengthRegex.test(password)) {
       return setErrorMessage(t("fields.password_strength.error"));
     }
@@ -41,7 +46,7 @@ function SignUp({ componentId }: NavigationComponentProps) {
     try {
       setErrorMessage(undefined);
       setSubmitStatus("sending");
-      const authToken = await new BackendClient().signupUser(email, password);
+      const authToken = await new BackendClient().signupUser(username, password);
       await SessionStorage.storeAccessToken(authToken);
       setSubmitStatus("success");
     } catch (e) {
@@ -55,16 +60,18 @@ function SignUp({ componentId }: NavigationComponentProps) {
     }
   };
 
-  async function redirectLoggedIn() {
-    if (await SessionStorage.getAccessToken()) {
-      await Navigation.setStackRoot(componentId, {
-        component: {
-          name: "Home",
-        },
-      });
+  useEffect(() => {
+    async function redirectLoggedIn() {
+      if (await SessionStorage.getAccessToken()) {
+        await Navigation.setStackRoot(componentId, {
+          component: {
+            name: "Home",
+          },
+        });
+      }
     }
-  }
-  redirectLoggedIn();
+    redirectLoggedIn();
+  }, [submitStatus]);
 
   return (
     <ScreenLayout componentId={componentId}>
@@ -72,6 +79,19 @@ function SignUp({ componentId }: NavigationComponentProps) {
         {({ theme }) => (
           <View style={theme.Container}>
             {errorMessage && <ErrorMessage message={errorMessage} />}
+
+            {submitStatus === "success" &&
+              (isProd ? (
+                <>
+                  <Text>{t("signup.success_username.headline")}</Text>
+                  <Text>{t("signup.success_username.text", { replace: { email: username } })}</Text>
+                </>
+              ) : (
+                <>
+                  <Text>{t("signup.success_email.headline")}</Text>
+                  <Text>{t("signup.success_email.text", { replace: { username } })}</Text>
+                </>
+              ))}
 
             <Text h1>{t("signup.headline")}</Text>
             <Text style={theme.Section}>
@@ -94,7 +114,7 @@ function SignUp({ componentId }: NavigationComponentProps) {
             <View style={theme.Section}>
               <Controller
                 control={control}
-                name="email"
+                name="username"
                 rules={{
                   required: t<string>("validations:required", {
                     replace: { field: t("fields.email") },
@@ -102,15 +122,21 @@ function SignUp({ componentId }: NavigationComponentProps) {
                 }}
                 onChangeName="onChangeText"
                 as={
-                  <Input
-                    autoCompleteType="email"
-                    keyboardType="email-address"
-                    placeholder={t("fields.email")}
-                    renderErrorMessage={false}
-                  />
+                  isProd ? (
+                    <Input placeholder={t("fields.username")} renderErrorMessage={false} />
+                  ) : (
+                    <Input
+                      autoCompleteType="email"
+                      keyboardType="email-address"
+                      placeholder={t("fields.email")}
+                      renderErrorMessage={false}
+                    />
+                  )
                 }
               />
-              {!!errors.email && <InputErrorMessage message={errors.email.message as string} />}
+              {!!errors.username && (
+                <InputErrorMessage message={errors.username.message as string} />
+              )}
             </View>
 
             <View style={theme.Section}>
@@ -135,6 +161,24 @@ function SignUp({ componentId }: NavigationComponentProps) {
                 <InputErrorMessage message={errors.password.message as string} />
               )}
             </View>
+
+            {!!password.length && (
+              <View style={theme.Section}>
+                <Text style={{ fontWeight: "bold" }}>
+                  {t("fields.password_strength.title")}:{" "}
+                  {passwordStrengthRegex.test(password) ? (
+                    <Text style={{ color: theme.colors!.success }}>
+                      {t("fields.password_strength.strong")}
+                    </Text>
+                  ) : (
+                    <Text style={{ color: theme.colors!.warning }}>
+                      {t("fields.password_strength.weak")}
+                    </Text>
+                  )}
+                </Text>
+                <Text>{t("fields.password_strength.text")}</Text>
+              </View>
+            )}
 
             <View style={theme.Section}>
               <CheckBox

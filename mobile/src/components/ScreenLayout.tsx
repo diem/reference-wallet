@@ -8,14 +8,19 @@ import { ThemeProvider } from "react-native-elements";
 import AppHeader from "./AppHeader";
 import { appTheme } from "../styles";
 
+interface ScreenLayoutProps {
+  hideHeaderBack?: boolean;
+}
+
 function ScreenLayout({
+  hideHeaderBack,
   componentId,
   children,
-}: React.PropsWithChildren<NavigationComponentProps>) {
+}: React.PropsWithChildren<ScreenLayoutProps & NavigationComponentProps>) {
   return (
     <ThemeProvider theme={appTheme}>
       <SafeAreaView style={appTheme.Screen}>
-        <AppHeader componentId={componentId} />
+        <AppHeader componentId={componentId} showBackButton={!hideHeaderBack} />
         <ScrollView
           style={appTheme.ScrollArea}
           contentContainerStyle={appTheme.ScrollAreaContent}
