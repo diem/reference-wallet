@@ -99,8 +99,15 @@ function Receive({ currency, componentId }: ReceiveProps & NavigationComponentPr
                     logo={Logo}
                     logoBackgroundColor="white"
                   />
-                  <Text style={{ textAlign: "center", fontSize: 12 }}>{addressWithIntents}</Text>
                 </View>
+                <Text
+                  style={StyleSheet.flatten([
+                    theme.Section,
+                    { textAlign: "center", fontWeight: "bold", fontSize: 12 },
+                  ])}
+                >
+                  {addressWithIntents}
+                </Text>
                 <Button
                   title={t("copy")}
                   onPress={() => {
