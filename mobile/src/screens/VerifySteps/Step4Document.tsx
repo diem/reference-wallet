@@ -28,14 +28,15 @@ function Step4Document({ info, onSubmit, onBack }: Step4DocumentProps) {
           <Text h1>{t("step4.title")}</Text>
           <Text style={theme.Section}>{t("step4.description")}</Text>
 
-          <View style={theme.ButtonsGroup}>
+          <View style={theme.ButtonsGroup.containerStyle}>
             <Button
-              containerStyle={theme.ButtonsGroupButton}
+              type="outline"
+              containerStyle={theme.ButtonsGroup.buttonStyle}
               title={t("step4.back")}
               onPress={onBack}
             />
             <Button
-              containerStyle={theme.ButtonsGroupButton}
+              containerStyle={theme.ButtonsGroup.buttonStyle}
               title={t("step4.continue")}
               onPress={onFormSubmit}
             />

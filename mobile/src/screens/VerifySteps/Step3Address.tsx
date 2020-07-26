@@ -110,14 +110,15 @@ function Step3Address({ info, onSubmit, onBack }: Step3AddressProps) {
             {!!errors.zip && <InputErrorMessage message={errors.zip.message as string} />}
           </View>
 
-          <View style={theme.ButtonsGroup}>
+          <View style={theme.ButtonsGroup.containerStyle}>
             <Button
-              containerStyle={theme.ButtonsGroupButton}
+              type="outline"
+              containerStyle={theme.ButtonsGroup.buttonStyle}
               title={t("step3.back")}
               onPress={onBack}
             />
             <Button
-              containerStyle={theme.ButtonsGroupButton}
+              containerStyle={theme.ButtonsGroup.buttonStyle}
               title={t("step3.continue")}
               onPress={handleSubmit(onFormSubmit)}
             />

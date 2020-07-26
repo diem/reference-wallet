@@ -108,7 +108,7 @@ function Verify({ componentId }: NavigationComponentProps) {
             <View style={theme.Container}>
               {errorMessage && <ErrorMessage message={errorMessage} />}
 
-              {(step === 1 || step === 2 || step === 3) && dummyUserInformation && (
+              {step === 1 && dummyUserInformation && (
                 <View style={theme.Section}>
                   <Text h1>{t("choose_dummy_identity")}</Text>
                   {dummyUserInformation.map((dummyInfo, i) => (

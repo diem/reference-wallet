@@ -243,11 +243,12 @@ export const appTheme: AppTheme = {
     containerStyle: {
       flexDirection: "row",
       justifyContent: "space-evenly",
-      paddingHorizontal: 8,
+      marginHorizontal: -8
     },
     buttonStyle: {
       flexGrow: 1,
-      margin: 8,
+      flexBasis: 0,
+      marginHorizontal: 8
     },
   },
   Button: {

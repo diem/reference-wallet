@@ -59,6 +59,7 @@ function Step5DefaultCurrency({ info, onSubmit, onBack }: Step5DefaultCurrencyPr
 
           <View style={theme.ButtonsGroup.containerStyle}>
             <Button
+              type="outline"
               containerStyle={theme.ButtonsGroup.buttonStyle}
               title={t("step2.back")}
               onPress={onBack}
