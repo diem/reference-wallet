@@ -1,0 +1,13 @@
+{
+  "required": "Por favor, complete el campo:",
+  "min": "Ingrese {{field}} arriba {{min}}",
+  "max": "Please enter {{field}} below {{max}}",
+  "minLength": "Ingrese {{field}} más de {{minLength}}",
+  "maxLength": "Ingrese {{field}} más corto que {{maxLength}}",
+  "pattern": "Please enter valid {{field}}",
+  "numbersOnly": "Ingrese {{field}} solo con números",
+  "validDate": "Por favor, introduzca una fecha válida",
+  "pastDateOnly": "Por favor introduce una fecha de inicio en el pasado.",
+  "noEqualCurrencies": "Por favor seleccione diferentes monedas",
+  "noMoreThanBalance": "Ingrese {{field}} menos que su saldo actual de {{currency}}"
+}

@@ -3,7 +3,9 @@
 
 import { Resource } from "i18next";
 import EN from "./en";
+import ES from "./es";
 
 export default {
   en: EN,
+  es: ES,
 } as Resource;

@@ -159,12 +159,19 @@ def run():
         description="Generate a new scaffold for a new translation language based on another existed language"
     )
     parser.add_argument(
+        "-p",
+        "--project",
+        help="project to translate",
+        required=True,
+        choices=["frontend", "mobile"]
+    )
+    parser.add_argument(
         "-s",
         "--source",
         help="source language to generate the new one from",
         required=True,
     )
-    parser.add_argument("-d", "--destination", help="language symbol to generate")
+    parser.add_argument("-d", "--destination", help="language symbol to generate", required=True)
     parser.add_argument(
         "-a",
         "--auto-translate",
@@ -180,7 +187,13 @@ def run():
 
     args = parser.parse_args()
     current = os.getcwd()
-    locales_dir = os.path.join(current, "frontend", "src", "locales")
+
+    translateable_projects = {
+        "frontend": os.path.join(current, "frontend", "src", "locales"),
+        "mobile": os.path.join(current, "mobile", "src", "locales")
+    }
+
+    locales_dir = translateable_projects[args.project]
     source_dir = os.path.join(locales_dir, args.source)
     translation_dest_dir = None
     csv_dest_file = None
