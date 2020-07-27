@@ -242,16 +242,13 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
                       control={control}
                       name="libraAmount"
                       rules={{
-                        required: t<string>("validations:required", {
-                          replace: { field: t("form.amount") },
-                        }),
-                        min: {
-                          value: 0.0001,
-                          message: t<string>("validations:min", {
-                            replace: { field: t("form.amount"), min: 0.0001 },
-                          }),
-                        },
-                        validate: (enteredAmount: number) => {
+                        validate: (enteredAmount) => {
+                          if (!isFinite(Number(enteredAmount)) || parseFloat(enteredAmount) < 1) {
+                            return t<string>("validations:min", {
+                              replace: { field: t("form.amount"), min: 1 },
+                            });
+                          }
+
                           const selectedLibraCurrency = watch("libraCurrency");
 
                           if (selectedLibraCurrency) {
@@ -293,10 +290,17 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
                       keyboardType="numeric"
                       renderErrorMessage={false}
                       value={
-                        libraAmount ? fiatToHumanFriendly(calcPrice(parseFloat(libraAmount))) : ""
+                        libraAmount && isFinite(Number(libraAmount))
+                          ? fiatToHumanFriendly(calcPrice(parseFloat(libraAmount)))
+                          : ""
                       }
                       onChangeText={(price) => {
-                        if (priceRef.current && priceRef.current.isFocused()) {
+                        if (
+                          priceRef.current &&
+                          priceRef.current.isFocused() &&
+                          isFinite(Number(price)) &&
+                          exchangeRate > 0
+                        ) {
                           const newPrice = fiatFromFloat(parseFloat(price));
                           const amount = normalizeLibra(calcAmount(newPrice));
                           setValue("libraAmount", amount.toString());

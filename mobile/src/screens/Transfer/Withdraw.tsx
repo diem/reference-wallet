@@ -173,23 +173,19 @@ function Withdraw({ componentId }: NavigationComponentProps) {
                       control={control}
                       name="libraAmount"
                       rules={{
-                        required: t<string>("validations:required", {
-                          replace: { field: t("withdraw.form.amount") },
-                        }),
-                        min: {
-                          value: 1,
-                          message: t<string>("validations:min", {
-                            replace: { field: t("withdraw.form.amount"), min: 1 },
-                          }),
-                        },
-                        validate: (enteredAmount: number) => {
-                          const selectedLibraCurrency = watch("libraCurrency");
+                        validate: (value) => {
+                          if (!isFinite(Number(value)) || parseFloat(value) < 1) {
+                            return t<string>("validations:min", {
+                              replace: { field: t("withdraw.form.amount"), min: 1 },
+                            });
+                          }
 
+                          const selectedLibraCurrency = watch("libraCurrency");
                           if (selectedLibraCurrency) {
                             const selectedCurrencyBalance = account!.balances.find(
                               (balance) => balance.currency === selectedLibraCurrency
                             )!;
-                            if (libraFromFloat(enteredAmount) > selectedCurrencyBalance.balance) {
+                            if (libraFromFloat(value) > selectedCurrencyBalance.balance) {
                               return t("validations:noMoreThanBalance", {
                                 replace: {
                                   field: t("withdraw.form.amount"),
@@ -198,7 +194,6 @@ function Withdraw({ componentId }: NavigationComponentProps) {
                               })!;
                             }
                           }
-                          return true;
                         },
                       }}
                       onChangeName="onChangeText"
@@ -222,10 +217,17 @@ function Withdraw({ componentId }: NavigationComponentProps) {
                       ref={priceRef}
                       keyboardType="numeric"
                       value={
-                        libraAmount ? fiatToHumanFriendly(calcPrice(parseFloat(libraAmount))) : ""
+                        libraAmount && isFinite(Number(libraAmount))
+                          ? fiatToHumanFriendly(calcPrice(parseFloat(libraAmount)))
+                          : ""
                       }
                       onChangeText={(price) => {
-                        if (priceRef.current && priceRef.current.isFocused()) {
+                        if (
+                          priceRef.current &&
+                          priceRef.current.isFocused() &&
+                          isFinite(Number(price)) &&
+                          exchangeRate > 0
+                        ) {
                           const newPrice = fiatFromFloat(parseFloat(price));
                           const amount = normalizeLibra(calcAmount(newPrice));
                           setValue("libraAmount", amount.toString());

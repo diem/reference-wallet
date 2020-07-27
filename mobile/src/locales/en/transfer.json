@@ -15,7 +15,7 @@
       "currency": "Choose which balance you want to add funds to",
       "currency_placeholder": "Currency",
       "fiatCurrency": "Fiat currency",
-      "amount": "Adding",
+      "amount": "Amount",
       "price": "Currently equal to",
       "exchange_rate": "Exchange rate",
       "review": "Review"

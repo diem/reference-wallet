@@ -173,14 +173,12 @@ function Deposit({ componentId }: NavigationComponentProps) {
                       control={control}
                       name="libraAmount"
                       rules={{
-                        required: t<string>("validations:required", {
-                          replace: { field: t("deposit.form.amount") },
-                        }),
-                        min: {
-                          value: 1,
-                          message: t<string>("validations:min", {
-                            replace: { field: t("deposit.form.amount"), min: 1 },
-                          }),
+                        validate: (value) => {
+                          if (!isFinite(Number(value)) || parseFloat(value) < 1) {
+                            return t<string>("validations:min", {
+                              replace: { field: t("deposit.form.amount"), min: 1 },
+                            });
+                          }
                         },
                       }}
                       onChangeName="onChangeText"
@@ -204,10 +202,17 @@ function Deposit({ componentId }: NavigationComponentProps) {
                       ref={priceRef}
                       keyboardType="numeric"
                       value={
-                        libraAmount ? fiatToHumanFriendly(calcPrice(parseFloat(libraAmount))) : ""
+                        libraAmount && isFinite(Number(libraAmount))
+                          ? fiatToHumanFriendly(calcPrice(parseFloat(libraAmount)))
+                          : ""
                       }
                       onChangeText={(price) => {
-                        if (priceRef.current && priceRef.current.isFocused()) {
+                        if (
+                          priceRef.current &&
+                          priceRef.current.isFocused() &&
+                          isFinite(Number(price)) &&
+                          exchangeRate > 0
+                        ) {
                           const newPrice = fiatFromFloat(parseFloat(price));
                           const amount = normalizeLibra(calcAmount(newPrice));
                           setValue("libraAmount", amount.toString());
