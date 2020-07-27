@@ -45,13 +45,22 @@ export const UserProvider = ({
       setUser(newUser);
       timeoutRef.current = setTimeout(loadUser, REFRESH_TIMEOUT);
     } catch (e) {
-      if (e instanceof BackendError && e.httpStatus === httpStatus.UNAUTHORIZED) {
-        await SessionStorage.removeAccessToken();
-        await Navigation.setStackRoot(componentId, {
-          component: {
-            name: "SignIn",
-          },
-        });
+      if (e instanceof BackendError) {
+        if (e.httpStatus === httpStatus.UNAUTHORIZED) {
+          await SessionStorage.removeAccessToken();
+          await Navigation.setStackRoot(componentId, {
+            component: {
+              name: "SignIn",
+            },
+          });
+        } else {
+          console.warn("Error loading user", e.httpStatus, e);
+          await Navigation.setStackRoot(componentId, {
+            component: {
+              name: "ConnectionError",
+            },
+          });
+        }
       } else {
         console.error(e);
       }

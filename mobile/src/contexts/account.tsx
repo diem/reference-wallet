@@ -10,7 +10,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import httpStatus from "http-status-codes";
 import { NavigationComponentProps } from "react-native-navigation";
 import { Account } from "../interfaces/account";
 import SessionStorage from "../services/sessionStorage";
@@ -36,8 +35,8 @@ export const AccountProvider = ({ children }: PropsWithChildren<any>) => {
       setAccount(await backendClient.getAccount());
       timeoutRef.current = setTimeout(loadAccount, REFRESH_TIMEOUT);
     } catch (e) {
-      if (e instanceof BackendError && e.httpStatus === httpStatus.UNAUTHORIZED) {
-        //
+      if (e instanceof BackendError) {
+        console.warn("Error loading account", e.httpStatus, e);
       } else {
         console.error(e);
       }

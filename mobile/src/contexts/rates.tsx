@@ -10,7 +10,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import httpStatus from "http-status-codes";
 import { NavigationComponentProps } from "react-native-navigation";
 import SessionStorage from "../services/sessionStorage";
 import BackendClient from "../services/backendClient";
@@ -87,8 +86,8 @@ export const RatesProvider = ({ children }: PropsWithChildren<any>) => {
       setRates(newRates);
       timeoutRef.current = setTimeout(loadRates, REFRESH_TIMEOUT);
     } catch (e) {
-      if (e instanceof BackendError && e.httpStatus === httpStatus.UNAUTHORIZED) {
-        //
+      if (e instanceof BackendError) {
+        console.warn("Error getting rates", e.httpStatus, e);
       } else {
         console.error(e);
       }

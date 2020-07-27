@@ -22,6 +22,7 @@ import SignIn from "./src/screens/SignIn";
 import SignUp from "./src/screens/SignUp";
 import ForgotPassword from "./src/screens/ForgotPassword";
 import ResetPassword from "./src/screens/ResetPassword";
+import ConnectionError from "./src/screens/ConnectionError";
 import SessionStorage from "./src/services/sessionStorage";
 import "./src/i18n";
 
@@ -52,6 +53,8 @@ Navigation.registerComponent("SignIn", () => SignIn);
 Navigation.registerComponent("SignUp", () => SignUp);
 Navigation.registerComponent("ForgotPassword", () => ForgotPassword);
 Navigation.registerComponent("ResetPassword", () => ResetPassword);
+
+Navigation.registerComponent("ConnectionError", () => ConnectionError);
 
 Navigation.events().registerAppLaunchedListener(async () => {
   Navigation.setDefaultOptions({
