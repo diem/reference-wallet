@@ -54,6 +54,8 @@ function CreditCardForm({ open, onClose, onSubmit }: CreditCardFormProps) {
         <CloseButton onClick={onClose} />
         <h3>{t("payment_methods.credit_cards.form.title")}</h3>
         <ReactCreditCard
+          issuer="unknown"
+          preview={true}
           number={creditCard.number}
           name={creditCard.name}
           expiry={creditCard.expiry}
