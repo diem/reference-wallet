@@ -26,7 +26,20 @@ from wallet.types import (
 )
 
 INVENTORY_COVER_CURRENCY = Currency.USD
-INVENTORY_AMOUNT = 100_000_000_000
+INVENTORY_AMOUNT = 999_000_000
+
+
+def wait_for_trade_to_complete(trade_id):
+    retries = 10
+    polling_interval_s = 2
+    for _ in range(retries):
+        trade_info = LpClient().trade_info(trade_id)
+        if trade_info.status == TradeStatus.Complete:
+            return True
+        else:
+            time.sleep(polling_interval_s)
+
+    return False
 
 
 def setup_inventory_account():
@@ -43,23 +56,25 @@ def setup_inventory_account():
     ]
 
     for currency_pair in currency_pairs:
-        quote = LpClient().get_quote(pair=currency_pair.value, amount=INVENTORY_AMOUNT)
-        internal_address = get_inventory_deposit_address()
-
-        trade_id = LpClient().trade_and_execute(
-            quote_id=quote.quote_id,
-            direction=Direction.Buy,
-            libra_deposit_address=internal_address,
-        )
-
         retries = 10
         polling_interval_s = 2
 
         for _ in range(retries):
-            trade_info = LpClient().trade_info(trade_id)
-            if trade_info.status == TradeStatus.Complete:
-                break
-            else:
+            try:
+                quote = LpClient().get_quote(
+                    pair=currency_pair.value, amount=INVENTORY_AMOUNT
+                )
+                internal_address = get_inventory_deposit_address()
+
+                trade_id = LpClient().trade_and_execute(
+                    quote_id=quote.quote_id,
+                    direction=Direction.Buy,
+                    libra_deposit_address=internal_address,
+                )
+                if wait_for_trade_to_complete(trade_id):
+                    break
+
+            except Exception as e:
                 time.sleep(polling_interval_s)
 
 
