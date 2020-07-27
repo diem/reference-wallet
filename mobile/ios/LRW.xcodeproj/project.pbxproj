@@ -13,6 +13,8 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		24E8C0FA561406BA006DA4CA /* libPods-LRW.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B6E91CC3195EC25B3F713A27 /* libPods-LRW.a */; };
 		3A409B3524B3664B006542A6 /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 008F07F21AC5B25A0029DE68 /* main.jsbundle */; };
+		2182C61989914B328765353D /* FreeSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 55031CDA1DEF43289E007561 /* FreeSans-Bold.ttf */; };
+		DB4DF2EF3494473CBC861492 /* FreeSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A4D0D10E409F4CD39D9B436C /* FreeSans-Regular.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,6 +58,8 @@
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
 		F6A2727BD02E4BFD95B88C55 /* Octicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Octicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Octicons.ttf"; sourceTree = "<group>"; };
 		F7F618F84ACFD5F78DEC6281 /* libPods-LRW-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LRW-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		55031CDA1DEF43289E007561 /* FreeSans-Bold.ttf */ = {isa = PBXFileReference; name = "FreeSans-Bold.ttf"; path = "../src/assets/fonts/freesans/FreeSans-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		A4D0D10E409F4CD39D9B436C /* FreeSans-Regular.ttf */ = {isa = PBXFileReference; name = "FreeSans-Regular.ttf"; path = "../src/assets/fonts/freesans/FreeSans-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -148,6 +152,8 @@
 				F6A2727BD02E4BFD95B88C55 /* Octicons.ttf */,
 				47945502C8CA48578AD1D22F /* SimpleLineIcons.ttf */,
 				265D06770D5443EB81EB459D /* Zocial.ttf */,
+				55031CDA1DEF43289E007561 /* FreeSans-Bold.ttf */,
+				A4D0D10E409F4CD39D9B436C /* FreeSans-Regular.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -248,6 +254,8 @@
 				3A409B3524B3664B006542A6 /* main.jsbundle in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
+				2182C61989914B328765353D /* FreeSans-Bold.ttf in Resources */,
+				DB4DF2EF3494473CBC861492 /* FreeSans-Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

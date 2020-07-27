@@ -62,11 +62,13 @@ export const appTheme: AppTheme = {
       fontSize: 22,
       fontWeight: "bold",
       marginBottom: 16,
+      fontFamily: "FreeSans-Bold",
     },
     style: {
       color: "#75767f",
       lineHeight: 22,
       fontSize: 16,
+      fontFamily: "FreeSans",
     },
   },
   Screen: {
