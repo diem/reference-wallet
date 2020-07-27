@@ -21,6 +21,14 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Check kill switch
+        id: check_ks
+        run: |
+          if ${{ secrets.KILL_SWITCH_E2E_TEST }}; then
+            echo "::set-output name=should_run::false";
+          else
+            echo "::set-output name=should_run::true";
+          fi;
       - name: Install pipenv
         run: |
           pip install --upgrade pipenv
@@ -31,9 +39,12 @@ jobs:
         run: |
           ./scripts/lrw.sh build 8080 e2e-blind
       - name: Spin up single wallet instance
+        if: steps.check_ks.outputs.should_run == 'true'
         run: |
           ./scripts/lrw.sh e2e single up | tail -2 > e2e.vars
       - name: Wait for services to boot up
+        if: steps.check_ks.outputs.should_run == 'true'
+        continue-on-error: true
         run: |
           cat e2e.vars
           IFS=''
@@ -49,16 +60,19 @@ jobs:
           echo "Services unhealthy"
           exit 1
       - name: Sleep and list docker containers
+        if: steps.check_ks.outputs.should_run == 'true'
         run: |
           sleep 10
           docker container ls -a
       - name: Run single-wallet tests on test-runner
+        if: steps.check_ks.outputs.should_run == 'true'
         continue-on-error: true
         run: |
           echo "Fetching vars from wallet setup"
           source e2e.vars
           ./scripts/test_e2e.sh single
       - name: Dump container logs
+        if: steps.check_ks.outputs.should_run == 'true'
         continue-on-error: true
         run: |
           IFS=''
@@ -70,9 +84,13 @@ jobs:
               echo $line | awk '{ print $1 }' | xargs -L1 docker logs
           done
       - name: Spin up second wallet instance
+        if: steps.check_ks.outputs.should_run == 'true'
+        continue-on-error: true
         run: |
           ./scripts/lrw.sh e2e double up true | tail -2 >> e2e.vars
       - name: Wait for services to boot up
+        if: steps.check_ks.outputs.should_run == 'true'
+        continue-on-error: true
         run: |
           cat e2e.vars
           IFS=''
@@ -88,16 +106,19 @@ jobs:
           echo "Services unhealthy"
           exit 1
       - name: Sleep and list docker containers
+        if: steps.check_ks.outputs.should_run == 'true'
         run: |
           sleep 30
           docker container ls -a
       - name: Run double-wallet tests on test-runner
+        if: steps.check_ks.outputs.should_run == 'true'
         continue-on-error: true
         run: |
           echo "Fetching vars from wallet setup"
           source e2e.vars
           ./scripts/test_e2e.sh double
       - name: Dump container logs
+        if: steps.check_ks.outputs.should_run == 'true'
         continue-on-error: true
         run: |
           IFS=''
