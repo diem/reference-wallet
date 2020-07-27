@@ -81,6 +81,7 @@ class TransactionsMocker(BlockchainMock):
         identifier: str,
         gas_identifier: str = "LBR",
         metadata: bytes = b"",
+        chain_id: int = 0,
     ) -> MockSignedTransaction:
         sender = AccountKeyUtils.from_private_key(sender_private_key).address
         txn = MockSignedTransaction(

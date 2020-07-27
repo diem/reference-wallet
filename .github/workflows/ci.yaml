@@ -25,6 +25,9 @@ jobs:
       - name: Install pipenv
         run: |
           pip install --upgrade pipenv
+      - name: Fetch liquidity submodule
+        run: |
+          git submodule update --init --recursive
       - name: Install dependencies for backend
         run: |
           cd backend && pipenv install --dev
