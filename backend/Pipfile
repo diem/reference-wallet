@@ -19,7 +19,6 @@ ipython = "*"
 libra-sample-wallet = {editable = true,path = "."}
 dramatiq = {extras = ["redis", "watch"],version = "*"}
 flask-redis = "*"
-ivtjfchcukjgtekjrnbllkfrdkvdhdkh = "==0.4.2020070101"
 redis = "*"
 Flask = ">=1.1.1"
 Flask-WTF = "*"
@@ -78,4 +77,5 @@ psycopg2-binary = "*"
 python-dotenv = "*"
 dataclasses-json = "*"
 jwcrypto = "*"
-libra-utils = {git = "https://49decaaaf2e5c1c77eca2805117a36b3135f2c26@github.com/libra/libra-reference-utils.git", ref = "master"}
+libra-utils = {git = "https://49decaaaf2e5c1c77eca2805117a36b3135f2c26@github.com/libra/libra-reference-utils.git",ref = "master"}
+pylibra-beta = "==0.5.2020072302"
