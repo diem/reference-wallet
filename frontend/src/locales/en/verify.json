@@ -39,7 +39,7 @@
     "title": "Add Your Photo ID",
     "description": "Upload a photo of your government-issued ID.",
     "input": {
-      "description": "For the <1>{{country}}</1>, please take a photo of one of the following government-issued IDs.",
+      "description": "For <1>{{country}}</1>, please take a photo of one of the following government-issued IDs.",
       "passport": "Passport",
       "drivers_license": "Driver's License",
       "identity_card": "Identity Card",
