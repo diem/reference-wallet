@@ -2,8 +2,9 @@
 
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
-
+import time
 import uuid
+from threading import Thread
 
 from flasgger import Swagger
 from flask import Flask
@@ -12,6 +13,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from libra_utils.custody import Custody
 from wallet import OnchainWallet
 from wallet.config import ADMIN_USERNAME
+from wallet.services.fx.fx import update_rates
 from wallet.services.inventory import setup_inventory_account
 from wallet.services.user import create_new_user
 from wallet.storage import db_session
@@ -52,6 +54,15 @@ def _init_liquidity(app: Flask) -> None:
         setup_inventory_account()
 
 
+def _schedule_update_rates() -> None:
+    def run():
+        while True:
+            update_rates()
+            time.sleep(60)
+
+    Thread(target=run, daemon=True).start()
+
+
 def _create_app() -> Flask:
     app = Flask(__name__)
 
@@ -79,6 +90,7 @@ def init() -> Flask:
     _init_admin_user()
     _init_onchain_wallet()
     _init_liquidity(app)
+    _schedule_update_rates()
     return app
 
 

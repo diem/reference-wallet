@@ -131,22 +131,22 @@ class CicoRoutes:
                 for quote_currency in chain(
                     list(FiatCurrency.__members__), list(LibraCurrency.__members__)
                 ):
+                    if base_currency == quote_currency:
+                        continue
+
                     one_libra = Amount().deserialize(Amount.unit)
 
-                    try:
-                        conversion_rate = get_rate(
-                            base_currency=Currency(base_currency),
-                            quote_currency=Currency(quote_currency),
-                        )
-                        price = one_libra * conversion_rate
+                    conversion_rate = get_rate(
+                        base_currency=Currency(base_currency),
+                        quote_currency=Currency(quote_currency),
+                    )
+                    price = one_libra * conversion_rate
 
-                        rates.append(
-                            {
-                                "currency_pair": f"{base_currency}_{quote_currency}",
-                                "price": price.serialize(),
-                            }
-                        )
-                    except LookupError:
-                        pass
+                    rates.append(
+                        {
+                            "currency_pair": f"{base_currency}_{quote_currency}",
+                            "price": price.serialize(),
+                        }
+                    )
 
             return {"rates": rates}, HTTPStatus.OK
