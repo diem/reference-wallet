@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useRef, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Keyboard, StyleSheet, View } from "react-native";
 import { Navigation, NavigationComponentProps } from "react-native-navigation";
 import { Button, Input, Text, ThemeConsumer } from "react-native-elements";
 import { useTranslation } from "react-i18next";
@@ -44,6 +44,7 @@ function Convert({ componentId }: NavigationComponentProps) {
 
   const { errors, handleSubmit, control, setValue, watch } = useForm<ConvertData>();
   const [errorMessage, setErrorMessage] = useState<string>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const libraAmount = watch("libraAmount") || 0;
   const fromLibraCurrencyCode = watch("fromLibraCurrency");
@@ -70,6 +71,8 @@ function Convert({ componentId }: NavigationComponentProps) {
   }
 
   async function onFormSubmit({ fromLibraCurrency, toLibraCurrency, libraAmount }: ConvertData) {
+    setLoading(true);
+    Keyboard.dismiss();
     try {
       setErrorMessage(undefined);
       const token = await SessionStorage.getAccessToken();
@@ -94,6 +97,7 @@ function Convert({ componentId }: NavigationComponentProps) {
         console.error("Unexpected Error", e);
       }
     }
+    setLoading(false);
   }
 
   return (
@@ -241,7 +245,11 @@ function Convert({ componentId }: NavigationComponentProps) {
                   </View>
                 )}
 
-                <Button title={t("convert.form.review")} onPress={handleSubmit(onFormSubmit)} />
+                <Button
+                  title={t("convert.form.review")}
+                  onPress={handleSubmit(onFormSubmit)}
+                  loading={loading}
+                />
               </View>
             ) : (
               <ActivityIndicator size="large" />

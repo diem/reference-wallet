@@ -1,9 +1,8 @@
 // Copyright (c) The Libra Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useEffect } from "react";
-import { useState } from "react";
-import { Linking, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Keyboard, Linking, View } from "react-native";
 import { Navigation, NavigationComponentProps } from "react-native-navigation";
 import { Button, CheckBox, Input, Text, ThemeConsumer } from "react-native-elements";
 import { Trans, useTranslation } from "react-i18next";
@@ -44,6 +43,7 @@ function SignUp({ componentId }: NavigationComponentProps) {
     }
 
     try {
+      Keyboard.dismiss();
       setErrorMessage(undefined);
       setSubmitStatus("sending");
       const authToken = await new BackendClient().signupUser(username, password);
@@ -226,7 +226,11 @@ function SignUp({ componentId }: NavigationComponentProps) {
                 <InputErrorMessage message={errors.agreed_tou.message as string} />
               )}
             </View>
-            <Button title={t("signup.submit")} onPress={handleSubmit(onFormSubmit)} />
+            <Button
+              title={t("signup.submit")}
+              onPress={handleSubmit(onFormSubmit)}
+              loading={submitStatus === "sending"}
+            />
           </View>
         )}
       </ThemeConsumer>

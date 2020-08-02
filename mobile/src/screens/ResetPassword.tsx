@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useState } from "react";
-import { View } from "react-native";
+import { Keyboard, View } from "react-native";
 import { Navigation, NavigationComponentProps } from "react-native-navigation";
 import { Button, Input, Text, ThemeConsumer } from "react-native-elements";
 import { useTranslation } from "react-i18next";
@@ -43,6 +43,7 @@ function ResetPassword({ token, componentId }: ResetPasswordProps & NavigationCo
     }
 
     try {
+      Keyboard.dismiss();
       setErrorMessage(undefined);
       setSubmitStatus("sending");
       await new BackendClient().resetUserPassword(token, new_password);
@@ -115,7 +116,11 @@ function ResetPassword({ token, componentId }: ResetPasswordProps & NavigationCo
                 <InputErrorMessage message={errors.confirm_password.message as string} />
               )}
             </View>
-            <Button title={t("reset_password.submit")} onPress={handleSubmit(onFormSubmit)} />
+            <Button
+              title={t("reset_password.submit")}
+              onPress={handleSubmit(onFormSubmit)}
+              loading={submitStatus === "sending"}
+            />
           </View>
         )}
       </ThemeConsumer>

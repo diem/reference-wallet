@@ -1,9 +1,8 @@
 // Copyright (c) The Libra Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React from "react";
-import { useState } from "react";
-import { View } from "react-native";
+import React, { useState } from "react";
+import { Keyboard, View } from "react-native";
 import { Navigation, NavigationComponentProps } from "react-native-navigation";
 import { Button, Input, Text, ThemeConsumer } from "react-native-elements";
 import { Controller, useForm } from "react-hook-form";
@@ -33,6 +32,7 @@ function SignIn({ componentId }: NavigationComponentProps) {
 
   async function onFormSubmit({ username, password }: SignInForm) {
     try {
+      Keyboard.dismiss();
       setErrorMessage(undefined);
       setSubmitStatus("sending");
       const authToken = await new BackendClient().signinUser(username, password);
@@ -147,7 +147,11 @@ function SignIn({ componentId }: NavigationComponentProps) {
                 {t("signin.links.forgot_password")}
               </Text>
             </View>
-            <Button title={t("signin.submit")} onPress={handleSubmit(onFormSubmit)} />
+            <Button
+              title={t("signin.submit")}
+              onPress={handleSubmit(onFormSubmit)}
+              loading={submitStatus === "sending"}
+            />
           </View>
         )}
       </ThemeConsumer>

@@ -1,8 +1,8 @@
 // Copyright (c) The Libra Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useContext, useEffect, useRef } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { ActivityIndicator, Keyboard, StyleSheet, View } from "react-native";
 import { Navigation, NavigationComponentProps } from "react-native-navigation";
 import { Button, Input, Text, ThemeConsumer } from "react-native-elements";
 import { useTranslation } from "react-i18next";
@@ -90,6 +90,7 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
   const rates = useContext(ratesContext);
 
   const { errors, handleSubmit, control, setValue, watch } = useForm<SendData>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const libraAmount = watch("libraAmount") || 0;
   const libraCurrencyCode = watch("libraCurrency");
@@ -133,6 +134,8 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
     libraAmount,
     libraAddress,
   }: SendData) {
+    setLoading(true);
+    Keyboard.dismiss();
     await Navigation.push(componentId, {
       component: {
         name: "SendReview",
@@ -144,6 +147,7 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
         },
       },
     });
+    setLoading(false);
   }
 
   useEffect(() => {
@@ -343,7 +347,11 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
                   </View>
                 )}
 
-                <Button title={t("form.review")} onPress={handleSubmit(onFormSubmit)} />
+                <Button
+                  title={t("form.review")}
+                  onPress={handleSubmit(onFormSubmit)}
+                  loading={loading}
+                />
               </View>
             ) : (
               <ActivityIndicator size="large" />

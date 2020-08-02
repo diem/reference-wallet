@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useRef, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Keyboard, StyleSheet, View } from "react-native";
 import { Navigation, NavigationComponentProps } from "react-native-navigation";
 import { Button, Input, Text, ThemeConsumer } from "react-native-elements";
 import { useTranslation } from "react-i18next";
@@ -49,6 +49,7 @@ function Withdraw({ componentId }: NavigationComponentProps) {
 
   const { errors, handleSubmit, control, setValue, watch } = useForm<WithdrawData>();
   const [errorMessage, setErrorMessage] = useState<string>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const libraAmount = watch("libraAmount") || 0;
   const libraCurrencyCode = watch("libraCurrency");
@@ -78,6 +79,8 @@ function Withdraw({ componentId }: NavigationComponentProps) {
     libraCurrency,
     libraAmount,
   }: WithdrawData) {
+    setLoading(true);
+    Keyboard.dismiss();
     try {
       setErrorMessage(undefined);
       const token = await SessionStorage.getAccessToken();
@@ -103,6 +106,7 @@ function Withdraw({ componentId }: NavigationComponentProps) {
         console.error("Unexpected Error", e);
       }
     }
+    setLoading(false);
   }
 
   return (
@@ -270,7 +274,11 @@ function Withdraw({ componentId }: NavigationComponentProps) {
                   </View>
                 )}
 
-                <Button title={t("withdraw.form.review")} onPress={handleSubmit(onFormSubmit)} />
+                <Button
+                  title={t("withdraw.form.review")}
+                  onPress={handleSubmit(onFormSubmit)}
+                  loading={loading}
+                />
               </View>
             ) : (
               <ActivityIndicator size="large" />

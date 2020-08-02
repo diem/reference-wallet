@@ -1,16 +1,15 @@
 // Copyright (c) The Libra Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React from "react";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Controller, useForm } from "react-hook-form";
-import { Button, Input, Text, ThemeConsumer } from "react-native-elements";
+import { Button, Text, ThemeConsumer } from "react-native-elements";
 import { countries } from "countries-list";
 import { UserInfo } from "../../interfaces/user";
 import { appTheme } from "../../styles";
 import { CountryInfo } from "./interfaces";
-import { View } from "react-native";
+import { Keyboard, View } from "react-native";
 import SelectDropdown from "../../components/Select";
 import InputErrorMessage from "../../components/InputErrorMessage";
 
@@ -45,6 +44,7 @@ function Step2Country({ info, onSubmit, onBack }: Step2CountryProps) {
   }, [info]);
 
   function onFormSubmit({ country }: CountryInfo) {
+    Keyboard.dismiss();
     onSubmit({ ...info, country });
   }
 

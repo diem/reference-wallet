@@ -11,7 +11,7 @@ import { UserInfo } from "../../interfaces/user";
 import { appTheme } from "../../styles";
 import { IdentityInfo } from "./interfaces";
 import SelectDropdown from "../../components/Select";
-import { TextInput, View } from "react-native";
+import { Keyboard, TextInput, View } from "react-native";
 import InputGroup from "../../components/InputGroup";
 import InputErrorMessage from "../../components/InputErrorMessage";
 import DatePicker from "../../components/DatePicker";
@@ -43,6 +43,7 @@ function Step1Identity({ info, onSubmit }: Step1IdentityProps) {
   }, [info]);
 
   function onFormSubmit({ first_name, last_name, dob, phone_number, phone_prefix }: IdentityInfo) {
+    Keyboard.dismiss();
     onSubmit({ ...info, first_name, last_name, dob, phone: `${phone_prefix} ${phone_number}` });
   }
 

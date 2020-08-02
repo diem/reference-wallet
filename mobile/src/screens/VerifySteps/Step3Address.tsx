@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 import { Controller, useForm } from "react-hook-form";
 import { AddressInfo } from "./interfaces";
 import { useEffect } from "react";
-import { View } from "react-native";
+import { Keyboard, View } from "react-native";
 import InputErrorMessage from "../../components/InputErrorMessage";
 
 interface Step3AddressProps {
@@ -31,6 +31,7 @@ function Step3Address({ info, onSubmit, onBack }: Step3AddressProps) {
   }, [info]);
 
   function onFormSubmit({ address_1, address_2, city, state, zip }: AddressInfo) {
+    Keyboard.dismiss();
     onSubmit({ ...info, address_1, address_2, city, state, zip });
   }
 

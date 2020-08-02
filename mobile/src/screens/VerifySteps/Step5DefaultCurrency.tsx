@@ -7,7 +7,7 @@ import { Button, Text, ThemeConsumer } from "react-native-elements";
 import { appTheme } from "../../styles";
 import { useTranslation } from "react-i18next";
 import { Controller, useForm } from "react-hook-form";
-import { View } from "react-native";
+import { Keyboard, View } from "react-native";
 import { DefaultSettings } from "./interfaces";
 import SelectDropdown from "../../components/Select";
 import { fiatCurrenciesOptions } from "../../utils/dropdown-options";
@@ -26,6 +26,7 @@ function Step5DefaultCurrency({ info, onSubmit, onBack }: Step5DefaultCurrencyPr
 
   function onFormSubmit({ default_fiat_currency }: DefaultSettings) {
     setLoading(true);
+    Keyboard.dismiss();
     onSubmit({ ...info, selected_fiat_currency: default_fiat_currency });
   }
 

@@ -23,6 +23,7 @@ function ScreenLayout({
         <AppHeader componentId={componentId} showBackButton={!hideHeaderBack} />
         <ScrollView
           style={appTheme.ScrollArea}
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={appTheme.ScrollAreaContent}
           contentInsetAdjustmentBehavior="automatic"
         >

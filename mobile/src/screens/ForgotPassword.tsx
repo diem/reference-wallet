@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useState } from "react";
-import { View } from "react-native";
+import { Keyboard, View } from "react-native";
 import { Navigation, NavigationComponentProps } from "react-native-navigation";
 import { Button, Input, Text, ThemeConsumer } from "react-native-elements";
 import { Trans, useTranslation } from "react-i18next";
@@ -31,6 +31,7 @@ function ForgotPassword({ componentId }: NavigationComponentProps) {
 
   async function onFormSubmit({ username }: ForgotPasswordForm) {
     try {
+      Keyboard.dismiss();
       setErrorMessage(undefined);
       setSubmitStatus("sending");
       const token = await new BackendClient().forgotPassword(username);
@@ -130,7 +131,11 @@ function ForgotPassword({ componentId }: NavigationComponentProps) {
                 <InputErrorMessage message={errors.username.message as string} />
               )}
             </View>
-            <Button title={t("forgot_password.submit")} onPress={handleSubmit(onFormSubmit)} />
+            <Button
+              title={t("forgot_password.submit")}
+              onPress={handleSubmit(onFormSubmit)}
+              loading={submitStatus === "sending"}
+            />
           </View>
         )}
       </ThemeConsumer>

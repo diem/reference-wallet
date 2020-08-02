@@ -6,7 +6,7 @@ import { UserInfo } from "../../interfaces/user";
 import { Button, Text, ThemeConsumer } from "react-native-elements";
 import { appTheme } from "../../styles";
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
+import { Keyboard, View } from "react-native";
 
 interface Step4DocumentProps {
   info: UserInfo;
@@ -18,6 +18,7 @@ function Step4Document({ info, onSubmit, onBack }: Step4DocumentProps) {
   const { t } = useTranslation("verify");
 
   const onFormSubmit = async () => {
+    Keyboard.dismiss();
     onSubmit(undefined);
   };
 
