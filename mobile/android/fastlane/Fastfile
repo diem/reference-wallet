@@ -26,7 +26,7 @@ platform :android do
     store_password = ENV["STORE_PASSWORD"]
     key_password = ENV["KEY_PASSWORD"]
     releaseFilePath = "/tmp/lrw-release-key.keystore"
-    gradle(task: 'clean')
+    gradle(task: 'clean', flags: '--no-daemon')
     gradle(
       task: 'bundle',
       build_type: 'Release',
@@ -36,7 +36,8 @@ platform :android do
         "android.injected.signing.store.password" => store_password,
         "android.injected.signing.key.alias" => "lrw-key-alias",
         "android.injected.signing.key.password" => key_password,
-      }
+      },
+      flags: '--no-daemon'
     )
 
     upload_to_play_store(
