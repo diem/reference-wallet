@@ -17,7 +17,7 @@ The quickest way to get started testing the Libra Reference Wallet is by using D
     $ cd backend && pipenv install --dev  # set up pipenv for backend
     $ cd ../liquidity && pipenv install --dev  # set up pipenv for liquidity
     $ cd ..  # get back to project root
-    $ ./scripts/lrw.sh setup_env  # generate and register keys
+    $ ./scripts/lrw.sh setup_environment  # generate and register keys
 
 After running the above commands and installing both [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/), run the following to build the images from source and stand up a local deployment:
 

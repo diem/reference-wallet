@@ -46,7 +46,7 @@ if docker_compose_version < 1.26:
 wallet_env_file_path = os.path.join(execution_dir_path, "backend", ENV_FILE_NAME)
 liquidity_env_file_path = os.path.join(execution_dir_path, "liquidity", ENV_FILE_NAME)
 
-if os.path.exists(wallet_env_file_path):
+if os.path.exists(wallet_env_file_path) and os.path.exists(liquidity_env_file_path):
     if len(sys.argv) == 1 or (len(sys.argv) > 1 and sys.argv[1] != '--force'):
         print(f".env variable files are already set.\n run {sys.argv[0]} --force to recreate them")
         exit(0)

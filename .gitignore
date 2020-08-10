@@ -9,6 +9,7 @@ dump.rdb
 **/.DS_Store
 .env
 .env-2
+e2e.vars
 # Frontend build artifacts
 /gateway/tmp
 
