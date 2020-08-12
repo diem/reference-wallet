@@ -11,8 +11,7 @@ import { UserInfo } from "../../interfaces/user";
 import { appTheme } from "../../styles";
 import { IdentityInfo } from "./interfaces";
 import SelectDropdown from "../../components/Select";
-import { Keyboard, TextInput, View } from "react-native";
-import InputGroup from "../../components/InputGroup";
+import { Keyboard, View } from "react-native";
 import InputErrorMessage from "../../components/InputErrorMessage";
 import DatePicker from "../../components/DatePicker";
 
@@ -119,53 +118,46 @@ function Step1Identity({ info, onSubmit }: Step1IdentityProps) {
           </View>
 
           <View style={theme.Section}>
-            <InputGroup>
-              <Controller
-                disabled={true}
-                control={control}
-                name="phone_prefix"
-                rules={{
-                  required: t<string>("validations:required", {
-                    replace: { field: t("step1.fields.phone_prefix") },
-                  }),
-                }}
-                defaultValue={phonePrefix}
-                onChangeName="onChange"
-                as={
-                  <SelectDropdown
-                    label={t("step1.fields.phone_prefix")}
-                    options={phonePrefixes}
-                    disableStyles={true}
-                  />
-                }
-              />
-              <Controller
-                disabled={true}
-                style={theme.InputGroup.inputStyle}
-                control={control}
-                name="phone_number"
-                rules={{
-                  required: t<string>("validations:required", {
+            <Controller
+              disabled={true}
+              control={control}
+              name="phone_number"
+              rules={{
+                required: t<string>("validations:required", {
+                  replace: { field: t("step1.fields.phone_number") },
+                }),
+                pattern: {
+                  value: new RegExp("^[0-9-s()]*$"),
+                  message: t<string>("validations:numbersOnly", {
                     replace: { field: t("step1.fields.phone_number") },
                   }),
-                  pattern: {
-                    value: new RegExp("^[0-9-s()]*$"),
-                    message: t<string>("validations:numbersOnly", {
-                      replace: { field: t("step1.fields.phone_number") },
+                },
+              }}
+              defaultValue={phoneNumber}
+              onChangeName="onChangeText"
+              as={<Input keyboardType="phone-pad" placeholder={t("step1.fields.phone_number")} />}
+              leftIcon={
+                <Controller
+                  disabled={true}
+                  control={control}
+                  name="phone_prefix"
+                  rules={{
+                    required: t<string>("validations:required", {
+                      replace: { field: t("step1.fields.phone_prefix") },
                     }),
-                  },
-                }}
-                defaultValue={phoneNumber}
-                onChangeName="onChangeText"
-                as={
-                  <TextInput
-                    editable={false}
-                    keyboardType="phone-pad"
-                    placeholder={t("step1.fields.phone_number")}
-                  />
-                }
-              />
-            </InputGroup>
+                  }}
+                  defaultValue={phonePrefix}
+                  onChangeName="onChange"
+                  as={
+                    <SelectDropdown
+                      label={t("step1.fields.phone_prefix")}
+                      options={phonePrefixes}
+                      disableStyles={true}
+                    />
+                  }
+                />
+              }
+            />
             {!!errors.phone_prefix && (
               <InputErrorMessage message={errors.phone_prefix.message as string} />
             )}

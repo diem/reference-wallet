@@ -17,11 +17,6 @@ interface AppTheme extends Partial<FullTheme> {
   ExampleSectionText: TextStyle;
   ErrorMessage: ViewStyle;
   InfoMessage: ViewStyle;
-  InputGroup: {
-    containerStyle: ViewStyle;
-    inputContainerStyle: ViewStyle;
-    inputStyle: ViewStyle;
-  };
   InputErrorMessage: TextStyle;
   SelectDropdown: {
     selectStyle: PickerStyle;
@@ -117,24 +112,6 @@ export const appTheme: AppTheme = {
     paddingVertical: 12,
     paddingHorizontal: 16,
     marginBottom: 16,
-  },
-  InputGroup: {
-    containerStyle: {
-      width: "100%",
-      backgroundColor: "#eff1f3",
-      borderRadius: 8,
-      paddingVertical: 14,
-      paddingHorizontal: 16,
-    },
-    inputContainerStyle: {
-      flexDirection: "row",
-      alignItems: "center",
-    },
-    inputStyle: {
-      alignSelf: "center",
-      flex: 1,
-      padding: 0,
-    },
   },
   Input: {
     containerStyle: {
