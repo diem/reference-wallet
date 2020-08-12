@@ -1,6 +1,6 @@
 {
-  "title": "Ajustes",
-  "success_message": "Settings saved successfully!",
+  "title": "Configuración",
+  "success_message": "Ajustes guardados correctamente!",
   "payment_methods": {
     "title": "Formas de pago",
     "credit_cards": {
@@ -17,7 +17,7 @@
       }
     },
     "bank_accounts": {
-      "title": "Bank Accounts",
+      "title": "Cuentas Bancarias",
       "not_found": "Aún no ha agregado una cuenta bancaria",
       "add": "Añadir nueva",
       "form": {
@@ -32,14 +32,14 @@
   "preferences": {
     "general": {
       "title": "General",
-      "email": "Tu correo electrónico"
+      "email": "Su correo electrónico"
     },
     "form": {
       "title": "Preferencias",
       "fiat_currency": "Moneda local",
       "language": "Idioma",
-      "submit": "Guardar configuración"
+      "submit": "Salvar configuración"
     }
   },
-  "signout": "Logout"
+  "signout": "Cerrar Sesión"
 }

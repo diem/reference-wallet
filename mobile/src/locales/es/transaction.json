@@ -5,10 +5,10 @@
   "date": "Fecha",
   "to": "a",
   "from": "desde",
-  "sent_to": "Sent to",
-  "sent_from": "Sent from",
-  "status": "Estado",
+  "sent_to": "Enviar a",
+  "sent_from": "Enviado desde",
+  "status": "Estatus",
   "tx_id": "ID de transacción de Libra",
-  "internal": "Internal",
+  "internal": "Interna",
   "not_available": "No disponible"
 }

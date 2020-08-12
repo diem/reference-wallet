@@ -1,7 +1,7 @@
 {
   "title": "Transferencia de Fondos",
   "modes": {
-    "deposit": "Añadir",
+    "deposit": "ເພີ່ມ",
     "withdraw": "Retirar",
     "convert": "Convertir"
   },
@@ -10,35 +10,36 @@
     "form": {
       "title": "Agregar dinero",
       "funding_source": "Seleccione una fuente de financiación para usar en esta transacción",
-      "funding_source_placeholder": "Funding source",
-      "manage_payment_methods": "Manage payment methods",
+      "funding_source_placeholder": "Fuente de financiación",
+      "no_funding_sources": "Aún no tienes fuentes de financiación. Toque aquí para agregar.",
+      "manage_payment_methods": "Gestionar métodos de pago",
       "currency": "Elija a qué saldo desea agregar fondos",
       "currency_placeholder": "Divisa",
       "fiatCurrency": "Moneda Fiat",
-      "amount": "Añadiendo",
+      "amount": "Cantidad",
       "price": "Actualmente igual a",
       "exchange_rate": "Tipo de cambio",
       "review": "Revisión"
     },
     "review": {
-      "title": "Verificar y confirmar",
+      "title": "Verifique y confirme",
       "description": "Revise los detalles de su transacción antes de confirmar. Dependiendo de su fuente de financiación, las transacciones pueden tardar varios días hábiles en completarse.",
-      "funding_source": "Funding Source",
+      "funding_source": "Fuente de Financiamiento",
       "price": "Debito de la fuente de financiación",
       "amount": "fondo añadido a su saldo",
       "exchange_rate": "Tipo de cambio",
       "confirm": "Confirmar",
-      "done": "Hecho",
-      "back": "Atrás"
+      "done": "Listo",
+      "back": "Volver"
     }
   },
   "withdraw": {
     "success_message": "Su solicitud para retirar fondos fue exitosa",
     "form": {
-      "title": "Withdraw Funds",
+      "title": "Cobrar dinero",
       "funding_source": "Seleccione una fuente de financiación para usar en esta transacción",
-      "funding_source_placeholder": "Funding source",
-      "manage_payment_methods": "Manage payment methods",
+      "funding_source_placeholder": "Fuente de financiación",
+      "manage_payment_methods": "Gestionar métodos de pago",
       "currency": "Elija de qué saldo retirar fondos",
       "currency_placeholder": "Divisa",
       "fiatCurrency": "Moneda Fiat",
@@ -48,19 +49,19 @@
       "review": "Revisión"
     },
     "review": {
-      "title": "Verificar y confirmar",
+      "title": "Verifique y confirme",
       "description": "Revise los detalles de su transacción antes de confirmar. Dependiendo de su fuente de financiación, las transacciones pueden tardar varios días hábiles en completarse.",
       "funding_source": "Retirarse a",
       "amount": "Debito de la fuente de financiación",
       "price": "Transferido a su fuente de financiamiento",
       "exchange_rate": "Tipo de cambio",
       "confirm": "Confirmar",
-      "done": "Hecho",
-      "back": "Atrás"
+      "done": "Listo",
+      "back": "Volver"
     }
   },
   "convert": {
-    "success_message": "Your request for converting funds was successful",
+    "success_message": "Su solicitud para convertir fondos fue exitosa",
     "form": {
       "title": "Convertir fondos",
       "currency_from": "Convirtiendo de:",
@@ -72,14 +73,14 @@
       "review": "Revisión"
     },
     "review": {
-      "title": "Verificar y confirmar",
-      "description": "Please review your transaction details before confirming. Funds are usually converted instantly.",
+      "title": "Verifique y confirme",
+      "description": "Revise los detalles de su transacción antes de confirmar. Los fondos generalmente se convierten al instante.",
       "amount": "Importe original",
       "price": "Nuevo importe",
       "exchange_rate": "Tipo de cambio",
       "confirm": "Confirmar",
-      "done": "Hecho",
-      "back": "Atrás"
+      "done": "Listo",
+      "back": "Volver"
     }
   }
 }

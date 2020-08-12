@@ -1,9 +1,9 @@
 {
   "headline": "Seleccionar moneda digital",
-  "currency_label": "Each one of your digital currencies has a different address.",
+  "currency_label": "Cada una de sus monedas digitales tiene una dirección diferente.",
   "currency": "Divisa",
-  "scan_qr": "Scan QR",
-  "text": "You can copy your unique address and give it to the person you’d like to receive money from. Or others can read the address by scanning the QR code.",
-  "copy": "Copy Address",
+  "scan_qr": "Escanea el código QR",
+  "text": "Puede copiar su dirección única y dársela a la persona de la que desea recibir dinero. O otros pueden leer la dirección escaneando el código QR.",
+  "copy": "Copiar dirección",
   "copied": "Copiado &lt;1 /&gt;"
 }

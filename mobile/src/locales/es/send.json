@@ -1,14 +1,14 @@
 {
   "success_message": "Su transacción está en camino!",
-  "fail_message": "Failed to send transaction",
+  "fail_message": "Error al enviar la transacción",
   "form": {
     "title": "Enviar Dinero a Usuario",
     "libraCurrency": "moneda",
-    "libraCurrency_placeholder": "Select a currency",
+    "libraCurrency_placeholder": "Selecciona una moneda",
     "fiatCurrency": "Moneda Fiat",
     "amount": "Cantidad",
     "price": "actualmente igual a",
-    "address": "receptor",
+    "address": "destinatario",
     "address_placeholder": "Ingresar Dirección",
     "exchange_rate": "Tipo de cambio",
     "review": "Revisión"
@@ -16,12 +16,12 @@
   "review": {
     "title": "Revisar transacción",
     "description": "Por favor revise su transacción. Una vez que envía dinero, la transacción no se puede revertir.",
-    "amount": "You’re sending",
+    "amount": "Estas enviando",
     "price": "Actualmente igual a",
     "exchange_rate": "Tipo de cambio",
-    "address": "To",
+    "address": "Para",
     "confirm": "Enviar",
-    "done": "Hecho",
-    "back": "Atrás"
+    "done": "Listo",
+    "back": "Volver"
   }
 }

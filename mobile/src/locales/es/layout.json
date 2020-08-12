@@ -1,7 +1,7 @@
 {
-  "name": "Libra Wallet",
+  "name": "Cartera Libra",
   "total_balance": "Saldo Total",
-  "balances": "Your Balances",
+  "balances": "Ver sus saldos",
   "transactions": "'Últimas transacciones'",
   "transactions_empty": "Aún no tienes ninguna transacción. Una vez que envíe, solicite o transfiera dinero, las transacciones aparecerán aquí.",
   "all_transactions": "Todas las Transacciones",
@@ -12,9 +12,9 @@
   "close": "Cerrar",
   "actions": {
     "send": "Enviar",
-    "request": "Enviar",
+    "request": "Solicitud",
     "transfer": "Transferir",
-    "settings": "Ajustes"
+    "settings": "Configuración"
   },
   "verification_pending": {
     "title": "Verificación pendiente",
@@ -22,6 +22,6 @@
   },
   "feedback": {
     "title": "Deje sus comentarios",
-    "text": "Feedback"
+    "text": "Comentarios"
   }
 }
