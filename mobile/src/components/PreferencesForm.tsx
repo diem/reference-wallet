@@ -1,3 +1,6 @@
+// Copyright (c) The Libra Core Contributors
+// SPDX-License-Identifier: Apache-2.0
+
 import { View } from "react-native";
 import { Button, Input, Text, ThemeConsumer } from "react-native-elements";
 import SelectDropdown from "./Select";

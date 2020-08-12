@@ -1,3 +1,6 @@
+# Copyright (c) The Libra Core Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 #!/usr/bin/env bash
 
 if [[ -z ${APPLE_ID+x} ]]; then

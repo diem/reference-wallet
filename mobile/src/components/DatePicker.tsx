@@ -1,3 +1,6 @@
+// Copyright (c) The Libra Core Contributors
+// SPDX-License-Identifier: Apache-2.0
+
 import React from "react";
 import ReactDatePicker from "react-native-datepicker";
 import { ThemeConsumer } from "react-native-elements";

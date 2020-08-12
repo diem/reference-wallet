@@ -1,3 +1,6 @@
+// Copyright (c) The Libra Core Contributors
+// SPDX-License-Identifier: Apache-2.0
+
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
 import { ListItem, Text, ThemeConsumer } from "react-native-elements";

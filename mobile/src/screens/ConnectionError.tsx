@@ -1,3 +1,6 @@
+// Copyright (c) The Libra Core Contributors
+// SPDX-License-Identifier: Apache-2.0
+
 import React from "react";
 import ScreenLayout from "../components/ScreenLayout";
 import { Button, ThemeConsumer } from "react-native-elements";
