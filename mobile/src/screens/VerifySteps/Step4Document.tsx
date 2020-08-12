@@ -29,6 +29,42 @@ function Step4Document({ info, onSubmit, onBack }: Step4DocumentProps) {
           <Text h1>{t("step4.title")}</Text>
           <Text style={theme.Section}>{t("step4.description")}</Text>
 
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: "#dfdfdf",
+              borderRadius: 8,
+              marginBottom: 24,
+            }}
+          >
+            <View
+              style={{
+                padding: 16,
+              }}
+            >
+              <Text style={{ color: "#000000" }}>
+                For <Text style={{ color: "#000000", fontWeight: "bold" }}>Paraguay</Text>, please
+                take a photo of one of the following government-issued IDs.
+              </Text>
+              <View style={{ padding: 16 }}>
+                <Text style={{ color: "#000" }}>Passport</Text>
+                <Text style={{ color: "#000" }}>Driver's License</Text>
+                <Text style={{ color: "#000" }}>Identity Card</Text>
+              </View>
+            </View>
+
+            <View
+              style={{
+                backgroundColor: "#f7f7f7",
+                borderTopColor: "#dfdfdf",
+                borderTopWidth: 1,
+                padding: 16,
+              }}
+            >
+              <Text style={{ color: "#000000" }}>Drag and Drop or click here to select a file</Text>
+            </View>
+          </View>
+
           <View style={theme.ButtonsGroup.containerStyle}>
             <Button
               type="outline"
