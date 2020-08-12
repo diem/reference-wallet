@@ -50,7 +50,7 @@ function Step5DefaultCurrency({ info, onSubmit, onBack }: Step5DefaultCurrencyPr
               onChangeName="onChange"
               as={
                 <SelectDropdown
-                  label={t("step2.fields.default_fiat_currency")}
+                  label={t("step5.fields.default_fiat_currency")}
                   options={fiatCurrenciesOptions()}
                 />
               }

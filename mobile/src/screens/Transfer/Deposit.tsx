@@ -143,6 +143,20 @@ function Deposit({ componentId }: NavigationComponentProps) {
                   {!!errors.fundingSource && (
                     <InputErrorMessage message={errors.fundingSource.message as string} />
                   )}
+                  {!user.paymentMethods?.length && (
+                    <Text
+                      style={{ color: theme.colors!.error }}
+                      onPress={() => {
+                        Navigation.push(componentId, {
+                          component: {
+                            name: "Settings",
+                          },
+                        });
+                      }}
+                    >
+                      {t("deposit.form.no_funding_sources")}
+                    </Text>
+                  )}
                 </View>
 
                 <View style={theme.Section}>

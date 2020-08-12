@@ -103,7 +103,9 @@ function WithdrawReview({
                         <Text>{t("withdraw.review.funding_source")}</Text>
                         <Text style={{ color: "black" }}>
                           {fundingSource.name}{" "}
-                          <Text>{paymentMethodsLabels[fundingSource.provider]}</Text>
+                          <Text style={{ fontSize: 12 }}>
+                            {paymentMethodsLabels[fundingSource.provider]}
+                          </Text>
                         </Text>
                       </View>
 
@@ -133,7 +135,6 @@ function WithdrawReview({
                       {submitStatus !== "success" && (
                         <>
                           <Button
-                            containerStyle={theme.Section}
                             title={t("withdraw.review.confirm")}
                             disabled={submitStatus === "sending"}
                             onPress={handleSubmit}

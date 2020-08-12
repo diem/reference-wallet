@@ -11,6 +11,7 @@
       "title": "Add Money",
       "funding_source": "Select a funding source to use for this transaction",
       "funding_source_placeholder": "Funding source",
+      "no_funding_sources": "You don't have funding sources yet. Tap here to add.",
       "manage_payment_methods": "Manage payment methods",
       "currency": "Choose which balance you want to add funds to",
       "currency_placeholder": "Currency",
