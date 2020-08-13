@@ -74,6 +74,7 @@ function Step2Country({ info, onSubmit, onBack }: Step2CountryProps) {
 
           <View style={theme.ButtonsGroup.containerStyle}>
             <Button
+              type="outline"
               containerStyle={theme.ButtonsGroup.buttonStyle}
               title={t("step2.back")}
               onPress={onBack}

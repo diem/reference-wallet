@@ -3,7 +3,7 @@
 
 import React from "react";
 import { ThemeConsumer } from "react-native-elements";
-import RNPickerSelect from "react-native-picker-select";
+import RNPickerSelect, { PickerStyle } from "react-native-picker-select";
 import { appTheme } from "../styles";
 // @ts-ignore
 import Chevron from "../assets/chevron.svg";
@@ -36,25 +36,35 @@ function SelectDropdown<V extends Values = {}>({
 
   return (
     <ThemeConsumer<typeof appTheme>>
-      {({ theme }) => (
-        <>
-          <RNPickerSelect
-            value={value}
-            disabled={disabled}
-            placeholder={label ? { label, value: undefined } : undefined}
-            style={
-              disableStyles ? theme.SelectDropdown.selectNoStyle : theme.SelectDropdown.selectStyle
-            }
-            useNativeAndroidPickerStyle={!disableStyles}
-            onValueChange={(key) => onChange && onChange(key as keyof V)}
-            items={optionsList.map((option) => ({
-              label: options[option as keyof V] as string,
-              value: option,
-            }))}
-            Icon={() => <Chevron />}
-          />
-        </>
-      )}
+      {({ theme }) => {
+        let pickerStyle: PickerStyle;
+        if (disableStyles) {
+          pickerStyle = disabled
+            ? theme.SelectDropdown.selectDisabledNoStyle
+            : theme.SelectDropdown.selectNoStyle;
+        } else {
+          pickerStyle = disabled
+            ? theme.SelectDropdown.selectDisabledStyle
+            : theme.SelectDropdown.selectStyle;
+        }
+        return (
+          <>
+            <RNPickerSelect
+              value={value}
+              disabled={disabled}
+              placeholder={label ? { label, value: undefined } : undefined}
+              style={pickerStyle}
+              useNativeAndroidPickerStyle={!disableStyles}
+              onValueChange={(key) => onChange && onChange(key as keyof V)}
+              items={optionsList.map((option) => ({
+                label: options[option as keyof V] as string,
+                value: option,
+              }))}
+              Icon={() => <Chevron />}
+            />
+          </>
+        );
+      }}
     </ThemeConsumer>
   );
 }

@@ -43,8 +43,7 @@
       "passport": "Passport",
       "drivers_license": "Driver's License",
       "identity_card": "Identity Card",
-      "files_drop": "Drop the files here ...",
-      "upload": "Drag and Drop or click here to select a file"
+      "upload": "Tap here to select a file"
     },
     "back": "Back",
     "continue": "Continue"

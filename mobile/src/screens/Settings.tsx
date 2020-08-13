@@ -17,7 +17,7 @@ import PreferencesForm from "../components/PreferencesForm";
 import ErrorMessage from "../components/Messages/ErrorMessage";
 import { FiatCurrency } from "../interfaces/currencies";
 import PaymentMethodsForm from "../components/PaymentMethodsForm";
-import { NewPaymentMethod } from "../interfaces/user";
+import { NewPaymentMethod, RegistrationStatus } from "../interfaces/user";
 
 type SubmitStatuses = "edit" | "sending" | "fail" | "success";
 
@@ -28,6 +28,9 @@ function Settings({ componentId }: NavigationComponentProps) {
 
   const [submitStatus, setSubmitStatus] = useState<SubmitStatuses>("edit");
   const [errorMessage, setErrorMessage] = useState<string>();
+
+  const userVerificationRequired =
+    user && user.registration_status === RegistrationStatus.Registered;
 
   async function storePaymentMethod(paymentMethod: NewPaymentMethod) {
     try {
@@ -99,12 +102,14 @@ function Settings({ componentId }: NavigationComponentProps) {
                   <Text style={theme.Title}>{t("title")}</Text>
                 </View>
 
-                <PaymentMethodsForm
-                  user={user}
-                  componentId={componentId}
-                  paymentMethods={user.paymentMethods!}
-                  onAdd={storePaymentMethod}
-                />
+                {!userVerificationRequired && (
+                  <PaymentMethodsForm
+                    user={user}
+                    componentId={componentId}
+                    paymentMethods={user.paymentMethods!}
+                    onAdd={storePaymentMethod}
+                  />
+                )}
 
                 <PreferencesForm
                   email={user.username}

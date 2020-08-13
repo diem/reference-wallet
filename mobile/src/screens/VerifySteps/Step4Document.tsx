@@ -5,8 +5,9 @@ import React from "react";
 import { UserInfo } from "../../interfaces/user";
 import { Button, Text, ThemeConsumer } from "react-native-elements";
 import { appTheme } from "../../styles";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { Keyboard, View } from "react-native";
+import { countries } from "countries-list";
 
 interface Step4DocumentProps {
   info: UserInfo;
@@ -43,13 +44,16 @@ function Step4Document({ info, onSubmit, onBack }: Step4DocumentProps) {
               }}
             >
               <Text style={{ color: "#000000" }}>
-                For <Text style={{ color: "#000000", fontWeight: "bold" }}>Paraguay</Text>, please
-                take a photo of one of the following government-issued IDs.
+                <Trans t={t} i18nKey="step4.input.description">
+                  <Text style={{ color: "#000000", fontWeight: "bold" }}>
+                    {{ country: countries[info.country as keyof typeof countries].name }}
+                  </Text>
+                </Trans>
               </Text>
               <View style={{ padding: 16 }}>
-                <Text style={{ color: "#000" }}>Passport</Text>
-                <Text style={{ color: "#000" }}>Driver's License</Text>
-                <Text style={{ color: "#000" }}>Identity Card</Text>
+                <Text style={{ color: "#000" }}>{t("step4.input.passport")}</Text>
+                <Text style={{ color: "#000" }}>{t("step4.input.drivers_license")}</Text>
+                <Text style={{ color: "#000" }}>{t("step4.input.identity_card")}</Text>
               </View>
             </View>
 
@@ -61,7 +65,7 @@ function Step4Document({ info, onSubmit, onBack }: Step4DocumentProps) {
                 padding: 16,
               }}
             >
-              <Text style={{ color: "#000000" }}>Drag and Drop or click here to select a file</Text>
+              <Text style={{ color: "#000000" }}>{t("step4.input.upload")}</Text>
             </View>
           </View>
 

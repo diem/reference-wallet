@@ -15,7 +15,7 @@ import { BackendError } from "../services/errors";
 import { FiatCurrency } from "../interfaces/currencies";
 import ErrorMessage from "../components/Messages/ErrorMessage";
 import SuccessMessage from "components/Messages/SuccessMessage";
-import { NewPaymentMethod, PaymentMethod } from "../interfaces/user";
+import { NewPaymentMethod, PaymentMethod, RegistrationStatus } from "../interfaces/user";
 import { Redirect } from "react-router";
 
 type FormStages = "edit" | "sending" | "fail" | "success" | "redirect";
@@ -29,6 +29,9 @@ const Settings = () => {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(
     settings.paymentMethods || []
   );
+
+  const userVerificationRequired =
+    settings.user && settings.user.registration_status === RegistrationStatus.Registered;
 
   useEffect(() => {
     async function refreshUser() {
@@ -136,7 +139,9 @@ const Settings = () => {
           {formStage === "success" && <SuccessMessage message={t("success_message")} />}
           {errorMessage && <ErrorMessage message={errorMessage} />}
 
-          <PaymentMethodsForm paymentMethods={paymentMethods} onAdd={storePaymentMethod} />
+          {!userVerificationRequired && (
+            <PaymentMethodsForm paymentMethods={paymentMethods} onAdd={storePaymentMethod} />
+          )}
           <PreferencesForm onSubmit={savePreferences} />
           <Button outline color="black" block className="mt-4" onClick={logout}>
             {t("signout")}

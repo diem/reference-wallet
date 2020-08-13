@@ -2,14 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useEffect, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Linking,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ActivityIndicator, Linking, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Navigation, NavigationComponentProps } from "react-native-navigation";
 import { Button, Text, ThemeConsumer } from "react-native-elements";
 import { useTranslation } from "react-i18next";
@@ -38,16 +31,18 @@ function Home({ componentId }: NavigationComponentProps) {
   const account = useContext(accountContext);
   const rates = useContext(ratesContext);
 
-  const userVerificationRequired =
-    user && user.registration_status === RegistrationStatus.Registered;
+  useEffect(() => {
+    const userVerificationRequired =
+      user && user.registration_status === RegistrationStatus.Registered;
 
-  if (userVerificationRequired) {
-    Navigation.setStackRoot(componentId, {
-      component: {
-        name: "Verify",
-      },
-    });
-  }
+    if (userVerificationRequired) {
+      Navigation.setStackRoot(componentId, {
+        component: {
+          name: "Verify",
+        },
+      });
+    }
+  }, [user]);
 
   const fetchTransactionsTimeout = useRef<number>();
 

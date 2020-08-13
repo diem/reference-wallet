@@ -48,7 +48,9 @@ const Step4Document = ({ info, onBack, onSubmit }: Step4DocumentProps) => {
                 )}
                 <p>
                   <Trans t={t} i18nKey="step4.input.description">
-                    For <strong>{{ country: countries[info.country!].name }}</strong>
+                    <strong>
+                      {{ country: countries[info.country as keyof typeof countries].name }}
+                    </strong>
                   </Trans>
                 </p>
                 <ul className="list">

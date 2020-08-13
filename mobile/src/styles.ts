@@ -21,6 +21,8 @@ interface AppTheme extends Partial<FullTheme> {
   SelectDropdown: {
     selectStyle: PickerStyle;
     selectNoStyle: PickerStyle;
+    selectDisabledStyle: PickerStyle;
+    selectDisabledNoStyle: PickerStyle;
   };
   DatePicker: DatePickerCustomStylesProps;
   CheckBoxText: TextStyle;
@@ -210,6 +212,65 @@ export const appTheme: AppTheme = {
         paddingRight: 16,
       },
     },
+    selectDisabledStyle: {
+      viewContainer: {
+        backgroundColor: "#eff1f3",
+        borderRadius: 8,
+      },
+      placeholder: {
+        color: "#75767f",
+        fontSize: 16,
+        lineHeight: 18,
+      },
+      iconContainer: {
+        top: 20,
+        right: 16,
+      },
+      inputAndroidContainer: {
+        padding: 0,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+      },
+      inputAndroid: {
+        fontSize: 16,
+        lineHeight: 18,
+        color: "#75767f",
+      },
+      inputIOSContainer: {
+        padding: 0,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+      },
+      inputIOS: {
+        fontSize: 16,
+        lineHeight: 18,
+        color: "#75767f",
+      },
+    },
+    selectDisabledNoStyle: {
+      headlessAndroidContainer: {},
+      placeholder: {
+        color: "#75767f",
+        fontSize: 16,
+        lineHeight: 18,
+      },
+      iconContainer: {
+        top: 20,
+      },
+      inputAndroid: {
+        height: 48,
+        fontSize: 16,
+        lineHeight: 18,
+        color: "#75767f",
+        paddingRight: 16,
+      },
+      inputIOS: {
+        fontSize: 16,
+        lineHeight: 18,
+        color: "#75767f",
+        paddingRight: 16,
+      },
+    },
   },
   DatePicker: {
     dateTouchBody: {
@@ -307,6 +368,7 @@ export const appTheme: AppTheme = {
       paddingHorizontal: 8,
       borderRadius: 8,
       marginBottom: 8,
+      borderWidth: 0.5,
     },
     titleStyle: {
       fontSize: 16,
@@ -314,6 +376,9 @@ export const appTheme: AppTheme = {
       fontWeight: "bold",
       paddingTop: 0,
       paddingBottom: 0,
+    },
+    iconContainerStyle: {
+      marginHorizontal: 0,
     },
     icon: {
       iconStyle: {
