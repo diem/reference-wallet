@@ -78,4 +78,4 @@ python-dotenv = "*"
 dataclasses-json = "*"
 jwcrypto = "*"
 libra-utils = {git = "https://49decaaaf2e5c1c77eca2805117a36b3135f2c26@github.com/libra/libra-reference-utils.git",ref = "master"}
-pylibra-beta = "==0.5.2020081001"
+pylibra-beta = "==0.5.2020081401"
