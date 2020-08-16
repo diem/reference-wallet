@@ -21,6 +21,7 @@ import { Transaction } from "../interfaces/transaction";
 import TransactionsList from "../components/TransactionsList";
 import { BackendError } from "../services/errors";
 import httpStatus from "http-status-codes";
+import TestnetWarning from "../components/TestnetWarning";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
 
@@ -110,10 +111,12 @@ function Home({ componentId }: NavigationComponentProps) {
   });
 
   return (
-    <ScreenLayout hideHeaderBack={true} componentId={componentId}>
+    <ScreenLayout hideHeaderBack={true} showLegalDisclaimer={true} componentId={componentId}>
       <ThemeConsumer<typeof appTheme>>
         {({ theme }) => (
           <>
+            <TestnetWarning />
+
             {user && rates && account ? (
               user.registration_status === RegistrationStatus.Pending ? (
                 <VerifyingMessage />
@@ -189,7 +192,7 @@ function Home({ componentId }: NavigationComponentProps) {
                       onSelect={(currencyCode) => {
                         Navigation.push(componentId, {
                           component: {
-                            name: "Wallet",
+                            name: "Account",
                             passProps: {
                               currencyCode,
                             },

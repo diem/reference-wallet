@@ -1,6 +1,6 @@
 import { Navigation } from "react-native-navigation";
 import Home from "./src/screens/Home";
-import Wallet from "./src/screens/Wallet";
+import Account from "./src/screens/Account";
 import Transactions from "./src/screens/Transactions";
 import SingleTransaction from "./src/screens/SingleTransaction";
 import Verify from "./src/screens/Verify";
@@ -30,7 +30,7 @@ console.disableYellowBox = true;
 export const isProd = process.env.NODE_ENV === "production";
 
 Navigation.registerComponent("Home", () => Home);
-Navigation.registerComponent("Wallet", () => Wallet);
+Navigation.registerComponent("Account", () => Account);
 Navigation.registerComponent("Transactions", () => Transactions);
 Navigation.registerComponent("SingleTransaction", () => SingleTransaction);
 Navigation.registerComponent("Verify", () => Verify);

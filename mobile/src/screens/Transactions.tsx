@@ -24,6 +24,8 @@ import {
   transactionDirectionsOptions,
   transactionSortingOptions,
 } from "../utils/dropdown-options";
+import ExampleSectionWarning from "../components/ExampleSectionWarning";
+import TestnetWarning from "../components/TestnetWarning";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
 
@@ -90,6 +92,8 @@ function Transactions({ componentId }: NavigationComponentProps) {
       <ThemeConsumer<typeof appTheme>>
         {({ theme }) => (
           <>
+            <TestnetWarning />
+
             {user && rates && account ? (
               <>
                 <View style={theme.SmallContainer}>

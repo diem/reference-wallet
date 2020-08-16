@@ -61,7 +61,7 @@ function SignIn({ componentId }: NavigationComponentProps) {
   redirectLoggedIn();
 
   return (
-    <ScreenLayout hideHeaderBack={true} componentId={componentId}>
+    <ScreenLayout hideHeaderBack={true} showLegalDisclaimer={true} componentId={componentId}>
       <ThemeConsumer<typeof appTheme>>
         {({ theme }) => (
           <View style={theme.Container}>

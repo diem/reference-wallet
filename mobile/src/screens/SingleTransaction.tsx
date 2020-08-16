@@ -19,6 +19,7 @@ import { Transaction, TransactionStatus } from "../interfaces/transaction";
 import { fiatToHumanFriendly, libraToFloat, libraToHumanFriendly } from "../utils/amount-precision";
 import { fiatCurrencies, libraCurrencies } from "../currencies";
 import ExplorerLink from "../components/ExplorerLink";
+import TestnetWarning from "../components/TestnetWarning";
 
 const STATUS_COLORS: { [key in TransactionStatus]: BadgeProps["status"] } = {
   completed: "success",
@@ -63,6 +64,8 @@ function SingleTransaction({
       <ThemeConsumer<typeof appTheme>>
         {({ theme }) => (
           <>
+            <TestnetWarning />
+
             {user && rates && account ? (
               <>
                 {(() => {

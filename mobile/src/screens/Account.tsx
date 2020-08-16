@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { Navigation, NavigationComponentProps } from "react-native-navigation";
 import { Button, Text, ThemeConsumer } from "react-native-elements";
 import { useTranslation } from "react-i18next";
@@ -20,14 +20,15 @@ import httpStatus from "http-status-codes";
 import { LibraCurrency } from "../interfaces/currencies";
 import { libraCurrencies } from "../currencies";
 import CurrencyBalance from "../components/CurrencyBalance";
+import TestnetWarning from "../components/TestnetWarning";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
 
-interface WalletProps {
+interface AccountProps {
   currencyCode: LibraCurrency;
 }
 
-function Wallet({ currencyCode, componentId }: WalletProps & NavigationComponentProps) {
+function Account({ currencyCode, componentId }: AccountProps & NavigationComponentProps) {
   const { t } = useTranslation("layout");
 
   const libraCurrency = libraCurrencies[currencyCode];
@@ -86,6 +87,8 @@ function Wallet({ currencyCode, componentId }: WalletProps & NavigationComponent
       <ThemeConsumer<typeof appTheme>>
         {({ theme }) => (
           <>
+            <TestnetWarning />
+
             {user && rates && account ? (
               <>
                 <View style={{ ...theme.Container, alignItems: "center" }}>
@@ -185,4 +188,4 @@ function Wallet({ currencyCode, componentId }: WalletProps & NavigationComponent
   );
 }
 
-export default withRatesContext(withAccountContext(withUserContext(Wallet)));
+export default withRatesContext(withAccountContext(withUserContext(Account)));
