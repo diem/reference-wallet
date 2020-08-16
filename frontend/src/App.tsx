@@ -7,7 +7,7 @@ import httpStatus from "http-status-codes";
 import Header from "./components/Header";
 import Feedback from "./components/Feedback";
 import Home from "./pages/Home";
-import Wallet from "./pages/Wallet";
+import Account from "./pages/Account";
 import Transactions from "./pages/Transactions";
 import Signin from "./pages/Signin";
 import Signup from "./pages/Signup";
@@ -143,7 +143,7 @@ const App = () => {
               ) : (
                 <LoggedInRoute path="/" exact component={Home} />
               )}
-              <LoggedInRoute path="/wallet/:currency" exact component={Wallet} />
+              <LoggedInRoute path="/account/:currency" exact component={Account} />
               <LoggedInRoute path="/transactions" exact component={Transactions} />
               <LoggedInRoute path="/verify" exact component={Verify} />
               <LoggedInRoute path="/settings" exact component={Settings} />

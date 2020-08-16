@@ -18,10 +18,11 @@ import TransferModal from "../components/TransferModal";
 import TransactionModal from "../components/TransactionModal";
 import WalletLoader from "../components/WalletLoader";
 import Breadcrumbs from "../components/Breadcrumbs";
+import TestnetWarning from "../components/TestnetWarning";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
 
-function Wallet({ match }: { match: RouterMatch<{ currency: LibraCurrency }> }) {
+function Account({ match }: { match: RouterMatch<{ currency: LibraCurrency }> }) {
   const { t } = useTranslation("layout");
   const [settings] = useContext(settingsContext)!;
   const user = settings.user;
@@ -66,6 +67,8 @@ function Wallet({ match }: { match: RouterMatch<{ currency: LibraCurrency }> }) 
 
   return (
     <>
+      <TestnetWarning />
+
       <Breadcrumbs pageName={settings.currencies[selectedLibraCurrency].name + " Wallet"} />
       <Container className="py-5">
         {user && (
@@ -128,4 +131,4 @@ function Wallet({ match }: { match: RouterMatch<{ currency: LibraCurrency }> }) 
   );
 }
 
-export default Wallet;
+export default Account;

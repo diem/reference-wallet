@@ -17,6 +17,7 @@ import {
   transactionSortingOptions,
   transactionDirectionsOptions,
 } from "../utils/dropdown-options";
+import TestnetWarning from "../components/TestnetWarning";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
 
@@ -65,6 +66,8 @@ function Transactions() {
 
   return (
     <>
+      <TestnetWarning />
+
       <Breadcrumbs pageName={t("all_transactions")} />
       <Container className="py-5">
         <section>

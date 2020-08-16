@@ -21,6 +21,7 @@ import WalletLoader from "../components/WalletLoader";
 import TransactionsList from "../components/TransactionsList";
 import BackendClient from "../services/backendClient";
 import TransactionModal from "../components/TransactionModal";
+import TestnetWarning from "components/TestnetWarning";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
 
@@ -86,7 +87,9 @@ function Home() {
   return (
     <>
       {userVerificationRequired && <Redirect to="/verify" />}
-      {!!activeCurrency && <Redirect to={"/wallet/" + activeCurrency} />}
+      {!!activeCurrency && <Redirect to={"/account/" + activeCurrency} />}
+      <TestnetWarning />
+
       <Container className="py-5">
         {user.registration_status !== "Approved" ? (
           <VerifyingMessage />
