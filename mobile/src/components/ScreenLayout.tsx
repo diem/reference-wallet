@@ -1,7 +1,7 @@
 // Copyright (c) The Libra Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SafeAreaView, ScrollView } from "react-native";
 import { NavigationComponentProps } from "react-native-navigation";
 import { ThemeProvider } from "react-native-elements";
@@ -22,7 +22,9 @@ function ScreenLayout({
 }: React.PropsWithChildren<ScreenLayoutProps & NavigationComponentProps>) {
   const [legalDisclaimer, setLegalDisclaimer] = useState(showLegalDisclaimer);
 
-  setTimeout(() => setLegalDisclaimer(false), 5000);
+  useEffect(() => {
+    setTimeout(() => setLegalDisclaimer(false), 5000);
+  }, []);
 
   return (
     <ThemeProvider theme={appTheme}>

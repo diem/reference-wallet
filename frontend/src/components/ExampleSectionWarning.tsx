@@ -5,11 +5,11 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 
 const ExampleSectionWarning = () => {
-  const { t } = useTranslation("verify");
+  const { t } = useTranslation("legal");
 
   return (
     <div className="p-2 bg-black text-white text-center text-uppercase small">
-      {t("example_warning")}
+      {t("example_section_warning")}
     </div>
   );
 };
