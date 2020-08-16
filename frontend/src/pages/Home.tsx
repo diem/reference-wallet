@@ -20,7 +20,6 @@ import TransferModal from "../components/TransferModal";
 import WalletLoader from "../components/WalletLoader";
 import TransactionsList from "../components/TransactionsList";
 import BackendClient from "../services/backendClient";
-import AdminHome from "../components/admin/AdminHome";
 import TransactionModal from "../components/TransactionModal";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
@@ -56,19 +55,42 @@ function Home() {
     refreshUser();
   }, []);
 
-  let pageContent = <WalletLoader />;
+  let refreshTransactions = true;
 
-  if (user) {
-    if (user.registration_status !== "Approved") {
-      // Not verified user
-      pageContent = <VerifyingMessage />;
-    } else {
-      // Verified admin user
-      if (user.is_admin) {
-        pageContent = <AdminHome />;
-      } else {
-        // Verified normal user
-        pageContent = (
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        if (refreshTransactions) {
+          setTransactions(
+            await new BackendClient().getTransactions(undefined, undefined, undefined, 10)
+          );
+          setTimeout(fetchTransactions, REFRESH_TRANSACTIONS_INTERVAL);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    // noinspection JSIgnoredPromiseFromCall
+    fetchTransactions();
+
+    return () => {
+      refreshTransactions = false;
+    };
+  }, []);
+
+  if (!user) {
+    return <WalletLoader />;
+  }
+
+  return (
+    <>
+      {userVerificationRequired && <Redirect to="/verify" />}
+      {!!activeCurrency && <Redirect to={"/wallet/" + activeCurrency} />}
+      <Container className="py-5">
+        {user.registration_status !== "Approved" ? (
+          <VerifyingMessage />
+        ) : (
           <>
             <h1 className="h5 font-weight-normal text-body text-center">
               {user.first_name} {user.last_name}
@@ -117,40 +139,8 @@ function Home() {
             <ReceiveModal open={receiveModalOpen} onClose={() => setReceiveModalOpen(false)} />
             <TransferModal open={transferModalOpen} onClose={() => setTransferModalOpen(false)} />
           </>
-        );
-      }
-    }
-  }
-
-  let refreshTransactions = true;
-
-  const fetchTransactions = async () => {
-    try {
-      if (refreshTransactions) {
-        setTransactions(
-          await new BackendClient().getTransactions(undefined, undefined, undefined, 10)
-        );
-        setTimeout(fetchTransactions, REFRESH_TRANSACTIONS_INTERVAL);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  useEffect(() => {
-    // noinspection JSIgnoredPromiseFromCall
-    fetchTransactions();
-
-    return () => {
-      refreshTransactions = false;
-    };
-  }, []);
-
-  return (
-    <>
-      {userVerificationRequired && <Redirect to="/verify" />}
-      {!!activeCurrency && <Redirect to={"/wallet/" + activeCurrency} />}
-      <Container className="py-5">{pageContent}</Container>
+        )}
+      </Container>
     </>
   );
 }

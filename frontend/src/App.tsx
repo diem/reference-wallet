@@ -15,6 +15,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Verify from "./pages/Verify";
 import Settings from "./pages/Settings";
+import AdminHome from "./pages/admin/Home";
 import Admins from "./pages/admin/Admins";
 import Users from "./pages/admin/Users";
 import Liquidity from "./pages/admin/Liquidity";
@@ -137,7 +138,11 @@ const App = () => {
             <LegalDisclaimer />
           ) : (
             <Switch>
-              <LoggedInRoute path="/" exact component={Home} />
+              {settings.user && settings.user.is_admin ? (
+                <LoggedInRoute path="/" exact component={AdminHome} />
+              ) : (
+                <LoggedInRoute path="/" exact component={Home} />
+              )}
               <LoggedInRoute path="/wallet/:currency" exact component={Wallet} />
               <LoggedInRoute path="/transactions" exact component={Transactions} />
               <LoggedInRoute path="/verify" exact component={Verify} />
