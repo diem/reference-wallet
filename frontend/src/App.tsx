@@ -125,17 +125,13 @@ const App = () => {
 
   const [legalDisclaimer, setLegalDisclaimer] = useState(true);
 
-  useEffect(() => {
-    setTimeout(() => setLegalDisclaimer(false), 5000);
-  }, []);
-
   return (
     <settingsContext.Provider value={[settings, setSettings]}>
       <BrowserRouter>
         <Header />
         <main>
           {legalDisclaimer ? (
-            <LegalDisclaimer />
+            <LegalDisclaimer onClose={() => setLegalDisclaimer(false)} />
           ) : (
             <Switch>
               {settings.user && settings.user.is_admin ? (

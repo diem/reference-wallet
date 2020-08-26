@@ -3,15 +3,18 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "reactstrap";
 
-function LegalDisclaimer() {
+function LegalDisclaimer({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation("legal");
 
   return (
     <div className="container py-4 justify-content-center align-items-center d-flex flex-column h-100">
-      {t("legal_disclaimer")}
+      <p className="text-justify">{t("legal_disclaimer")}</p>
 
-      <i className="fa fa-spin fa-spinner h2 my-4" />
+      <Button color="primary" className="mt-4" onClick={onClose}>
+        OK
+      </Button>
     </div>
   );
 }
