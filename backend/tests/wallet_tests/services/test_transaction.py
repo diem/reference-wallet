@@ -10,6 +10,7 @@ from _pytest.monkeypatch import MonkeyPatch
 from pylibra import LibraNetwork
 
 import libra_utils.types.currencies
+from libra_utils.types.metadata import MetadataType
 from libra_utils.custody import Custody
 from libra_utils.libra import encode_subaddr
 from libra_utils.types.currencies import LibraCurrency
@@ -110,7 +111,9 @@ def test_process_incoming_txn() -> None:
     sender_addr = "46db232847705e05525db0336fd9f337"
     subaddr = generate_new_subaddress(account.id)
 
-    meta = TransactionMetadata(to_subaddr=encode_subaddr(subaddr))
+    meta = TransactionMetadata(
+        metadata_type=MetadataType.GENERAL, to_subaddress=encode_subaddr(subaddr)
+    )
     process_incoming_transaction(
         sender_address=sender_addr,
         receiver_address="lrw_vasp",

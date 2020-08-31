@@ -8,7 +8,14 @@
 # 
 # Upon double-VASP instantiation, you'll have access to environment variables we need for test:
 #       $ eval $(./scripts/lrw.sh double up)
-# 
+#
+# To run e2e test:
+# cd libra-reference-wallet
+# ./scripts/lrw.sh build 8080 e2e
+# ./scripts/lrw.sh e2e double up | tail -4 > double.vars
+# cat double.vars
+# source double.vars && ./scripts/test_e2e.sh double
+#
 # You may also visit the frontends locally via https://localhost:<GW_PORT_*>
 #
 

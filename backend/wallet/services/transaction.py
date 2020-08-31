@@ -58,9 +58,8 @@ def process_incoming_transaction(
             receiver_subaddr = decode_subaddr(metadata.to_subaddress)
             receiver_id = get_account_id_from_subaddr(receiver_subaddr)
 
-        sender_subaddress = decode_subaddr(metadata.from_subaddress)
-        if sender_subaddress == "":
-            sender_subaddress = None
+        if metadata.from_subaddress:
+            sender_subaddress = decode_subaddr(metadata.from_subaddress)
 
     if not receiver_id:
         log_execution("Incoming transaction had no metadata. crediting inventory")
