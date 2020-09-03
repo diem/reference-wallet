@@ -76,7 +76,7 @@ services:
       - REDIS_HOST=redis
       - COMPOSE_ENV=production
       - DB_URL=postgresql://backenduser:backendpassword@db/backend_db
-    command: sh -c "./run_offchain.sh"
+    command: sh -c "/wait.sh backend-web-server 5000 && ./run_offchain.sh"
     restart: always
 
   redis:
