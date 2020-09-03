@@ -7,6 +7,7 @@ from secrets import token_bytes
 
 import sys
 from pylibra import AccountKeyUtils
+from offchainapi.crypto import ComplianceKey
 
 from libra_utils.custody import Custody
 from libra_utils.libra import get_network_supported_currencies, mint_and_wait
@@ -62,16 +63,19 @@ with open(wallet_env_file_path, "w") as dotenv:
     dotenv.write(
         f"VASP_ADDR={public_libra_address_from_key_hex(wallet_private_key_hex)}\n"
     )
-    dotenv.write(f"NETWORK={NETWORK}\n")
+    dotenv.write(
+        f"VASP_COMPLIANCE_KEY={ComplianceKey.generate().export_full()}\n"
+    )
     dotenv.write(f"LIQUIDITY_SERVICE_HOST={LIQUIDITY_SERVICE_HOST}\n")
     dotenv.write(f"LIQUIDITY_SERVICE_PORT={LIQUIDITY_SERVICE_PORT}\n")
+    dotenv.write(f"NETWORK={NETWORK}\n")
     dotenv.write(f"JSON_RPC_URL={JSON_RPC_URL}\n")
     dotenv.write(f"FAUCET_URL={FAUCET_URL}\n")
     dotenv.write(f"CHAIN_ID={CHAIN_ID}\n")
 
 print(f"creating {liquidity_env_file_path}")
 
-# setup wallet
+# setup liquidity
 with open(liquidity_env_file_path, "w") as dotenv:
     account_name = "liquidity"
     private_keys = {f"{account_name}": liquidity_private_key_hex}
