@@ -62,7 +62,7 @@ jobs:
       - name: Sleep and list docker containers
         if: steps.check_ks.outputs.should_run == 'true'
         run: |
-          sleep 10
+          sleep 90
           docker container ls -a
       - name: Run single-wallet tests on test-runner
         if: steps.check_ks.outputs.should_run == 'true'
@@ -108,7 +108,7 @@ jobs:
       - name: Sleep and list docker containers
         if: steps.check_ks.outputs.should_run == 'true'
         run: |
-          sleep 30
+          sleep 90
           docker container ls -a
       - name: Run double-wallet tests on test-runner
         if: steps.check_ks.outputs.should_run == 'true'

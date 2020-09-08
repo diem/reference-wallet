@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "792fdce687f74cfd82a2450c31b110c5a9567c87f96a40989afaf156042bba35"
+            "sha256": "d325998c32e2076ae9f07363c1477a56d0831118fc1a88343e79b6800b29b622"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -410,13 +410,21 @@
             "index": "pypi",
             "version": "==1.4.3"
         },
+        "libra-offchainreference": {
+            "hashes": [
+                "sha256:30db755c8e1e0ec428e77d9a91dea1102ba5b709ef95d023b8dffa12a8c8e524",
+                "sha256:5c8b353d7bd4f3592ccaff55f846bd52a9b63116f8031b03b48cc3ac33830ed0"
+            ],
+            "index": "pypi",
+            "version": "==0.0.1.dev1"
+        },
         "libra-sample-wallet": {
             "editable": true,
             "path": "."
         },
         "libra-utils": {
             "git": "https://49decaaaf2e5c1c77eca2805117a36b3135f2c26@github.com/libra/libra-reference-utils.git",
-            "ref": "79f23c7d4962436708fec879b4de1f7492bbc100"
+            "ref": "c3239e90fd4c1e2a561f0f4125f1a94716db4d04"
         },
         "markupsafe": {
             "hashes": [
@@ -1268,11 +1276,11 @@
         },
         "pygments": {
             "hashes": [
-                "sha256:2594e8fdb06fef91552f86f4fd3a244d148ab24b66042036e64f29a291515048",
-                "sha256:2df50d16b45b977217e02cba6c8422aaddb859f3d0570a88e09b00eafae89c6e"
+                "sha256:307543fe65c0947b126e83dd5a61bd8acbd84abec11f43caebaf5534cbc17998",
+                "sha256:926c3f319eda178d1bd90851e4317e6d8cdb5e292a3386aac9bd75eca29cf9c7"
             ],
             "markers": "python_version >= '3.5'",
-            "version": "==2.7.0"
+            "version": "==2.7.1"
         },
         "pyparsing": {
             "hashes": [

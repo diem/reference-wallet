@@ -19,14 +19,15 @@ LRW_VASP_COMPLIANCE_KEY = ComplianceKey.from_str(os.getenv("VASP_COMPLIANCE_KEY"
 
 PeerB_addr = LibraAddress.from_bytes(b"B" * 16)
 peer_address = {
-    LRW_VASP_ADDR.as_str(): "http://localhost:8091",
-    PeerB_addr.as_str(): "http://localhost:8092",
+    LRW_VASP_ADDR.as_str(): "http://0.0.0.0:8091",
+    PeerB_addr.as_str(): "http://0.0.0.0:8092",
 }
 peer_b_key = ComplianceKey.generate()
 peer_keys = {
     LRW_VASP_ADDR.as_str(): LRW_VASP_COMPLIANCE_KEY,
     PeerB_addr.as_str(): peer_b_key,
 }
+port = 8091
 
 
 class SimpleVASPInfo(VASPInfo):
@@ -53,6 +54,7 @@ class SimpleVASPInfo(VASPInfo):
 def start_thread_main(vasp, loop):
     # Initialize the VASP services.
     vasp.start_services()
+    print("Started thread main", flush=True)
 
     try:
         # Start the loop
@@ -62,39 +64,34 @@ def start_thread_main(vasp, loop):
         loop.run_until_complete(loop.shutdown_asyncgens())
         loop.close()
 
-    print("VASP loop exit...")
+    print("VASP loop exit...", flush=True)
 
 
-def make_new_VASP(Peer_addr, port, reliable=True):
-    VASPx = Vasp(
+def make_new_VASP(Peer_addr, reliable=True):
+    return Vasp(
         Peer_addr,
-        host="localhost",
+        host="0.0.0.0",
         port=port,
         business_context=TestBusinessContext(Peer_addr, reliable=reliable),
         info_context=SimpleVASPInfo(Peer_addr),
         database={},
     )
 
+
+def init_vasp(vasp):
     loop = asyncio.new_event_loop()
-    VASPx.set_loop(loop)
+    vasp.set_loop(loop)
 
     # Create and launch a thread with the VASP event loop
-    t = Thread(target=start_thread_main, args=(VASPx, loop))
+    t = Thread(target=start_thread_main, args=(vasp, loop))
     t.start()
-    print(f"Start Node {port}", flush=True)
+    print(f"Start Node {vasp.port}", flush=True)
 
     # Block until the event loop in the thread is running.
-    VASPx.wait_for_start()
+    vasp.wait_for_start()
 
-    print(f"Node {port} started", flush=True)
-
-    return (VASPx, loop, t)
-
-
-def init_vasp():
-    VASP, loop, t = make_new_VASP(LRW_VASP_ADDR, port=8091)
+    print(f"Node {vasp.port} started", flush=True)
+    return vasp, loop, t
 
 
-DB_URL: str = os.getenv("DB_URL", "sqlite:////tmp/test.db")
-VASP, loop, thread = make_new_VASP(LRW_VASP_ADDR, port=8091)
-print(f"VASP {VASP} started", flush=True)
+vasp_obj = make_new_VASP(LRW_VASP_ADDR)
