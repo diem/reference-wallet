@@ -12,7 +12,7 @@ from pylibra import LibraNetwork
 import libra_utils.types.currencies
 from libra_utils.types.metadata import MetadataType
 from libra_utils.custody import Custody
-from libra_utils.libra import encode_subaddr
+from libra_utils.libra import encode_subaddr, wait_for_account_seq
 from libra_utils.types.currencies import LibraCurrency
 from pubsub.types import TransactionMetadata
 from tests.wallet_tests.pylibra_mocks import AccountMocker
@@ -27,7 +27,6 @@ from wallet.services.account import (
 from wallet.services.transaction import (
     send_transaction,
     get_transaction_direction,
-    wait_for_account_seq,
     process_incoming_transaction,
     get_transaction,
     RiskCheckError,

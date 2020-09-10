@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import json
 import time
 from abc import ABC, abstractmethod
@@ -258,7 +259,13 @@ class EventStreamStrategy(AbstractStrategy[EventStreamStrategyState]):
 
 
 def create_sync_strategy(settings: Settings) -> AbstractStrategy[ProgressState]:
-    libra_client = pylibra.LibraNetwork()
+    NETWORK = os.getenv('NETWORK', "testnet")
+    FAUCET_URL = os.getenv("FAUCET_URL", "http://faucet.testnet.libra.org")
+    pylibra._config.ENDPOINT_CONFIG[NETWORK] = {
+        'json-rpc': settings.libra_node_uri,
+        'faucet': FAUCET_URL,
+    }
+    libra_client = pylibra.LibraNetwork(NETWORK)
     libra_client._url = settings.libra_node_uri
     subscription_storage = create_account_subscription_storage(
         settings.account_subscription_storage_type,

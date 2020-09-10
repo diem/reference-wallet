@@ -23,6 +23,9 @@ GW_PORT = os.getenv("GW_PORT", 8080)
 ENV_FILE_NAME = os.getenv("ENV_FILE_NAME", ".env")
 LIQUIDITY_SERVICE_HOST = os.getenv("LIQUIDITY_SERVICE_HOST", "liquidity")
 LIQUIDITY_SERVICE_PORT = os.getenv("LIQUIDITY_SERVICE_PORT", 5000)
+NETWORK = os.getenv("NETWORK", "testnet")
+JSON_RPC_URL = os.getenv("JSON_RPC_URL", "https://client.testnet.libra.org/")
+FAUCET_URL = os.getenv("FAUCET_URL", "http://faucet.testnet.libra.org")
 
 wallet_private_key_hex: str = token_bytes(32).hex()
 liquidity_private_key_hex: str = token_bytes(32).hex()
@@ -67,8 +70,11 @@ with open(wallet_env_file_path, "w") as dotenv:
     dotenv.write(
         f"VASP_ADDR={public_libra_address_from_key_hex(wallet_private_key_hex)}\n"
     )
+    dotenv.write(f"NETWORK={NETWORK}\n")
     dotenv.write(f"LIQUIDITY_SERVICE_HOST={LIQUIDITY_SERVICE_HOST}\n")
     dotenv.write(f"LIQUIDITY_SERVICE_PORT={LIQUIDITY_SERVICE_PORT}\n")
+    dotenv.write(f"JSON_RPC_URL={JSON_RPC_URL}\n")
+    dotenv.write(f"FAUCET_URL={FAUCET_URL}\n")
 
 print(f"creating {liquidity_env_file_path}")
 

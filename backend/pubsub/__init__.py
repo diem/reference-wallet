@@ -3,11 +3,11 @@
 
 import os
 
-LIBRA_NODE_URI = "https://client.testnet.libra.org/"
 VASP_ADDR = os.getenv("VASP_ADDR")
+JSON_RPC_URL = os.getenv("JSON_RPC_URL", "https://client.testnet.libra.org/")
 
 DEFL_CONFIG = {
-    "libra_node_uri": LIBRA_NODE_URI,
+    "libra_node_uri": JSON_RPC_URL,
     "sync_interval_ms": 1000,
     "log_file": "/tmp/pubsub_log",
     "progress_storage_type": "file",

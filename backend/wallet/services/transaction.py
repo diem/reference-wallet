@@ -4,8 +4,6 @@
 from time import sleep
 from typing import Optional
 
-from pylibra import LibraNetwork, AccountResource
-
 from libra_utils.libra import decode_subaddr
 from libra_utils.types.currencies import LibraCurrency
 from pubsub.types import TransactionMetadata
@@ -337,33 +335,6 @@ def submit_onchain(transaction_id: int) -> None:
             update_transaction(
                 transaction_id=transaction_id, status=TransactionStatus.CANCELED
             )
-
-
-def validate_account_seq(account, transaction_id):
-    api = LibraNetwork()
-    ar = api.getAccount(account)
-    if ar:
-        return ar.sequence
-
-    add_transaction_log(
-        transaction_id, "On Chain Transfer Failed, account does not exist"
-    )
-    log_execution("On Chain Transfer Failed, account does not exist")
-    update_transaction(transaction_id=transaction_id, status=TransactionStatus.CANCELED)
-    raise Exception("Account doesn't exist!")
-
-
-def wait_for_account_seq(addr_hex: str, seq: int) -> AccountResource:
-    num_tries = 0
-    log_execution(f"Waiting for {addr_hex} seq {seq}")
-    api = LibraNetwork()
-    while num_tries < 1000:
-        account_resource = api.getAccount(addr_hex)
-        if account_resource is not None and account_resource.sequence >= seq:
-            return account_resource
-        sleep(1)
-        num_tries += 1
-    raise Exception("Wait for account sequence timed out!")
 
 
 def get_total_balance() -> Balance:

@@ -3,6 +3,7 @@ import logging
 import time
 
 import pylibra
+import os
 
 from .progress_storage import create_progress_storage
 from .pubsub_adapter import create_pubsub_client
@@ -18,8 +19,13 @@ from .transaction_progress_storage import (
 class LibraPubSubProxy:
     def __init__(self, settings: Settings) -> None:
         logging.basicConfig(level=logging.DEBUG, filename=settings.log_file)
-
-        self.libra_client = pylibra.LibraNetwork()
+        NETWORK = os.getenv('NETWORK', "testnet")
+        FAUCET_URL = os.getenv("FAUCET_URL", "http://faucet.testnet.libra.org")
+        pylibra._config.ENDPOINT_CONFIG[NETWORK] = {
+            'json-rpc': settings.libra_node_uri,
+            'faucet': FAUCET_URL,
+        }
+        self.libra_client = pylibra.LibraNetwork(NETWORK)
         self.libra_client._url = settings.libra_node_uri
 
         self.sync_strategy = create_sync_strategy(settings)
