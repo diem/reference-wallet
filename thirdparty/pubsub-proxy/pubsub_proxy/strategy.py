@@ -259,13 +259,15 @@ class EventStreamStrategy(AbstractStrategy[EventStreamStrategyState]):
 
 
 def create_sync_strategy(settings: Settings) -> AbstractStrategy[ProgressState]:
-    NETWORK = os.getenv('NETWORK', "testnet")
+    # temporary hack to configure network endpoint until pylibra adds support
+    NETWORK = os.getenv("NETWORK", "premainnet")
     FAUCET_URL = os.getenv("FAUCET_URL", "http://faucet.testnet.libra.org")
     pylibra._config.ENDPOINT_CONFIG[NETWORK] = {
-        'json-rpc': settings.libra_node_uri,
-        'faucet': FAUCET_URL,
+        "json-rpc": settings.libra_node_uri,
+        "faucet": FAUCET_URL,
     }
     libra_client = pylibra.LibraNetwork(NETWORK)
+
     libra_client._url = settings.libra_node_uri
     subscription_storage = create_account_subscription_storage(
         settings.account_subscription_storage_type,

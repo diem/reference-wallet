@@ -19,11 +19,12 @@ from .transaction_progress_storage import (
 class LibraPubSubProxy:
     def __init__(self, settings: Settings) -> None:
         logging.basicConfig(level=logging.DEBUG, filename=settings.log_file)
-        NETWORK = os.getenv('NETWORK', "testnet")
+        # temporary hack to configure network endpoint until pylibra adds support
+        NETWORK = os.getenv("NETWORK", "testnet")
         FAUCET_URL = os.getenv("FAUCET_URL", "http://faucet.testnet.libra.org")
         pylibra._config.ENDPOINT_CONFIG[NETWORK] = {
-            'json-rpc': settings.libra_node_uri,
-            'faucet': FAUCET_URL,
+            "json-rpc": settings.libra_node_uri,
+            "faucet": FAUCET_URL,
         }
         self.libra_client = pylibra.LibraNetwork(NETWORK)
         self.libra_client._url = settings.libra_node_uri

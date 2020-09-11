@@ -26,6 +26,7 @@ LIQUIDITY_SERVICE_PORT = os.getenv("LIQUIDITY_SERVICE_PORT", 5000)
 NETWORK = os.getenv("NETWORK", "testnet")
 JSON_RPC_URL = os.getenv("JSON_RPC_URL", "https://client.testnet.libra.org/")
 FAUCET_URL = os.getenv("FAUCET_URL", "http://faucet.testnet.libra.org")
+CHAIN_ID = os.getenv("CHAIN_ID", 2)
 
 wallet_private_key_hex: str = token_bytes(32).hex()
 liquidity_private_key_hex: str = token_bytes(32).hex()
@@ -36,7 +37,6 @@ execution_dir_path = os.getcwd()
 def public_libra_address_from_key_hex(private_key_hex):
     private_key_bytes: bytes = bytes.fromhex(private_key_hex)
     return AccountKeyUtils.from_private_key(private_key_bytes).address.hex()
-
 
 result = subprocess.run(["docker-compose", "--version"], capture_output=True)
 matching_version = re.match(r"docker-compose version (\d\.\d+).*", result.stdout.decode())
@@ -75,6 +75,7 @@ with open(wallet_env_file_path, "w") as dotenv:
     dotenv.write(f"LIQUIDITY_SERVICE_PORT={LIQUIDITY_SERVICE_PORT}\n")
     dotenv.write(f"JSON_RPC_URL={JSON_RPC_URL}\n")
     dotenv.write(f"FAUCET_URL={FAUCET_URL}\n")
+    dotenv.write(f"CHAIN_ID={CHAIN_ID}\n")
 
 print(f"creating {liquidity_env_file_path}")
 
