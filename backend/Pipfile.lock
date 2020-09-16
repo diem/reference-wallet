@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a5b1ef7f8b1332aca2eb248c03a90063c333ae09988b96f675dcdded1f74ff76"
+            "sha256": "792fdce687f74cfd82a2450c31b110c5a9567c87f96a40989afaf156042bba35"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -416,7 +416,7 @@
         },
         "libra-utils": {
             "git": "https://49decaaaf2e5c1c77eca2805117a36b3135f2c26@github.com/libra/libra-reference-utils.git",
-            "ref": "f7a62d30b59240da9aabe746ed677bd119e434de"
+            "ref": "79f23c7d4962436708fec879b4de1f7492bbc100"
         },
         "markupsafe": {
             "hashes": [
@@ -666,10 +666,10 @@
         },
         "pylibra-beta": {
             "hashes": [
-                "sha256:f8ab81ddd17da799c4b86b7f9d5909e360b642364b9324122aa0a6846489f52f"
+                "sha256:27a6d9c38a75982513f81d781abcedf3b69977a90f828ea68f8cbfd867bbf97a"
             ],
             "index": "pypi",
-            "version": "==0.5.2020091001"
+            "version": "==0.5.2020091601"
         },
         "pylint": {
             "hashes": [
