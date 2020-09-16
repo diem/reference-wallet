@@ -40,18 +40,24 @@ def _init_admin_user():
 
 def _create_db(app: Flask) -> None:
     with app.app_context():
+        app.logger.info("Setup wallet storage...")
         setup_wallet_storage()
         app.logger.info("Database ready!")
 
 
 def _init_onchain_wallet() -> None:
+    app.logger.info("Custody init...")
     Custody.init()
+    app.logger.info("Setup blockchain...")
     OnchainWallet().setup_blockchain()
+    app.logger.info("OnChain wallet ready!")
 
 
 def _init_liquidity(app: Flask) -> None:
     with app.app_context():
+        app.logger.info("Setup liquidity client...")
         setup_inventory_account()
+        app.logger.info("Liquidity ready!")
 
 
 def _schedule_update_rates() -> None:
@@ -86,7 +92,9 @@ app: Flask = _create_app()
 
 
 def init() -> Flask:
+    app.logger.info("Init app...")
     _create_db(app)
+    app.logger.info("Setup admin user...")
     _init_admin_user()
     _init_onchain_wallet()
     _init_liquidity(app)
