@@ -83,7 +83,6 @@ with open(liquidity_env_file_path, "w") as dotenv:
     liquidity_account_addr = public_libra_address_from_key_hex(liquidity_private_key_hex)
     print(f'Creating and initialize the liquidity blockchain account {liquidity_account_addr}')
     os.environ["CUSTODY_PRIVATE_KEYS"] = custody_private_keys
-    print(f'os.getenv("CUSTODY_PRIVATE_KEYS")={os.getenv("CUSTODY_PRIVATE_KEYS")}')
     Custody.init()
     lp_vasp = Vasp("liquidity")
     lp_vasp.setup_blockchain()
@@ -95,3 +94,4 @@ with open(liquidity_env_file_path, "w") as dotenv:
         mint_and_wait(lp_vasp.vasp_auth_key, amount, currency.code)
         print(f'mint completed')
 
+    dotenv.write(f"ACCOUNT_WATCHER_AUTH_KEY={lp_vasp.vasp_auth_key}\n")
