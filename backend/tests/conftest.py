@@ -33,7 +33,7 @@ from wallet.storage import db_session
 FAKE_WALLET_PRIVATE_KEY = (
     "682ddb5bcb41abd0a362fe3b332af32a9135abc8effbd75abe8ec6192e2b0c8b"
 )
-FAKE_WALLET_VASP_ADDR = "9135abc8effbd75abe8ec6192e2b0c8b"
+FAKE_WALLET_VASP_ADDR = "c77e1ae3e4a136f070bfcce807747daf"
 FAKE_LIQUIDITY_PRIVATE_KEY = (
     "e3993257580a98855a5e068c579d06f036f92c7dac37c7b3094f78b2f26b3f00"
 )

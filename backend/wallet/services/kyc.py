@@ -77,3 +77,29 @@ def verify_kyc(user_id: int) -> None:
 
 def _is_verified(user: User) -> bool:
     return user.registration_status == RegistrationStatus.Approved
+
+
+def xstr(s):
+    if s is None:
+        return ""
+    return str(s)
+
+
+def get_user_kyc_info(user_id):
+    user = get_user(user_id)
+    return {
+        "payload_type": "KYC_DATA",
+        "payload_version": 1,
+        "type": "individual",
+        "given_name": xstr(user.first_name),
+        "surname": xstr(user.last_name),
+        "dob": xstr(user.dob),
+        "address": {
+            "city": xstr(user.city),
+            "country": xstr(user.country),
+            "line1": xstr(user.address_1),
+            "line2": xstr(user.address_2),
+            "postal_code": xstr(user.zip),
+            "state": xstr(user.state),
+        },
+    }

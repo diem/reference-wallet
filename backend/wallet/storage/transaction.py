@@ -8,10 +8,13 @@ from typing import Optional, List
 
 from sqlalchemy import func, and_, or_
 
+from uuid import uuid1
+from wallet.onchainwallet import OnchainWallet
 from . import db_session, get_user
-from .models import Transaction, TransactionLog
+from .models import Transaction, TransactionLog, OffChain
 from ..types import TransactionStatus, TransactionType
 from libra_utils.types.currencies import LibraCurrency
+from offchainapi.libra_address import LibraAddress
 
 
 def add_transaction(
@@ -43,6 +46,12 @@ def add_transaction(
         sequence=sequence,
         blockchain_version=blockchain_version,
     )
+
+    if payment_type == TransactionType.OFFCHAIN:
+        ref_id = get_new_reference_id()
+        offchain = OffChain(reference_id=ref_id)
+        tx.off_chain.append(offchain)
+        db_session.add(offchain)
 
     db_session.add(tx)
     db_session.commit()
@@ -187,3 +196,29 @@ def get_total_currency_debits():
         .group_by(Transaction.currency, Transaction.status,)
         .all()
     )
+
+
+def get_new_reference_id():
+    lbra = LibraAddress.from_hex(OnchainWallet().vasp_address)
+    print(
+        f"helloooooo {lbra.as_str()}, {lbra.get_onchain_address_hex()},{lbra.onchain_address_bytes}"
+    )
+    return (
+        LibraAddress.from_hex(OnchainWallet().vasp_address).as_str()
+        + "_"
+        + str(uuid1())
+    )
+
+
+def get_reference_id_from_transaction_id(transaction_id):
+    off_chain = OffChain.query.filter_by(transaction_id=transaction_id).first()
+    if off_chain is None:
+        return None
+    return off_chain.reference_id
+
+
+def get_transaction_id_from_reference_id(reference_id):
+    off_chain = OffChain.query.filter_by(reference_id=reference_id).first()
+    if off_chain is None:
+        return None
+    return off_chain.transaction_id

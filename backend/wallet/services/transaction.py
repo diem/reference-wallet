@@ -13,12 +13,15 @@ from . import INVENTORY_ACCOUNT_NAME
 from .log import add_transaction_log
 from .. import storage, services, OnchainWallet
 from ..logging import log_execution
+from datetime import datetime
 from ..storage import (
     add_transaction,
     Transaction,
     get_transaction_by_details,
     get_total_currency_credits,
     get_total_currency_debits,
+    get_reference_id_from_transaction_id,
+    get_transaction_status,
 )
 from ..storage import get_account_id_from_subaddr, get_account
 from ..types import (
@@ -28,6 +31,10 @@ from ..types import (
     BalanceError,
     Balance,
 )
+from offchainapi.libra_address import LibraAddress
+from offchainapi.payment import PaymentAction, PaymentActor, PaymentObject, StatusObject
+from offchainapi.payment_logic import PaymentCommand
+from offchainapi.status_logic import Status
 
 
 class RiskCheckError(Exception):
@@ -114,9 +121,12 @@ def send_transaction(
         )
 
     if not risk_check(sender_id, amount):
-        raise RiskCheckError(
-            f"Transaction amount is above amount threshold of {TX_AMOUNT_THRESHOLD / 1_000_000}{currency.value}. "
-            f"In this case off-chain KYC validation is necessary, which has not been implemented yet."
+        return _send_transaction_external_offchain(
+            sender_id=sender_id,
+            destination_address=destination_address,
+            destination_subaddress=destination_subaddress,
+            amount=amount,
+            currency=currency,
         )
 
     if destination_subaddress is None:
@@ -189,6 +199,23 @@ def _send_transaction_internal(
         amount=amount,
         currency=currency,
         payment_type=payment_type,
+    )
+
+
+def _send_transaction_external_offchain(
+    sender_id, destination_address, destination_subaddress, amount, currency,
+) -> Optional[Transaction]:
+    log_execution(
+        f"Offchain external transaction from {sender_id} to receiver {destination_address}, "
+        f"receiver subaddress {destination_subaddress}"
+    )
+    return external_offchain_transaction(
+        sender_id=sender_id,
+        receiver_address=destination_address,
+        receiver_subaddress=destination_subaddress,
+        amount=amount,
+        currency=currency,
+        payment_type=TransactionType.OFFCHAIN,
     )
 
 
@@ -304,6 +331,153 @@ def external_transaction(
         submit_onchain(transaction_id=transaction.id)
 
     return transaction
+
+
+def external_offchain_transaction(
+    sender_id: int,
+    receiver_address: str,
+    receiver_subaddress: str,
+    amount: int,
+    currency: LibraCurrency,
+    payment_type: TransactionType,
+    original_payment_reference_id: Optional[str] = None,
+    description: Optional[str] = None,
+) -> Transaction:
+
+    from offchain import VASP
+
+    print(
+        f"=================Start external_offchain_transaction {OnchainWallet().vasp_address}, {sender_id}, {receiver_address}, {receiver_subaddress}, {amount}, {currency}, {payment_type}"
+    )
+    if not validate_balance(sender_id, amount, currency):
+        raise BalanceError(f"Balance is less than amount needed {amount}")
+
+    sender_subaddress = account_service.generate_new_subaddress(account_id=sender_id)
+    print("======sender_subaddress: ", sender_subaddress)
+    transaction = add_transaction(
+        amount=amount,
+        currency=currency,
+        payment_type=payment_type,
+        status=TransactionStatus.PENDING,
+        source_id=sender_id,
+        source_address=OnchainWallet().vasp_address,
+        source_subaddress=sender_subaddress,
+        destination_id=None,
+        destination_address=receiver_address,
+        destination_subaddress=receiver_subaddress,
+    )
+
+    # off-chain logic
+    sender_address = LibraAddress.from_bytes(
+        bytes.fromhex(OnchainWallet().vasp_address),
+        bytes.fromhex(sender_subaddress),
+        hrp="lbr",
+    )
+    print(
+        "!!!!!!!!!!!!!!sender address",
+        OnchainWallet().vasp_address,
+        sender_address.as_str(),
+        sender_address.get_onchain().as_str(),
+    )
+    receiver_address = LibraAddress.from_bytes(
+        bytes.fromhex(receiver_address), bytes.fromhex(receiver_subaddress), hrp="lbr"
+    )
+    print(
+        "!!!!!!!!!!!!!!recceiver address",
+        receiver_address.as_str(),
+        receiver_address.get_onchain().as_str(),
+    )
+    sender = PaymentActor(
+        sender_address.as_str(), StatusObject(Status.needs_kyc_data), [],
+    )
+    receiver = PaymentActor(receiver_address.as_str(), StatusObject(Status.none), [])
+    action = PaymentAction(amount, currency, "charge", str(datetime.utcnow()))
+    reference_id = get_reference_id_from_transaction_id(transaction.id)
+    payment = PaymentObject(
+        sender=sender,
+        receiver=receiver,
+        reference_id=reference_id,
+        original_payment_reference_id=original_payment_reference_id,
+        description=description,
+        action=action,
+    )
+    cmd = PaymentCommand(payment)
+
+    if not get_transaction_status(transaction.id) == TransactionStatus.PENDING:
+        log_execution(
+            "In external_offchain_transaction, payment status is not PENDING, abort"
+        )
+        return
+
+    update_transaction(transaction.id, TransactionStatus.OFF_CHAIN_STARTED)
+    log_execution(
+        "In external_offchain_transaction: Updated status to OFF_CHAIN_STARTED"
+    )
+
+    result = VASP.new_command(receiver_address.get_onchain(), cmd).result()
+    log_execution(
+        f"!!!!!!!!!!!!!!!!!================do we get a result back??????????????? {result}"
+    )
+
+    return transaction
+
+
+def start_settle_offchain(transaction_id: int) -> None:
+    print("~~~start_settle_offchain~~~")
+    if services.run_bg_tasks():
+        print("~~~start_settle_offchain run bg task ~~~")
+        from ..background_tasks.background import async_external_transaction_offchain
+
+        async_external_transaction_offchain.send(transaction_id)
+    else:
+        print("~~~start_settle_offchain~~~ just straight up")
+        settle_offchain(transaction_id)
+
+
+def settle_offchain(transaction_id: int) -> None:
+    transaction = get_transaction(transaction_id)
+    print(
+        f"submit_onchain===================={transaction_id}, {transaction.status}, {transaction.type}"
+    )
+    if (
+        transaction.status == TransactionStatus.READY_FOR_ON_CHAIN
+        and transaction.type == TransactionType.OFFCHAIN
+    ):
+        try:
+            libra_currency = LibraCurrency[transaction.currency]
+            print(
+                "==============starting submit_onchain",
+                libra_currency,
+                transaction.amount,
+                transaction.destination_address,
+                transaction.destination_subaddress,
+                transaction.source_subaddress,
+            )
+
+            blockchain_tx_version, tx_sequence = OnchainWallet().send_transaction(
+                currency=libra_currency,
+                amount=transaction.amount,
+                dest_vasp_address=transaction.destination_address,
+                dest_sub_address=transaction.destination_subaddress,
+                source_subaddr=transaction.source_subaddress,
+            )
+
+            update_transaction(
+                transaction_id=transaction_id,
+                status=TransactionStatus.COMPLETED,
+                sequence=tx_sequence,
+                blockchain_tx_version=blockchain_tx_version,
+            )
+
+            add_transaction_log(transaction_id, "On Chain Transfer Complete")
+            log_execution("On Chain Transfer Complete")
+        except Exception as e:
+            print("Error in _async_start_onchain_transfer: ", e)
+            add_transaction_log(transaction_id, "On Chain Transfer Failed")
+            log_execution("On Chain Transfer Failed")
+            update_transaction(
+                transaction_id=transaction_id, status=TransactionStatus.CANCELED
+            )
 
 
 def submit_onchain(transaction_id: int) -> None:

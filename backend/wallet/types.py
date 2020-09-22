@@ -21,11 +21,14 @@ class TransactionStatus(str, Enum):
     PENDING = "pending"
     COMPLETED = "completed"
     CANCELED = "canceled"
+    READY_FOR_ON_CHAIN = "ready_for_on_chain"
+    OFF_CHAIN_STARTED = "off_chain_started"
 
 
 class TransactionType(str, Enum):
     EXTERNAL = "external"
     INTERNAL = "internal"
+    OFFCHAIN = "offchain"
 
 
 class TransactionSortOption(str, Enum):
@@ -183,3 +186,7 @@ class Balance:
             LibraCurrency.Coin1: 0,
             LibraCurrency.Coin2: 0,
         }
+
+
+class UserNotFoundError(Exception):
+    pass

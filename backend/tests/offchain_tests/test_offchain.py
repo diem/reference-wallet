@@ -1,7 +1,15 @@
+# Copyright (c) The Libra Core Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 from threading import Thread
-import time
 import asyncio
 import logging
+import pytest
+from datetime import datetime
+from _pytest.monkeypatch import MonkeyPatch
+from tests.wallet_tests.pylibra_mocks import AccountMocker
+from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
+from pylibra import LibraNetwork
 
 from offchainapi.business import VASPInfo, BusinessContext, BusinessValidationFailure
 from offchainapi.libra_address import LibraAddress
@@ -16,13 +24,26 @@ from offchainapi.payment import (
 )
 from offchainapi.crypto import ComplianceKey
 from offchainapi.core import Vasp
-from offchainapi.tests.basic_business_context import TestBusinessContext
+
+from wallet import OnchainWallet
+from wallet.types import TransactionDirection, TransactionType, TransactionStatus
+from wallet.storage import (
+    db_session,
+    get_account_transaction_ids,
+    get_single_transaction,
+    get_reference_id_from_transaction_id,
+    add_transaction,
+)
+from wallet.services.account import generate_new_subaddress, get_account_balance
+from libra_utils.types.currencies import LibraCurrency
+from offchain.offchain_business import LRWOffChainBusinessContext
+
 
 logger = logging.getLogger(name="test_offchain")
 
 
-PeerA_addr = LibraAddress.from_bytes(b"A" * 16)
-PeerB_addr = LibraAddress.from_bytes(b"B" * 16)
+PeerA_addr = LibraAddress.from_hex("c77e1ae3e4a136f070bfcce807747daf")
+PeerB_addr = LibraAddress.from_bytes(b"B" * 16, hrp="tlb")
 peer_address = {
     PeerA_addr.as_str(): "http://localhost:8091",
     PeerB_addr.as_str(): "http://localhost:8092",
@@ -69,7 +90,31 @@ def start_thread_main(vasp, loop):
     print("VASP loop exit...")
 
 
-def make_new_VASP(Peer_addr, port, reliable=True):
+def make_VASPa(Peer_addr, port, reliable=True):
+    VASPx = Vasp(
+        Peer_addr,
+        host="localhost",
+        port=port,
+        business_context=LRWOffChainBusinessContext(Peer_addr, reliable=reliable),
+        info_context=SimpleVASPInfo(Peer_addr),
+        database={},
+    )
+
+    loop = asyncio.new_event_loop()
+    VASPx.set_loop(loop)
+
+    # Create and launch a thread with the VASP event loop
+    t = Thread(target=start_thread_main, args=(VASPx, loop))
+    t.start()
+    print(f"Start Node {port}")
+
+    # Block until the event loop in the thread is running.
+    VASPx.wait_for_start()
+
+    return (VASPx, loop, t)
+
+
+def make_VASPb(Peer_addr, port, reliable=True):
     VASPx = Vasp(
         Peer_addr,
         host="localhost",
@@ -93,124 +138,266 @@ def make_new_VASP(Peer_addr, port, reliable=True):
     return (VASPx, loop, t)
 
 
-async def test_main_perf(messages_num=10, wait_num=0, verbose=False):
-    VASPa, loopA, tA = make_new_VASP(PeerA_addr, port=8091)
-    VASPb, loopB, tB = make_new_VASP(PeerB_addr, port=8092, reliable=False)
+@pytest.fixture
+def send_transaction_mock(monkeypatch):
+    def send_mock(
+        self,
+        amount: int,
+        currency: LibraCurrency,
+        dest_vasp_address: str,
+        dest_sub_address: str,
+        source_subaddr: str,
+    ) -> (int, int):
+        return 0, 0
 
-    # Get the channel from A -> B
-    channelAB = VASPa.vasp.get_channel(PeerB_addr)
-    channelBA = VASPb.vasp.get_channel(PeerA_addr)
+    monkeypatch.setattr(OnchainWallet, "send_transaction", send_mock)
 
-    # Define a payment command
-    commands = []
-    payments = []
+
+@pytest.fixture
+def get_peer_compliance_key_mock(monkeypatch):
+    def get_peer_keys_mock(self,) -> {}:
+        return peer_keys
+
+    monkeypatch.setattr(LRWOffChainBusinessContext, "get_peer_keys", get_peer_keys_mock)
+
+
+async def test_main_perf(
+    caplog,
+    monkeypatch: MonkeyPatch,
+    get_peer_compliance_key_mock,
+    send_transaction_mock,
+    messages_num=1,
+):
+    caplog.set_level(logging.DEBUG)
+
+    VASPa, loopA, tA = make_VASPa(PeerA_addr, port=8091)
+    VASPb, loopB, tB = make_VASPb(PeerB_addr, port=8092)
+
+    account_mocker = AccountMocker()
+    monkeypatch.setattr(LibraNetwork, "getAccount", account_mocker.get_account)
+
+    user = OneUser.run(
+        db_session,
+        account_amount=2000 * 1_000_000,
+        account_currency=LibraCurrency.Coin1,
+    )
+    account_id = user.account_id
+    amount = 1500 * 1_000_000
+    payment_type = TransactionType.OFFCHAIN
+    currency = LibraCurrency.Coin1
+    source_vasp_address = PeerA_addr.get_onchain_address_hex()
+    source_subaddress = generate_new_subaddress(account_id=account_id)
+    destination_vasp_address = PeerB_addr.get_onchain_address_hex()
+    destination_subaddress = (b"b" * 8).hex()
+
+    sub_a = LibraAddress.from_hex(
+        PeerA_addr.get_onchain_address_hex(), source_subaddress
+    ).as_str()
+    sub_b = LibraAddress.from_hex(
+        PeerB_addr.get_onchain_address_hex(), destination_subaddress, hrp="tlb"
+    ).as_str()
+
+    logger.info(f"==========Address A full: {sub_a}, onchain: {PeerA_addr.as_str()}")
+    logger.info(f"==========Address B full: {sub_b}, onchain: {PeerB_addr.as_str()}")
+
     for cid in range(messages_num):
-        peerA_addr = PeerA_addr.as_str()
-        sub_a = LibraAddress.from_bytes(b"A" * 16, b"a" * 8).as_str()
-        sub_b = LibraAddress.from_bytes(b"B" * 16, b"b" * 8).as_str()
+        tx = add_transaction(
+            amount=amount,
+            currency=currency,
+            payment_type=payment_type,
+            status=TransactionStatus.OFF_CHAIN_STARTED,
+            source_id=account_id,
+            source_address=source_vasp_address,
+            source_subaddress=source_subaddress,
+            destination_id=None,
+            destination_address=destination_vasp_address,
+            destination_subaddress=destination_subaddress,
+        )
+        assert tx.id in get_account_transaction_ids(account_id)
+        assert tx.source_id == account_id
+        assert tx.amount == amount
+        assert tx.destination_address == destination_vasp_address
+        assert tx.destination_subaddress == destination_subaddress
+
         sender = PaymentActor(sub_a, StatusObject(Status.needs_kyc_data), [])
         receiver = PaymentActor(sub_b, StatusObject(Status.none), [])
-        action = PaymentAction(10, "TIK", "charge", "2020-01-02 18:00:00 UTC")
+
+        action = PaymentAction(amount, currency, "charge", str(datetime.utcnow()))
+        reference_id = get_reference_id_from_transaction_id(tx.id)
         payment = PaymentObject(
-            sender,
-            receiver,
-            f"{peerA_addr}_ref{cid:08d}",
-            None,
-            "Description ...",
-            action,
+            sender=sender,
+            receiver=receiver,
+            reference_id=reference_id,
+            original_payment_reference_id=None,
+            description=None,
+            action=action,
         )
-        kyc_data = asyncio.run_coroutine_threadsafe(
-            VASPa.bc.get_extended_kyc(payment), loopA
-        )
-        kyc_data = kyc_data.result()
-        payment.sender.add_kyc_data(kyc_data)
-        payments += [payment]
         cmd = PaymentCommand(payment)
-        commands += [cmd]
+        result = VASPa.new_command(PeerB_addr.get_onchain(), cmd).result()
+        assert result
 
-    async def send100(nodeA, commands):
-        res = await asyncio.gather(
-            *[nodeA.new_command_async(VASPb.my_addr, cmd) for cmd in commands],
-            return_exceptions=True,
-        )
-        return res
-
-    async def wait_for_all_payment_outcome(nodeA, payments, results):
-        fut_list = [
-            nodeA.wait_for_payment_outcome_async(p.reference_id)
-            for p, r in zip(payments, results)
-        ]
-
-        res = await asyncio.gather(*fut_list, return_exceptions=True)
-
-        return res
-
-    # Execute 100 requests
-    print("Inject commands")
-    s = time.perf_counter()
-    results = asyncio.run_coroutine_threadsafe(send100(VASPa, commands), loopA)
-    results = results.result()
-
-    # Print the result for all initial commands
-    if verbose:  # verbose:
-        for res in results:
-            print("RES:", res)
-
-    elapsed = time.perf_counter() - s
-
-    print("Wait for all payments to have an outcome")
-    outcomes = asyncio.run_coroutine_threadsafe(
-        wait_for_all_payment_outcome(VASPa, payments, results), loopA
-    )
-    outcomes = outcomes.result()
-
-    # Print the result for all requests
-    if verbose:
-        for out, res in zip(outcomes, results):
-            if not isinstance(out, Exception):
-                print("OUT OK:", out.sender.status, out.receiver.status)
+        num_tries, delay = 20, 1.0
+        while num_tries > 1:
+            payment = VASPa.get_payment_by_ref(reference_id)
+            if (
+                payment.sender.status.as_status() != Status.ready_for_settlement
+                and payment.receiver.status.as_status() != Status.ready_for_settlement
+            ):
+                await asyncio.sleep(delay)
+                num_tries -= 1
             else:
-                print("OUT NOTOK:", str(out))
+                num_tries = 0
 
-    print("All payments done.")
+        assert (
+            VASPa.get_payment_by_ref(reference_id).sender.status.as_status()
+            == Status.ready_for_settlement
+        )
+        assert (
+            VASPb.get_payment_by_ref(reference_id).receiver.status.as_status()
+            == Status.ready_for_settlement
+        )
 
-    # Print some statistics
-    success_number = sum([1 for r in results if type(r) == bool and r])
-    print(f"Commands executed in {elapsed:0.2f} seconds.")
-    print(f"Success #: {success_number}/{len(commands)}")
-
-    assert success_number == len(commands)
-
-    # In case you want to wait for other responses to settle
-    #
-    wait_for = wait_num
-    for t in range(wait_for):
-        print("waiting", t)
-        await asyncio.sleep(1.0)
-
-    # Check that all the payments have been processed and stored.
-    for payment in payments:
-        ref = payment.reference_id
-        _ = VASPa.get_payment_by_ref(ref)
-        hist = VASPa.get_payment_history_by_ref(ref)
-        if verbose:
-            if len(hist) > 1:
-                print("--" * 40)
-                for p in hist:
-                    print(p.pretty())
-
-    print(f"Estimate throughput #: {len(commands)/elapsed} Tx/s")
+        tx = get_single_transaction(tx.id)
+        assert tx.status == TransactionStatus.COMPLETED
 
     # Close the loops
     VASPa.close()
     VASPb.close()
+    assert 1== 0
 
-    # List the command obligations
-    oblA = VASPa.pp.list_command_obligations()
-    oblB = VASPb.pp.list_command_obligations()
-    print(f"Pending processing: VASPa {len(oblA)} VASPb {len(oblB)}")
 
-    # List the remaining retransmits
-    rAB = channelAB.pending_retransmit_number()
-    rBA = channelBA.pending_retransmit_number()
-    print(f"Pending retransmit: VASPa {rAB} VASPb {rBA}")
+class TestBusinessContext(BusinessContext):
+    __test__ = False
+
+    def __init__(self, my_addr, reliable=True):
+        self.my_addr = my_addr
+
+        # Option to make the contect unreliable to
+        # help test error handling.
+        self.reliable = reliable
+        self.reliable_count = 0
+
+    def cause_error(self):
+        self.reliable_count += 1
+        fail = self.reliable_count % 5 == 0
+        if fail:
+            e = BusinessValidationFailure(
+                "Artifical error caused for " "testing error handling"
+            )
+            raise e
+
+    def open_channel_to(self, other_vasp_info):
+        logger.info("~~~~~~~~~~~~~~~~open_channel_to~~~~~~~~~~~")
+        return True
+
+    # ----- Actors -----
+
+    def is_sender(self, payment, ctx=None):
+        myself = self.my_addr.as_str()
+        return myself == payment.sender.get_onchain_address_encoded_str()
+
+    def is_recipient(self, payment, ctx=None):
+        return not self.is_sender(payment)
+
+    async def check_account_existence(self, payment, ctx=None):
+        logger.info("~~~~~~~~~~~~~~~~check_account_existence~~~~~~~~~~~")
+        return True
+
+    # ----- VASP Signature -----
+
+    def validate_recipient_signature(self, payment, ctx=None):
+        logger.info("~~~~~~~~~~~~~~~~validate_recipient_signature~~~~~~~~~~~")
+
+        if "recipient_signature" in payment.data:
+            try:
+                reference_id_bytes = str.encode(payment.reference_id)
+                libra_address_bytes = LibraAddress.from_encoded_str(
+                    payment.sender.address
+                ).onchain_address_bytes
+                sig = payment.data["recipient_signature"]
+                recipient_addr = payment.receiver.get_onchain_address_encoded_str()
+                peer_keys[recipient_addr].verify_ref_id(
+                    reference_id_bytes, libra_address_bytes, payment.action.amount, sig
+                )
+
+                if not self.reliable:
+                    self.cause_error()
+
+                logger.info("----------valid recipient signature=======")
+                return
+            except Exception as e:
+                raise BusinessValidationFailure(
+                    f"Could not validate recipient signature: {sig}, {e}"
+                )
+
+        sig = payment.data.get("recipient_signature", "Not present")
+        raise BusinessValidationFailure(f"Invalid signature: {sig}")
+
+    async def get_recipient_signature(self, payment, ctx=None):
+        logger.info(
+            f"~~~~~~~~~~~~~~~~get_recipient_signature~~~~~~~~~~~{payment.sender.address}"
+        )
+        myself = self.my_addr.as_str()
+        key = peer_keys.get(myself)
+        reference_id_bytes = str.encode(payment.reference_id)
+        libra_addres = LibraAddress.from_encoded_str(
+            payment.sender.address
+        ).onchain_address_bytes
+        signed = key.sign_ref_id(
+            reference_id_bytes, libra_addres, payment.action.amount
+        )
+        logger.info(f"this SIGNATURE {signed}")
+        return signed
+
+    # ----- KYC/Compliance checks -----
+
+    async def next_kyc_to_provide(self, payment, ctx=None):
+        logger.info("~~~~~~~~~~~~~~~~next_kyc_to_provide~~~~~~~~~~~")
+        role = ["receiver", "sender"][self.is_sender(payment)]
+        own_actor = payment.data[role]
+        kyc_data = set()
+
+        if "kyc_data" not in own_actor:
+            kyc_data.add(Status.needs_kyc_data)
+
+        if role == "receiver":
+            if "recipient_signature" not in payment:
+                kyc_data.add(Status.needs_recipient_signature)
+
+        return kyc_data
+
+    async def next_kyc_level_to_request(self, payment, ctx=None):
+        logger.info("~~~~~~~~~~~~~~~~next_kyc_level_to_request~~~~~~~~~~~")
+        other_role = ["sender", "receiver"][self.is_sender(payment)]
+        other_actor = payment.data[other_role]
+
+        if "kyc_data" not in other_actor:
+            return Status.needs_kyc_data
+
+        if other_role == "receiver" and "recipient_signature" not in payment:
+            return Status.needs_recipient_signature
+        logger.info("~~~~~~~~~~~~~~~~next_kyc_level_to_request reached end~~~~~~~~~~~")
+        return None
+
+    async def get_extended_kyc(self, payment, ctx=None):
+        """ Returns the extended KYC information for this payment.
+            In the format: (kyc_data, kyc_signature, kyc_certificate), where
+            all fields are of type str.
+            Can raise:
+                   BusinessNotAuthorized.
+        """
+        logger.info("~~~~~~~~~~~~~~~~get_extended_kyc~~~~~~~~~~~")
+        myself = self.my_addr.as_str()
+        ref_id = payment.reference_id
+        return KYCData(
+            {"payload_type": "KYC_DATA", "payload_version": 1, "type": "individual",}
+        )
+
+    # ----- Settlement -----
+
+    async def ready_for_settlement(self, payment, ctx=None):
+        logger.info("~~~~~~~~~~~~~~~~ready_for_settlement~~~~~~~~~~~")
+        if not self.reliable:
+            self.cause_error()
+
+        return (await self.next_kyc_level_to_request(payment)) is None

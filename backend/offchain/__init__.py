@@ -8,13 +8,12 @@ from offchainapi.core import Vasp
 from offchainapi.business import VASPInfo
 from offchainapi.libra_address import LibraAddress
 from offchainapi.crypto import ComplianceKey
-from wallet.onchainwallet import OnchainWallet
-
-# from .offchain_business import LRWOffChainBusinessContext
-from offchainapi.tests.basic_business_context import TestBusinessContext
+# from wallet.onchainwallet import OnchainWallet
+from .offchain_business import LRWOffChainBusinessContext
 
 
-LRW_VASP_ADDR = LibraAddress.from_bytes(bytes.fromhex(OnchainWallet().vasp_address))
+# LRW_VASP_ADDR = LibraAddress.from_bytes(bytes.fromhex(OnchainWallet().vasp_address))
+LRW_VASP_ADDR = LibraAddress.from_hex(os.getenv("VASP_ADDR"))
 LRW_VASP_COMPLIANCE_KEY = ComplianceKey.from_str(os.getenv("VASP_COMPLIANCE_KEY"))
 
 PeerB_addr = LibraAddress.from_bytes(b"B" * 16)
@@ -68,22 +67,28 @@ def start_thread_main(vasp, loop):
 
 
 def make_new_VASP(Peer_addr, reliable=True):
-    return Vasp(
+    vasp = Vasp(
         Peer_addr,
         host="0.0.0.0",
         port=port,
-        business_context=TestBusinessContext(Peer_addr, reliable=reliable),
+        business_context=LRWOffChainBusinessContext(Peer_addr, reliable=reliable),
         info_context=SimpleVASPInfo(Peer_addr),
         database={},
     )
-
-
-def init_vasp(vasp):
     loop = asyncio.new_event_loop()
     vasp.set_loop(loop)
 
     # Create and launch a thread with the VASP event loop
     t = Thread(target=start_thread_main, args=(vasp, loop))
+    return vasp, loop, t
+
+
+def init_vasp(vasp, loop, t):
+    # loop = asyncio.new_event_loop()
+    # vasp.set_loop(loop)
+    #
+    # # Create and launch a thread with the VASP event loop
+    # t = Thread(target=start_thread_main, args=(vasp, loop))
     t.start()
     print(f"Start Node {vasp.port}", flush=True)
 
@@ -94,4 +99,4 @@ def init_vasp(vasp):
     return vasp, loop, t
 
 
-vasp_obj = make_new_VASP(LRW_VASP_ADDR)
+VASP, loop, thread = make_new_VASP(LRW_VASP_ADDR)

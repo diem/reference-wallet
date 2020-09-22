@@ -58,11 +58,6 @@ def test_transaction_direction(no_background_tasks) -> None:
     assert get_transaction_direction(account_id, send_tx) == TransactionDirection.SENT
 
 
-def test_send_transaction_risk_check_error() -> None:
-    with pytest.raises(RiskCheckError) as risk_check_error:
-        send_fake_tx(amount=1_000 * 1_000_000 + 1)
-
-
 def test_send_tx_to_self_error() -> None:
     with pytest.raises(SelfAsDestinationError):
         send_fake_tx(send_to_self=True)

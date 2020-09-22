@@ -15,7 +15,11 @@ from wallet.services.order import (
 from .utils import retry
 from ..logging import debug_log, log_execution
 from ..services.kyc import verify_kyc
-from ..services.transaction import submit_onchain, process_incoming_transaction
+from ..services.transaction import (
+    submit_onchain,
+    process_incoming_transaction,
+    settle_offchain,
+)
 from libra_utils.types.currencies import LibraCurrency
 
 TIME_BEFORE_KYC_APPROVAL = 5
@@ -49,6 +53,13 @@ def async_cover_order(order_id) -> None:
 def async_external_transaction(transaction_id: int) -> None:
     log_execution("Enter async_external_transaction")
     submit_onchain(transaction_id=transaction_id)
+
+
+@dramatiq.actor(store_results=True)
+@debug_log(None)
+def async_external_transaction_offchain(transaction_id: int) -> None:
+    log_execution("Enter async_external_transaction_offchain")
+    settle_offchain(transaction_id=transaction_id)
 
 
 @dramatiq.actor(store_results=True)
