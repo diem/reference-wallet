@@ -224,21 +224,25 @@ e2e() {
       docker-compose -f $COMPOSE_E2E_TEST up --detach > /dev/null 2>&1
 
       export GW_PORT=$(get_port)
-      ENV_FILE_NAME=".env" PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 GW_PORT=$GW_PORT \
+      export OFFCHAIN_SERVICE_PORT_1=8091
+      ENV_FILE_NAME=".env" PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 GW_PORT=$GW_PORT OFFCHAIN_SERVICE_PORT=$OFFCHAIN_SERVICE_PORT_1 \
             pipenv run python3 scripts/set_env.py > /dev/null 2>&1
       export VASP_ADDR_1=$(source backend/.env && echo $VASP_ADDR)
       echo "export GW_PORT_1=$GW_PORT"
       echo "export VASP_ADDR_1=$VASP_ADDR_1"
+      echo "export OFFCHAIN_SERVICE_PORT_1=$OFFCHAIN_SERVICE_PORT_1"
       docker-compose -p lrw -f $composes up --detach > /dev/null 2>&1
       docker network connect lrw_default test-runner
     fi
     if [ "$single_double" = "double" ]; then
       export GW_PORT_2=$(get_port)
-      ENV_FILE_NAME=".env-2" PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 GW_PORT=$GW_PORT_2 \
-            pipenv run python3 scripts/set_env.py > /dev/null 2>&1
+      export OFFCHAIN_SERVICE_PORT_2=8092
+      ENV_FILE_NAME=".env-2" PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 GW_PORT=$GW_PORT_2 OFFCHAIN_SERVICE_PORT=$OFFCHAIN_SERVICE_PORT_2 \
+          pipenv run python3 scripts/set_env.py > /dev/null 2>&1
       export VASP_ADDR_2=$(source backend/.env-2 && echo $VASP_ADDR)
       echo "export GW_PORT_2=$GW_PORT_2"
       echo "export VASP_ADDR_2=$VASP_ADDR_2"
+      echo "export OFFCHAIN_SERVICE_PORT_2=$OFFCHAIN_SERVICE_PORT_2"
 
       # !!!hacking the env file!!!
       # saves .env to temp and replaces with .env-2
@@ -254,6 +258,7 @@ e2e() {
       cp $liquidity_env_2 $liquidity_env
 
       export GW_PORT=$GW_PORT_2
+      export OFFCHAIN_SERVICE_PORT=$OFFCHAIN_SERVICE_PORT_2
       docker-compose -p lrw2 -f $composes up --detach > /dev/null 2>&1
       docker network connect lrw2_default test-runner
 

@@ -8,11 +8,11 @@ from offchainapi.core import Vasp
 from offchainapi.business import VASPInfo
 from offchainapi.libra_address import LibraAddress
 from offchainapi.crypto import ComplianceKey
+
 # from wallet.onchainwallet import OnchainWallet
 from .offchain_business import LRWOffChainBusinessContext
 
 
-# LRW_VASP_ADDR = LibraAddress.from_bytes(bytes.fromhex(OnchainWallet().vasp_address))
 LRW_VASP_ADDR = LibraAddress.from_hex(os.getenv("VASP_ADDR"))
 LRW_VASP_COMPLIANCE_KEY = ComplianceKey.from_str(os.getenv("VASP_COMPLIANCE_KEY"))
 
@@ -26,7 +26,8 @@ peer_keys = {
     LRW_VASP_ADDR.as_str(): LRW_VASP_COMPLIANCE_KEY,
     PeerB_addr.as_str(): peer_b_key,
 }
-port = 8091
+print(f"OFFCHAIN SERVICE PORT {os.getenv('OFFCHAIN_SERVICE_PORT')}", flush=True)
+OFFCHAIN_SERVICE_PORT: int = int(os.getenv("OFFCHAIN_SERVICE_PORT", 8091))
 
 
 class SimpleVASPInfo(VASPInfo):
@@ -34,11 +35,17 @@ class SimpleVASPInfo(VASPInfo):
         self.my_addr = my_addr
 
     def get_peer_base_url(self, other_addr):
-        other_vasp_addr = other_addr.get_onchain_encoded_str()
-        assert other_vasp_addr in peer_address
-        return peer_address[other_vasp_addr]
+        # TODO: Read base URL from on-chain
+        if OFFCHAIN_SERVICE_PORT == 8091:
+            return "http://0.0.0.0:8092"
+        else:
+            return "http://0.0.0.0:8091"
+        # other_vasp_addr = other_addr.get_onchain_encoded_str()
+        # assert other_vasp_addr in peer_address
+        # return peer_address[other_vasp_addr]
 
     def get_peer_compliance_verification_key(self, other_addr):
+        # TODO: Read compliance key from on-chain
         key = ComplianceKey.from_str(peer_keys[other_addr].export_pub())
         assert not key._key.has_private
         return key
@@ -70,7 +77,7 @@ def make_new_VASP(Peer_addr, reliable=True):
     vasp = Vasp(
         Peer_addr,
         host="0.0.0.0",
-        port=port,
+        port=OFFCHAIN_SERVICE_PORT,
         business_context=LRWOffChainBusinessContext(Peer_addr, reliable=reliable),
         info_context=SimpleVASPInfo(Peer_addr),
         database={},
@@ -84,11 +91,6 @@ def make_new_VASP(Peer_addr, reliable=True):
 
 
 def init_vasp(vasp, loop, t):
-    # loop = asyncio.new_event_loop()
-    # vasp.set_loop(loop)
-    #
-    # # Create and launch a thread with the VASP event loop
-    # t = Thread(target=start_thread_main, args=(vasp, loop))
     t.start()
     print(f"Start Node {vasp.port}", flush=True)
 

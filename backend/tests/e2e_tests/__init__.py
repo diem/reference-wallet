@@ -13,6 +13,8 @@ GW_PORT_1 = os.getenv("GW_PORT_1")
 GW_PORT_2 = os.getenv("GW_PORT_2")
 VASP_ADDR_1 = os.getenv("VASP_ADDR_1")
 VASP_ADDR_2 = os.getenv("VASP_ADDR_2")
+OFFCHAIN_SERVICE_PORT_1 = os.getenv("OFFCHAIN_SERVICE_PORT_1")
+OFFCHAIN_SERVICE_PORT_2 = os.getenv("OFFCHAIN_SERVICE_PORT_2")
 
 print(LRW_WEB_1)
 print(LRW_WEB_2)
@@ -20,6 +22,8 @@ print(GW_PORT_1)
 print(GW_PORT_2)
 print(VASP_ADDR_1)
 print(VASP_ADDR_2)
+print(OFFCHAIN_SERVICE_PORT_1)
+print(OFFCHAIN_SERVICE_PORT_2)
 
 sherlock_info = {
     "address_1": "221B Baker Street",

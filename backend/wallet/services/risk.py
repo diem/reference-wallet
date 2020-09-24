@@ -7,8 +7,7 @@ with a simple amount threshold check. """
 from wallet.logging import log_execution
 from wallet.types import UserNotFoundError
 
-# TX_AMOUNT_THRESHOLD = 1_000_000 * 1_000
-TX_AMOUNT_THRESHOLD = 500_000 * 1_000
+TX_AMOUNT_THRESHOLD = 1_000_000 * 1_000
 
 
 def risk_check(user_id, amount) -> bool:

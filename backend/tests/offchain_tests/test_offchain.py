@@ -263,7 +263,6 @@ async def test_main_perf(
     # Close the loops
     VASPa.close()
     VASPb.close()
-    assert 1== 0
 
 
 class TestBusinessContext(BusinessContext):

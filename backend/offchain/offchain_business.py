@@ -82,6 +82,7 @@ class LRWOffChainBusinessContext(BusinessContext):
 
     def get_peer_keys(self):
         from . import peer_keys
+
         log_execution("~~~~~~~~~~~get_peer_keys~~~~~~~~~~~")
         return peer_keys
 
