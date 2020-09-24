@@ -13,6 +13,18 @@ from libra_utils.custody import Custody
 from libra_utils.libra import get_network_supported_currencies, mint_and_wait
 from libra_utils.vasp import Vasp
 
+
+def init_onchain_account(custody_private_keys, account_name, private_key_hex):
+    account_addr = public_libra_address_from_key_hex(private_key_hex)
+    print(f'Creating and initialize blockchain account {account_name} @ {account_addr}')
+    os.environ["CUSTODY_PRIVATE_KEYS"] = custody_private_keys
+    Custody.init()
+    vasp = Vasp(account_name)
+    vasp.setup_blockchain()
+
+    return vasp
+
+
 if len(sys.argv) > 2 or len(sys.argv) > 1 and '--help' in sys.argv:
     print("""
     Setup wallet and liquidity environment including blockchain private keys generation.
@@ -32,7 +44,7 @@ FAUCET_URL = os.getenv("FAUCET_URL", "http://testnet.libra.org/mint")
 CHAIN_ID = os.getenv("CHAIN_ID", 2)
 
 wallet_private_key_hex: str = token_bytes(32).hex()
-liquidity_private_key_hex: str = token_bytes(32).hex()
+lp_private_key_hex: str = token_bytes(32).hex()
 
 execution_dir_path = os.getcwd()
 
@@ -40,6 +52,7 @@ execution_dir_path = os.getcwd()
 def public_libra_address_from_key_hex(private_key_hex):
     private_key_bytes: bytes = bytes.fromhex(private_key_hex)
     return AccountKeyUtils.from_private_key(private_key_bytes).address.hex()
+
 
 wallet_env_file_path = os.path.join(execution_dir_path, "backend", ENV_FILE_NAME)
 liquidity_env_file_path = os.path.join(execution_dir_path, "liquidity", ENV_FILE_NAME)
@@ -53,12 +66,13 @@ print(f"creating {wallet_env_file_path}")
 
 # setup wallet
 with open(wallet_env_file_path, "w") as dotenv:
-    account_name = "wallet"
-    private_keys = {f"{account_name}": wallet_private_key_hex}
+    wallet_account_name = "wallet"
+    private_keys = {f"{wallet_account_name}": wallet_private_key_hex}
+    wallet_custody_private_keys = json.dumps(private_keys, separators=(',', ':'))
     dotenv.write(f"GW_PORT={GW_PORT}\n")
-    dotenv.write(f"WALLET_CUSTODY_ACCOUNT_NAME={account_name}\n")
+    dotenv.write(f"WALLET_CUSTODY_ACCOUNT_NAME={wallet_account_name}\n")
     dotenv.write(
-        f"CUSTODY_PRIVATE_KEYS={json.dumps(private_keys, separators=(',', ':'))}\n"
+        f"CUSTODY_PRIVATE_KEYS={wallet_custody_private_keys}\n"
     )
     dotenv.write(
         f"VASP_ADDR={public_libra_address_from_key_hex(wallet_private_key_hex)}\n"
@@ -73,28 +87,25 @@ with open(wallet_env_file_path, "w") as dotenv:
     dotenv.write(f"FAUCET_URL={FAUCET_URL}\n")
     dotenv.write(f"CHAIN_ID={CHAIN_ID}\n")
 
-print(f"creating {liquidity_env_file_path}")
+    init_onchain_account(wallet_custody_private_keys, wallet_account_name, wallet_private_key_hex)
 
+print(f"creating {liquidity_env_file_path}")
 # setup liquidity
 with open(liquidity_env_file_path, "w") as dotenv:
-    account_name = "liquidity"
-    private_keys = {f"{account_name}": liquidity_private_key_hex}
-    custody_private_keys = json.dumps(private_keys, separators=(',', ':'))
+    lp_account_name = "liquidity"
+    private_keys = {f"{lp_account_name}": lp_private_key_hex}
+    lp_custody_private_keys = json.dumps(private_keys, separators=(',', ':'))
     dotenv.write(f"LIQUIDITY_CUSTODY_ACCOUNT_NAME=liquidity\n")
     dotenv.write(
-        f"CUSTODY_PRIVATE_KEYS={custody_private_keys}\n"
+        f"CUSTODY_PRIVATE_KEYS={lp_custody_private_keys}\n"
     )
-    liquidity_account_addr = public_libra_address_from_key_hex(liquidity_private_key_hex)
-    print(f'Creating and initialize the liquidity blockchain account {liquidity_account_addr}')
-    os.environ["CUSTODY_PRIVATE_KEYS"] = custody_private_keys
-    Custody.init()
-    lp_vasp = Vasp("liquidity")
-    lp_vasp.setup_blockchain()
-    amount = 999 * 1_000_000
 
-    print('Mint currencies to inventory account')
+    lp_vasp = init_onchain_account(lp_custody_private_keys, lp_account_name, lp_private_key_hex)
+
+    amount = 999 * 1_000_000
+    print('Mint currencies to liquidity account')
     for currency in get_network_supported_currencies():
-        print(f'Mint {currency.code}...',)
+        print(f'Mint {currency.code}...', end=' ')
         mint_and_wait(lp_vasp.vasp_auth_key, amount, currency.code)
         print(f'mint completed')
 

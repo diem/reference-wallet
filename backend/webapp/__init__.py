@@ -48,8 +48,6 @@ def _create_db(app: Flask) -> None:
 def _init_onchain_wallet() -> None:
     app.logger.info("Custody init...")
     Custody.init()
-    app.logger.info("Setup blockchain...")
-    OnchainWallet().setup_blockchain()
     app.logger.info("OnChain wallet ready!")
 
 
