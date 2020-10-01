@@ -11,6 +11,10 @@ custodyPrivateKeysLiquidity:
   liquidity: '<LIQUIDITY_KEY>'
 vaspAddr: "<VASP_ADDR>"
 
+pylibra:
+  jsonRpc: "https://testnet.libra.org/v1"
+  faucet: "http://testnet.libra.org/mint"
+
 images:
   pullPolicy: Never
   backend: lrw_backend

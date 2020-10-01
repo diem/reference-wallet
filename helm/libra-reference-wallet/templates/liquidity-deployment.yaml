@@ -48,6 +48,10 @@ spec:
           value: {{ .Values.service.targetPort | quote }}
         - name: LIQUIDITY_SERVICE_HOST
           value: {{ include "libra-reference-wallet.fullname" . }}-liquidity
+        - name: JSON_RPC_URL
+          value: {{ .Values.pylibra.jsonRpc }}
+        - name: FAUCET_URL
+          value: {{ .Values.pylibra.faucet }}
         name: lrw-liquidity
         image: "{{ .Values.images.liquidity }}"
         imagePullPolicy: {{ .Values.images.pullPolicy }}

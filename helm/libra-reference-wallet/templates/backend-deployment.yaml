@@ -56,6 +56,10 @@ spec:
           value: {{ .Values.service.targetPort | quote }}
         - name: LIQUIDITY_SERVICE_HOST
           value: {{ include "libra-reference-wallet.fullname" . }}-liquidity
+        - name: JSON_RPC_URL
+          value: {{ .Values.pylibra.jsonRpc }}
+        - name: FAUCET_URL
+          value: {{ .Values.pylibra.faucet }}
         image: "{{ .Values.images.backend }}"
         name: lrw-web
         imagePullPolicy: {{ .Values.images.pullPolicy }}
@@ -121,7 +125,11 @@ spec:
         - name: PROCS
           value: {{ .Values.workers.numProcs | quote }}
         - name: THREADS
-          value: {{ .Values.workers.numThreads | quote }}        
+          value: {{ .Values.workers.numThreads | quote }}
+        - name: JSON_RPC_URL
+          value: {{ .Values.pylibra.jsonRpc }}
+        - name: FAUCET_URL
+          value: {{ .Values.pylibra.faucet }}
         image: "{{ .Values.images.backend }}"
         imagePullPolicy: {{ .Values.images.pullPolicy }}
         name: lrw-worker
@@ -182,6 +190,10 @@ spec:
           value: {{ .Values.service.targetPort | quote }}
         - name: LIQUIDITY_SERVICE_HOST
           value: {{ include "libra-reference-wallet.fullname" . }}-liquidity
+        - name: JSON_RPC_URL
+          value: {{ .Values.pylibra.jsonRpc }}
+        - name: FAUCET_URL
+          value: {{ .Values.pylibra.faucet }}
         image: "{{ .Values.images.backend }}"
         imagePullPolicy: {{ .Values.images.pullPolicy }}
         name: lrw-pubsub
