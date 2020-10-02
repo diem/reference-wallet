@@ -3,47 +3,87 @@
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-import os
-from typing import Any, List
+import os, time
+from typing import Any, List, Dict, Optional
 
 import sys
+import logging, json
 
-from pubsub_proxy.events import PubSubEvent
-from pubsub_proxy.pubsub_adapter import BasePubSubClient
-from pubsub_proxy.transaction_progress_storage import FailedTransactionEvent
 from wallet.background_tasks.background import process_incoming_txn
 from .types import LRWPubSubEvent
+from libra import jsonrpc
 
 
-class LRWPubSubClient(BasePubSubClient):
-    def __init__(self, *args: Any) -> None:
-        print(f"Loaded LRWPubSubClient with args: {args}")
-        self.vasp_addr = os.getenv("VASP_ADDR")
+class FileProgressStorage:
+    def __init__(self, path: str) -> None:
+        self.path = path
 
-    def enqueue_events(self, events: List[PubSubEvent]) -> None:
-        for event in events:
+    def fetch_state(self) -> Dict[str, int]:
+        try:
+            with open(self.path, "r") as file:
+                return json.loads(file.read())
+        except (FileNotFoundError, json.JSONDecodeError):
+            return {}
+
+    def save_state(self, state: Dict[str, int]) -> None:
+        with open(self.path, "w") as file:
+            file.write(json.dumps(state))
+
+
+class LRWPubSubClient:
+    def __init__(self, config: Dict[str, Any]) -> None:
+        self.sync_interval_ms = config["sync_interval_ms"]
+        self.accounts = config["accounts"]
+
+        self.libra_node_uri = config["libra_node_uri"]
+        self.progress_file_path = config["progress_file_path"]
+        self.fetch_batch_size = 10
+        self.processor = config.get("processor", process_incoming_txn)
+
+        logging.info(f"Loaded LRWPubSubClient with config: {config}")
+
+        self.client = jsonrpc.Client(self.libra_node_uri)
+        self.progress = FileProgressStorage(self.progress_file_path)
+
+    def start(self) -> None:
+        sync_state = self.init_progress_state()
+        while True:
+            sync_state = self.sync(sync_state, catch_error=True)
+            time.sleep(self.sync_interval_ms / 1000)
+
+    def sync(
+        self, state: Dict[str, int], catch_error: Optional[bool] = False
+    ) -> Dict[str, int]:
+        after_sync_state = state.copy()
+        for key in state:
             try:
-                lrw_event = LRWPubSubEvent.fromPubSubEvent(event)
-                # HACK!!!
-                if len(lrw_event.sender) > 32:
-                    lrw_event.sender = lrw_event.sender[len(lrw_event.sender) - 32 :]
-                if len(lrw_event.receiver) > 32:
-                    lrw_event.receiver = lrw_event.receiver[
-                        len(lrw_event.receiver) - 32 :
-                    ]
-                if lrw_event.receiver == self.vasp_addr:
-                    msg = process_incoming_txn.send(lrw_event)
-                    print(f"SUCCESS: sent to wallet onchain {lrw_event}")
-                else:
-                    print(f"got a non-incoming event. will not process {lrw_event}")
-            except TypeError as e:
-                print(f"ERROR: could not convert pubsub types {e}")
-            except Exception as e:
-                print(f"ERROR: {e}")
+                sequence_num = state[key]
+                events = self.client.get_events(
+                    key, sequence_num, self.fetch_batch_size
+                )
+                for event in events:
+                    lrw_event = LRWPubSubEvent.from_jsonrpc_event(event)
+                    self.processor.send(lrw_event)
+                    logging.info(f"SUCCESS: sent to wallet onchain {lrw_event}")
 
-        sys.stdout.flush()
+                after_sync_state[key] = sequence_num + len(events)
+            except Exception as exc:
+                logging.error(f"failed to perform sync for event key {key}: {exc}")
+                if not catch_error:
+                    raise exc
 
-    def enqueue_expired_transactions(
-        self, events: List[FailedTransactionEvent]
-    ) -> None:
-        pass
+        self.progress.save_state(after_sync_state)
+        logging.info(f"processed next chunk. New state is {after_sync_state}")
+
+        return after_sync_state
+
+    def init_progress_state(self) -> Dict[str, int]:
+        state = self.progress.fetch_state()
+        for address in self.accounts:
+            account = self.client.get_account(address)
+            if account is None:
+                logging.error(f"account not found: {address}")
+                continue
+            if account.received_events_key not in state:
+                state[account.received_events_key] = 0
+        return state

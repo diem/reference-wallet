@@ -6,8 +6,8 @@ import json
 import sys
 
 from pubsub import DEFL_CONFIG, VASP_ADDR
-from pubsub_proxy.proxy import LibraPubSubProxy
-from pubsub_proxy.settings import Settings
+from pubsub.client import LRWPubSubClient
+
 
 parser = argparse.ArgumentParser(
     description="Pubsub CLI tool. Takes in pubsub config file or VASP_ADDR environment variable"
@@ -30,7 +30,5 @@ else:  # load in by env var
 
 print(conf)
 
-settings = Settings(conf)
-pubsub_client = LibraPubSubProxy(settings)
-
-pubsub_client.start()
+client = LRWPubSubClient(conf)
+client.start()

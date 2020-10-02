@@ -3,7 +3,7 @@
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-from pubsub_proxy.events import PubSubEvent
+from libra import libra_types, jsonrpc
 from libra_utils.libra import TransactionMetadata
 
 
@@ -27,15 +27,15 @@ class LRWPubSubEvent:
         self.sequence = sequence
 
     @classmethod
-    def fromPubSubEvent(cls, pubsub_event: PubSubEvent) -> "LRWPubSubEvent":
+    def from_jsonrpc_event(cls, event: jsonrpc.Event) -> "LRWPubSubEvent":
         return LRWPubSubEvent(
-            sender=pubsub_event.payer.hex(),
-            receiver=pubsub_event.payee.hex(),
-            amount=pubsub_event.amount,
-            currency=pubsub_event.currency,
-            metadata=pubsub_event.subaddress,  # NOTE: pubsub proxy based on old metadata spec
-            version=pubsub_event.transaction_version,
-            sequence=pubsub_event.sequence_number,
+            sender=event.data.sender,
+            receiver=event.data.receiver,
+            amount=event.data.amount.amount,
+            currency=event.data.amount.currency,
+            metadata=bytes.fromhex(event.data.metadata),
+            version=event.transaction_version,
+            sequence=event.sequence_number,
         )
 
     def __str__(self) -> str:
