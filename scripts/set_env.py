@@ -4,6 +4,7 @@
 import json
 import os
 from secrets import token_bytes
+from cryptography.hazmat.primitives import serialization
 
 import sys
 from pylibra import AccountKeyUtils
@@ -14,13 +15,13 @@ from libra_utils.libra import get_network_supported_currencies, mint_and_wait
 from libra_utils.vasp import Vasp
 
 
-def init_onchain_account(custody_private_keys, account_name, private_key_hex):
+def init_onchain_account(custody_private_keys, account_name, private_key_hex, base_url, compliance_key):
     account_addr = public_libra_address_from_key_hex(private_key_hex)
     print(f'Creating and initialize blockchain account {account_name} @ {account_addr}')
     os.environ["CUSTODY_PRIVATE_KEYS"] = custody_private_keys
     Custody.init()
     vasp = Vasp(account_name)
-    vasp.setup_blockchain()
+    vasp.setup_blockchain(base_url, compliance_key)
 
     return vasp
 
@@ -43,11 +44,30 @@ NETWORK = os.getenv("NETWORK", "testnet")
 JSON_RPC_URL = os.getenv("JSON_RPC_URL", "https://testnet.libra.org/v1")
 FAUCET_URL = os.getenv("FAUCET_URL", "http://testnet.libra.org/mint")
 CHAIN_ID = os.getenv("CHAIN_ID", 2)
+VASP_BASE_URL = os.getenv("VASP_BASE_URL", "http://0.0.0.0:8091")
+LIQUIDITY_BASE_URL = os.getenv("LIQUIDITY_BASE_URL", "http://0.0.0.0:8092")
+COMPLIANCE_KEY = ComplianceKey.generate()
+VASP_COMPLIANCE_KEY = os.getenv("VASP_COMPLIANCE_KEY", COMPLIANCE_KEY.export_full())
+VASP_PUBLIC_KEY_BYTES = COMPLIANCE_KEY.get_public().public_bytes(
+    encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
+)
+COMPLIANCE_KEY_2 = ComplianceKey.generate()
+LIQUIDITY_COMPLIANCE_KEY = os.getenv("LIQUIDITY_COMPLIANCE_KEY", COMPLIANCE_KEY_2.export_full())
+LIQUIDITY_PUBLIC_KEY_BYTES = COMPLIANCE_KEY_2.get_public().public_bytes(
+    encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
+)
 
 wallet_private_key_hex: str = token_bytes(32).hex()
 lp_private_key_hex: str = token_bytes(32).hex()
 
 execution_dir_path = os.getcwd()
+
+if NETWORK == "premainnet":
+    vasp = Vasp("wallet")
+    vasp_liquidity = Vasp("liquidity")
+    vasp.rotate_dual_attestation_info(VASP_BASE_URL, VASP_PUBLIC_KEY_BYTES)
+    vasp_liquidity.rotate_dual_attestation_info(LIQUIDITY_BASE_URL, LIQUIDITY_PUBLIC_KEY_BYTES)
+    exit(0)
 
 
 def public_libra_address_from_key_hex(private_key_hex):
@@ -79,7 +99,10 @@ with open(wallet_env_file_path, "w") as dotenv:
         f"VASP_ADDR={public_libra_address_from_key_hex(wallet_private_key_hex)}\n"
     )
     dotenv.write(
-        f"VASP_COMPLIANCE_KEY={ComplianceKey.generate().export_full()}\n"
+        f"VASP_BASE_URL={VASP_BASE_URL}\n"
+    )
+    dotenv.write(
+        f"VASP_COMPLIANCE_KEY={VASP_COMPLIANCE_KEY}\n"
     )
     dotenv.write(f"LIQUIDITY_SERVICE_HOST={LIQUIDITY_SERVICE_HOST}\n")
     dotenv.write(f"LIQUIDITY_SERVICE_PORT={LIQUIDITY_SERVICE_PORT}\n")
@@ -89,7 +112,7 @@ with open(wallet_env_file_path, "w") as dotenv:
     dotenv.write(f"FAUCET_URL={FAUCET_URL}\n")
     dotenv.write(f"CHAIN_ID={CHAIN_ID}\n")
 
-    init_onchain_account(wallet_custody_private_keys, wallet_account_name, wallet_private_key_hex)
+    init_onchain_account(wallet_custody_private_keys, wallet_account_name, wallet_private_key_hex, VASP_BASE_URL, VASP_PUBLIC_KEY_BYTES)
 
 print(f"creating {liquidity_env_file_path}")
 # setup liquidity
@@ -102,7 +125,7 @@ with open(liquidity_env_file_path, "w") as dotenv:
         f"CUSTODY_PRIVATE_KEYS={lp_custody_private_keys}\n"
     )
 
-    lp_vasp = init_onchain_account(lp_custody_private_keys, lp_account_name, lp_private_key_hex)
+    lp_vasp = init_onchain_account(lp_custody_private_keys, lp_account_name, lp_private_key_hex, LIQUIDITY_BASE_URL, LIQUIDITY_PUBLIC_KEY_BYTES)
 
     amount = 999 * 1_000_000
     print('Mint currencies to liquidity account')
