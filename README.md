@@ -7,6 +7,11 @@ Libra Reference Wallet is an open-source project aimed at helping developers kic
 * Libra Reference Wallet is a reference implementation, and not meant to be fully production grade. 
 * The project will continue to develop to include the different aspects of the evolving Libra ecosystem.   
 
+
+## Getting Started
+
+Setup instructions and system requirements can be found here: [backend](/backend#libra-reference-wallet)
+
 ## Project Organization
 
 The project is separated into the following components:
