@@ -12,18 +12,21 @@ but also demonstrate thoughtful design, content, and best experience practices.
 
 ## Getting Started
 
-The quickest way to get started testing the Libra Reference Wallet is by using Docker Compose. Before we do that, let's set up our pipenv and generate a key to use. These will be populated into environment variables for Docker Compose to grab:
+The quickest way to get started testing the Libra Reference Wallet is by using Docker Compose.
 
-    $ cd backend && pipenv install --dev  # set up pipenv for backend
-    $ cd ../liquidity && pipenv install --dev  # set up pipenv for liquidity
-    $ cd ..  # get back to project root
+* You'll need to install both:
+    * [Docker](https://docs.docker.com/get-docker/)
+    * [Docker Compose](https://docs.docker.com/compose/)
+
+Next, setup the local system and generate necesssary keys using the script below. This information will be shared into the local environment for Docker Compose to consume.
+
     $ ./scripts/lrw.sh setup_environment  # generate and register keys
 
-After running the above commands and installing both [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/), run the following to build the images from source and stand up a local deployment:
+Then run the following to build the images from source and stand up a local deployment:
 
     $ ./scripts/lrw.sh develop
 
-The default gateway port is 8080, so you should be able to visit it at http://localhost:8080. Develop mode also exposes the other ports from the backend services onto the host. The main backend webserver is on 5000. Swagger API docs can be found at http://localhost:5000/apidocs.
+The default gateway port is 8080, so you can visit http://localhost:8080. Develop mode also exposes the other ports from the backend services onto the host. The main backend webserver is on 5000. Swagger API docs can be found at http://localhost:5000/apidocs.
 
 Getting started in the code, we've provided detailed logs through each of the [workflows](wallet/background_tasks), which can be found at http://localhost:5000/execution_logs.
 
