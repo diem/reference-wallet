@@ -44,6 +44,8 @@ spec:
           value: {{ .Values.peripherals.database.adminUsername }}
         - name: CUSTODY_PRIVATE_KEYS
           value: {{ .Values.custodyPrivateKeysLiquidity | toJson | quote }}
+        - name: ACCOUNT_WATCHER_AUTH_KEY
+          value: {{ .Values.accountWatcherAuthKey | quote }}
         - name: LIQUIDITY_SERVICE_PORT
           value: {{ .Values.service.targetPort | quote }}
         - name: LIQUIDITY_SERVICE_HOST

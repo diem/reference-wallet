@@ -10,6 +10,7 @@ custodyPrivateKeysWallet:
 custodyPrivateKeysLiquidity:
   liquidity: '<LIQUIDITY_KEY>'
 vaspAddr: "<VASP_ADDR>"
+accountWatcherAuthKey: "<ACCOUNT_WATCHER_AUTH_KEY>"
 
 pylibra:
   jsonRpc: "https://testnet.libra.org/v1"
