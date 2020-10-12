@@ -10,7 +10,7 @@ interface ErrorMessageProps {
 
 function ErrorMessage({ message }: ErrorMessageProps) {
   return (
-    <Alert color="danger" className="my-2 small">
+    <Alert color="danger" className="my-2">
       <i className="fa fa-close" /> {message}
     </Alert>
   );

@@ -10,7 +10,7 @@ interface InfoMessageProps {
 
 function InfoMessage({ message }: InfoMessageProps) {
   return (
-    <Alert color="info" className="my-2 small">
+    <Alert color="info" className="my-2">
       <i className="fa fa-info-circle" /> {message}
     </Alert>
   );

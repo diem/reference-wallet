@@ -3,13 +3,14 @@
 
 import React, { FormEvent, useState } from "react";
 
-import { Button, Container, Form, FormGroup, FormText, Input } from "reactstrap";
+import { Button, Container, Form, FormGroup, FormText, Input, Spinner } from "reactstrap";
 import BackendClient from "../services/backendClient";
 import { Link } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import { BackendError } from "../services/errors";
 import SessionStorage from "../services/sessionStorage";
 import ErrorMessage from "../components/Messages/ErrorMessage";
+import SignedUpMessage from "../components/SignedUpMessage";
 
 function Signup() {
   const { t } = useTranslation("auth");
@@ -52,18 +53,7 @@ function Signup() {
         <section className="slim-section m-auto">
           {errorMessage && <ErrorMessage message={errorMessage} />}
 
-          {submitStatus === "success" &&
-            (process.env.NODE_ENV === "production" ? (
-              <>
-                <h1 className="h3">{t("signup.success_username.headline")}</h1>
-                <p>{t("signup.success_username.text", { replace: { email: username } })}</p>
-              </>
-            ) : (
-              <>
-                <h1 className="h3">{t("signup.success_email.headline")}</h1>
-                <p>{t("signup.success_email.text", { replace: { username } })}</p>
-              </>
-            ))}
+          {submitStatus === "success" && <SignedUpMessage username={username} />}
 
           {submitStatus !== "success" && (
             <>

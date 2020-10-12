@@ -128,8 +128,8 @@ function ReceiveModal({ open, onClose, currency }: ReceiveModalProps) {
                 />
               )}
             </div>
-            <div className="text-center my-4 font-weight-bold text-break">
-              {receivingAddressWithIntents}
+            <div className="text-center my-4 font-weight-bold text-break small">
+              <code>{receivingAddressWithIntents}</code>
             </div>
             <Button color="black" block onClick={copy}>
               {copied ? (

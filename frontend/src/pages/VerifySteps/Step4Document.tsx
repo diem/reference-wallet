@@ -73,9 +73,16 @@ const Step4Document = ({ info, onBack, onSubmit }: Step4DocumentProps) => {
             </Button>
           </Col>
           <Col>
-            <Button color="black" type="submit" block disabled={!selectedFile}>
-              {t("step4.continue")}
-            </Button>
+            {!selectedFile && (
+              <Button color="black" type="submit" block>
+                {t("step4.skip")}
+              </Button>
+            )}
+            {selectedFile && (
+              <Button color="black" type="submit" block>
+                {t("step4.continue")}
+              </Button>
+            )}
           </Col>
         </Row>
       </Form>

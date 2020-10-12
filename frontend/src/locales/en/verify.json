@@ -46,7 +46,8 @@
       "upload": "Drag and Drop or click here to select a file"
     },
     "back": "Back",
-    "continue": "Continue"
+    "continue": "Continue",
+    "skip": "Skip"
   },
   "step5": {
     "title": "Choose Default Currency",

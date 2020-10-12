@@ -10,7 +10,7 @@ interface SuccessMessageProps {
 
 function SuccessMessage({ message }: SuccessMessageProps) {
   return (
-    <Alert color="success" className="my-2 small">
+    <Alert color="success" className="my-2">
       <i className="fa fa-check" /> {message}
     </Alert>
   );

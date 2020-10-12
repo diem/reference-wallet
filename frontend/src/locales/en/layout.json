@@ -17,7 +17,12 @@
   },
   "verification_pending": {
     "title": "Verification Pending",
-    "description": "Your information is being reviewed. We’ll let you know when it’s complete."
+    "description": "Your information is being reviewed. We’ll let you know when it’s complete.",
+    "redirect": "You will be redirected shortly"
+  },
+  "no_payment_methods": {
+    "title": "You don't have any payment method associated with your account",
+    "button": "Update now"
   },
   "feedback": {
     "title": "Leave your feedback",

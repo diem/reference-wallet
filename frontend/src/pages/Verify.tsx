@@ -7,6 +7,7 @@ import { Button, Container } from "reactstrap";
 import { Redirect } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import faker from "faker";
+import { countries } from "countries-list";
 import { settingsContext } from "../contexts/app";
 import BackendClient from "../services/backendClient";
 import { BackendError } from "../services/errors";
@@ -86,13 +87,14 @@ const Verify = () => {
   useEffect(() => {
     setDummyUserInformation(
       [1, 2, 3].map(() => {
+        const countryCode = "US";
         return {
           ...userInformation,
           first_name: faker.name.firstName(),
           last_name: faker.name.lastName(),
           dob: moment(faker.date.past()),
-          phone: "1 " + faker.phone.phoneNumberFormat(),
-          country: faker.address.countryCode(),
+          phone: countries[countryCode].phone + " " + faker.phone.phoneNumberFormat(),
+          country: countryCode,
           state: faker.address.state(),
           city: faker.address.city(),
           address_1: faker.address.streetAddress(),

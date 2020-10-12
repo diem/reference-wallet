@@ -111,6 +111,16 @@ function Home() {
               />
             </section>
 
+            {!settings.paymentMethods?.length && (
+              <section>
+                <div className="my-2">
+                  <span>{t("no_payment_methods.title")}</span>,{" "}
+                  <Link to="/settings">{t("no_payment_methods.button")}</Link>.
+                  <i className="fa fa-money-check" />
+                </div>
+              </section>
+            )}
+
             <section className="my-5">
               <h2 className="h5 font-weight-normal text-body">{t("balances")}</h2>
               <BalancesList balances={settings.account?.balances!} onSelect={setActiveCurrency} />
