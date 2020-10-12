@@ -81,7 +81,7 @@ def get_test_payment_method(backend, headers) -> str:
     return str(payment_get_res.json().get("payment_methods")[0].get("id"))
 
 
-def get_test_quote(backend, headers, amount, buy_sell="buy", pair="LBR_USD") -> str:
+def get_test_quote(backend, headers, amount, buy_sell="buy", pair="Coin1_USD") -> str:
     """Creates a test quote and returns its id"""
     quote_payload = {"action": buy_sell, "amount": amount, "currency_pair": pair}
     quote_res = requests.post(
@@ -121,7 +121,7 @@ def get_recv_addr(backend, headers) -> str:
 
 
 def exec_external_txn(
-    backend, headers, recv_addr, amount, currency=LibraCurrency.LBR
+    backend, headers, recv_addr, amount, currency=LibraCurrency.Coin1
 ) -> None:
     ext_txn_payload = {
         "amount": amount,

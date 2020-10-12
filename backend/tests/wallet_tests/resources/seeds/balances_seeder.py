@@ -55,20 +55,16 @@ class BalancesSeeder:
             tx.status = status
             db_session.add(tx)
 
-        credit(1_000_000, Currency.LBR, TransactionStatus.COMPLETED)
-        credit(1_500_000, Currency.LBR, TransactionStatus.COMPLETED)
-        credit(2_000_000, Currency.LBR, TransactionStatus.PENDING)
-        credit(3_000_000, Currency.LBR, TransactionStatus.CANCELED)
-        debit(500_000, Currency.LBR, TransactionStatus.PENDING)
-
-        credit(4_000_000, Currency.Coin1, TransactionStatus.COMPLETED)
-        debit(500_000, Currency.Coin1, TransactionStatus.COMPLETED)
+        credit(1_000_000, Currency.Coin1, TransactionStatus.COMPLETED)
+        credit(1_500_000, Currency.Coin1, TransactionStatus.COMPLETED)
+        credit(2_000_000, Currency.Coin1, TransactionStatus.PENDING)
+        credit(3_000_000, Currency.Coin1, TransactionStatus.CANCELED)
+        debit(500_000, Currency.Coin1, TransactionStatus.PENDING)
 
         db_session.commit()
 
         balance = Balance()
-        balance.frozen[Currency.LBR.value] = 500_000
-        balance.total[Currency.LBR.value] = 2_000_000
-        balance.total[Currency.Coin1.value] = 3_500_000
+        balance.frozen[Currency.Coin1.value] = 500_000
+        balance.total[Currency.Coin1.value] = 2_000_000
 
         return balance

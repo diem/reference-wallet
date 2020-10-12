@@ -389,19 +389,19 @@ components:
     LibraCurrencies:
       type: string
       enum:
-        - LBRUSD
-        - LBREUR
-        - LBRGBP
+        - Coin1USD
+        - Coin1EUR
+        - Coin1GBP
     CurrencyPairs:
       type: string
       enum:
-        - LBRUSD_USD
-        - LBRUSD_EUR
-        - LBRUSD_GBP
-        - LBR_USD
-        - LBR_EUR
-        - LBR_GBP
-        - LBR_LBRUSD
+        - Coin1USD_USD
+        - Coin1USD_EUR
+        - Coin1USD_GBP
+        - Coin1_USD
+        - Coin1_EUR
+        - Coin1_GBP
+        - Coin1_Coin1USD
     Account:
       type: object
       required:
@@ -433,9 +433,9 @@ components:
         user_id: sunmilee@libra.com
         subaddress: abcde
         balances:
-          - currency: LBRGBP
+          - currency: Coin1GBP
             balance: 0
-          - currency: LBRUSD
+          - currency: Coin1USD
             balance: 100
         created: '04052020'
     VaspAccountDetails:

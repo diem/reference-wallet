@@ -39,7 +39,7 @@ def test_create_user() -> None:
 def test_add_transaction() -> None:
     tx = add_transaction(
         amount=100,
-        currency=libra_utils.types.currencies.LibraCurrency.Coin2,
+        currency=libra_utils.types.currencies.LibraCurrency.Coin1,
         payment_type=types.TransactionType.EXTERNAL,
         status=types.TransactionStatus.PENDING,
         source_id=1,
@@ -65,6 +65,6 @@ def test_get_user_transactions_for_coin() -> None:
 
     tx_list = get_user_transactions(user.id, OneUserMultipleTransactions.tx1_currency)
 
-    assert len(tx_list) == 1
+    assert len(tx_list) == 2
     tx: Transaction = tx_list[0]
     assert tx.currency == OneUserMultipleTransactions.tx1_currency

@@ -7,12 +7,6 @@ from libra_utils.types.liquidity.currency import CurrencyPairs, CurrencyPair
 
 
 def test_is_not_libra_to_libra():
-    pair = CurrencyPairs.Coin2_USD.value
+    pair = CurrencyPairs.Coin1_USD.value
 
     assert CurrencyPair.is_libra_to_libra(pair) is False
-
-
-def test_is_libra_to_libra():
-    pair = CurrencyPairs.Coin2_Coin1.value
-
-    assert CurrencyPair.is_libra_to_libra(pair) is True

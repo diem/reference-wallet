@@ -26,11 +26,11 @@ def test_create_order():
         user_id=1,
         direction=Direction.Buy,
         amount=amount,
-        base_currency=LibraCurrency.Coin2,
+        base_currency=LibraCurrency.Coin1,
         quote_currency=FiatCurrency.USD,
     )
 
-    assert order.exchange_amount == rates[str(CurrencyPairs.Coin2_USD.value)]
+    assert order.exchange_amount == rates[str(CurrencyPairs.Coin1_USD.value)]
 
 
 def test_add_funds(patch_blockchain: None):
@@ -60,49 +60,13 @@ def test_add_funds(patch_blockchain: None):
     assert add_funds_transaction.destination_id == account_id
 
 
-def test_convert():
-    convert_from_amount = 1000
-    convert_from_currency = LibraCurrency.Coin1
-    convert_to_amount = 600
-    convert_to_currency = LibraCurrency.Coin2
-    inventory_id, account_id, order = ConvertSeeder.run(
-        db_session,
-        account_amount=convert_from_amount,
-        account_currency=convert_from_currency,
-        inventory_amount=convert_to_amount,
-        inventory_currency=convert_to_currency,
-        convert_from_amount=convert_from_amount,
-        convert_to_amount=convert_to_amount,
-    )
-
-    result = order_service.execute_convert(order)
-
-    assert result == ConvertResult.Success
-
-    order = get_order(OrderId(UUID(order.id)))
-
-    first_convert_transaction = storage.get_transaction(order.internal_ledger_tx)
-    assert first_convert_transaction
-    assert first_convert_transaction.currency == convert_from_currency
-    assert first_convert_transaction.amount == convert_from_amount
-    assert first_convert_transaction.source_id == account_id
-    assert first_convert_transaction.destination_id == inventory_id
-
-    second_convert_transaction = storage.get_transaction(order.correlated_tx)
-    assert second_convert_transaction
-    assert second_convert_transaction.currency == convert_to_currency
-    assert second_convert_transaction.amount == convert_to_amount
-    assert second_convert_transaction.source_id == inventory_id
-    assert second_convert_transaction.destination_id == account_id
-
-
 def test_convert_insufficient_user_balance():
     inventory_id, account_id, order = ConvertSeeder.run(
         db_session,
         account_amount=500,
         account_currency=LibraCurrency.Coin1,
         inventory_amount=600,
-        inventory_currency=LibraCurrency.Coin2,
+        inventory_currency=LibraCurrency.Coin1,
         convert_from_amount=700,
         convert_to_amount=500,
     )
@@ -116,7 +80,7 @@ def test_convert_insufficient_inventory_balance():
         account_amount=1000,
         account_currency=LibraCurrency.Coin1,
         inventory_amount=300,
-        inventory_currency=LibraCurrency.Coin2,
+        inventory_currency=LibraCurrency.Coin1,
         convert_from_amount=1000,
         convert_to_amount=500,
     )
@@ -131,7 +95,7 @@ def test_withdraw_funds(patch_blockchain: None):
     inventory_id, account_id, order_id = WithdrawFundsSeeder.run(
         db_session,
         account_amount=1000,
-        account_currency=LibraCurrency.LBR,
+        account_currency=LibraCurrency.Coin1,
         withdraw_amount=500,
         withdraw_to_currency=FiatCurrency.USD,
         price=550,
@@ -146,7 +110,7 @@ def test_withdraw_funds(patch_blockchain: None):
 
     withdraw_transaction = storage.get_transaction(order.internal_ledger_tx)
     assert withdraw_transaction
-    assert withdraw_transaction.currency == LibraCurrency.LBR
+    assert withdraw_transaction.currency == LibraCurrency.Coin1
     assert withdraw_transaction.amount == 500
     assert withdraw_transaction.source_id == account_id
     assert withdraw_transaction.destination_id == inventory_id

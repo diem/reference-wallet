@@ -112,7 +112,7 @@ class FaucetUtilsMock(BlockchainMock):
             receiver_address=authkey_hex,
             sequence=sequence,
             amount=amount,
-            currency=LibraCurrency.LBR,
+            currency=LibraCurrency.Coin1,
             metadata=metadata,
         )
 

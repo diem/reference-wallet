@@ -21,7 +21,7 @@ The project is separated into the following components:
 * [liquidity](/liquidity)
 * [mobile](/mobile)
 
-The [backend](/backend) system comprises of a Python server that consumes the pylibra python client and the pub-sub-proxy. `pylibra` is used for submitting and requesting transactions from the network. `pub-sub-proxy` is used for subscribing to events.
+The [backend](/backend) system comprises of a Python server that consumes the python sdk client and the pub-sub-proxy. `python sdk client` is used for submitting and requesting transactions from the network. `pub-sub-proxy` is used for subscribing to events.
 
 The project uses [docker](/docker) for organizing and easily spinning up. The production configuration of this system varies slightly to allow for handling a large number of inbound requests.
 

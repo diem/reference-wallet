@@ -42,7 +42,7 @@ order = Order(
 
 tx = Transaction(
     amount=1000000,
-    currency="LBR",
+    currency="Coin1",
     type="transfer_internal",
     status="completed",
     created_timestamp=datetime.utcnow(),

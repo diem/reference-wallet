@@ -36,7 +36,7 @@ def test_create_account() -> None:
 
 def test_external_transfer() -> None:
     """
-    Test an external transfer of LBR from VASP1 to VASP2
+    Test an external transfer of Coin1 from VASP1 to VASP2
     """
     # create an account on each wallet
     headers1 = get_test_user_and_auth(LRW_WEB_1)
@@ -51,10 +51,10 @@ def test_external_transfer() -> None:
     payment_method1 = get_test_payment_method(LRW_WEB_1, headers1)
     get_test_payment_method(LRW_WEB_2, headers2)
 
-    # USD --> LBR
+    # USD --> Coin1
     starting_amount = 100_000_000
     quote_id = get_test_quote(
-        LRW_WEB_1, headers1, amount=starting_amount, buy_sell="buy", pair="LBR_USD"
+        LRW_WEB_1, headers1, amount=starting_amount, buy_sell="buy", pair="Coin1_USD"
     )
 
     # pay with the first payment method added to wallet 1
@@ -65,7 +65,7 @@ def test_external_transfer() -> None:
 
     transfer_amount = 69_000_000
     exec_external_txn(
-        LRW_WEB_1, headers1, addr2, transfer_amount, currency=LibraCurrency.LBR
+        LRW_WEB_1, headers1, addr2, transfer_amount, currency=LibraCurrency.Coin1
     )
     time.sleep(10)
 
@@ -82,9 +82,9 @@ def test_external_transfer() -> None:
     )  # txn order not guaranteed
 
     balances1 = get_user_balances(LRW_WEB_1, headers1)
-    lbr_balance1 = get_balance_from_balances_lst(balances1, LibraCurrency.LBR)
-    assert lbr_balance1 == starting_amount - transfer_amount
+    coin1_balance1 = get_balance_from_balances_lst(balances1, LibraCurrency.Coin1)
+    assert coin1_balance1 == starting_amount - transfer_amount
 
     balances2 = get_user_balances(LRW_WEB_2, headers2)
-    lbr_balance2 = get_balance_from_balances_lst(balances2, LibraCurrency.LBR)
-    assert lbr_balance2 == transfer_amount
+    coin1_balance2 = get_balance_from_balances_lst(balances2, LibraCurrency.Coin1)
+    assert coin1_balance2 == transfer_amount

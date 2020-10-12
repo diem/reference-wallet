@@ -163,7 +163,7 @@ def run():
         "--project",
         help="project to translate",
         required=True,
-        choices=["frontend", "mobile"]
+        choices=["frontend", "mobile"],
     )
     parser.add_argument(
         "-s",
@@ -171,7 +171,9 @@ def run():
         help="source language to generate the new one from",
         required=True,
     )
-    parser.add_argument("-d", "--destination", help="language symbol to generate", required=True)
+    parser.add_argument(
+        "-d", "--destination", help="language symbol to generate", required=True
+    )
     parser.add_argument(
         "-a",
         "--auto-translate",
@@ -190,7 +192,7 @@ def run():
 
     translateable_projects = {
         "frontend": os.path.join(current, "frontend", "src", "locales"),
-        "mobile": os.path.join(current, "mobile", "src", "locales")
+        "mobile": os.path.join(current, "mobile", "src", "locales"),
     }
 
     locales_dir = translateable_projects[args.project]

@@ -50,9 +50,7 @@ def setup_inventory_account():
     create_account(account_name=INVENTORY_ACCOUNT_NAME)
 
     currency_pairs = [
-        CurrencyPairs[f"{Currency.LBR}_{INVENTORY_COVER_CURRENCY}"],
         CurrencyPairs[f"{Currency.Coin1}_{INVENTORY_COVER_CURRENCY}"],
-        CurrencyPairs[f"{Currency.Coin2}_{INVENTORY_COVER_CURRENCY}"],
     ]
 
     for currency_pair in currency_pairs:

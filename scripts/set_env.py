@@ -13,6 +13,7 @@ from libra import LocalAccount, utils, testnet
 
 from libra_utils.custody import Custody
 from libra_utils.vasp import Vasp
+from libra_utils.types.currencies import LibraCurrency
 
 libra_client = testnet.create_client()
 
@@ -29,19 +30,15 @@ def get_private_key_hex(key: Ed25519PrivateKey) -> str:
 
 
 def init_onchain_account(
-        custody_private_keys,
-        account_name,
-        account: LocalAccount,
-        base_url,
-        compliance_key,
+    custody_private_keys, account_name, account: LocalAccount, base_url, compliance_key,
 ):
     account_addr = utils.account_address_hex(account.account_address)
-    print(f'Creating and initialize blockchain account {account_name} @ {account_addr}')
+    print(f"Creating and initialize blockchain account {account_name} @ {account_addr}")
     os.environ["CUSTODY_PRIVATE_KEYS"] = custody_private_keys
     Custody.init()
     vasp = Vasp(libra_client, account_name)
     vasp.setup_blockchain(base_url, compliance_key)
-    print(f'Account initialization done!')
+    print(f"Account initialization done!")
 
     return vasp
 
@@ -51,16 +48,20 @@ def mint_all_currencies(account: LocalAccount, amount):
     faucet = testnet.Faucet(libra_client)
 
     for currency in libra_client.get_currencies():
-        print(f"Minting {amount}{currency.code} for account {address_str}")
-        faucet.mint(account.auth_key.hex(), amount, currency.code)
+        if currency.code == LibraCurrency.Coin1:
+            print(f"Minting {amount}{currency.code} for account {address_str}")
+            faucet.mint(account.auth_key.hex(), amount, currency.code)
 
 
-if len(sys.argv) > 2 or len(sys.argv) > 1 and '--help' in sys.argv:
-    print("""
+if len(sys.argv) > 2 or len(sys.argv) > 1 and "--help" in sys.argv:
+    print(
+        """
+        
     Setup wallet and liquidity environment including blockchain private keys generation.
     Usage: set_env.py
     Flags: --force      Will regenerate blockchain keys and run current .env configuration.
-    """)
+    """
+    )
 
     exit()
 
@@ -81,7 +82,9 @@ VASP_PUBLIC_KEY_BYTES = COMPLIANCE_KEY.get_public().public_bytes(
     encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
 )
 COMPLIANCE_KEY_2 = ComplianceKey.generate()
-LIQUIDITY_COMPLIANCE_KEY = os.getenv("LIQUIDITY_COMPLIANCE_KEY", COMPLIANCE_KEY_2.export_full())
+LIQUIDITY_COMPLIANCE_KEY = os.getenv(
+    "LIQUIDITY_COMPLIANCE_KEY", COMPLIANCE_KEY_2.export_full()
+)
 LIQUIDITY_PUBLIC_KEY_BYTES = COMPLIANCE_KEY_2.get_public().public_bytes(
     encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
 )
@@ -91,7 +94,9 @@ if NETWORK == "premainnet":
     vasp = Vasp(libra_client, wallet_account_name)
     vasp_liquidity = Vasp(libra_client, lp_account_name)
     vasp.rotate_dual_attestation_info(VASP_BASE_URL, VASP_PUBLIC_KEY_BYTES)
-    vasp_liquidity.rotate_dual_attestation_info(LIQUIDITY_BASE_URL, LIQUIDITY_PUBLIC_KEY_BYTES)
+    vasp_liquidity.rotate_dual_attestation_info(
+        LIQUIDITY_BASE_URL, LIQUIDITY_PUBLIC_KEY_BYTES
+    )
     exit(0)
 
 wallet_account = LocalAccount.generate()
@@ -102,20 +107,26 @@ wallet_env_file_path = os.path.join(execution_dir_path, "backend", ENV_FILE_NAME
 liquidity_env_file_path = os.path.join(execution_dir_path, "liquidity", ENV_FILE_NAME)
 
 if os.path.exists(wallet_env_file_path) and os.path.exists(liquidity_env_file_path):
-    if len(sys.argv) == 1 or (len(sys.argv) > 1 and sys.argv[1] != '--force'):
-        print(f".env variable files are already set.\n run {sys.argv[0]} --force to recreate them")
+    if len(sys.argv) == 1 or (len(sys.argv) > 1 and sys.argv[1] != "--force"):
+        print(
+            f".env variable files are already set.\n run {sys.argv[0]} --force to recreate them"
+        )
         exit(0)
 
 print(f"Creating {wallet_env_file_path}")
 
 # setup wallet
 with open(wallet_env_file_path, "w") as dotenv:
-    private_keys = {f"{wallet_account_name}": get_private_key_hex(wallet_account.private_key)}
-    wallet_custody_private_keys = json.dumps(private_keys, separators=(',', ':'))
+    private_keys = {
+        f"{wallet_account_name}": get_private_key_hex(wallet_account.private_key)
+    }
+    wallet_custody_private_keys = json.dumps(private_keys, separators=(",", ":"))
     dotenv.write(f"GW_PORT={GW_PORT}\n")
     dotenv.write(f"WALLET_CUSTODY_ACCOUNT_NAME={wallet_account_name}\n")
     dotenv.write(f"CUSTODY_PRIVATE_KEYS={wallet_custody_private_keys}\n")
-    dotenv.write(f"VASP_ADDR={utils.account_address_hex(wallet_account.account_address)}\n")
+    dotenv.write(
+        f"VASP_ADDR={utils.account_address_hex(wallet_account.account_address)}\n"
+    )
     dotenv.write(f"VASP_BASE_URL={VASP_BASE_URL}\n")
     dotenv.write(f"VASP_COMPLIANCE_KEY={VASP_COMPLIANCE_KEY}\n")
     dotenv.write(f"LIQUIDITY_SERVICE_HOST={LIQUIDITY_SERVICE_HOST}\n")
@@ -131,14 +142,14 @@ with open(wallet_env_file_path, "w") as dotenv:
         account_name=wallet_account_name,
         account=wallet_account,
         base_url=VASP_BASE_URL,
-        compliance_key=VASP_PUBLIC_KEY_BYTES
+        compliance_key=VASP_PUBLIC_KEY_BYTES,
     )
 
 # setup liquidity
 print(f"Creating {liquidity_env_file_path}")
 with open(liquidity_env_file_path, "w") as dotenv:
     private_keys = {f"{lp_account_name}": get_private_key_hex(lp_account.private_key)}
-    lp_custody_private_keys = json.dumps(private_keys, separators=(',', ':'))
+    lp_custody_private_keys = json.dumps(private_keys, separators=(",", ":"))
     dotenv.write(f"LIQUIDITY_CUSTODY_ACCOUNT_NAME=liquidity\n")
     dotenv.write(f"CUSTODY_PRIVATE_KEYS={lp_custody_private_keys}\n")
     dotenv.write(f"JSON_RPC_URL={JSON_RPC_URL}\n")
@@ -149,11 +160,11 @@ with open(liquidity_env_file_path, "w") as dotenv:
         account_name=lp_account_name,
         account=lp_account,
         base_url=LIQUIDITY_BASE_URL,
-        compliance_key=LIQUIDITY_PUBLIC_KEY_BYTES
+        compliance_key=LIQUIDITY_PUBLIC_KEY_BYTES,
     )
 
     amount = 999 * 1_000_000
-    print('Mint currencies to liquidity account')
+    print("Mint currencies to liquidity account")
     mint_all_currencies(lp_account, amount)
 
     dotenv.write(f"ACCOUNT_WATCHER_AUTH_KEY={lp_account.auth_key.hex()}\n")

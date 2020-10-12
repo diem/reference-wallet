@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "314461b5189a51a65090b23f8c4ef3fab081d991e0b32c22697d8cb4cf6ce887"
+            "sha256": "0a720e79dead92e9d57a224af604e4bd6ff49c43d07d99393c75a388d25241ad"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -144,7 +144,6 @@
                 "sha256:f92cdecb618e5fa4658aeb97d5eb3d2f47aa94ac6477c6daf0f306c5a3b9e6b1",
                 "sha256:f92f789e4f9241cd262ad7a555ca2c648a98178a953af117ef7fad46aa1d5591"
             ],
-            "index": "pypi",
             "version": "==1.14.3"
         },
         "chardet": {
@@ -345,10 +344,9 @@
         },
         "iniconfig": {
             "hashes": [
-                "sha256:80cf40c597eb564e86346103f609d74efce0f6b4d4f30ec8ce9e2c26411ba437",
-                "sha256:e5f92f89355a67de0595932a6c6c02ab4afddc6fcdc0bfc5becd0d60884d3f69"
+                "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"
             ],
-            "version": "==1.0.1"
+            "version": "==1.1.1"
         },
         "isort": {
             "hashes": [
@@ -418,11 +416,11 @@
         },
         "libra-client-sdk": {
             "hashes": [
-                "sha256:b01dd5983fcac6b10eb017c704cc080b798cbbf47aa9f507262623652aa98b15",
-                "sha256:e5cf07a4712403a676495d921415ecf389073188da0c12e5b5bb7b72e986fb28"
+                "sha256:40307bb153b3cb62f0ad1fdafdf3c0f864c0b8071cbda09b4eb025008eb991f6",
+                "sha256:a2570a43b04dd9c1e8f190e9c2280bc46d1cb245c50b0c165661ab4a7ad8631c"
             ],
             "index": "pypi",
-            "version": "==0.5.2020100601"
+            "version": "==0.6.2020101402"
         },
         "libra-offchainreference": {
             "hashes": [
@@ -438,7 +436,7 @@
         },
         "libra-utils": {
             "git": "https://49decaaaf2e5c1c77eca2805117a36b3135f2c26@github.com/libra/libra-reference-utils.git",
-            "ref": "c59a1974134264fd6cf6878ae84232eb5db4ca81"
+            "ref": "5f83173fd19470d6f2d0a6437b70a9875dfd3219"
         },
         "markupsafe": {
             "hashes": [
@@ -709,14 +707,6 @@
             ],
             "index": "pypi",
             "version": "==2.2.0"
-        },
-        "pylibra-beta": {
-            "hashes": [
-                "sha256:242a7b435aa6b1bae016e0d99d17289ab10983c72eb6a4f62d09596322800e71",
-                "sha256:8619185dcc5094962acb2ff5c1dbf2b6d6267547202de893be4e12b805b7d5dd"
-            ],
-            "index": "pypi",
-            "version": "==0.5.2020100101"
         },
         "pylint": {
             "hashes": [
@@ -1091,6 +1081,14 @@
             ],
             "version": "==1.4.4"
         },
+        "appnope": {
+            "hashes": [
+                "sha256:5b26757dc6f79a3b7dc9fab95359328d5747fcb2409d331ea66d0272b90ab2a0",
+                "sha256:8b995ffe925347a2138d7ac0fe77155e4311a0ea6d6da4f5128fe4b3cbe5ed71"
+            ],
+            "markers": "sys_platform == 'darwin'",
+            "version": "==0.1.0"
+        },
         "attrs": {
             "hashes": [
                 "sha256:26b54ddbbb9ee1d34d5d3668dd37d6cf74990ab23c828c2888dccdceee395594",
@@ -1167,10 +1165,9 @@
         },
         "iniconfig": {
             "hashes": [
-                "sha256:80cf40c597eb564e86346103f609d74efce0f6b4d4f30ec8ce9e2c26411ba437",
-                "sha256:e5f92f89355a67de0595932a6c6c02ab4afddc6fcdc0bfc5becd0d60884d3f69"
+                "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"
             ],
-            "version": "==1.0.1"
+            "version": "==1.1.1"
         },
         "ipython": {
             "hashes": [

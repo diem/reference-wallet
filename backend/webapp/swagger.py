@@ -33,7 +33,7 @@ swagger_template = {
                 "address": "1 Hacker Way",
             },
         },
-        "LibraCurrencies": {"type": "string", "enum": ["Coin1", "Coin2", "LBR"],},
+        "LibraCurrencies": {"type": "string", "enum": ["Coin1"],},
         "TransactionDirections": {"type": "string", "enum": ["received", "sent"],},
         "Transaction": {
             "type": "object",

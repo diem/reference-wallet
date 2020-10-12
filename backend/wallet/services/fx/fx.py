@@ -7,8 +7,6 @@ from libra_utils.sdks.liquidity import LpClient
 from libra_utils.types.currencies import LibraCurrency, FiatCurrency
 from libra_utils.types.liquidity.currency import Currency, CurrencyPair, CurrencyPairs
 
-from wallet.services.fx.fx_conversions import MULTI_STEP_CONVERSION_TABLE
-
 RATES = {}
 
 
@@ -16,7 +14,6 @@ def get_rate(base_currency: Currency, quote_currency: Currency) -> Amount:
     pair_str = str(CurrencyPair(base_currency, quote_currency))
     if pair_str not in RATES:
         update_rates()
-
     return RATES[pair_str]
 
 
@@ -56,19 +53,5 @@ def _get_rate_internal(base_currency: Currency, quote_currency: Currency) -> Amo
     if pair_str in CurrencyPairs.__members__:
         quote = LpClient().get_quote(pair=currency_pair, amount=1)
         return Amount().deserialize(quote.rate.rate)
-
-    if pair_str in MULTI_STEP_CONVERSION_TABLE:
-        rate = Amount().deserialize(Amount.unit)
-
-        steps = MULTI_STEP_CONVERSION_TABLE[pair_str]
-
-        for step_currency_pair, fx_type in steps:
-            step_quote = LpClient().get_quote(pair=step_currency_pair, amount=1)
-
-            step_rate = fx_type(Amount().deserialize(step_quote.rate.rate))
-
-            rate = rate * step_rate
-
-        return rate
 
     raise LookupError(f"No conversion to currency pair {currency_pair}")

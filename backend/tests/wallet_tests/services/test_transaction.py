@@ -117,43 +117,13 @@ def test_balance_calculation_simple_income() -> None:
         source_id=counter_id,
         destination_id=account_id,
         amount=100,
-        currency=LibraCurrency.LBR,
+        currency=LibraCurrency.Coin1,
         status=TransactionStatus.COMPLETED,
     )
     balance = calc_account_balance(account_id=account_id, transactions=[tx])
 
     assert balance.total == {
-        LibraCurrency.LBR: 100,
-        LibraCurrency.Coin1: 0,
-        LibraCurrency.Coin2: 0,
-    }
-
-
-def test_balance_calculation_two_currencies_income() -> None:
-    account_id = 1
-    counter_id = 0
-    tx_lbr = Transaction(
-        source_id=counter_id,
-        destination_id=account_id,
-        amount=100,
-        currency=LibraCurrency.LBR,
-        status=TransactionStatus.COMPLETED,
-    )
-    tx_coin1 = Transaction(
-        source_id=counter_id,
-        destination_id=account_id,
-        amount=100,
-        currency=LibraCurrency.Coin1,
-        status=TransactionStatus.COMPLETED,
-    )
-    balance = calc_account_balance(
-        account_id=account_id, transactions=[tx_lbr, tx_coin1]
-    )
-
-    assert balance.total == {
-        LibraCurrency.LBR: 100,
         LibraCurrency.Coin1: 100,
-        LibraCurrency.Coin2: 0,
     }
 
 
@@ -164,14 +134,14 @@ def test_balance_calculation_in_and_out() -> None:
         source_id=counter_id,
         destination_id=account_id,
         amount=100,
-        currency=LibraCurrency.LBR,
+        currency=LibraCurrency.Coin1,
         status=TransactionStatus.COMPLETED,
     )
     outgoing = Transaction(
         source_id=account_id,
         destination_id=counter_id,
         amount=50,
-        currency=LibraCurrency.LBR,
+        currency=LibraCurrency.Coin1,
         status=TransactionStatus.COMPLETED,
     )
     balance = calc_account_balance(
@@ -179,9 +149,7 @@ def test_balance_calculation_in_and_out() -> None:
     )
 
     assert balance.total == {
-        LibraCurrency.LBR: 50,
-        LibraCurrency.Coin1: 0,
-        LibraCurrency.Coin2: 0,
+        LibraCurrency.Coin1: 50,
     }
 
 
@@ -192,15 +160,13 @@ def test_balance_calculation_in_pending() -> None:
         source_id=counter_id,
         destination_id=account_id,
         amount=100,
-        currency=LibraCurrency.LBR,
+        currency=LibraCurrency.Coin1,
         status=TransactionStatus.PENDING,
     )
     balance = calc_account_balance(account_id=account_id, transactions=[income])
 
     assert balance.total == {
-        LibraCurrency.LBR: 0,
         LibraCurrency.Coin1: 0,
-        LibraCurrency.Coin2: 0,
     }
 
 
@@ -211,14 +177,14 @@ def test_balance_calculation_out_pending() -> None:
         source_id=counter_id,
         destination_id=account_id,
         amount=100,
-        currency=LibraCurrency.LBR,
+        currency=LibraCurrency.Coin1,
         status=TransactionStatus.COMPLETED,
     )
     outgoing = Transaction(
         source_id=account_id,
         destination_id=counter_id,
         amount=50,
-        currency=LibraCurrency.LBR,
+        currency=LibraCurrency.Coin1,
         status=TransactionStatus.PENDING,
     )
     balance = calc_account_balance(
@@ -226,14 +192,10 @@ def test_balance_calculation_out_pending() -> None:
     )
 
     assert balance.total == {
-        LibraCurrency.LBR: 50,
-        LibraCurrency.Coin1: 0,
-        LibraCurrency.Coin2: 0,
+        LibraCurrency.Coin1: 50,
     }
     assert balance.frozen == {
-        LibraCurrency.LBR: 50,
-        LibraCurrency.Coin1: 0,
-        LibraCurrency.Coin2: 0,
+        LibraCurrency.Coin1: 50,
     }
 
 
@@ -244,14 +206,14 @@ def test_balance_calculation_out_canceled() -> None:
         source_id=counter_id,
         destination_id=account_id,
         amount=100,
-        currency=LibraCurrency.LBR,
+        currency=LibraCurrency.Coin1,
         status=TransactionStatus.COMPLETED,
     )
     outgoing = Transaction(
         source_id=account_id,
         destination_id=counter_id,
         amount=50,
-        currency=LibraCurrency.LBR,
+        currency=LibraCurrency.Coin1,
         status=TransactionStatus.CANCELED,
     )
     balance = calc_account_balance(
@@ -259,14 +221,10 @@ def test_balance_calculation_out_canceled() -> None:
     )
 
     assert balance.total == {
-        LibraCurrency.LBR: 100,
-        LibraCurrency.Coin1: 0,
-        LibraCurrency.Coin2: 0,
+        LibraCurrency.Coin1: 100,
     }
     assert balance.frozen == {
-        LibraCurrency.LBR: 0,
         LibraCurrency.Coin1: 0,
-        LibraCurrency.Coin2: 0,
     }
 
 
@@ -280,12 +238,12 @@ def test_total_balances_calculation() -> None:
 
 def send_fake_tx(amount=100, send_to_self=False) -> Tuple[int, Transaction]:
     user = OneUser.run(
-        db_session, account_amount=100_000_000_000, account_currency=LibraCurrency.Coin2
+        db_session, account_amount=100_000_000_000, account_currency=LibraCurrency.Coin1
     )
     account_id = user.account_id
     amount = amount
     payment_type = types.TransactionType.EXTERNAL
-    currency = libra_utils.types.currencies.LibraCurrency.Coin2
+    currency = libra_utils.types.currencies.LibraCurrency.Coin1
     destination_address = "receiver_address"
     destination_subaddress = "receiver_subaddress"
 

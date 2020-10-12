@@ -28,7 +28,7 @@ INTERNAL_TX = Transaction(
     id=1,
     type=TransactionType.INTERNAL.value,
     amount=100,
-    currency=LibraCurrency.LBR.value,
+    currency=LibraCurrency.Coin1.value,
     status=TransactionStatus.COMPLETED.value,
     source_id=1,
     source_address="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -55,7 +55,7 @@ def account_balance(monkeypatch):
     def get_account_balance_mock(account_name: str):
         saved["account_name"] = account_name
         balance = Balance()
-        balance.total = {LibraCurrency.LBR: 100}
+        balance.total = {LibraCurrency.Coin1: 100}
         return balance
 
     monkeypatch.setattr(
@@ -164,7 +164,7 @@ class TestAccountInfo:
         balances = rv.get_json()["balances"]
         assert account_balance["account_name"] == "fake_account"
         assert len(balances) == 1
-        assert balances[0]["currency"] == LibraCurrency.LBR.value
+        assert balances[0]["currency"] == LibraCurrency.Coin1.value
         assert balances[0]["balance"] == 100
 
 
@@ -182,7 +182,7 @@ class TestAccountTransactions:
         assert transaction == {
             "id": 1,
             "amount": 100,
-            "currency": LibraCurrency.LBR.value,
+            "currency": LibraCurrency.Coin1.value,
             "direction": TransactionDirection.SENT.value,
             "status": TransactionStatus.COMPLETED.value,
             "timestamp": "2020-06-23T19:49:26.989849",
@@ -224,7 +224,7 @@ class TestAccountTransactions:
             {
                 "id": 1,
                 "amount": 100,
-                "currency": LibraCurrency.LBR.value,
+                "currency": LibraCurrency.Coin1.value,
                 "direction": TransactionDirection.SENT.value,
                 "status": TransactionStatus.COMPLETED.value,
                 "timestamp": "2020-06-23T19:49:26.989849",

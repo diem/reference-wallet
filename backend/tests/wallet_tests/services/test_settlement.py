@@ -31,25 +31,25 @@
 #
 #
 # class TestDebtCalculation:
-#     def test_lbr_fiat_buy(self, liquidity_provider_session):
-#         trade = make_trade(CurrencyPairs.LBR_USD, Direction.Buy)
+#     def test_libra_fiat_buy(self, liquidity_provider_session):
+#         trade = make_trade(CurrencyPairs.Coin1_USD, Direction.Buy)
 #         debt = trade_to_debt(trade)
 #         assert debt.currency == Currency.USD
 #         assert debt.amount == 1000
 #
-#     def test_lbr_fiat_sell(self, liquidity_provider_session):
-#         trade = make_trade(CurrencyPairs.LBR_USD, Direction.Sell)
+#     def test_libra_fiat_sell(self, liquidity_provider_session):
+#         trade = make_trade(CurrencyPairs.Coin1_USD, Direction.Sell)
 #         debt = trade_to_debt(trade)
 #         assert debt.currency == Currency.USD
 #         assert debt.amount == -1000
 #
-#     def test_fiat_lbr_buy(self, liquidity_provider_session):
+#     def test_fiat_libra_buy(self, liquidity_provider_session):
 #         trade = make_trade(CurrencyPairs.EUR_Coin1, Direction.Buy)
 #         debt = trade_to_debt(trade)
 #         assert debt.currency == Currency.EUR
 #         assert debt.amount == -500
 #
-#     def test_fiat_lbr_sell(self, liquidity_provider_session):
+#     def test_fiat_libra_sell(self, liquidity_provider_session):
 #         trade = make_trade(CurrencyPairs.EUR_Coin1, Direction.Sell)
 #         debt = trade_to_debt(trade)
 #         assert debt.currency == Currency.EUR
@@ -59,10 +59,10 @@
 # def test_consolidate_debts(liquidity_provider_session):
 #     settlement = Settlement(id="YUYUAYDEE")
 #     trades = [
-#         make_trade(CurrencyPairs.LBR_USD, Direction.Buy, 1),
-#         make_trade(CurrencyPairs.LBR_USD, Direction.Buy, 2),
-#         make_trade(CurrencyPairs.LBR_EUR, Direction.Buy, 3),
-#         make_trade(CurrencyPairs.LBR_USD, Direction.Buy, 4),
+#         make_trade(CurrencyPairs.Coin1_USD, Direction.Buy, 1),
+#         make_trade(CurrencyPairs.Coin1_USD, Direction.Buy, 2),
+#         make_trade(CurrencyPairs.Coin1_EUR, Direction.Buy, 3),
+#         make_trade(CurrencyPairs.Coin1_USD, Direction.Buy, 4),
 #     ]
 #     consolidated = sorted(
 #         consolidate_debts(settlement, trades), key=lambda x: x.currency
@@ -78,8 +78,8 @@
 #
 #
 # def test_settlement(liquidity_provider_session):
-#     trade1 = make_trade(CurrencyPairs.LBR_USD, Direction.Buy)
-#     trade2 = make_trade(CurrencyPairs.LBR_EUR, Direction.Buy)
+#     trade1 = make_trade(CurrencyPairs.Coin1_USD, Direction.Buy)
+#     trade2 = make_trade(CurrencyPairs.Coin1_EUR, Direction.Buy)
 #     Session.add(trade1)
 #     Session.add(trade2)
 #     Session.commit()

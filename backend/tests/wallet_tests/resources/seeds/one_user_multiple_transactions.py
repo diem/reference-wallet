@@ -10,7 +10,7 @@ from . import prototypes
 
 
 class OneUserMultipleTransactions:
-    tx1_currency = "LBR"
+    tx1_currency = "Coin1"
     tx2_currency = "Coin1"
     total_txs = 2
     username = prototypes.username
