@@ -46,6 +46,8 @@ spec:
           value: {{ .Values.custodyPrivateKeysLiquidity | toJson | quote }}
         - name: ACCOUNT_WATCHER_AUTH_KEY
           value: {{ .Values.accountWatcherAuthKey | quote }}
+        - name: ACCOUNT_WATCHER_PRIVATE_KEY
+          value: {{ .Values.accountWatcherPrivKey | quote }}
         - name: LIQUIDITY_SERVICE_PORT
           value: {{ .Values.service.targetPort | quote }}
         - name: LIQUIDITY_SERVICE_HOST
@@ -54,6 +56,8 @@ spec:
           value: {{ .Values.pylibra.jsonRpc }}
         - name: FAUCET_URL
           value: {{ .Values.pylibra.faucet }}
+        - name: CHAIN_ID
+          value: {{ .Values.chainId | quote }}
         name: lrw-liquidity
         image: "{{ .Values.images.liquidity }}"
         imagePullPolicy: {{ .Values.images.pullPolicy }}

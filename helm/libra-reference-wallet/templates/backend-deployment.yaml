@@ -60,6 +60,8 @@ spec:
           value: {{ .Values.pylibra.jsonRpc }}
         - name: FAUCET_URL
           value: {{ .Values.pylibra.faucet }}
+        - name: CHAIN_ID
+          value: {{ .Values.chainId | quote }}
         image: "{{ .Values.images.backend }}"
         name: lrw-web
         imagePullPolicy: {{ .Values.images.pullPolicy }}
@@ -130,6 +132,8 @@ spec:
           value: {{ .Values.pylibra.jsonRpc }}
         - name: FAUCET_URL
           value: {{ .Values.pylibra.faucet }}
+        - name: CHAIN_ID
+          value: {{ .Values.chainId | quote }}
         image: "{{ .Values.images.backend }}"
         imagePullPolicy: {{ .Values.images.pullPolicy }}
         name: lrw-worker
