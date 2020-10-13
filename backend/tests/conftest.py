@@ -10,17 +10,20 @@ from typing import Dict, Optional, List, Generator
 from uuid import uuid4
 
 import pytest
-from pylibra import FaucetUtils, LibraNetwork
+from libra.jsonrpc import Client as LibraClient
+from libra.testnet import Faucet
 
-from libra_utils.custody import ProxyTransactionUtils, Custody
+from libra_utils.custody import Custody
 from libra_utils.types.liquidity.currency import CurrencyPair
 from libra_utils.types.liquidity.lp import LPDetails
 from libra_utils.types.liquidity.quote import QuoteId, QuoteData, Rate
 from libra_utils.types.liquidity.settlement import DebtData
 from libra_utils.types.liquidity.trade import TradeId, TradeData, Direction, TradeStatus
 from libra_utils.sdks.liquidity import LpClient
+from libra_utils.vasp import Vasp
+
 from tests.setup import clear_db
-from tests.wallet_tests.pylibra_mocks import (
+from tests.wallet_tests.libra_client_sdk_mocks import (
     FaucetUtilsMock,
     LibraNetworkMock,
     TransactionsMocker,
@@ -48,22 +51,18 @@ def clean_db() -> Generator[None, None, None]:
 
 @pytest.fixture(scope="function")
 def patch_blockchain(monkeypatch):
-    monkeypatch.setattr(FaucetUtils, "mint", FaucetUtilsMock.mint)
-    monkeypatch.setattr(LibraNetwork, "getAccount", LibraNetworkMock.get_account)
+    monkeypatch.setattr(Faucet, "mint", FaucetUtilsMock.mint)
+    monkeypatch.setattr(LibraClient, "get_account", LibraNetworkMock.get_account)
     monkeypatch.setattr(
-        LibraNetwork, "transaction_by_acc_seq", LibraNetworkMock.transaction_by_acc_seq
+        LibraClient, "get_account_transaction", LibraNetworkMock.transaction_by_acc_seq
     )
     monkeypatch.setattr(
-        LibraNetwork, "transactions_by_range", LibraNetworkMock.transactions_by_range
+        LibraClient, "get_transactions", LibraNetworkMock.transactions_by_range
     )
 
+    monkeypatch.setattr(LibraClient, "submit", LibraNetworkMock.sendTransaction)
     monkeypatch.setattr(
-        LibraNetwork, "sendTransaction", LibraNetworkMock.sendTransaction
-    )
-    monkeypatch.setattr(
-        ProxyTransactionUtils,
-        "createSignedP2PTransaction",
-        TransactionsMocker.create_signed_p2p_transaction,
+        Vasp, "send_transaction", TransactionsMocker.send_transaction,
     )
 
     yield

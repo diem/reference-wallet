@@ -1,20 +1,19 @@
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-from threading import Thread
 import asyncio
 import logging
-import pytest
 from datetime import datetime
-from _pytest.monkeypatch import MonkeyPatch
-from tests.wallet_tests.pylibra_mocks import AccountMocker
-from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
-from pylibra import LibraNetwork
+from threading import Thread
 
+import pytest
+from _pytest.monkeypatch import MonkeyPatch
+from libra.jsonrpc import Client as LibraClient
+from libra_utils.types.currencies import LibraCurrency
 from offchainapi.business import VASPInfo, BusinessContext, BusinessValidationFailure
+from offchainapi.core import Vasp
+from offchainapi.crypto import ComplianceKey
 from offchainapi.libra_address import LibraAddress
-from offchainapi.payment_logic import PaymentCommand
-from offchainapi.status_logic import Status
 from offchainapi.payment import (
     PaymentAction,
     PaymentActor,
@@ -22,11 +21,14 @@ from offchainapi.payment import (
     KYCData,
     StatusObject,
 )
-from offchainapi.crypto import ComplianceKey
-from offchainapi.core import Vasp
+from offchainapi.payment_logic import PaymentCommand
+from offchainapi.status_logic import Status
 
+from offchain.offchain_business import LRWOffChainBusinessContext
+from tests.wallet_tests.libra_client_sdk_mocks import AccountMocker
+from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet import OnchainWallet
-from wallet.types import TransactionDirection, TransactionType, TransactionStatus
+from wallet.services.account import generate_new_subaddress
 from wallet.storage import (
     db_session,
     get_account_transaction_ids,
@@ -34,10 +36,7 @@ from wallet.storage import (
     get_reference_id_from_transaction_id,
     add_transaction,
 )
-from wallet.services.account import generate_new_subaddress, get_account_balance
-from libra_utils.types.currencies import LibraCurrency
-from offchain.offchain_business import LRWOffChainBusinessContext
-
+from wallet.types import TransactionType, TransactionStatus
 
 logger = logging.getLogger(name="test_offchain")
 
@@ -146,7 +145,7 @@ def send_transaction_mock(monkeypatch):
         currency: LibraCurrency,
         dest_vasp_address: str,
         dest_sub_address: str,
-        source_subaddr: str,
+        source_sub_address: str,
     ) -> (int, int):
         return 0, 0
 
@@ -174,7 +173,7 @@ async def test_main_perf(
     VASPb, loopB, tB = make_VASPb(PeerB_addr, port=8092)
 
     account_mocker = AccountMocker()
-    monkeypatch.setattr(LibraNetwork, "getAccount", account_mocker.get_account)
+    monkeypatch.setattr(LibraClient, "get_account", account_mocker.get_account)
 
     user = OneUser.run(
         db_session,

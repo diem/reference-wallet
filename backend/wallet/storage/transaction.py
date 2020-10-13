@@ -200,9 +200,7 @@ def get_total_currency_debits():
 
 def get_new_reference_id():
     return (
-        LibraAddress.from_hex(OnchainWallet().vasp_address).as_str()
-        + "_"
-        + str(uuid1())
+        LibraAddress.from_hex(OnchainWallet().address_str).as_str() + "_" + str(uuid1())
     )
 
 

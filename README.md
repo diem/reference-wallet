@@ -35,3 +35,26 @@ A mock [liquidity](/liquidity) provider is provided to allow testing simple liqu
 The web [frontend](/frontend) is a React based web application.
 
 The [mobile application](/mobile) is a React Native based mobile application for both iOS and Android.
+
+## Getting started
+
+The project uses Docker containers to run its components. The containers are orchestrated using
+docker-compose.
+
+**System Requirements:**
+* docker and docker-compose - Docker can be installed from the [web](https://www.docker.com/products/docker-desktop). If you are installing Docker for the first time on your system, be sure to run it at least once to have it configure itself and get `docker-compose` as a runnable command.
+* python 3.7
+* yarn
+* react-scripts
+
+Run the following commands in the repository root:
+```shell script
+scripts/lrw.sh setup_environment
+scripts/lrw.sh build
+scripts/lrw.sh develop
+```
+
+
+The wallet website will be available at http://localhost:8080
+
+See `docker/docker-compose.yaml` for the setup details.

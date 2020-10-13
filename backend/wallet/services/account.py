@@ -1,10 +1,11 @@
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
+import secrets
 from operator import attrgetter
 from typing import Dict, List, Optional
 
-from libra_utils.libra import encode_full_addr, decode_subaddr, gen_raw_subaddr
+from libra import identifier
 from libra_utils.precise_amount import Amount
 from libra_utils.types.currencies import LibraCurrency, FiatCurrency
 from libra_utils.types.liquidity.currency import Currency
@@ -20,7 +21,6 @@ from wallet.storage import (
     Account,
     User,
 )
-from wallet.types import Balance, TransactionStatus
 from wallet.types import (
     Balance,
     TransactionStatus,
@@ -39,13 +39,13 @@ def create_account(account_name: str, user_id: Optional[int] = None) -> Account:
 def is_in_wallet(receiver_subaddress, receiver_vasp) -> bool:
     return (
         get_account_id_from_subaddr(receiver_subaddress) is not None
-        and receiver_vasp == OnchainWallet().vasp_address
+        and receiver_vasp == OnchainWallet().address_str
     )
 
 
 def is_own_address(sender_id, receiver_vasp, receiver_subaddress) -> bool:
     return (
-        receiver_vasp == OnchainWallet().vasp_address
+        receiver_vasp == OnchainWallet().address_str
         and get_account_id_from_subaddr(receiver_subaddress) == sender_id
     )
 
@@ -171,7 +171,7 @@ def calc_account_balance(account_id: int, transactions: List[Transaction]) -> Ba
 def generate_new_subaddress(account_id: int) -> str:
     subaddr = None
     while not subaddr:
-        subaddr = decode_subaddr(gen_raw_subaddr())
+        subaddr = secrets.token_hex(identifier.LIBRA_SUBADDRESS_SIZE)
         # generated subaddress is unique
         if is_subaddress_exists(subaddr):
             subaddr = None
@@ -186,7 +186,9 @@ def get_deposit_address(
     account = get_account(account_id=account_id, account_name=account_name)
     subaddress = generate_new_subaddress(account.id)
 
-    return encode_full_addr(OnchainWallet().vasp_address, subaddr=subaddress)
+    return identifier.encode_account(
+        OnchainWallet().account.account_address, subaddress
+    )
 
 
 def is_user_allowed_for_account(user: User, account_name: str) -> bool:

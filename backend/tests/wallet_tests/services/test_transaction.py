@@ -5,17 +5,14 @@
 
 from typing import Tuple
 
-import pytest
-from _pytest.monkeypatch import MonkeyPatch
-from pylibra import LibraNetwork
-
 import libra_utils.types.currencies
-from libra_utils.types.metadata import MetadataType
+import pytest
+from libra import libra_types
+from libra.txnmetadata import general_metadata
+from libra.utils import sub_address, account_address_hex
 from libra_utils.custody import Custody
-from libra_utils.libra import encode_subaddr, wait_for_account_seq
 from libra_utils.types.currencies import LibraCurrency
-from pubsub.types import TransactionMetadata
-from tests.wallet_tests.pylibra_mocks import AccountMocker
+
 from tests.wallet_tests.resources.seeds.balances_seeder import BalancesSeeder
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet import storage, types
@@ -29,7 +26,6 @@ from wallet.services.transaction import (
     get_transaction_direction,
     process_incoming_transaction,
     get_transaction,
-    RiskCheckError,
     SelfAsDestinationError,
     get_total_balance,
 )
@@ -91,30 +87,19 @@ def test_transaction_seq_exist() -> None:
     )
 
 
-def test_wait_for_account_seq(monkeypatch: MonkeyPatch) -> None:
-    account_mocker = AccountMocker()
-    monkeypatch.setattr(LibraNetwork, "getAccount", account_mocker.get_account)
-    seq = 2
-    ar = wait_for_account_seq("addr", seq)
-
-    assert ar.sequence == 2
-
-
 def test_process_incoming_txn() -> None:
     account = create_account("fake_account")
     sender_addr = "46db232847705e05525db0336fd9f337"
     subaddr = generate_new_subaddress(account.id)
 
-    meta = TransactionMetadata(
-        metadata_type=MetadataType.GENERAL, to_subaddress=encode_subaddr(subaddr)
-    )
+    meta = general_metadata(to_subaddress=sub_address(subaddr))
     process_incoming_transaction(
         sender_address=sender_addr,
         receiver_address="lrw_vasp",
         sequence=1,
         amount=100,
         currency=LibraCurrency.Coin1,
-        metadata=meta,
+        metadata=libra_types.Metadata__GeneralMetadata.lcs_deserialize(meta),
         blockchain_version=1,
     )
 
@@ -301,11 +286,13 @@ def send_fake_tx(amount=100, send_to_self=False) -> Tuple[int, Transaction]:
     amount = amount
     payment_type = types.TransactionType.EXTERNAL
     currency = libra_utils.types.currencies.LibraCurrency.Coin2
-    destination_addresss = "receiver_address"
+    destination_address = "receiver_address"
     destination_subaddress = "receiver_subaddress"
 
     if send_to_self:
-        destination_addresss = Custody().get_account_address("test_wallet")
+        destination_address = account_address_hex(
+            Custody().get_account("test_wallet").account_address
+        )
         destination_subaddress = generate_new_subaddress(account_id)
 
     send_tx = send_transaction(
@@ -313,7 +300,7 @@ def send_fake_tx(amount=100, send_to_self=False) -> Tuple[int, Transaction]:
         amount=amount,
         currency=currency,
         payment_type=payment_type,
-        destination_address=destination_addresss,
+        destination_address=destination_address,
         destination_subaddress=destination_subaddress,
     )
 

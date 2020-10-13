@@ -6,7 +6,8 @@ from uuid import UUID
 
 import time
 
-from libra_utils.libra import decode_full_addr
+from libra import utils
+from libra.identifier import decode_account
 from libra_utils.types.currencies import LibraCurrency
 from libra_utils.types.liquidity.currency import Currency, CurrencyPairs, CurrencyPair
 from libra_utils.types.liquidity.quote import QuoteData
@@ -21,7 +22,6 @@ from wallet.types import (
     Direction,
     CoverStatus,
     OrderId,
-    TransactionType,
     TransactionStatus,
 )
 
@@ -126,11 +126,11 @@ def _cover_buy(order: Order, quote: QuoteData) -> bool:
         cover_status=CoverStatus.PendingCoverValidation,
     )
 
-    vasp_address, internal_subaddress = decode_full_addr(deposit_address)
+    vasp_address, internal_subaddress = decode_account(deposit_address)
     if not _validate_blockchain_transaction(
         blockchain_version=trade_info.tx_version,
-        vasp_address=vasp_address,
-        internal_subaddress=internal_subaddress,
+        vasp_address=utils.account_address_hex(vasp_address),
+        internal_subaddress=internal_subaddress.hex(),
         amount=round(trade_info.amount),
     ):
         update_order(

@@ -1,14 +1,10 @@
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-from pylibra import (
-    FaucetUtils,
-    LibraNetwork,
-    TransactionUtils,
-)
-
-from libra_utils import custody
-from tests.wallet_tests.pylibra_mocks import (
+from libra.testnet import Faucet
+from libra.jsonrpc import Client
+from libra import utils
+from tests.wallet_tests.libra_client_sdk_mocks import (
     FaucetUtilsMock,
     LibraNetworkMock,
     TransactionsMocker,
@@ -16,13 +12,11 @@ from tests.wallet_tests.pylibra_mocks import (
 
 
 def setup_mocks(vasp_addr):
-    FaucetUtils.mint = FaucetUtilsMock.mint
-    LibraNetwork.getAccount = LibraNetworkMock.get_account
-    LibraNetwork.transaction_by_acc_seq = LibraNetworkMock.transaction_by_acc_seq
-    LibraNetwork.transactions_by_range = LibraNetworkMock.transactions_by_range
-    LibraNetwork.sendTransaction = LibraNetworkMock.sendTransaction
+    Faucet.mint = FaucetUtilsMock.mint
+    Client.get_account = LibraNetworkMock.get_account
+    Client.get_account_transaction = LibraNetworkMock.transaction_by_acc_seq
+    Client.get_transactions = LibraNetworkMock.transactions_by_range
+    Client.submit = LibraNetworkMock.sendTransaction
 
     TransactionsMocker.VASP_ADDR = vasp_addr
-    TransactionUtils.createSignedP2PTransaction = (
-        TransactionsMocker.create_signed_p2p_transaction
-    )
+    utils.create_signed_transaction = TransactionsMocker.create_signed_p2p_transaction

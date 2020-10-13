@@ -1,14 +1,12 @@
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-from time import sleep
 from typing import Optional
 
-from libra_utils.libra import decode_subaddr
+from libra import libra_types
 from libra_utils.types.currencies import LibraCurrency
-from pubsub.types import TransactionMetadata
 from wallet.services import account as account_service
-from wallet.services.risk import risk_check, TX_AMOUNT_THRESHOLD
+from wallet.services.risk import risk_check
 from . import INVENTORY_ACCOUNT_NAME
 from .log import add_transaction_log
 from .. import storage, services, OnchainWallet
@@ -45,6 +43,19 @@ class SelfAsDestinationError(Exception):
     pass
 
 
+def decode_general_metadata_v0(
+    metadata_bytes: bytes,
+) -> Optional[libra_types.GeneralMetadataV0]:
+    metadata = libra_types.Metadata.lcs_deserialize(metadata_bytes)
+
+    if isinstance(metadata, libra_types.Metadata__GeneralMetadata):
+        if isinstance(
+            metadata.value, libra_types.GeneralMetadata__GeneralMetadataVersion0
+        ):
+            return metadata.value.value
+    raise None
+
+
 def process_incoming_transaction(
     blockchain_version: int,
     sender_address: str,
@@ -52,19 +63,28 @@ def process_incoming_transaction(
     sequence: int,
     amount: int,
     currency: LibraCurrency,
-    metadata: Optional[TransactionMetadata] = None,
+    metadata: Optional[bytes] = None,
 ):
     log_execution("Attempting to process incoming transaction from chain")
     receiver_id = None
     sender_subaddress = None
     receiver_subaddr = None
-    if metadata:
-        if metadata.to_subaddress:
-            receiver_subaddr = decode_subaddr(metadata.to_subaddress)
+
+    if (
+        metadata
+        and isinstance(metadata, libra_types.Metadata__GeneralMetadata)
+        and isinstance(
+            metadata.value, libra_types.GeneralMetadata__GeneralMetadataVersion0
+        )
+    ):
+        general_v0 = metadata.value.value
+
+        if general_v0.to_subaddress:
+            receiver_subaddr = general_v0.to_subaddress.hex()
             receiver_id = get_account_id_from_subaddr(receiver_subaddr)
 
-        if metadata.from_subaddress:
-            sender_subaddress = decode_subaddr(metadata.from_subaddress)
+        if general_v0.from_subaddress:
+            sender_subaddress = general_v0.from_subaddress.hex()
 
     if not receiver_id:
         log_execution("Incoming transaction had no metadata. crediting inventory")
@@ -275,7 +295,7 @@ def internal_transaction(
 
     sender_subaddress = account_service.generate_new_subaddress(sender_id)
     receiver_subaddress = account_service.generate_new_subaddress(receiver_id)
-    internal_vasp_address = OnchainWallet().vasp_address
+    internal_vasp_address = OnchainWallet().address_str
 
     transaction = add_transaction(
         amount=amount,
@@ -316,7 +336,7 @@ def external_transaction(
         payment_type=payment_type,
         status=TransactionStatus.PENDING,
         source_id=sender_id,
-        source_address=OnchainWallet().vasp_address,
+        source_address=OnchainWallet().address_str,
         source_subaddress=sender_subaddress,
         destination_id=None,
         destination_address=receiver_address,
@@ -346,8 +366,12 @@ def external_offchain_transaction(
 
     from offchain import VASP
 
+    onchain_wallet = OnchainWallet()
+
     print(
-        f"=================Start external_offchain_transaction {OnchainWallet().vasp_address}, {sender_id}, {receiver_address}, {receiver_subaddress}, {amount}, {currency}, {payment_type}"
+        f"=================Start external_offchain_transaction "
+        f"{onchain_wallet.address_str}, {sender_id}, {receiver_address}, {receiver_subaddress}, "
+        f"{amount}, {currency}, {payment_type}"
     )
     if not validate_balance(sender_id, amount, currency):
         raise BalanceError(f"Balance is less than amount needed {amount}")
@@ -360,7 +384,7 @@ def external_offchain_transaction(
         payment_type=payment_type,
         status=TransactionStatus.PENDING,
         source_id=sender_id,
-        source_address=OnchainWallet().vasp_address,
+        source_address=onchain_wallet.address_str,
         source_subaddress=sender_subaddress,
         destination_id=None,
         destination_address=receiver_address,
@@ -369,13 +393,13 @@ def external_offchain_transaction(
 
     # off-chain logic
     sender_address = LibraAddress.from_bytes(
-        bytes.fromhex(OnchainWallet().vasp_address),
+        bytes.fromhex(onchain_wallet.address_str),
         bytes.fromhex(sender_subaddress),
         hrp="lbr",
     )
     print(
         "!!!!!!!!!!!!!!sender address",
-        OnchainWallet().vasp_address,
+        onchain_wallet.address_str,
         sender_address.as_str(),
         sender_address.get_onchain().as_str(),
     )
@@ -383,7 +407,7 @@ def external_offchain_transaction(
         bytes.fromhex(receiver_address), bytes.fromhex(receiver_subaddress), hrp="lbr"
     )
     print(
-        "!!!!!!!!!!!!!!recceiver address",
+        "!!!!!!!!!!!!!!receiver address",
         receiver_address.as_str(),
         receiver_address.get_onchain().as_str(),
     )
@@ -437,7 +461,9 @@ def start_settle_offchain(transaction_id: int) -> None:
 def settle_offchain(transaction_id: int) -> None:
     transaction = get_transaction(transaction_id)
     print(
-        f"submit_onchain===================={transaction_id}, {transaction.status}, {transaction.type}"
+        f"submit_onchain===================={transaction_id}, "
+        f"{transaction.status}, "
+        f"{transaction.type}"
     )
     if (
         transaction.status == TransactionStatus.READY_FOR_ON_CHAIN
@@ -459,7 +485,7 @@ def settle_offchain(transaction_id: int) -> None:
                 amount=transaction.amount,
                 dest_vasp_address=transaction.destination_address,
                 dest_sub_address=transaction.destination_subaddress,
-                source_subaddr=transaction.source_subaddress,
+                source_sub_address=transaction.source_subaddress,
             )
 
             update_transaction(
@@ -491,7 +517,7 @@ def submit_onchain(transaction_id: int) -> None:
                 amount=transaction.amount,
                 dest_vasp_address=transaction.destination_address,
                 dest_sub_address=transaction.destination_subaddress,
-                source_subaddr=transaction.source_subaddress,
+                source_sub_address=transaction.source_subaddress,
             )
 
             update_transaction(

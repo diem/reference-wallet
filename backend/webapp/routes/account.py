@@ -4,11 +4,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from http import HTTPStatus
-from typing import Dict, Optional
+from typing import Dict
 
-from flask import request, Blueprint, current_app
+from flask import request, Blueprint
 
-from libra_utils.libra import decode_full_addr, encode_full_addr
+
+from libra import identifier, utils
 from libra_utils.types.currencies import LibraCurrency
 from wallet.services import account as account_service
 from wallet.services import transaction as transaction_service
@@ -219,14 +220,14 @@ class AccountRoutes:
                 currency = LibraCurrency[tx_params["currency"]]
                 amount = int(tx_params["amount"])
                 recv_address: str = tx_params["receiver_address"]
-                dest_address, dest_subaddress = decode_full_addr(recv_address)
+                dest_address, dest_subaddress = identifier.decode_account(recv_address)
 
                 tx = transaction_service.send_transaction(
                     sender_id=account_id,
                     amount=amount,
                     currency=currency,
-                    destination_address=dest_address,
-                    destination_subaddress=dest_subaddress,
+                    destination_address=utils.account_address_bytes(dest_address).hex(),
+                    destination_subaddress=dest_subaddress.hex(),
                 )
                 transaction = AccountRoutes.get_transaction_response_object(
                     user.account_id, tx
@@ -290,14 +291,14 @@ class AccountRoutes:
             "source": {
                 "vasp_name": transaction.source_address,
                 "user_id": transaction.source_subaddress,
-                "full_addr": encode_full_addr(
+                "full_addr": identifier.encode_account(
                     transaction.source_address, transaction.source_subaddress
                 ),
             },
             "destination": {
                 "vasp_name": transaction.destination_address,
                 "user_id": transaction.destination_subaddress,
-                "full_addr": encode_full_addr(
+                "full_addr": identifier.encode_account(
                     transaction.destination_address, transaction.destination_subaddress
                 ),
             },

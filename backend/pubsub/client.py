@@ -3,11 +3,11 @@
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-import os, time
-from typing import Any, List, Dict, Optional
+import time
+from typing import Any, Dict, Optional
 
-import sys
-import logging, json
+import logging
+import json
 
 from wallet.background_tasks.background import process_incoming_txn
 from .types import LRWPubSubEvent
