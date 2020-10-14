@@ -225,8 +225,10 @@ e2e() {
 
       export GW_PORT=$(get_port)
       export OFFCHAIN_SERVICE_PORT_1=8091
-      ENV_FILE_NAME=".env" PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 GW_PORT=$GW_PORT OFFCHAIN_SERVICE_PORT=$OFFCHAIN_SERVICE_PORT_1 \
-            pipenv run python3 scripts/set_env.py > /dev/null 2>&1
+      ENV_FILE_NAME=".env" PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 \
+        GW_PORT=$GW_PORT OFFCHAIN_SERVICE_PORT=$OFFCHAIN_SERVICE_PORT_1 \
+        VASP_BASE_URL="http://lrw_backend-offchain_1:${OFFCHAIN_SERVICE_PORT_1}" \
+        pipenv run python3 scripts/set_env.py > /dev/null 2>&1
       export VASP_ADDR_1=$(source backend/.env && echo $VASP_ADDR)
       echo "export GW_PORT_1=$GW_PORT"
       echo "export VASP_ADDR_1=$VASP_ADDR_1"
@@ -237,8 +239,10 @@ e2e() {
     if [ "$single_double" = "double" ]; then
       export GW_PORT_2=$(get_port)
       export OFFCHAIN_SERVICE_PORT_2=8092
-      ENV_FILE_NAME=".env-2" PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 GW_PORT=$GW_PORT_2 OFFCHAIN_SERVICE_PORT=$OFFCHAIN_SERVICE_PORT_2 \
-          pipenv run python3 scripts/set_env.py > /dev/null 2>&1
+      ENV_FILE_NAME=".env-2" PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 \
+        GW_PORT=$GW_PORT_2 OFFCHAIN_SERVICE_PORT=$OFFCHAIN_SERVICE_PORT_2 \
+        VASP_BASE_URL="http://lrw2_backend-offchain_1:${OFFCHAIN_SERVICE_PORT_2}" \
+        pipenv run python3 scripts/set_env.py > /dev/null 2>&1
       export VASP_ADDR_2=$(source backend/.env-2 && echo $VASP_ADDR)
       echo "export GW_PORT_2=$GW_PORT_2"
       echo "export VASP_ADDR_2=$VASP_ADDR_2"
