@@ -195,6 +195,10 @@ get_port() {
   python -c 'import socket; s=socket.socket(); s.bind(("", 0)); print(s.getsockname()[1]); s.close()'
 }
 
+# NOTE: This function is used for automating e2e test deployments
+#       Output from this function is used to configure connections to e2e wallet deployments
+#       and will be evaluated as code. Debug statements must be prepended with as comments, and all
+#       unintended output suppressed to /dev/null
 e2e() {
   local single_double=${1}
   local up_down=$2
@@ -206,15 +210,16 @@ e2e() {
 
   if [ "$single_double" = "single" ]; then
     if [ "$upgrade" == true ]; then
-      echo "Cannot upgrade single network"
+      echo "# Cannot upgrade single network"
       exit 1
     fi
-    echo "Operating on single wallet instance"
+    echo "# Operating on single wallet instance"
   elif [ "$single_double" = "double" ]; then
     volumes="$volumes lrw2_${PG_VOLUME_DOUBLE}"
-    echo "Operating on double wallet instance"
+    echo "# Operating on double wallet instance"
   else
-    echo 'Must specify valid count `single` or `double`'
+    echo '# Must specify valid count `single` or `double`'
+    exit 1
   fi
 
   if [ "$up_down" = "up" ]; then
@@ -275,10 +280,11 @@ e2e() {
     if [ "$single_double" = "double" ]; then
       docker-compose -p lrw2 -f $composes down
     fi
-    echo "Purging $volumes"
+    echo "# Purging $volumes"
     docker volume rm -f $volumes > /dev/null 2>&1
   else
-    echo 'Must specify either `up` or `down` option'
+    echo '# Must specify either `up` or `down` option'
+    exit 1
   fi
 }
 

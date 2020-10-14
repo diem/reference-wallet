@@ -41,7 +41,7 @@ jobs:
       - name: Spin up single wallet instance
         if: steps.check_ks.outputs.should_run == 'true'
         run: |
-          ./scripts/lrw.sh e2e single up | tail -3 > e2e.vars
+          ./scripts/lrw.sh e2e single up | tee e2e.vars
       - name: Wait for services to boot up
         if: steps.check_ks.outputs.should_run == 'true'
         continue-on-error: true
@@ -87,7 +87,7 @@ jobs:
         if: steps.check_ks.outputs.should_run == 'true'
         continue-on-error: true
         run: |
-          ./scripts/lrw.sh e2e double up true | tail -3 >> e2e.vars
+          ./scripts/lrw.sh e2e double up true | tee -a e2e.vars
       - name: Wait for services to boot up
         if: steps.check_ks.outputs.should_run == 'true'
         continue-on-error: true

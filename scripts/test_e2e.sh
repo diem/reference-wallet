@@ -12,7 +12,7 @@
 # To run e2e test:
 # cd libra-reference-wallet
 # ./scripts/lrw.sh build 8080 e2e
-# ./scripts/lrw.sh e2e double up | tail -6 > double.vars
+# ./scripts/lrw.sh e2e double up > double.vars
 # cat double.vars
 # source double.vars && ./scripts/test_e2e.sh double
 #
