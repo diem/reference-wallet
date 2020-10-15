@@ -3,21 +3,6 @@ import { AppSettings } from "../interfaces/settings";
 export const initialState: AppSettings = {
   network: "testnet",
   currencies: {
-    LBR: {
-      name: "Libra",
-      symbol: "LBR",
-      sign: "≋LBR",
-      rates: {
-        USD: 1.1,
-        EUR: 0.95,
-        GBP: 0.9,
-        CHF: 1,
-        CAD: 1,
-        AUD: 1,
-        NZD: 1,
-        JPY: 1,
-      },
-    },
     Coin1: {
       name: "Coin1",
       symbol: "Coin1",
@@ -26,21 +11,6 @@ export const initialState: AppSettings = {
         USD: 1,
         EUR: 0.85,
         GBP: 0.8,
-        CHF: 1,
-        CAD: 1,
-        AUD: 1,
-        NZD: 1,
-        JPY: 1,
-      },
-    },
-    Coin2: {
-      name: "Coin2",
-      symbol: "Coin2",
-      sign: "≋Coin2",
-      rates: {
-        USD: 1.1,
-        EUR: 1,
-        GBP: 0.85,
         CHF: 1,
         CAD: 1,
         AUD: 1,
