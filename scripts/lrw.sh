@@ -271,6 +271,10 @@ e2e() {
       docker-compose -p lrw2 -f $composes up --detach > /dev/null 2>&1
       docker network connect lrw2_default test-runner
 
+      # Let offchain containers talk to each other
+      docker network connect lrw2_default lrw_backend-offchain_1
+      docker network connect lrw_default lrw2_backend-offchain_1
+
       cp $tmp_backend_env $backend_env
       cp $tmp_liquidity_env $liquidity_env
     fi
