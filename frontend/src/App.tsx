@@ -40,7 +40,7 @@ const App = () => {
   settingsRef.current = settings;
 
   useEffect(() => {
-    const RefreshUser = async () => {
+    const refreshUser = async () => {
       try {
         if (SessionStorage.getAccessToken()) {
           const backendClient = new BackendClient();
@@ -60,19 +60,21 @@ const App = () => {
           };
 
           const [
+            chain,
             user,
             account,
             paymentMethods,
             rates,
             totalBalances,
-            userCount,
+            userCount
           ] = await Promise.all([
+            backendClient.getChain(),
             backendClient.getUser(),
             backendClient.getAccount(),
             backendClient.getPaymentMethods(),
             backendClient.getRates(),
             getTotalBalances(),
-            getUserCount(),
+            getUserCount()
           ]);
 
           if (settingsRef.current!.language !== user.selected_language) {
@@ -99,13 +101,14 @@ const App = () => {
 
           setSettings({
             ...settings,
+            network: chain.display_name,
             user: { ...settings.user, ...user },
             account: { balances: sortedBalances },
             language: user.selected_language,
             currencies,
             defaultFiatCurrencyCode: user.selected_fiat_currency,
             paymentMethods,
-            walletTotals: { balances: totalBalances, userCount },
+            walletTotals: { balances: totalBalances, userCount }
           });
         }
       } catch (e) {
@@ -117,10 +120,10 @@ const App = () => {
         }
       }
 
-      setTimeout(RefreshUser, REFRESH_USER_INTERVAL);
+      setTimeout(refreshUser, REFRESH_USER_INTERVAL);
     };
 
-    RefreshUser();
+    refreshUser();
   }, []);
 
   const [legalDisclaimer, setLegalDisclaimer] = useState(true);
@@ -128,35 +131,35 @@ const App = () => {
   return (
     <settingsContext.Provider value={[settings, setSettings]}>
       <BrowserRouter>
-        <Header />
+        <Header/>
         <main>
           {legalDisclaimer ? (
-            <LegalDisclaimer onClose={() => setLegalDisclaimer(false)} />
+            <LegalDisclaimer onClose={() => setLegalDisclaimer(false)}/>
           ) : (
             <Switch>
               {settings.user && settings.user.is_admin ? (
-                <LoggedInRoute path="/" exact component={AdminHome} />
+                <LoggedInRoute path="/" exact component={AdminHome}/>
               ) : (
-                <LoggedInRoute path="/" exact component={Home} />
+                <LoggedInRoute path="/" exact component={Home}/>
               )}
-              <LoggedInRoute path="/account/:currency" exact component={Account} />
-              <LoggedInRoute path="/transactions" exact component={Transactions} />
-              <LoggedInRoute path="/verify" exact component={Verify} />
-              <LoggedInRoute path="/settings" exact component={Settings} />
+              <LoggedInRoute path="/account/:currency" exact component={Account}/>
+              <LoggedInRoute path="/transactions" exact component={Transactions}/>
+              <LoggedInRoute path="/verify" exact component={Verify}/>
+              <LoggedInRoute path="/settings" exact component={Settings}/>
 
-              <LoggedInRoute path="/admin/users" exact component={Users} />
-              <LoggedInRoute path="/admin/admins" exact component={Admins} />
-              <LoggedInRoute path="/admin/liquidity" exact component={Liquidity} />
+              <LoggedInRoute path="/admin/users" exact component={Users}/>
+              <LoggedInRoute path="/admin/admins" exact component={Admins}/>
+              <LoggedInRoute path="/admin/liquidity" exact component={Liquidity}/>
 
-              <LoggedOutRoute path="/login" exact component={Signin} />
-              <LoggedOutRoute path="/signup" exact component={Signup} />
-              <LoggedOutRoute path="/forgot-password" exact component={ForgotPassword} />
-              <LoggedOutRoute path="/reset-password" exact component={ResetPassword} />
-              <Redirect to="/" />
+              <LoggedOutRoute path="/login" exact component={Signin}/>
+              <LoggedOutRoute path="/signup" exact component={Signup}/>
+              <LoggedOutRoute path="/forgot-password" exact component={ForgotPassword}/>
+              <LoggedOutRoute path="/reset-password" exact component={ResetPassword}/>
+              <Redirect to="/"/>
             </Switch>
           )}
         </main>
-        <Feedback />
+        <Feedback/>
       </BrowserRouter>
     </settingsContext.Provider>
   );

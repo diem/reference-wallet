@@ -10,6 +10,7 @@ import { Transaction, TransactionDirection } from "../interfaces/transaction";
 import { FiatCurrency, LibraCurrency } from "../interfaces/currencies";
 import { Quote, QuoteAction, Rate } from "../interfaces/cico";
 import { Debt } from "../interfaces/settlement";
+import {Chain} from "../interfaces/system";
 
 export default class BackendClient {
   private client: AxiosInstance;
@@ -389,6 +390,17 @@ export default class BackendClient {
         e.response?.data.error || `Unexpected error occurred (${e.response?.status})`,
         e.response?.data.code || e.response?.status || 0
       );
+    }
+  }
+
+  async getChain(): Promise<Chain> {
+    try {
+      const response = await this.client.get("/network");
+
+      return response.data;
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
     }
   }
 }

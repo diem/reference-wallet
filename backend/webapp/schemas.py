@@ -207,3 +207,8 @@ class Error(Schema):
 
 class TotalUsers(Schema):
     user_count = fields.Int(required=True)
+
+
+class Chain(Schema):
+    chain_id = fields.Int(required=True)
+    display_name = fields.Str(required=True)

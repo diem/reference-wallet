@@ -11,7 +11,6 @@ from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from libra_utils.custody import Custody
-from wallet import OnchainWallet
 from wallet.config import ADMIN_USERNAME
 from wallet.services.fx.fx import update_rates
 from wallet.services.inventory import setup_inventory_account
@@ -21,7 +20,7 @@ from wallet.storage.setup import setup_wallet_storage
 from wallet.types import UsernameExistsError
 from .debug import root
 from .errors import errors
-from .routes import admin, cico, user, account
+from .routes import admin, cico, user, account, system
 from .swagger import swagger_template
 
 
@@ -77,6 +76,7 @@ def _create_app() -> Flask:
     app.register_blueprint(root)
     app.register_blueprint(cico)
     app.register_blueprint(admin)
+    app.register_blueprint(system)
 
     # pyre-ignore[8]
     app.wsgi_app = ProxyFix(app.wsgi_app, x_prefix=1)
@@ -97,6 +97,7 @@ def init() -> Flask:
     _init_onchain_wallet()
     _init_liquidity(app)
     _schedule_update_rates()
+
     return app
 
 

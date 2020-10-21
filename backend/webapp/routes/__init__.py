@@ -7,6 +7,7 @@ from .cico import cico, CicoRoutes
 from .admin import admin, AdminRoutes
 from .user import user, UserRoutes
 from .account import account, AccountRoutes
+from .system import system, SystemRoutes
 
 
 def account_routes():
@@ -155,7 +156,16 @@ def user_routes():
     )
 
 
+def system_routes():
+    system.add_url_rule(
+        rule="/network",
+        view_func=SystemRoutes.GetNetworkView.as_view("get_network"),
+        methods=["GET"],
+    )
+
+
 account_routes()
 cico_routes()
 admin_routes()
 user_routes()
+system_routes()

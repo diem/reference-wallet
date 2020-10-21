@@ -25,7 +25,7 @@ export interface WalletTotals {
 }
 
 export interface AppSettings {
-  network: "testnet" | "mainnet";
+  network: string;
   currencies: {
     [key in LibraCurrency]: LibraCurrencySettings;
   };
