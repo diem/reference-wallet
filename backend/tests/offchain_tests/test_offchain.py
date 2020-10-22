@@ -146,17 +146,21 @@ def make_VASPb(Peer_addr, port, reliable=True):
 
 @pytest.fixture
 def send_transaction_mock(monkeypatch):
-    def send_transaction_mock(
+    def send_transaction_travel_rule_mock(
         self,
         amount: int,
         currency: LibraCurrency,
         source_sub_address: str,
         dest_vasp_address: str,
         dest_sub_address: str,
+        off_chain_reference_id: str,
+        metadata_signature: bytes,
     ) -> (int, int):
         return 0, 0
 
-    monkeypatch.setattr(OnchainWallet, "send_transaction", send_transaction_mock)
+    monkeypatch.setattr(
+        OnchainWallet, "send_transaction_travel_rule", send_transaction_travel_rule_mock
+    )
 
 
 @pytest.fixture

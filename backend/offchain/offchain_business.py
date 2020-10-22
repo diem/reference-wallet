@@ -20,6 +20,7 @@ from wallet.storage.transaction import (
     update_transaction,
     get_transaction_status,
     add_transaction,
+    add_metadata_signature,
 )
 from wallet.storage.user import get_user_by_account_id
 from wallet.services.kyc import get_user_kyc_info, get_additional_user_kyc_info
@@ -416,6 +417,7 @@ class LRWOffChainBusinessContext(BusinessContext):
                 ref_id = payment.reference_id
                 transaction_id = get_transaction_id_from_reference_id(ref_id)
                 transaction = get_single_transaction(transaction_id)
+                add_metadata_signature(ref_id, payment.recipient_signature)
 
                 if transaction.status == TransactionStatus.COMPLETED:
                     return None
@@ -459,6 +461,7 @@ class LRWOffChainBusinessContext(BusinessContext):
                     sequence=None,
                     blockchain_version=None,
                     reference_id=payment.reference_id,
+                    metadata_signature=payment.recipient_signature,
                 )
                 logger.info(
                     f"~~~~~~~~~~~~~~~~RECEIVER pre both_ready_for_settlement done with txn id {txn_id}~~~~~~~~~~~"

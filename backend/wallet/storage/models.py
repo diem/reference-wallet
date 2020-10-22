@@ -158,4 +158,5 @@ class OffChain(Base):
     __tablename__ = "offchain"
     id = Column(Integer, primary_key=True, autoincrement=True)
     reference_id = Column(String, nullable=False)
+    metadata_signature = Column(String, nullable=True)
     transaction_id = Column(Integer, ForeignKey("transaction.id"), nullable=False)

@@ -2,6 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+import logging
+
+logger = logging.getLogger(name="wallet-service-transaction")
+logging.basicConfig()
+logging.getLogger().setLevel(logging.DEBUG)
 
 _RUN_BACKGROUND_TASKS = bool(os.getenv("RUN_BACKGROUND_TASKS", True))
 
