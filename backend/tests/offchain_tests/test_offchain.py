@@ -248,66 +248,65 @@ async def test_offchain(
         f"==========COMP B: {peer_keys[PeerB_addr.as_str()].export_full()}, PUBLICA: {peer_keys[PeerB_addr.as_str()].export_pub()}"
     )
 
-    for cid in range(messages_num):
-        tx = add_transaction(
-            amount=amount,
-            currency=currency,
-            payment_type=payment_type,
-            status=TransactionStatus.OFF_CHAIN_STARTED,
-            source_id=account_id,
-            source_address=source_vasp_address,
-            source_subaddress=source_subaddress,
-            destination_id=None,
-            destination_address=destination_vasp_address,
-            destination_subaddress=destination_subaddress,
-            reference_id=get_new_reference_id(),
-        )
-        assert tx.id in get_account_transaction_ids(account_id)
-        assert tx.source_id == account_id
-        assert tx.amount == amount
-        assert tx.destination_address == destination_vasp_address
-        assert tx.destination_subaddress == destination_subaddress
+    tx = add_transaction(
+        amount=amount,
+        currency=currency,
+        payment_type=payment_type,
+        status=TransactionStatus.OFF_CHAIN_STARTED,
+        source_id=account_id,
+        source_address=source_vasp_address,
+        source_subaddress=source_subaddress,
+        destination_id=None,
+        destination_address=destination_vasp_address,
+        destination_subaddress=destination_subaddress,
+        reference_id=get_new_reference_id(),
+    )
+    assert tx.id in get_account_transaction_ids(account_id)
+    assert tx.source_id == account_id
+    assert tx.amount == amount
+    assert tx.destination_address == destination_vasp_address
+    assert tx.destination_subaddress == destination_subaddress
 
-        sender = PaymentActor(sub_a, StatusObject(Status.needs_kyc_data), [])
-        receiver = PaymentActor(sub_b, StatusObject(Status.none), [])
+    sender = PaymentActor(sub_a, StatusObject(Status.needs_kyc_data), [])
+    receiver = PaymentActor(sub_b, StatusObject(Status.none), [])
 
-        action = PaymentAction(amount, currency, "charge", int(time()))
-        reference_id = get_reference_id_from_transaction_id(tx.id)
-        payment = PaymentObject(
-            sender=sender,
-            receiver=receiver,
-            reference_id=reference_id,
-            original_payment_reference_id=None,
-            description=None,
-            action=action,
-        )
-        cmd = PaymentCommand(payment)
-        result = VASPa.new_command(PeerB_addr.get_onchain(), cmd).result()
-        assert result
+    action = PaymentAction(amount, currency, "charge", int(time()))
+    reference_id = get_reference_id_from_transaction_id(tx.id)
+    payment = PaymentObject(
+        sender=sender,
+        receiver=receiver,
+        reference_id=reference_id,
+        original_payment_reference_id=None,
+        description=None,
+        action=action,
+    )
+    cmd = PaymentCommand(payment)
+    result = VASPa.new_command(PeerB_addr.get_onchain(), cmd).result()
+    assert result
 
-        num_tries, delay = 20, 1.0
-        while num_tries > 1:
-            payment = VASPa.get_payment_by_ref(reference_id)
-            if (
-                payment.sender.status.as_status() != Status.ready_for_settlement
-                and payment.receiver.status.as_status() != Status.ready_for_settlement
-            ):
-                await asyncio.sleep(delay)
-                num_tries -= 1
-            else:
-                num_tries = 0
+    num_tries, delay = 20, 1.0
+    while num_tries > 1:
+        payment = VASPa.get_payment_by_ref(reference_id)
+        if (
+            payment.sender.status.as_status() != Status.ready_for_settlement
+            and payment.receiver.status.as_status() != Status.ready_for_settlement
+        ):
+            await asyncio.sleep(delay)
+            num_tries -= 1
+        else:
+            num_tries = 0
 
-        assert (
-            VASPa.get_payment_by_ref(reference_id).sender.status.as_status()
-            == Status.ready_for_settlement
-        )
-        assert (
-            VASPb.get_payment_by_ref(reference_id).receiver.status.as_status()
-            == Status.ready_for_settlement
-        )
+    assert (
+        VASPa.get_payment_by_ref(reference_id).sender.status.as_status()
+        == Status.ready_for_settlement
+    )
+    assert (
+        VASPb.get_payment_by_ref(reference_id).receiver.status.as_status()
+        == Status.ready_for_settlement
+    )
 
-        tx = get_single_transaction(tx.id)
-        assert tx.status == TransactionStatus.COMPLETED
+    tx = get_single_transaction(tx.id)
+    assert tx.status == TransactionStatus.COMPLETED
 
     # Close the loops
     VASPa.close()
@@ -354,7 +353,7 @@ class TestBusinessContext(BusinessContext):
     # ----- VASP Signature -----
 
     def validate_recipient_signature(self, payment, ctx=None):
-        logger.info("~~~~~~~~~~~~~~~~22222222validate_recipient_signature~~~~~~~~~~~")
+        logger.info("~~~~~~~~~~~~~~~~validate_recipient_signature~~~~~~~~~~~")
 
         if "recipient_signature" in payment.data:
             try:
@@ -386,7 +385,7 @@ class TestBusinessContext(BusinessContext):
 
     async def get_recipient_signature(self, payment, ctx=None):
         logger.info(
-            f"~~~~~~~~~~~~~~~~222222222get_recipient_signature~~~~~~~~~~~{payment.sender.address}"
+            f"~~~~~~~~~~~~~~~~get_recipient_signature~~~~~~~~~~~{payment.sender.address}"
         )
         myself = self.my_addr.as_str()
         key = peer_keys.get(myself)

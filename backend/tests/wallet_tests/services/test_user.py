@@ -11,8 +11,17 @@ import pytest
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet import types
 from wallet.services import user as user_service
-from wallet.services.kyc import is_verified, process_user_kyc
-from wallet.services.user import create_new_user, authorize, update_password
+from wallet.services.kyc import (
+    is_verified,
+    process_user_kyc,
+    get_additional_user_kyc_info,
+)
+from wallet.services.user import (
+    create_new_user,
+    authorize,
+    update_password,
+    update_user,
+)
 from wallet.storage import db_session
 from wallet.types import RegistrationStatus, UsernameExistsError
 
@@ -86,3 +95,35 @@ def test_kyc_started_user_pending(monkeypatch) -> None:
     )
 
     assert status_updates == [RegistrationStatus.Pending, RegistrationStatus.Approved]
+
+
+def test_get_user_kyc() -> None:
+    username = "fakeuserid"
+    password = "supersecurepassword"
+    first_name = "first name"
+    last_name = "last_name"
+    user_id = create_new_user(username, password, False, first_name, last_name)
+    update_user(user_id=user_id, country="US")
+    kyc_info = get_additional_user_kyc_info(user_id)
+    assert kyc_info == {
+        "payload_type": "KYC_DATA",
+        "payload_version": 1,
+        "type": "individual",
+        "given_name": first_name,
+        "surname": last_name,
+        "dob": "",
+        "address": {
+            "city": "",
+            "country": "US",
+            "line1": "",
+            "line2": "",
+            "postal_code": "",
+            "state": "",
+        },
+        "place_of_birth": {
+            "city": "",
+            "country": "US",
+            "postal_code": "",
+            "state": "",
+        },
+    }

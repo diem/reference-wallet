@@ -7,6 +7,7 @@ import libra_utils.types.currencies
 from tests.wallet_tests.resources.seeds.one_user_multiple_transactions import (
     OneUserMultipleTransactions,
 )
+import pytest
 from wallet import types
 from wallet.storage import (
     db_session,
@@ -50,6 +51,22 @@ def test_add_transaction() -> None:
         destination_subaddress="receiver_subaddress",
     )
     assert tx.id in get_account_transaction_ids(1)
+
+
+def test_add_faulty_offchain_transaction() -> None:
+    with pytest.raises(ValueError):
+        add_transaction(
+            amount=100,
+            currency=libra_utils.types.currencies.LibraCurrency.Coin1,
+            payment_type=types.TransactionType.OFFCHAIN,
+            status=types.TransactionStatus.PENDING,
+            source_id=1,
+            source_address="sender_address",
+            source_subaddress="sender_subaddress",
+            destination_id=123,
+            destination_address="receiver_address",
+            destination_subaddress="receiver_subaddress",
+        )
 
 
 def test_get_user_transactions() -> None:

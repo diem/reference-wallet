@@ -13,6 +13,7 @@ from .offchain_business import (
     VASPInfoNotFoundException,
     BaseURLNotFoundException,
     get_compliance_key_on_chain,
+    JSON_RPC_CLIENT,
 )
 
 import logging
@@ -47,10 +48,8 @@ class LRWSimpleVASPInfo(VASPInfo):
             Returns:
                 str: The base url of the other VASP.
         """
-        JSON_RPC_URL = os.getenv("JSON_RPC_URL", "https://testnet.libra.org/v1")
-        client = jsonrpc.Client(JSON_RPC_URL)
         other_vasp_addr = other_addr.get_onchain_address_hex()
-        account = client.get_account(other_vasp_addr)
+        account = JSON_RPC_CLIENT.get_account(other_vasp_addr)
         if account is None:
             raise VASPInfoNotFoundException(
                 f"VASP account {other_vasp_addr} was not found onchain"
@@ -58,14 +57,14 @@ class LRWSimpleVASPInfo(VASPInfo):
 
         if account.role.type == jsonrpc.ACCOUNT_ROLE_CHILD_VASP:
             parent_vasp_addr = account.role.parent_vasp_address
-            account = client.get_account(parent_vasp_addr)
+            account = JSON_RPC_CLIENT.get_account(parent_vasp_addr)
             if account is None:
                 raise VASPInfoNotFoundException(
                     f"VASP account {parent_vasp_addr} was not found onchain"
                 )
 
         base_url: str = account.role.base_url
-        logger.info(f"got base_url {base_url}")
+        logger.debug(f"got base_url {base_url}")
 
         if not base_url:
             raise BaseURLNotFoundException(
@@ -105,11 +104,11 @@ class LRWSimpleVASPInfo(VASPInfo):
         Returns:
             ComplianceKey: The compliance verification key of the other VASP.
         """
-        logger.info(f"get_peer_compliance_verification_key {other_addr}")
+        logger.debug(f"get_peer_compliance_verification_key {other_addr}")
         libra_address = LibraAddress.from_encoded_str(
             other_addr
         ).get_onchain_address_hex()
-        logger.info(f"get_peer_compliance_verification_key libra addr {libra_address}")
+        logger.debug(f"get_peer_compliance_verification_key libra addr {libra_address}")
         return get_compliance_key_on_chain(libra_address)
 
     def get_my_compliance_signature_key(self, my_addr):

@@ -27,12 +27,15 @@ from wallet.services.transaction import submit_onchain, start_settle_offchain
 from wallet.services import run_bg_tasks
 from wallet.types import TransactionType, TransactionStatus
 from libra_utils.types.currencies import LibraCurrency
-
 import logging
 
 logger = logging.getLogger(name="lrw_offchain_business")
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
+
+
+JSON_RPC_URL = os.getenv("JSON_RPC_URL", "https://testnet.libra.org/v1")
+JSON_RPC_CLIENT = jsonrpc.Client(JSON_RPC_URL)
 
 
 class VASPInfoNotFoundException(Exception):
@@ -48,9 +51,7 @@ class ComplianceKeyNotFoundException(Exception):
 
 
 def get_compliance_key_on_chain(addr: str) -> ComplianceKey:
-    JSON_RPC_URL = os.getenv("JSON_RPC_URL", "https://testnet.libra.org/v1")
-    client = jsonrpc.Client(JSON_RPC_URL)
-    account = client.get_account(addr)
+    account = JSON_RPC_CLIENT.get_account(addr)
     if account is None:
         raise VASPInfoNotFoundException(f"VASP account {addr} was not found onchain")
 
@@ -63,7 +64,10 @@ def get_compliance_key_on_chain(addr: str) -> ComplianceKey:
 
     key = ComplianceKey.from_pub_bytes(bytes.fromhex(compliance_key))
     logger.info(f"~~~~~~~~~got compliance key full {key}")
-    assert not key._key.has_private
+    if key._key.has_private:
+        raise ValueError(
+            f"key {key._key} has private key when it should be a public key"
+        )
     return key
 
 
@@ -161,7 +165,7 @@ class LRWOffChainBusinessContext(BusinessContext):
             BusinessValidationFailure: If the signature is invalid
                     or not present.
         """
-        logger.info("~~~~~~~~~~~111111111validate_recipient_signature LRW~~~~~~~~~~~")
+        logger.info("~~~~~~~~~~~validate_recipient_signature LRW~~~~~~~~~~~")
         if "recipient_signature" in payment.data:
             try:
                 recipient_addr = LibraAddress.from_encoded_str(
@@ -210,7 +214,7 @@ class LRWOffChainBusinessContext(BusinessContext):
         """
         from . import LRW_VASP_COMPLIANCE_KEY
 
-        logger.info("~~~~~~~~~~~1111111111get_recipient_signature~~~~~~~~~~~~~")
+        logger.info("~~~~~~~~~~~get_recipient_signature~~~~~~~~~~~~~")
         libra_address_bytes = LibraAddress.from_encoded_str(
             payment.sender.address
         ).onchain_address_bytes

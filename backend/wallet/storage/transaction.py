@@ -50,7 +50,9 @@ def add_transaction(
 
     if payment_type == TransactionType.OFFCHAIN:
         if reference_id is None:
-            raise Exception("Reference ID must exist for offchain transaction")
+            raise ValueError(
+                f"Reference ID must exist for offchain transaction {tx.id}"
+            )
         offchain = OffChain(reference_id=reference_id)
         tx.off_chain.append(offchain)
         db_session.add(offchain)
