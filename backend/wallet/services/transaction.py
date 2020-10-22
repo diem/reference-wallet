@@ -11,7 +11,7 @@ from . import INVENTORY_ACCOUNT_NAME
 from .log import add_transaction_log
 from .. import storage, services, OnchainWallet
 from ..logging import log_execution
-from datetime import datetime
+from time import time
 from ..storage import (
     add_transaction,
     Transaction,
@@ -415,7 +415,7 @@ def external_offchain_transaction(
         sender_address.as_str(), StatusObject(Status.needs_kyc_data), [],
     )
     receiver = PaymentActor(receiver_address.as_str(), StatusObject(Status.none), [])
-    action = PaymentAction(amount, currency, "charge", str(datetime.utcnow()))
+    action = PaymentAction(amount, currency, "charge", int(time()))
     reference_id = get_reference_id_from_transaction_id(transaction.id)
     payment = PaymentObject(
         sender=sender,

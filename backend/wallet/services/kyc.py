@@ -103,3 +103,29 @@ def get_user_kyc_info(user_id):
             "state": xstr(user.state),
         },
     }
+
+
+def get_additional_user_kyc_info(user_id):
+    user = get_user(user_id)
+    return {
+        "payload_type": "KYC_DATA",
+        "payload_version": 1,
+        "type": "individual",
+        "given_name": xstr(user.first_name),
+        "surname": xstr(user.last_name),
+        "dob": xstr(user.dob),
+        "address": {
+            "city": xstr(user.city),
+            "country": xstr(user.country),
+            "line1": xstr(user.address_1),
+            "line2": xstr(user.address_2),
+            "postal_code": xstr(user.zip),
+            "state": xstr(user.state),
+        },
+        "place_of_birth": {
+            "city": xstr(user.city),
+            "country": xstr(user.country),
+            "postal_code": xstr(user.zip),
+            "state": xstr(user.state),
+        },
+    }

@@ -30,6 +30,7 @@ def add_transaction(
     destination_subaddress: str = None,
     sequence: Optional[int] = None,
     blockchain_version: Optional[int] = None,
+    reference_id: Optional[str] = None,
 ) -> Transaction:
     tx = Transaction(
         amount=amount,
@@ -48,8 +49,9 @@ def add_transaction(
     )
 
     if payment_type == TransactionType.OFFCHAIN:
-        ref_id = get_new_reference_id()
-        offchain = OffChain(reference_id=ref_id)
+        if reference_id is None:
+            raise Exception("Reference ID must exist for offchain transaction")
+        offchain = OffChain(reference_id=reference_id)
         tx.off_chain.append(offchain)
         db_session.add(offchain)
 

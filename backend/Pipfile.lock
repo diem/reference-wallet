@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "0a720e79dead92e9d57a224af604e4bd6ff49c43d07d99393c75a388d25241ad"
+            "sha256": "0fd632cc4329d0a94de7baa04cad7a55f51b4a93f88f2ed187077a50dffa239a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -344,8 +344,8 @@
         },
         "iniconfig": {
             "hashes": [
-                "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32",
-                "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"
+                "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3",
+                "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"
             ],
             "version": "==1.1.1"
         },
@@ -425,11 +425,10 @@
         },
         "libra-offchainreference": {
             "hashes": [
-                "sha256:30db755c8e1e0ec428e77d9a91dea1102ba5b709ef95d023b8dffa12a8c8e524",
-                "sha256:5c8b353d7bd4f3592ccaff55f846bd52a9b63116f8031b03b48cc3ac33830ed0"
+                "sha256:e1195f5a1fa8f3dc0c9999446bd68d40336ae70ba12e14cf37c3cb232812f0ee"
             ],
             "index": "pypi",
-            "version": "==0.0.1.dev1"
+            "version": "==0.0.3.dev1"
         },
         "libra-sample-wallet": {
             "editable": true,
@@ -1082,6 +1081,14 @@
             ],
             "version": "==1.4.4"
         },
+        "appnope": {
+            "hashes": [
+                "sha256:5b26757dc6f79a3b7dc9fab95359328d5747fcb2409d331ea66d0272b90ab2a0",
+                "sha256:8b995ffe925347a2138d7ac0fe77155e4311a0ea6d6da4f5128fe4b3cbe5ed71"
+            ],
+            "markers": "sys_platform == 'darwin'",
+            "version": "==0.1.0"
+        },
         "attrs": {
             "hashes": [
                 "sha256:26b54ddbbb9ee1d34d5d3668dd37d6cf74990ab23c828c2888dccdceee395594",
@@ -1159,8 +1166,8 @@
         },
         "iniconfig": {
             "hashes": [
-                "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32",
-                "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"
+                "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3",
+                "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"
             ],
             "version": "==1.1.1"
         },

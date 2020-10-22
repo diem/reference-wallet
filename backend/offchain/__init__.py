@@ -2,103 +2,132 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
-from threading import Thread
-import asyncio
 from offchainapi.core import Vasp
 from offchainapi.business import VASPInfo
 from offchainapi.libra_address import LibraAddress
 from offchainapi.crypto import ComplianceKey
+from libra import jsonrpc
 
-# from wallet.onchainwallet import OnchainWallet
-from .offchain_business import LRWOffChainBusinessContext
+from .offchain_business import (
+    LRWOffChainBusinessContext,
+    VASPInfoNotFoundException,
+    BaseURLNotFoundException,
+    get_compliance_key_on_chain,
+)
 
+import logging
+
+logger = logging.getLogger(name="offchain.init")
+logging.basicConfig()
+logging.getLogger().setLevel(logging.DEBUG)
 
 LRW_VASP_ADDR = LibraAddress.from_hex(os.getenv("VASP_ADDR"))
 LRW_VASP_COMPLIANCE_KEY = ComplianceKey.from_str(os.getenv("VASP_COMPLIANCE_KEY"))
 
-PeerB_addr = LibraAddress.from_bytes(b"B" * 16)
-peer_address = {
-    LRW_VASP_ADDR.as_str(): "http://0.0.0.0:8091",
-    PeerB_addr.as_str(): "http://0.0.0.0:8092",
-}
-peer_b_key = ComplianceKey.generate()
-peer_keys = {
-    LRW_VASP_ADDR.as_str(): LRW_VASP_COMPLIANCE_KEY,
-    PeerB_addr.as_str(): peer_b_key,
-}
 print(f"OFFCHAIN SERVICE PORT {os.getenv('OFFCHAIN_SERVICE_PORT')}", flush=True)
 OFFCHAIN_SERVICE_PORT: int = int(os.getenv("OFFCHAIN_SERVICE_PORT", 8091))
 
 
-class SimpleVASPInfo(VASPInfo):
+class LRWSimpleVASPInfo(VASPInfo):
     def __init__(self, my_addr):
         self.my_addr = my_addr
 
+    def get_base_url(self):
+        """ Get the base URL that manages off-chain communications.
+            Returns:
+                str: The base url of the VASP.
+        """
+        return os.getenv("VASP_BASE_URL")
+
     def get_peer_base_url(self, other_addr):
-        # TODO: Read base URL from on-chain
-        if OFFCHAIN_SERVICE_PORT == 8091:
-            return "http://0.0.0.0:8092"
-        else:
-            return "http://0.0.0.0:8091"
-        # other_vasp_addr = other_addr.get_onchain_encoded_str()
-        # assert other_vasp_addr in peer_address
-        # return peer_address[other_vasp_addr]
+        """ Get the base URL that manages off-chain communications of the other
+            VASP.
+            Args:
+                other_addr (LibraAddress): The Libra Blockchain address of the other VASP.
+            Returns:
+                str: The base url of the other VASP.
+        """
+        JSON_RPC_URL = os.getenv("JSON_RPC_URL", "https://testnet.libra.org/v1")
+        client = jsonrpc.Client(JSON_RPC_URL)
+        other_vasp_addr = other_addr.get_onchain_address_hex()
+        account = client.get_account(other_vasp_addr)
+        if account is None:
+            raise VASPInfoNotFoundException(
+                f"VASP account {other_vasp_addr} was not found onchain"
+            )
+
+        if account.role.type == jsonrpc.ACCOUNT_ROLE_CHILD_VASP:
+            parent_vasp_addr = account.role.parent_vasp_address
+            account = client.get_account(parent_vasp_addr)
+            if account is None:
+                raise VASPInfoNotFoundException(
+                    f"VASP account {parent_vasp_addr} was not found onchain"
+                )
+
+        base_url: str = account.role.base_url
+        logger.info(f"got base_url {base_url}")
+
+        if not base_url:
+            raise BaseURLNotFoundException(
+                f"Base URL is empty for peer vasp {account.address}"
+            )
+        return base_url
+
+    def get_libra_address(self):
+        """ The settlement Libra Blockchain address for this channel.
+            Returns:
+                LibraAddress: The Libra Blockchain address.
+        """
+        raise NotImplementedError()  # pragma: no cover
+
+    def get_parent_address(self):
+        """ The VASP Parent address for this channel. High level logic is common
+        to all Libra Blockchain addresses under a parent to ensure consistency and
+        compliance.
+        Returns:
+            LibraAddress: The Libra Blockchain address of the parent VASP.
+        """
+        raise NotImplementedError()  # pragma: no coverv
+
+    def is_unhosted(self, other_addr):
+        """ Returns True if the other party is an unhosted wallet.
+            Args:
+                other_addr (LibraAddress): The Libra Blockchain address of the other VASP.
+            Returns:
+                bool: Whether the other VASP is an unhosted wallet.
+        """
+        return False
 
     def get_peer_compliance_verification_key(self, other_addr):
-        # TODO: Read compliance key from on-chain
-        key = ComplianceKey.from_str(peer_keys[other_addr].export_pub())
-        assert not key._key.has_private
-        return key
+        """ Returns the compliance verfication key of the other VASP.
+        Args:
+            other_addr (LibraAddress): The Libra Blockchain address of the other VASP.
+        Returns:
+            ComplianceKey: The compliance verification key of the other VASP.
+        """
+        logger.info(f"get_peer_compliance_verification_key {other_addr}")
+        libra_address = LibraAddress.from_encoded_str(
+            other_addr
+        ).get_onchain_address_hex()
+        logger.info(f"get_peer_compliance_verification_key libra addr {libra_address}")
+        return get_compliance_key_on_chain(libra_address)
 
-    def get_peer_compliance_signature_key(self, my_addr):
-        return peer_keys[my_addr]
-
-    def is_authorised_VASP(self, certificate, other_addr):
-        return True
-
-
-def start_thread_main(vasp, loop):
-    # Initialize the VASP services.
-    vasp.start_services()
-    print("Started thread main", flush=True)
-
-    try:
-        # Start the loop
-        loop.run_forever()
-    finally:
-        # Do clean up
-        loop.run_until_complete(loop.shutdown_asyncgens())
-        loop.close()
-
-    print("VASP loop exit...", flush=True)
+    def get_my_compliance_signature_key(self, my_addr):
+        """ Returns the compliance signature (secret) key of the VASP.
+        Args:
+            my_addr (LibraAddress): The Libra Blockchain address of the VASP.
+        Returns:
+            ComplianceKey: The compliance key of the VASP.
+        """
+        return LRW_VASP_COMPLIANCE_KEY
 
 
 def make_new_VASP(Peer_addr, reliable=True):
-    vasp = Vasp(
+    return Vasp(
         Peer_addr,
         host="0.0.0.0",
         port=OFFCHAIN_SERVICE_PORT,
         business_context=LRWOffChainBusinessContext(Peer_addr, reliable=reliable),
-        info_context=SimpleVASPInfo(Peer_addr),
+        info_context=LRWSimpleVASPInfo(Peer_addr),
         database={},
     )
-    loop = asyncio.new_event_loop()
-    vasp.set_loop(loop)
-
-    # Create and launch a thread with the VASP event loop
-    t = Thread(target=start_thread_main, args=(vasp, loop))
-    return vasp, loop, t
-
-
-def init_vasp(vasp, loop, t):
-    t.start()
-    print(f"Start Node {vasp.port}", flush=True)
-
-    # Block until the event loop in the thread is running.
-    vasp.wait_for_start()
-
-    print(f"Node {vasp.port} started", flush=True)
-    return vasp, loop, t
-
-
-VASP, loop, thread = make_new_VASP(LRW_VASP_ADDR)

@@ -76,17 +76,25 @@ FAUCET_URL = os.getenv("FAUCET_URL", testnet.FAUCET_URL)
 CHAIN_ID = os.getenv("CHAIN_ID", testnet.CHAIN_ID.value)
 VASP_BASE_URL = os.getenv("VASP_BASE_URL", "http://0.0.0.0:8091")
 LIQUIDITY_BASE_URL = os.getenv("LIQUIDITY_BASE_URL", "http://0.0.0.0:8092")
-COMPLIANCE_KEY = ComplianceKey.generate()
-VASP_COMPLIANCE_KEY = os.getenv("VASP_COMPLIANCE_KEY", COMPLIANCE_KEY.export_full())
-VASP_PUBLIC_KEY_BYTES = COMPLIANCE_KEY.get_public().public_bytes(
-    encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
+VASP_COMPLIANCE_KEY = os.getenv(
+    "VASP_COMPLIANCE_KEY", ComplianceKey.generate().export_full()
 )
-COMPLIANCE_KEY_2 = ComplianceKey.generate()
+VASP_PUBLIC_KEY_BYTES = (
+    ComplianceKey.from_str(VASP_COMPLIANCE_KEY)
+        .get_public()
+        .public_bytes(
+        encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
+    )
+)
 LIQUIDITY_COMPLIANCE_KEY = os.getenv(
-    "LIQUIDITY_COMPLIANCE_KEY", COMPLIANCE_KEY_2.export_full()
+    "LIQUIDITY_COMPLIANCE_KEY", ComplianceKey.generate().export_full()
 )
-LIQUIDITY_PUBLIC_KEY_BYTES = COMPLIANCE_KEY_2.get_public().public_bytes(
-    encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
+LIQUIDITY_PUBLIC_KEY_BYTES = (
+    ComplianceKey.from_str(LIQUIDITY_COMPLIANCE_KEY)
+        .get_public()
+        .public_bytes(
+        encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
+    )
 )
 
 
@@ -152,6 +160,9 @@ with open(liquidity_env_file_path, "w") as dotenv:
     lp_custody_private_keys = json.dumps(private_keys, separators=(",", ":"))
     dotenv.write(f"LIQUIDITY_CUSTODY_ACCOUNT_NAME=liquidity\n")
     dotenv.write(f"CUSTODY_PRIVATE_KEYS={lp_custody_private_keys}\n")
+    dotenv.write(
+        f"LIQUIDITY_VASP_ADDR={utils.account_address_hex(lp_account.account_address)}\n"
+    )
     dotenv.write(f"JSON_RPC_URL={JSON_RPC_URL}\n")
     dotenv.write(f"CHAIN_ID={CHAIN_ID}\n")
 

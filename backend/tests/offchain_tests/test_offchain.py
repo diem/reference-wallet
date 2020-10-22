@@ -3,13 +3,12 @@
 
 import asyncio
 import logging
-from datetime import datetime
 from threading import Thread
-
+from time import time
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 from libra.jsonrpc import Client as LibraClient
-from libra_utils.types.currencies import LibraCurrency
+
 from offchainapi.business import VASPInfo, BusinessContext, BusinessValidationFailure
 from offchainapi.core import Vasp
 from offchainapi.crypto import ComplianceKey
@@ -24,25 +23,33 @@ from offchainapi.payment import (
 from offchainapi.payment_logic import PaymentCommand
 from offchainapi.status_logic import Status
 
-from offchain.offchain_business import LRWOffChainBusinessContext
 from tests.wallet_tests.libra_client_sdk_mocks import AccountMocker
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet import OnchainWallet
-from wallet.services.account import generate_new_subaddress
 from wallet.storage import (
     db_session,
     get_account_transaction_ids,
     get_single_transaction,
     get_reference_id_from_transaction_id,
     add_transaction,
+    get_new_reference_id,
 )
 from wallet.types import TransactionType, TransactionStatus
+from wallet.services.account import generate_new_subaddress, get_account_balance
+from libra_utils.types.currencies import LibraCurrency
+import offchain.offchain_business
+from offchain.offchain_business import (
+    LRWOffChainBusinessContext,
+    get_compliance_key_on_chain,
+)
+from offchain import LRWSimpleVASPInfo
+
 
 logger = logging.getLogger(name="test_offchain")
 
 
 PeerA_addr = LibraAddress.from_hex("c77e1ae3e4a136f070bfcce807747daf")
-PeerB_addr = LibraAddress.from_bytes(b"B" * 16, hrp="tlb")
+PeerB_addr = LibraAddress.from_bytes(b"B" * 16)
 peer_address = {
     PeerA_addr.as_str(): "http://localhost:8091",
     PeerB_addr.as_str(): "http://localhost:8092",
@@ -58,6 +65,9 @@ class SimpleVASPInfo(VASPInfo):
     def __init__(self, my_addr):
         self.my_addr = my_addr
 
+    def get_base_url(self):
+        return peer_address[self.my_addr.as_str()]
+
     def get_peer_base_url(self, other_addr):
         assert other_addr.as_str() in peer_address
         return peer_address[other_addr.as_str()]
@@ -67,11 +77,8 @@ class SimpleVASPInfo(VASPInfo):
         assert not key._key.has_private
         return key
 
-    def get_peer_compliance_signature_key(self, my_addr):
+    def get_my_compliance_signature_key(self, my_addr):
         return peer_keys[my_addr]
-
-    def is_authorised_VASP(self, certificate, other_addr):
-        return True
 
 
 def start_thread_main(vasp, loop):
@@ -139,31 +146,67 @@ def make_VASPb(Peer_addr, port, reliable=True):
 
 @pytest.fixture
 def send_transaction_mock(monkeypatch):
-    def send_mock(
+    def send_transaction_mock(
         self,
         amount: int,
         currency: LibraCurrency,
+        source_sub_address: str,
         dest_vasp_address: str,
         dest_sub_address: str,
-        source_sub_address: str,
     ) -> (int, int):
         return 0, 0
 
-    monkeypatch.setattr(OnchainWallet, "send_transaction", send_mock)
+    monkeypatch.setattr(OnchainWallet, "send_transaction", send_transaction_mock)
 
 
 @pytest.fixture
 def get_peer_compliance_key_mock(monkeypatch):
-    def get_peer_keys_mock(self,) -> {}:
-        return peer_keys
+    def get_peer_key_mock(self, other_addr: str) -> ComplianceKey:
+        libra_address = LibraAddress.from_encoded_str(
+            other_addr
+        ).get_onchain_address_hex()
+        if libra_address == PeerA_addr.get_onchain_address_hex():
+            return ComplianceKey.from_str(peer_keys[PeerA_addr.as_str()].export_pub())
+        else:
+            return ComplianceKey.from_str(peer_keys[PeerB_addr.as_str()].export_pub())
 
-    monkeypatch.setattr(LRWOffChainBusinessContext, "get_peer_keys", get_peer_keys_mock)
+    monkeypatch.setattr(
+        LRWSimpleVASPInfo, "get_peer_compliance_verification_key", get_peer_key_mock
+    )
 
 
-async def test_main_perf(
+@pytest.fixture
+def get_compliance_key_mock(monkeypatch):
+    def get_key_mock(addr: str) -> ComplianceKey:
+        address = LibraAddress.from_hex(addr)
+        return ComplianceKey.from_str(
+            peer_keys[address.get_onchain_encoded_str()].export_pub()
+        )
+
+    monkeypatch.setattr(
+        offchain.offchain_business, "get_compliance_key_on_chain", get_key_mock
+    )
+
+
+@pytest.fixture
+def get_peer_base_url_mock(monkeypatch):
+    def get_peer_url_mock(self, other_addr: LibraAddress) -> str:
+        other_vasp_addr = other_addr.get_onchain_address_hex()
+        logger.info(f"==========Get peer base url: {other_vasp_addr}")
+        if other_vasp_addr == PeerA_addr.get_onchain_address_hex():
+            return "http://localhost:8091"
+        else:
+            return "http://localhost:8092"
+
+    monkeypatch.setattr(LRWSimpleVASPInfo, "get_peer_base_url", get_peer_url_mock)
+
+
+async def test_offchain(
     caplog,
     monkeypatch: MonkeyPatch,
     get_peer_compliance_key_mock,
+    get_compliance_key_mock,
+    get_peer_base_url_mock,
     send_transaction_mock,
     messages_num=1,
 ):
@@ -193,11 +236,17 @@ async def test_main_perf(
         PeerA_addr.get_onchain_address_hex(), source_subaddress
     ).as_str()
     sub_b = LibraAddress.from_hex(
-        PeerB_addr.get_onchain_address_hex(), destination_subaddress, hrp="tlb"
+        PeerB_addr.get_onchain_address_hex(), destination_subaddress
     ).as_str()
 
     logger.info(f"==========Address A full: {sub_a}, onchain: {PeerA_addr.as_str()}")
     logger.info(f"==========Address B full: {sub_b}, onchain: {PeerB_addr.as_str()}")
+    logger.info(
+        f"==========COMP A: {peer_keys[PeerA_addr.as_str()].export_full()}, PUBLICA: {peer_keys[PeerA_addr.as_str()].export_pub()}"
+    )
+    logger.info(
+        f"==========COMP B: {peer_keys[PeerB_addr.as_str()].export_full()}, PUBLICA: {peer_keys[PeerB_addr.as_str()].export_pub()}"
+    )
 
     for cid in range(messages_num):
         tx = add_transaction(
@@ -211,6 +260,7 @@ async def test_main_perf(
             destination_id=None,
             destination_address=destination_vasp_address,
             destination_subaddress=destination_subaddress,
+            reference_id=get_new_reference_id(),
         )
         assert tx.id in get_account_transaction_ids(account_id)
         assert tx.source_id == account_id
@@ -221,7 +271,7 @@ async def test_main_perf(
         sender = PaymentActor(sub_a, StatusObject(Status.needs_kyc_data), [])
         receiver = PaymentActor(sub_b, StatusObject(Status.none), [])
 
-        action = PaymentAction(amount, currency, "charge", str(datetime.utcnow()))
+        action = PaymentAction(amount, currency, "charge", int(time()))
         reference_id = get_reference_id_from_transaction_id(tx.id)
         payment = PaymentObject(
             sender=sender,
@@ -304,28 +354,31 @@ class TestBusinessContext(BusinessContext):
     # ----- VASP Signature -----
 
     def validate_recipient_signature(self, payment, ctx=None):
-        logger.info("~~~~~~~~~~~~~~~~validate_recipient_signature~~~~~~~~~~~")
+        logger.info("~~~~~~~~~~~~~~~~22222222validate_recipient_signature~~~~~~~~~~~")
 
         if "recipient_signature" in payment.data:
             try:
-                reference_id_bytes = str.encode(payment.reference_id)
+                logger.info("----------valid recipient signature=======")
                 libra_address_bytes = LibraAddress.from_encoded_str(
                     payment.sender.address
                 ).onchain_address_bytes
                 sig = payment.data["recipient_signature"]
                 recipient_addr = payment.receiver.get_onchain_address_encoded_str()
-                peer_keys[recipient_addr].verify_ref_id(
-                    reference_id_bytes, libra_address_bytes, payment.action.amount, sig
+                peer_keys[recipient_addr].verify_dual_attestation_data(
+                    payment.reference_id,
+                    libra_address_bytes,
+                    payment.action.amount,
+                    bytes.fromhex(sig),
                 )
 
                 if not self.reliable:
                     self.cause_error()
 
-                logger.info("----------valid recipient signature=======")
+                logger.info("----------valid recipient signature end=======")
                 return
             except Exception as e:
                 raise BusinessValidationFailure(
-                    f"Could not validate recipient signature: {sig}, {e}"
+                    f"Could not validate recipient signature: {e}"
                 )
 
         sig = payment.data.get("recipient_signature", "Not present")
@@ -333,35 +386,42 @@ class TestBusinessContext(BusinessContext):
 
     async def get_recipient_signature(self, payment, ctx=None):
         logger.info(
-            f"~~~~~~~~~~~~~~~~get_recipient_signature~~~~~~~~~~~{payment.sender.address}"
+            f"~~~~~~~~~~~~~~~~222222222get_recipient_signature~~~~~~~~~~~{payment.sender.address}"
         )
         myself = self.my_addr.as_str()
         key = peer_keys.get(myself)
-        reference_id_bytes = str.encode(payment.reference_id)
         libra_addres = LibraAddress.from_encoded_str(
             payment.sender.address
         ).onchain_address_bytes
-        signed = key.sign_ref_id(
-            reference_id_bytes, libra_addres, payment.action.amount
+        signed = key.sign_dual_attestation_data(
+            payment.reference_id, libra_addres, payment.action.amount
         )
-        logger.info(f"this SIGNATURE {signed}")
-        return signed
+        logger.info(f"this SIGNATURE {bytes.hex(signed)}")
+        return bytes.hex(signed)
 
     # ----- KYC/Compliance checks -----
 
     async def next_kyc_to_provide(self, payment, ctx=None):
         logger.info("~~~~~~~~~~~~~~~~next_kyc_to_provide~~~~~~~~~~~")
         role = ["receiver", "sender"][self.is_sender(payment)]
+        other_role = ["sender", "receiver"][self.is_sender(payment)]
         own_actor = payment.data[role]
+        other_actor = payment.data[other_role]
         kyc_data = set()
 
         if "kyc_data" not in own_actor:
             kyc_data.add(Status.needs_kyc_data)
 
+        if (
+            "additional_kyc_data" not in own_actor
+            and other_actor.status.as_status() == Status.soft_match
+        ):
+            kyc_data.add(Status.soft_match)
+
         if role == "receiver":
             if "recipient_signature" not in payment:
                 kyc_data.add(Status.needs_recipient_signature)
-
+        logger.info("~~~~~~~~~~~~~~~~next_kyc_level_to_provide reached end~~~~~~~~~~~")
         return kyc_data
 
     async def next_kyc_level_to_request(self, payment, ctx=None):
@@ -372,10 +432,13 @@ class TestBusinessContext(BusinessContext):
         if "kyc_data" not in other_actor:
             return Status.needs_kyc_data
 
+        if "additional_kyc_data" not in other_actor:
+            return Status.soft_match
+
         if other_role == "receiver" and "recipient_signature" not in payment:
             return Status.needs_recipient_signature
         logger.info("~~~~~~~~~~~~~~~~next_kyc_level_to_request reached end~~~~~~~~~~~")
-        return None
+        return Status.none
 
     async def get_extended_kyc(self, payment, ctx=None):
         """ Returns the extended KYC information for this payment.
@@ -385,10 +448,34 @@ class TestBusinessContext(BusinessContext):
                    BusinessNotAuthorized.
         """
         logger.info("~~~~~~~~~~~~~~~~get_extended_kyc~~~~~~~~~~~")
-        myself = self.my_addr.as_str()
-        ref_id = payment.reference_id
         return KYCData(
             {"payload_type": "KYC_DATA", "payload_version": 1, "type": "individual",}
+        )
+
+    async def get_additional_kyc(self, payment, ctx=None):
+        """ Provides the additional KYC information for this payment.
+            The additional information is requested or may be provided in case
+            of a `soft_match` state from the other VASP indicating more
+            information is required to disambiguate an individual.
+            Args:
+                payment (PaymentCommand): The concerned payment.
+            Raises:
+                   BusinessNotAuthorized: If the other VASP is not authorized to
+                    receive extended KYC data for this payment.
+            Returns:
+                KYCData: Returns the extended KYC information for
+                this payment.
+        """
+        logger.info("~~~~~~~~~~~~~~~~get_additional_kyc~~~~~~~~~~~")
+        return KYCData(
+            {
+                "payload_type": "KYC_DATA",
+                "payload_version": 1,
+                "type": "individual",
+                "given_name": "John",
+                "surname": "Smith",
+                "dob": "1973-07-08",
+            }
         )
 
     # ----- Settlement -----
@@ -398,4 +485,4 @@ class TestBusinessContext(BusinessContext):
         if not self.reliable:
             self.cause_error()
 
-        return (await self.next_kyc_level_to_request(payment)) is None
+        return (await self.next_kyc_level_to_request(payment)) is Status.none
