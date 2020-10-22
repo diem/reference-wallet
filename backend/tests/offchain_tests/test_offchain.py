@@ -353,7 +353,7 @@ class TestBusinessContext(BusinessContext):
     # ----- VASP Signature -----
 
     def validate_recipient_signature(self, payment, ctx=None):
-        logger.info("~~~~~~~~~~~~~~~~22222222validate_recipient_signature~~~~~~~~~~~")
+        logger.info("~~~~~~~~~~~~~~~~validate_recipient_signature~~~~~~~~~~~")
 
         if "recipient_signature" in payment.data:
             try:
@@ -385,7 +385,7 @@ class TestBusinessContext(BusinessContext):
 
     async def get_recipient_signature(self, payment, ctx=None):
         logger.info(
-            f"~~~~~~~~~~~~~~~~222222222get_recipient_signature~~~~~~~~~~~{payment.sender.address}"
+            f"~~~~~~~~~~~~~~~~get_recipient_signature~~~~~~~~~~~{payment.sender.address}"
         )
         myself = self.my_addr.as_str()
         key = peer_keys.get(myself)

@@ -36,6 +36,10 @@ JSON_RPC_URL = os.getenv("JSON_RPC_URL", "https://testnet.libra.org/v1")
 JSON_RPC_CLIENT = jsonrpc.Client(JSON_RPC_URL)
 
 
+JSON_RPC_URL = os.getenv("JSON_RPC_URL", "https://testnet.libra.org/v1")
+JSON_RPC_CLIENT = jsonrpc.Client(JSON_RPC_URL)
+
+
 class VASPInfoNotFoundException(Exception):
     pass
 
