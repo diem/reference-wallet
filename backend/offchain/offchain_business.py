@@ -32,8 +32,6 @@ import logging
 logger = logging.getLogger(name="lrw_offchain_business")
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
-
-
 JSON_RPC_URL = os.getenv("JSON_RPC_URL", "https://testnet.libra.org/v1")
 JSON_RPC_CLIENT = jsonrpc.Client(JSON_RPC_URL)
 
