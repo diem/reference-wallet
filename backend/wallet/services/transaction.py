@@ -7,7 +7,7 @@ from libra import libra_types
 from libra_utils.types.currencies import LibraCurrency
 from wallet.services import account as account_service
 from wallet.services.risk import risk_check
-from . import INVENTORY_ACCOUNT_NAME, logger
+from . import INVENTORY_ACCOUNT_NAME
 from .log import add_transaction_log
 from .. import storage, services, OnchainWallet
 from ..logging import log_execution
@@ -36,6 +36,12 @@ from offchainapi.libra_address import LibraAddress
 from offchainapi.payment import PaymentAction, PaymentActor, PaymentObject, StatusObject
 from offchainapi.payment_logic import PaymentCommand
 from offchainapi.status_logic import Status
+
+import logging
+
+logger = logging.getLogger(name="wallet-service:transaction")
+logging.basicConfig()
+logging.getLogger().setLevel(logging.DEBUG)
 
 
 class RiskCheckError(Exception):
@@ -70,22 +76,18 @@ def process_incoming_transaction(
     sequence: int,
     amount: int,
     currency: LibraCurrency,
-    metadata: Optional[bytes] = None,
+    metadata: libra_types.Metadata,
 ):
     log_execution("Attempting to process incoming transaction from chain")
     receiver_id = None
     sender_subaddress = None
     receiver_subaddr = None
-    print(
+    logger.info(
         f"=========================process_incoming_transaction {receiver_id} {sender_subaddress} {receiver_subaddr}"
     )
 
-    if (
-        metadata
-        and isinstance(metadata, libra_types.Metadata__GeneralMetadata)
-        and isinstance(
-            metadata.value, libra_types.GeneralMetadata__GeneralMetadataVersion0
-        )
+    if isinstance(metadata, libra_types.Metadata__GeneralMetadata) and isinstance(
+        metadata.value, libra_types.GeneralMetadata__GeneralMetadataVersion0
     ):
         general_v0 = metadata.value.value
 
@@ -96,12 +98,8 @@ def process_incoming_transaction(
         if general_v0.from_subaddress:
             sender_subaddress = general_v0.from_subaddress.hex()
 
-    if (
-        metadata
-        and isinstance(metadata, libra_types.Metadata__TravelRuleMetadata)
-        and isinstance(
-            metadata.value, libra_types.TravelRuleMetadata__TravelRuleMetadataVersion0
-        )
+    if isinstance(metadata, libra_types.Metadata__TravelRuleMetadata) and isinstance(
+        metadata.value, libra_types.TravelRuleMetadata__TravelRuleMetadataVersion0
     ):
         travel_rule_v0 = metadata.value.value
         reference_id = travel_rule_v0.off_chain_reference_id

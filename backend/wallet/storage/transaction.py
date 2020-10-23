@@ -227,7 +227,7 @@ def get_transaction_id_from_reference_id(reference_id):
 def add_metadata_signature(reference_id: str, metadata_signature: str,) -> None:
     off_chain_tx = OffChain.query.filter_by(reference_id=reference_id).first()
     if off_chain_tx is None:
-        raise Exception(f"Off Chain object with ref id {reference_id} does not exist")
+        raise ValueError(f"Off Chain object with ref id {reference_id} does not exist")
     off_chain_tx.metadata_signature = metadata_signature
 
     db_session.add(off_chain_tx)
@@ -237,10 +237,10 @@ def add_metadata_signature(reference_id: str, metadata_signature: str,) -> None:
 def get_metadata_signature_from_reference_id(reference_id):
     off_chain = OffChain.query.filter_by(reference_id=reference_id).first()
     if off_chain is None:
-        raise Exception(f"Off Chain object with ref id {reference_id} does not exist")
+        raise ValueError(f"Off Chain object with ref id {reference_id} does not exist")
     signature = off_chain.metadata_signature
     if signature is None:
-        raise Exception(
+        raise ValueError(
             f"Metadata signature for Off Chain object with ref id {reference_id} does not exist"
         )
     return signature

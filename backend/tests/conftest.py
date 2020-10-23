@@ -12,6 +12,8 @@ from uuid import uuid4
 import pytest
 from libra.jsonrpc import Client as LibraClient
 from libra.testnet import Faucet
+from libra.txnmetadata import general_metadata
+from libra import libra_types, identifier
 
 from libra_utils.custody import Custody
 from libra_utils.types.liquidity.currency import CurrencyPair
@@ -128,6 +130,10 @@ class LpClientMock:
     ) -> TradeId:
         quote = LpClientMock.QUOTES[quote_id]
         trade_id = TradeId(uuid4())
+        metadata = libra_types.Metadata__Undefined()
+        if libra_deposit_address is not None:
+            addr, subaddr = identifier.decode_account(libra_deposit_address, "tlb")
+            metadata = general_metadata(to_subaddress=subaddr)
         if direction == Direction.Buy:
             process_incoming_transaction(
                 sender_address="",
@@ -135,7 +141,7 @@ class LpClientMock:
                 sequence=1,
                 amount=quote.amount,
                 currency=quote.rate.pair.base.value,
-                metadata=None,
+                metadata=metadata,
                 blockchain_version=1,
             )
 

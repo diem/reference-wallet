@@ -52,7 +52,7 @@ def test_external_transfer() -> None:
     get_test_payment_method(LRW_WEB_2, headers2)
 
     # USD --> Coin1
-    starting_amount = 100_000_000
+    starting_amount = 950 * 1_000_000
     quote_id = get_test_quote(
         LRW_WEB_1, headers1, amount=starting_amount, buy_sell="buy", pair="Coin1_USD"
     )
@@ -63,7 +63,7 @@ def test_external_transfer() -> None:
 
     addr2 = get_recv_addr(LRW_WEB_2, headers2)
 
-    transfer_amount = 69_000_000
+    transfer_amount = 800 * 1_000_000
     exec_external_txn(
         LRW_WEB_1, headers1, addr2, transfer_amount, currency=LibraCurrency.Coin1
     )
