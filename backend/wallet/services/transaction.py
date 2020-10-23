@@ -76,6 +76,9 @@ def process_incoming_transaction(
     receiver_id = None
     sender_subaddress = None
     receiver_subaddr = None
+    print(
+        f"=========================process_incoming_transaction {receiver_id} {sender_subaddress} {receiver_subaddr}"
+    )
 
     if (
         metadata
@@ -119,7 +122,7 @@ def process_incoming_transaction(
                 transaction_id=transaction_id,
                 status=TransactionStatus.COMPLETED,
                 sequence=sequence,
-                blockchain_version=blockchain_version,
+                blockchain_tx_version=blockchain_version,
             )
             return
 

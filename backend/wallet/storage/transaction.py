@@ -55,8 +55,7 @@ def add_transaction(
                 f"Reference ID must exist for offchain transaction {tx.id}"
             )
         offchain = OffChain(reference_id=reference_id)
-        if metadata_signature:
-            offchain.metadata_signature = metadata_signature
+        offchain.metadata_signature = metadata_signature
         tx.off_chain.append(offchain)
         db_session.add(offchain)
 

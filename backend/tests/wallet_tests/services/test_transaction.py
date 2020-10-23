@@ -8,8 +8,8 @@ from typing import Tuple
 import libra_utils.types.currencies
 import pytest
 from libra import libra_types
-from libra.txnmetadata import general_metadata
-from libra.utils import sub_address, account_address_hex
+from libra.txnmetadata import general_metadata, travel_rule
+from libra.utils import sub_address, account_address_hex, account_address
 from libra_utils.custody import Custody
 from libra_utils.types.currencies import LibraCurrency
 
@@ -87,7 +87,7 @@ def test_transaction_seq_exist() -> None:
     )
 
 
-def test_process_incoming_txn() -> None:
+def test_process_incoming_general_txn() -> None:
     account = create_account("fake_account")
     sender_addr = "46db232847705e05525db0336fd9f337"
     subaddr = generate_new_subaddress(account.id)
@@ -108,6 +108,51 @@ def test_process_incoming_txn() -> None:
         source_address=sender_addr, source_subaddress=None, sequence=1
     )
     assert tx is not None
+
+
+def test_process_incoming_travel_rule_txn() -> None:
+    account = create_account("fake_account")
+    sender_addr = "46db232847705e05525db0336fd9f337"
+    receiver_addr = "lrw_vasp"
+    sender_subaddr = generate_new_subaddress(account.id)
+    amount = 1000 * 1_000_000
+    sender = account_address(sender_addr)
+    sequence = 1
+    currency = LibraCurrency.Coin1
+    blockchain_version = 1
+
+    off_chain_reference_id = "32323abc"
+    metadata, _ = travel_rule(off_chain_reference_id, sender, amount)
+
+    storage.add_transaction(
+        amount=amount,
+        currency=currency,
+        payment_type=TransactionType.OFFCHAIN,
+        status=TransactionStatus.READY_FOR_ON_CHAIN,
+        source_id=account.id,
+        source_address=sender_addr,
+        source_subaddress=sender_subaddr,
+        destination_address=receiver_addr,
+        reference_id=off_chain_reference_id,
+    )
+
+    process_incoming_transaction(
+        sender_address=sender_addr,
+        receiver_address=receiver_addr,
+        sequence=sequence,
+        amount=amount,
+        currency=currency,
+        metadata=libra_types.Metadata__TravelRuleMetadata.lcs_deserialize(metadata),
+        blockchain_version=blockchain_version,
+    )
+
+    # successfully parse meta and sequence
+    tx = storage.get_transaction_by_details(
+        source_address=sender_addr, source_subaddress=sender_subaddr, sequence=sequence
+    )
+    assert tx is not None
+    assert tx.sequence == sequence
+    assert tx.blockchain_version == blockchain_version
 
 
 def test_balance_calculation_simple_income() -> None:
