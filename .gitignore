@@ -10,6 +10,7 @@ dump.rdb
 .env
 .env-2
 e2e.vars
+single.vars
 double.vars
 build
 # Frontend build artifacts

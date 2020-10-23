@@ -4,8 +4,8 @@ Libra Reference Wallet is an open-source project aimed at helping developers kic
 
 
 ## Note to Developers
-* Libra Reference Wallet is a reference implementation, and not meant to be fully production grade. 
-* The project will continue to develop to include the different aspects of the evolving Libra ecosystem.   
+* Libra Reference Wallet is a reference implementation, and not meant to be fully production grade.
+* The project will continue to develop to include the different aspects of the evolving Libra ecosystem.
 
 
 ## Getting Started
@@ -47,14 +47,35 @@ docker-compose.
 * yarn
 * react-scripts
 
-Run the following commands in the repository root:
-```shell script
-scripts/lrw.sh setup_environment
-scripts/lrw.sh build
-scripts/lrw.sh develop
-```
+Run the following commands in the repository root to start a dev server:
 
+```shell script
+make bootstrap
+make dev
+```
 
 The wallet website will be available at http://localhost:8080
 
 See `docker/docker-compose.yaml` for the setup details.
+
+## Development
+
+Bootstrap environment, this is required for any other actions:
+
+```bash
+make bootstrap
+```
+
+Run all tests:
+
+```bash
+make test
+```
+
+Run e2e test:
+
+```bash
+make e2e
+```
+
+See Makefile for more details

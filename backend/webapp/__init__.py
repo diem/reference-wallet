@@ -1,7 +1,8 @@
-# pyre-strict
-
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
+
+# pyre-strict
+
 import time
 import uuid
 from threading import Thread
@@ -37,26 +38,6 @@ def _init_admin_user():
         pass
 
 
-def _create_db(app: Flask) -> None:
-    with app.app_context():
-        app.logger.info("Setup wallet storage...")
-        setup_wallet_storage()
-        app.logger.info("Database ready!")
-
-
-def _init_onchain_wallet() -> None:
-    app.logger.info("Custody init...")
-    Custody.init()
-    app.logger.info("OnChain wallet ready!")
-
-
-def _init_liquidity(app: Flask) -> None:
-    with app.app_context():
-        app.logger.info("Setup liquidity client...")
-        setup_inventory_account()
-        app.logger.info("Liquidity ready!")
-
-
 def _schedule_update_rates() -> None:
     def run():
         while True:
@@ -68,7 +49,6 @@ def _schedule_update_rates() -> None:
 
 def _create_app() -> Flask:
     app = Flask(__name__)
-
     # register api endpoints
     app.register_blueprint(user)
     app.register_blueprint(account)
@@ -89,18 +69,22 @@ def _create_app() -> Flask:
 app: Flask = _create_app()
 
 
-def init() -> Flask:
-    app.logger.info("Init app...")
-    _create_db(app)
-    app.logger.info("Setup admin user...")
-    _init_admin_user()
-    _init_onchain_wallet()
-    _init_liquidity(app)
-    _schedule_update_rates()
-
+def init():
+    with app.app_context():
+        _init_with_log("storage", setup_wallet_storage)
+        _init_with_log("admin_user", _init_admin_user)
+        _init_with_log("custody", Custody.init)
+        _init_with_log("liquidity", setup_inventory_account)
+        _init_with_log("update_rates_thread", _schedule_update_rates)
     return app
 
 
 @app.teardown_appcontext
 def remove_session(*args, **kwargs) -> None:  # pyre-ignore
     db_session.remove()
+
+
+def _init_with_log(title, fn):
+    app.logger.info(f"Start init {title}")
+    fn()
+    app.logger.info(f"{title} is initialized")

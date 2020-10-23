@@ -143,6 +143,7 @@ build() {
   if [ "$build_mode" = "helm" ]; then
     docker-compose -f ${COMPOSE_YAML} -f ${COMPOSE_STATIC_YAML} build  || fail 'docker-compose build failed!'
   elif [ "$build_mode" = "e2e" ]; then
+    mkdir -p gateway/tmp/frontend
     docker-compose -f ${COMPOSE_YAML} build  || fail 'docker-compose build failed!'
   elif [ "$build_mode" = "e2e-blind" ]; then
     docker-compose -f ${COMPOSE_YAML} -f ${COMPOSE_E2E_BLIND} build  || fail 'docker-compose build failed!'
