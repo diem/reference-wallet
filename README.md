@@ -69,7 +69,19 @@ make bootstrap
 Run all tests:
 
 ```bash
+make alltest
+```
+
+Run all backend tests:
+
+```bash
 make test
+```
+
+Run single backend test: ```T=<test_name | test_file | test dir> make test```
+
+```bash
+T=wallet make test
 ```
 
 Run e2e test:

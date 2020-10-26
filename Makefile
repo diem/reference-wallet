@@ -42,12 +42,9 @@ dev: clean-docker
 # testing
 
 
-test: backend-test e2e
+test: format backend-test
 
-
-backend-test:
-	PIPENV_PIPFILE=backend/Pipfile ./backend/test.sh
-
+alltests: test e2e
 
 e2e: clean-docker build-e2e single double
 
@@ -74,4 +71,31 @@ double:
 	source double.vars && ./scripts/test_e2e.sh double
 
 
-.PHONY: test backend-test e2e build-e2e single double
+.PHONY: test alltests e2e build-e2e single double
+
+# backend testing
+
+pyre:
+	PIPENV_PIPFILE=backend/Pipfile pipenv run pyre --search-path \
+		"$(shell PIPENV_PIPFILE=backend/Pipfile pipenv --venv)/lib/python3.7/site-packages/" \
+		check
+
+
+check:
+	PIPENV_PIPFILE=backend/Pipfile pipenv run black --check backend
+
+
+format:
+	PIPENV_PIPFILE=backend/Pipfile pipenv run black backend
+
+
+backend-install:
+	PIPENV_PIPFILE=backend/Pipfile pipenv run python3 backend/setup.py develop
+
+
+backend-test: backend-install
+	PIPENV_PIPFILE=backend/Pipfile pipenv run pytest \
+		--ignore=backend/tests/e2e_tests backend/tests -k "$(T)" -W ignore::DeprecationWarning
+
+
+.PHONY: pyre check format backend-install backend-test
