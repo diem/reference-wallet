@@ -144,6 +144,7 @@ with open(wallet_env_file_path, "w") as dotenv:
     dotenv.write(f"JSON_RPC_URL={JSON_RPC_URL}\n")
     dotenv.write(f"FAUCET_URL={FAUCET_URL}\n")
     dotenv.write(f"CHAIN_ID={CHAIN_ID}\n")
+    dotenv.write(f"GAS_CURRENCY_CODE=Coin1\n")
 
     init_onchain_account(
         custody_private_keys=wallet_custody_private_keys,

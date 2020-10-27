@@ -13,6 +13,7 @@ pipenv run python3 $DIR/setup.py pytest --addopts="$DIR/tests/wallet_tests $@"
 pipenv run python3 $DIR/setup.py pytest --addopts="$DIR/tests/webapp_tests $@"
 pipenv run python3 $DIR/setup.py pytest --addopts="$DIR/tests/pubsub_tests $@"
 pipenv run python3 $DIR/setup.py pytest --addopts="$DIR/tests/offchain_tests $@"
+pipenv run python3 $DIR/setup.py pytest --addopts="$DIR/tests/context_tests $@"
 
 pipenv run black --check $DIR
 #pipenv run pyre --preserve-pythonpath check
