@@ -3,6 +3,7 @@
 
 # pyre-strict
 
+import context
 import time
 import uuid
 from threading import Thread
@@ -11,7 +12,6 @@ from flasgger import Swagger
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from libra_utils.custody import Custody
 from wallet.config import ADMIN_USERNAME
 from wallet.services.fx.fx import update_rates
 from wallet.services.inventory import setup_inventory_account
@@ -69,11 +69,15 @@ def _create_app() -> Flask:
 app: Flask = _create_app()
 
 
+def _init_context():
+    context.set(context.from_env())
+
+
 def init():
     with app.app_context():
+        _init_with_log("context", _init_context)
         _init_with_log("storage", setup_wallet_storage)
         _init_with_log("admin_user", _init_admin_user)
-        _init_with_log("custody", Custody.init)
         _init_with_log("liquidity", setup_inventory_account)
         _init_with_log("update_rates_thread", _schedule_update_rates)
     return app

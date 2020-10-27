@@ -3,6 +3,8 @@
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
+
+import context
 import inspect
 import json
 from datetime import datetime, timedelta
@@ -10,12 +12,11 @@ from typing import Dict, Optional, List, Generator
 from uuid import uuid4
 
 import pytest
-from libra.jsonrpc import Client as LibraClient
+from libra.jsonrpc import Client as LibraClient, Transaction, TransactionData
 from libra.testnet import Faucet
 from libra.txnmetadata import general_metadata
 from libra import libra_types, identifier
 
-from libra_utils.custody import Custody
 from libra_utils.types.liquidity.currency import CurrencyPair
 from libra_utils.types.liquidity.lp import LPDetails
 from libra_utils.types.liquidity.quote import QuoteId, QuoteData, Rate
@@ -46,6 +47,14 @@ FAKE_LIQUIDITY_VASP_ADDR = "36f92c7dac37c7b3094f78b2f26b3f00"
 
 
 @pytest.fixture(autouse=True)
+def env_context():
+    yield
+    # always clean up global variables for making
+    # sure tests won't depend on each other
+    context.set(None)
+
+
+@pytest.fixture(autouse=True)
 def clean_db() -> Generator[None, None, None]:
     yield clear_db()
     db_session.remove()
@@ -63,8 +72,12 @@ def patch_blockchain(monkeypatch):
     )
 
     monkeypatch.setattr(LibraClient, "submit", LibraNetworkMock.sendTransaction)
+
+    def wait_for_transaction(*args):
+        return Transaction(version=1, transaction=TransactionData(sequence_number=1))
+
     monkeypatch.setattr(
-        Vasp, "send_transaction", TransactionsMocker.send_transaction,
+        LibraClient, "wait_for_transaction", wait_for_transaction,
     )
 
     yield
@@ -76,23 +89,6 @@ def no_background_tasks(monkeypatch) -> None:
         return False
 
     monkeypatch.setattr(services, "run_bg_tasks", mocked)
-
-
-@pytest.fixture(autouse=True)
-def init_test_custody(monkeypatch):
-    monkeypatch.setenv("WALLET_CUSTODY_ACCOUNT_NAME", "test_wallet")
-    monkeypatch.setenv("LIQUIDITY_CUSTODY_ACCOUNT_NAME", "test_liq")
-    monkeypatch.setenv(
-        "CUSTODY_PRIVATE_KEYS",
-        json.dumps(
-            {
-                "test_wallet": FAKE_WALLET_PRIVATE_KEY,
-                "test_liq": FAKE_LIQUIDITY_PRIVATE_KEY,
-            }
-        ),
-    )
-
-    Custody.init()
 
 
 class LpClientMock:

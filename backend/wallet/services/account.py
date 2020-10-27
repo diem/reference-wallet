@@ -1,7 +1,7 @@
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-import secrets
+import context, secrets
 from operator import attrgetter
 from typing import Dict, List, Optional
 
@@ -9,7 +9,7 @@ from libra import identifier
 from libra_utils.precise_amount import Amount
 from libra_utils.types.currencies import LibraCurrency, FiatCurrency
 from libra_utils.types.liquidity.currency import Currency
-from wallet import storage, OnchainWallet
+from wallet import storage
 from wallet.services import transaction as transaction_service
 from wallet.services.fx.fx import get_rate
 from wallet.storage import (
@@ -39,13 +39,13 @@ def create_account(account_name: str, user_id: Optional[int] = None) -> Account:
 def is_in_wallet(receiver_subaddress, receiver_vasp) -> bool:
     return (
         get_account_id_from_subaddr(receiver_subaddress) is not None
-        and receiver_vasp == OnchainWallet().address_str
+        and receiver_vasp == context.get().config.vasp_address
     )
 
 
 def is_own_address(sender_id, receiver_vasp, receiver_subaddress) -> bool:
     return (
-        receiver_vasp == OnchainWallet().address_str
+        receiver_vasp == context.get().config.vasp_address
         and get_account_id_from_subaddr(receiver_subaddress) == sender_id
     )
 
@@ -187,7 +187,7 @@ def get_deposit_address(
     subaddress = generate_new_subaddress(account.id)
 
     return identifier.encode_account(
-        OnchainWallet().account.account_address, subaddress
+        context.get().config.vasp_account_address(), subaddress
     )
 
 

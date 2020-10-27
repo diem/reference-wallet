@@ -3,6 +3,7 @@
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
+import context
 import os
 import sys
 from typing import Optional
@@ -45,4 +46,7 @@ def setup_redis_broker() -> None:
 
 
 if dramatiq.broker.global_broker is None:
+    if "VASP_ADDR" in os.environ:
+        context.set(context.from_env())
+
     setup_redis_broker()

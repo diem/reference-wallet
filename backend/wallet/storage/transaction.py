@@ -9,7 +9,6 @@ from typing import Optional, List
 from sqlalchemy import func, and_, or_
 
 from uuid import uuid1
-from wallet.onchainwallet import OnchainWallet
 from . import db_session, get_user
 from .models import Transaction, TransactionLog, OffChain
 from ..types import TransactionStatus, TransactionType

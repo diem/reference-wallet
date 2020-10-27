@@ -6,5 +6,4 @@
 # dramatiq will try to use default RabbitMQ one (this is hardcoded and can't be changed) - which will fail
 
 from . import config
-from .onchainwallet import OnchainWallet
 from . import background_tasks

@@ -5,12 +5,12 @@
 
 from typing import Tuple
 
+import context
 import libra_utils.types.currencies
 import pytest
 from libra import libra_types
 from libra.txnmetadata import general_metadata, travel_rule
 from libra.utils import sub_address, account_address_hex, account_address
-from libra_utils.custody import Custody
 from libra_utils.types.currencies import LibraCurrency
 
 from tests.wallet_tests.resources.seeds.balances_seeder import BalancesSeeder
@@ -293,9 +293,7 @@ def send_fake_tx(amount=100, send_to_self=False) -> Tuple[int, Transaction]:
     destination_subaddress = "receiver_subaddress"
 
     if send_to_self:
-        destination_address = account_address_hex(
-            Custody().get_account("test_wallet").account_address
-        )
+        destination_address = account_address_hex(context.get().config.vasp_address)
         destination_subaddress = generate_new_subaddress(account_id)
 
     send_tx = send_transaction(
