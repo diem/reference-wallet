@@ -5,7 +5,7 @@ import time
 import requests
 import json
 import random
-from .. import *
+from .. import User, Doubler, LRW_WEB_1, LRW_WEB_2
 from libra_utils.types.currencies import LibraCurrency
 
 

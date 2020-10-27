@@ -21,7 +21,6 @@ from ..storage import (
     get_reference_id_from_transaction_id,
     get_transaction_status,
     get_transaction_id_from_reference_id,
-    get_new_reference_id,
     get_metadata_signature_from_reference_id,
 )
 from ..storage import get_account_id_from_subaddr, get_account
@@ -36,6 +35,7 @@ from offchainapi.libra_address import LibraAddress
 from offchainapi.payment import PaymentAction, PaymentActor, PaymentObject, StatusObject
 from offchainapi.payment_logic import PaymentCommand
 from offchainapi.status_logic import Status
+from offchain import client as offchain_client, get_new_offchain_reference_id
 
 import context, logging
 
@@ -423,7 +423,6 @@ def external_offchain_transaction(
     original_payment_reference_id: Optional[str] = None,
     description: Optional[str] = None,
 ) -> Transaction:
-    from offchain import VASP
 
     sender_onchain_address = context.get().config.vasp_address
     logger.info(
@@ -439,7 +438,7 @@ def external_offchain_transaction(
 
     sender_subaddress = account_service.generate_new_subaddress(account_id=sender_id)
     logger.info(f"======sender_subaddress: {sender_subaddress}")
-    ref_id = get_new_reference_id()
+    ref_id = get_new_offchain_reference_id(sender_onchain_address)
     transaction = add_transaction(
         amount=amount,
         currency=currency,
@@ -496,7 +495,11 @@ def external_offchain_transaction(
     update_transaction(transaction.id, TransactionStatus.OFF_CHAIN_STARTED)
     logger.info("In external_offchain_transaction: Updated status to OFF_CHAIN_STARTED")
 
-    result = VASP.new_command(receiver_address.get_onchain(), cmd).result(timeout=300)
+    result = (
+        offchain_client.get()
+        .new_command(receiver_address.get_onchain(), cmd)
+        .result(timeout=300)
+    )
     logger.info(f"Offchain Result: {result}")
 
     return transaction

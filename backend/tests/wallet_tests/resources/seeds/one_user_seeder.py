@@ -31,6 +31,8 @@ class OneUser:
 
         if username:
             user.username = username
+            user.first_name = f"{username} first name"
+            user.last_name = f"{username} last name"
         user.registration_status = registration_status
         user.account = Account(name=account_name)
         db_session.add(user)

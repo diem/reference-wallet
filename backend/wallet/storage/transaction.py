@@ -8,7 +8,6 @@ from typing import Optional, List
 
 from sqlalchemy import func, and_, or_
 
-from uuid import uuid1
 from . import db_session, get_user
 from .models import Transaction, TransactionLog, OffChain
 from ..types import TransactionStatus, TransactionType
@@ -200,12 +199,6 @@ def get_total_currency_debits():
         )
         .group_by(Transaction.currency, Transaction.status,)
         .all()
-    )
-
-
-def get_new_reference_id():
-    return (
-        LibraAddress.from_hex(OnchainWallet().address_str).as_str() + "_" + str(uuid1())
     )
 
 
