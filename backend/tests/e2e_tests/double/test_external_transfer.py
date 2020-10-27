@@ -38,6 +38,19 @@ def test_external_transfer() -> None:
     """
     Test an external transfer of Coin1 from VASP1 to VASP2
     """
+
+    transfer(starting_amount=950 * 1_000_000, transfer_amount=1 * 1_000_000)
+
+
+def test_external_transfer_requires_offchain() -> None:
+    """
+    Test an external transfer of Coin1 from VASP1 to VASP2
+    """
+
+    transfer(starting_amount=2_000 * 1_000_000, transfer_amount=1_100 * 1_000_000)
+
+
+def transfer(starting_amount, transfer_amount):
     # create an account on each wallet
     headers1 = get_test_user_and_auth(LRW_WEB_1)
     headers2 = get_test_user_and_auth(LRW_WEB_2)
@@ -52,7 +65,6 @@ def test_external_transfer() -> None:
     get_test_payment_method(LRW_WEB_2, headers2)
 
     # USD --> Coin1
-    starting_amount = 950 * 1_000_000
     quote_id = get_test_quote(
         LRW_WEB_1, headers1, amount=starting_amount, buy_sell="buy", pair="Coin1_USD"
     )
@@ -63,7 +75,6 @@ def test_external_transfer() -> None:
 
     addr2 = get_recv_addr(LRW_WEB_2, headers2)
 
-    transfer_amount = 800 * 1_000_000
     exec_external_txn(
         LRW_WEB_1, headers1, addr2, transfer_amount, currency=LibraCurrency.Coin1
     )

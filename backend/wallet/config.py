@@ -15,6 +15,16 @@ from dramatiq.encoder import PickleEncoder
 from dramatiq.results import Results
 from dramatiq.results.backends.redis import RedisBackend
 
+import logging
+
+logging.basicConfig(
+    format="[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s",
+    datefmt="%Y-%m-%d %I:%M:%S %p",
+)
+logging.getLogger().setLevel(logging.DEBUG)
+logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
+
+
 REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT: int = int(os.getenv("REDIS_PORT", 6379))
 REDIS_PASSWORD: str = os.getenv("REDIS_PASSWORD", "")

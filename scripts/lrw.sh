@@ -233,7 +233,7 @@ e2e() {
       export OFFCHAIN_SERVICE_PORT_1=8091
       ENV_FILE_NAME=".env" PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 \
         GW_PORT=$GW_PORT OFFCHAIN_SERVICE_PORT=$OFFCHAIN_SERVICE_PORT_1 \
-        VASP_BASE_URL="http://lrw_backend-offchain_1:${OFFCHAIN_SERVICE_PORT_1}" \
+        VASP_BASE_URL="http://lrw_backend-web-server_1:${OFFCHAIN_SERVICE_PORT_1}" \
         pipenv run python3 scripts/set_env.py > /dev/null 2>&1
       export VASP_ADDR_1=$(source backend/.env && echo $VASP_ADDR)
       echo "export GW_PORT_1=$GW_PORT"
@@ -247,7 +247,7 @@ e2e() {
       export OFFCHAIN_SERVICE_PORT_2=8092
       ENV_FILE_NAME=".env-2" PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 \
         GW_PORT=$GW_PORT_2 OFFCHAIN_SERVICE_PORT=$OFFCHAIN_SERVICE_PORT_2 \
-        VASP_BASE_URL="http://lrw2_backend-offchain_1:${OFFCHAIN_SERVICE_PORT_2}" \
+        VASP_BASE_URL="http://lrw2_backend-web-server_1:${OFFCHAIN_SERVICE_PORT_2}" \
         pipenv run python3 scripts/set_env.py > /dev/null 2>&1
       export VASP_ADDR_2=$(source backend/.env-2 && echo $VASP_ADDR)
       echo "export GW_PORT_2=$GW_PORT_2"
@@ -273,8 +273,8 @@ e2e() {
       docker network connect lrw2_default test-runner
 
       # Let offchain containers talk to each other
-      docker network connect lrw2_default lrw_backend-offchain_1
-      docker network connect lrw_default lrw2_backend-offchain_1
+      docker network connect lrw2_default lrw_backend-web-server_1
+      docker network connect lrw_default lrw2_backend-web-server_1
 
       cp $tmp_backend_env $backend_env
       cp $tmp_liquidity_env $liquidity_env

@@ -69,19 +69,19 @@ services:
     command: sh -c "/liquidity/wait.sh db 5432 && /liquidity/run.sh"
     restart: always
 
-  backend-offchain:
-    image: lrw_backend
-    env_file:
-      - ../backend/.env
-    ports:
-      - ${OFFCHAIN_SERVICE_PORT:-8091}
-    environment:
-      - REDIS_HOST=redis
-      - COMPOSE_ENV=production
-      - DB_URL=postgresql://backenduser:backendpassword@db/backend_db
-      - OFFCHAIN_SERVICE_PORT=${OFFCHAIN_SERVICE_PORT:-8091}
-    command: sh -c "/wait.sh db 5432 && ./run_offchain.sh 2>&1 | tee logs.txt"
-    restart: always
+  # backend-offchain:
+  #   image: lrw_backend
+  #   env_file:
+  #     - ../backend/.env
+  #   ports:
+  #     - ${OFFCHAIN_SERVICE_PORT:-8091}
+  #   environment:
+  #     - REDIS_HOST=redis
+  #     - COMPOSE_ENV=production
+  #     - DB_URL=postgresql://backenduser:backendpassword@db/backend_db
+  #     - OFFCHAIN_SERVICE_PORT=${OFFCHAIN_SERVICE_PORT:-8091}
+  #   command: sh -c "/wait.sh db 5432 && ./run_offchain.sh 2>&1 | tee logs.txt"
+  #   restart: always
 
   redis:
     image: redis:5

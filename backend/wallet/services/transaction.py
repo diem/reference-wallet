@@ -40,8 +40,6 @@ from offchain import client as offchain_client, get_new_offchain_reference_id
 import context, logging
 
 logger = logging.getLogger(name="wallet-service:transaction")
-logging.basicConfig()
-logging.getLogger().setLevel(logging.DEBUG)
 
 
 class RiskCheckError(Exception):

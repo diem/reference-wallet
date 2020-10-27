@@ -56,7 +56,7 @@ def mint_all_currencies(account: LocalAccount, amount):
 if len(sys.argv) > 2 or len(sys.argv) > 1 and "--help" in sys.argv:
     print(
         """
-        
+
     Setup wallet and liquidity environment including blockchain private keys generation.
     Usage: set_env.py
     Flags: --force      Will regenerate blockchain keys and run current .env configuration.
@@ -74,7 +74,7 @@ NETWORK = os.getenv("NETWORK", "testnet")
 JSON_RPC_URL = os.getenv("JSON_RPC_URL", testnet.JSON_RPC_URL)
 FAUCET_URL = os.getenv("FAUCET_URL", testnet.FAUCET_URL)
 CHAIN_ID = os.getenv("CHAIN_ID", testnet.CHAIN_ID.value)
-VASP_BASE_URL = os.getenv("VASP_BASE_URL", "http://0.0.0.0:8091")
+VASP_BASE_URL = os.getenv("VASP_BASE_URL", "http://lrw_backend-web-server_1:8091")
 LIQUIDITY_BASE_URL = os.getenv("LIQUIDITY_BASE_URL", "http://0.0.0.0:8092")
 VASP_COMPLIANCE_KEY = os.getenv(
     "VASP_COMPLIANCE_KEY", ComplianceKey.generate().export_full()
