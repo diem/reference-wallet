@@ -5,7 +5,7 @@
 
 #
 # Runs e2e test against double-VASP docker-compose, using the `test-runner` container.
-# 
+#
 # Upon double-VASP instantiation, you'll have access to environment variables we need for test:
 #       $ eval $(./scripts/lrw.sh double up)
 #
@@ -37,7 +37,7 @@ run_double_e2e_test() {
     if [ -z "$LRW_WEB_1" ] || [ -z "$LRW_WEB_2" ] || \
         [ -z "$GW_PORT_1" ] || [ -z "$GW_PORT_2" ] || \
         [ -z "$VASP_ADDR_1" ] || [ -z "$VASP_ADDR_2" ] || \
-        [ -z "$OFFCHAIN_SERVICE_PORT_1" ] || [ -z "$OFFCHAIN_SERVICE_PORT_2" ]; then
+        [ -z "$GW_OFFCHAIN_SERVICE_PORT_1" ] || [ -z "$GW_OFFCHAIN_SERVICE_PORT_2" ]; then
 
         echo "Missing environment variables, exiting..."
         exit 1

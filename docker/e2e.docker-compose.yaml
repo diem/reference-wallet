@@ -7,10 +7,9 @@ services:
   backend-web-server:
     environment:
       - COMPOSE_ENV="development"
-      - OFFCHAIN_SERVICE_PORT=${OFFCHAIN_SERVICE_PORT:-8091}
     ports:
-    - "5000"
-    - "${OFFCHAIN_SERVICE_PORT:-8091}"
+      - "5000"
+      - "${OFFCHAIN_SERVICE_PORT:-5091}"
 
   backend-worker:
     environment:
@@ -24,7 +23,7 @@ services:
     environment:
       - COMPOSE_ENV="development"
     ports:
-    - "5000"
+      - "5000"
 
   # backend-offchain:
   #   environment:

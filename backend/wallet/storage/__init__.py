@@ -15,6 +15,7 @@ if DB_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
 engine = create_engine(DB_URL, connect_args=connect_args)
+# engine.echo = True
 metadata = MetaData()
 db_session = scoped_session(
     sessionmaker(autocommit=False, autoflush=False, bind=engine)

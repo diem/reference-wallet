@@ -39,6 +39,11 @@ from wallet.types import (
     OrderType,
 )
 
+import logging
+
+logging.getLogger(__name__)
+
+
 PAYMENT_PROCESSING_DUMMY_SLEEP_TIME = 3
 
 
@@ -177,6 +182,7 @@ def execute_trade(order: Order):
         )
         return True
     except BalanceError:
+        logging.exception("execute trade")
         update_order(order_id=order_id, order_status=OrderStatus.FailedExecute)
         return False
 
@@ -224,6 +230,7 @@ def execute_convert(order: Order) -> ConvertResult:
         )
         return ConvertResult.Success
     except Exception:
+        logging.exception("execute convert")
         update_order(order_id=order_id, order_status=OrderStatus.FailedExecute)
         return ConvertResult.TransferFailure
 

@@ -47,6 +47,7 @@ test: format backend-test
 alltests: test e2e
 
 e2e: clean-docker build-e2e single double
+dtest: clean-docker build-e2e double
 
 
 # build e2e double test images and setup env variables

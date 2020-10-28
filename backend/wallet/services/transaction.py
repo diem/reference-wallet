@@ -76,13 +76,13 @@ def process_incoming_transaction(
     currency: LibraCurrency,
     metadata: libra_types.Metadata,
 ):
+    logger.info(
+        f"process_incoming_transaction: sender: {sender_address}, receiver: {receiver_address}, seq: {sequence}, amount: {amount}"
+    )
     log_execution("Attempting to process incoming transaction from chain")
     receiver_id = None
     sender_subaddress = None
     receiver_subaddr = None
-    logger.info(
-        f"=========================process_incoming_transaction {receiver_id} {sender_subaddress} {receiver_subaddr}"
-    )
 
     if isinstance(metadata, libra_types.Metadata__GeneralMetadata) and isinstance(
         metadata.value, libra_types.GeneralMetadata__GeneralMetadataVersion0
@@ -159,7 +159,7 @@ def process_incoming_transaction(
     )
 
     logger.info(
-        "process_incoming_transaction: Successfully saved transaction from on-chain"
+        f"process_incoming_transaction: Successfully saved transaction from on-chain, receiver_id: {receiver_id}"
     )
     log_str = "Settled On Chain"
     add_transaction_log(tx.id, log_str)

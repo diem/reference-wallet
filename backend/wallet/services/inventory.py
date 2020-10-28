@@ -25,6 +25,11 @@ from wallet.types import (
     TransactionStatus,
 )
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 INVENTORY_COVER_CURRENCY = Currency.USD
 INVENTORY_AMOUNT = 999_000_000
 
@@ -73,6 +78,7 @@ def setup_inventory_account():
                     break
 
             except Exception as e:
+                logger.exception("trade and execute quote failed")
                 time.sleep(polling_interval_s)
 
 

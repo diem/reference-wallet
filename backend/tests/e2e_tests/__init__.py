@@ -1,10 +1,10 @@
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-import os
+import os, time, typing
 import random
 import requests
-from typing import Callable
+from dataclasses import dataclass
 from libra_utils.types.currencies import LibraCurrency, FiatCurrency
 
 LRW_WEB_1 = os.getenv("LRW_WEB_1")
@@ -13,8 +13,8 @@ GW_PORT_1 = os.getenv("GW_PORT_1")
 GW_PORT_2 = os.getenv("GW_PORT_2")
 VASP_ADDR_1 = os.getenv("VASP_ADDR_1")
 VASP_ADDR_2 = os.getenv("VASP_ADDR_2")
-OFFCHAIN_SERVICE_PORT_1 = os.getenv("OFFCHAIN_SERVICE_PORT_1")
-OFFCHAIN_SERVICE_PORT_2 = os.getenv("OFFCHAIN_SERVICE_PORT_2")
+GW_OFFCHAIN_SERVICE_PORT_1 = os.getenv("GW_OFFCHAIN_SERVICE_PORT_1")
+GW_OFFCHAIN_SERVICE_PORT_2 = os.getenv("GW_OFFCHAIN_SERVICE_PORT_2")
 
 print(LRW_WEB_1)
 print(LRW_WEB_2)
@@ -22,8 +22,8 @@ print(GW_PORT_1)
 print(GW_PORT_2)
 print(VASP_ADDR_1)
 print(VASP_ADDR_2)
-print(OFFCHAIN_SERVICE_PORT_1)
-print(OFFCHAIN_SERVICE_PORT_2)
+print(GW_OFFCHAIN_SERVICE_PORT_1)
+print(GW_OFFCHAIN_SERVICE_PORT_2)
 
 sherlock_info = {
     "address_1": "221B Baker Street",
@@ -41,23 +41,123 @@ sherlock_info = {
 }
 
 
+@dataclass
+class User:
+    name: str
+    backend: str
+    token: str
+    payment_method: str
+
+    @staticmethod
+    def create(backend: str, name: str) -> "User":
+        return create_test_user(backend, name)
+
+    def auth_headers(self) -> typing.Dict[str, str]:
+        ret = {"Authorization": f"Bearer {self.token}"}
+        return ret
+
+    def wait_for_balance(
+        self, currency: str, target_balance: int, timeout: int
+    ) -> None:
+        start_time = time.time()
+        max_wait = start_time + timeout
+        while time.time() < max_wait:
+            new_balance = self.get_balance(currency)
+            if new_balance >= target_balance:
+                return
+            time.sleep(1)
+
+        raise RuntimeError(
+            f"wait for {self.name}'s {currency} balance timeout ({timeout} secs), found balance: {new_balance}, expect {target_balance}"
+        )
+
+    def buy(self, amount: int, currency: str, by_currency: str):
+        before_balance = self.get_balance(currency)
+
+        pair = f"{currency}_{by_currency}"
+        quote_id = get_test_quote(
+            self.backend, self.auth_headers(), amount, "buy", pair
+        )
+        print(f"quote_id: {quote_id}")
+        # pay with the first payment method added to wallet 1
+        payload = {"payment_method": self.payment_method}
+        res = requests.post(
+            f"{self.backend}/api/account/quotes/{quote_id}/actions/execute",
+            headers=self.auth_headers(),
+            json=payload,
+        )
+        res.raise_for_status()
+        self.wait_for_balance(currency, before_balance + amount, 20)
+
+    def get_recv_addr(self) -> str:
+        """Get the receiving subaddr for a test user"""
+        res = requests.post(
+            f"{self.backend}/api/account/receiving-addresses",
+            headers=self.auth_headers(),
+        )
+        res.raise_for_status()
+        return res.json().get("address")
+
+    def transfer(self, addr: str, amount: int, currency) -> None:
+        payload = {
+            "amount": amount,
+            "currency": currency,
+            "receiver_address": addr,
+        }
+        res = requests.post(
+            f"{self.backend}/api/account/transactions",
+            headers=self.auth_headers(),
+            json=payload,
+        )
+        res.raise_for_status()
+
+    def get_transactions(self) -> list:
+        params = {"limit": 10}
+        res = requests.get(
+            f"{self.backend}/api/account/transactions",
+            headers=self.auth_headers(),
+            params=params,
+        )
+        res.raise_for_status()
+        return res.json().get("transaction_list")
+
+    def get_balance(self, currency: str) -> list:
+        res = requests.get(f"{self.backend}/api/account", headers=self.auth_headers())
+        res.raise_for_status()
+        balances = res.json().get("balances")
+        for b in balances:
+            if b.get("currency") == currency:
+                return b.get("balance")
+
+        raise ValueError(f"no balance for the currency {currency} in {balances}")
+
+
 def invoke_kyc_check(backend, headers) -> None:
     """Invoke a KYC check by updating user info for the first time"""
-    requests.put(f"{backend}/api/user", headers=headers, json=sherlock_info)
+
+    res = requests.put(f"{backend}/api/user", headers=headers, json=sherlock_info)
+    res.raise_for_status()
 
 
-def get_test_user_and_auth(backend) -> dict:
-    """Create a test user and return auth headers"""
-    num = random.randint(0, 1000)
-    payload = {"username": f"fakeuser{num}", "password": "fakepassword"}
+def create_test_user(backend, username) -> User:
+    """Create a test user"""
+
+    payload = {"username": username, "password": "fakepassword"}
     res = requests.post(f"{backend}/api/user", json=payload)
-    assert res.ok
+    res.raise_for_status()
+
     token = res.text.strip('"')
     headers = {"Authorization": f"Bearer {token}"}
-    return headers
+
+    invoke_kyc_check(backend, headers)
+    payment_method = create_test_payment_method(backend, headers)
+
+    return User(
+        name=username, backend=backend, token=token, payment_method=payment_method
+    )
 
 
-def get_test_payment_method(backend, headers) -> str:
+def create_test_payment_method(backend, headers) -> str:
     """
     Create a test payment method and return its id as a string
     NOTE: assumes that this is the only payment method being added for the user
@@ -68,17 +168,16 @@ def get_test_payment_method(backend, headers) -> str:
         "provider": "CreditCard",
         "token": payment_token,
     }
-    payment_post_res = requests.post(
+    res = requests.post(
         f"{backend}/api/user/payment-methods", headers=headers, json=payment_payload
     )
-    assert payment_post_res.ok
+    res.raise_for_status()
 
-    payment_get_res = requests.get(
-        f"{backend}/api/user/payment-methods", headers=headers
-    )
-    assert payment_get_res.ok
-    assert len(payment_get_res.json().get("payment_methods")) > 0
-    return str(payment_get_res.json().get("payment_methods")[0].get("id"))
+    res = requests.get(f"{backend}/api/user/payment-methods", headers=headers)
+    res.raise_for_status()
+
+    assert len(res.json().get("payment_methods")) > 0
+    return str(res.json().get("payment_methods")[0].get("id"))
 
 
 def get_test_quote(backend, headers, amount, buy_sell="buy", pair="Coin1_USD") -> str:
@@ -87,69 +186,14 @@ def get_test_quote(backend, headers, amount, buy_sell="buy", pair="Coin1_USD") -
     quote_res = requests.post(
         f"{backend}/api/account/quotes", headers=headers, json=quote_payload
     )
-    assert quote_res.ok
+    quote_res.raise_for_status()
     quote_id = quote_res.json().get("quote_id")
     return quote_id
 
 
-def exec_test_quote(backend, payment_method, quote_id, headers) -> None:
-    quote_exec_payload = {"payment_method": payment_method}
-    quote_exec_res = requests.post(
-        f"{backend}/api/account/quotes/{quote_id}/actions/execute",
-        headers=headers,
-        json=quote_exec_payload,
-    )
-    assert quote_exec_res.ok
-
-
-def get_user_transactions(backend, headers) -> list:
-    txn_params = {"limit": 10}
-    txns_res = requests.get(
-        f"{backend}/api/account/transactions", headers=headers, params=txn_params
-    )
-    txn_list = txns_res.json().get("transaction_list")
-    return txn_list
-
-
-def get_recv_addr(backend, headers) -> str:
-    """Get the receiving subaddr for a test user"""
-    addr_res = requests.post(
-        f"{backend}/api/account/receiving-addresses", headers=headers
-    )
-    addr = addr_res.json().get("address")
-    return addr
-
-
-def exec_external_txn(
-    backend, headers, recv_addr, amount, currency=LibraCurrency.Coin1
-) -> None:
-    ext_txn_payload = {
-        "amount": amount,
-        "currency": currency,
-        "receiver_address": recv_addr,
-    }
-    ext_txn_res = requests.post(
-        f"{backend}/api/account/transactions", headers=headers, json=ext_txn_payload
-    )
-    assert ext_txn_res.ok
-
-
-def get_user_balances(backend, headers) -> list:
-    res = requests.get(f"{backend}/api/account", headers=headers)
-    balances = res.json().get("balances")
-    return balances
-
-
-def get_balance_from_balances_lst(balances_lst, currency) -> int:
-    assert len(balances_lst) > 0
-    ret_lst = [b.get("balance") for b in balances_lst if b.get("currency") == currency]
-    assert len(ret_lst) == 1  # balance for the currency exists
-    return ret_lst[0]
-
-
 class Doubler:
-    def __init__(self, func: Callable[[str], None]) -> None:
-        self.func: Callable[[str], None] = func
+    def __init__(self, func: typing.Callable[[str], None]) -> None:
+        self.func: typing.Callable[[str], None] = func
 
     def exec(self) -> None:
         self.func(LRW_WEB_1)

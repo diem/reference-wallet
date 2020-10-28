@@ -46,12 +46,6 @@ def process_user_kyc(
         zip=zip,
     )
     user_service.update_user(user_id, **user_obj)
-
-    # if services.run_bg_tasks():
-    #     from wallet.background_tasks.background import async_start_kyc
-
-    #     async_start_kyc.send(user_id)
-    # else:
     verify_kyc(user_id=user_id)
 
 

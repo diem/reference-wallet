@@ -66,15 +66,15 @@ if len(sys.argv) > 2 or len(sys.argv) > 1 and "--help" in sys.argv:
     exit()
 
 GW_PORT = os.getenv("GW_PORT", 8080)
+GW_OFFCHAIN_SERVICE_PORT: int = int(os.getenv("GW_OFFCHAIN_SERVICE_PORT", 8091))
 ENV_FILE_NAME = os.getenv("ENV_FILE_NAME", ".env")
 LIQUIDITY_SERVICE_HOST = os.getenv("LIQUIDITY_SERVICE_HOST", "liquidity")
 LIQUIDITY_SERVICE_PORT = os.getenv("LIQUIDITY_SERVICE_PORT", 5000)
-OFFCHAIN_SERVICE_PORT: int = int(os.getenv("OFFCHAIN_SERVICE_PORT", 8091))
 NETWORK = os.getenv("NETWORK", "testnet")
 JSON_RPC_URL = os.getenv("JSON_RPC_URL", testnet.JSON_RPC_URL)
 FAUCET_URL = os.getenv("FAUCET_URL", testnet.FAUCET_URL)
 CHAIN_ID = os.getenv("CHAIN_ID", testnet.CHAIN_ID.value)
-VASP_BASE_URL = os.getenv("VASP_BASE_URL", "http://lrw_backend-web-server_1:8091")
+VASP_BASE_URL = os.getenv("VASP_BASE_URL", "http://lrw_backend-web-server_1:5091")
 LIQUIDITY_BASE_URL = os.getenv("LIQUIDITY_BASE_URL", "http://0.0.0.0:8092")
 VASP_COMPLIANCE_KEY = os.getenv(
     "VASP_COMPLIANCE_KEY", ComplianceKey.generate().export_full()
@@ -130,6 +130,7 @@ with open(wallet_env_file_path, "w") as dotenv:
     }
     wallet_custody_private_keys = json.dumps(private_keys, separators=(",", ":"))
     dotenv.write(f"GW_PORT={GW_PORT}\n")
+    dotenv.write(f"GW_OFFCHAIN_SERVICE_PORT={GW_OFFCHAIN_SERVICE_PORT}\n")
     dotenv.write(f"WALLET_CUSTODY_ACCOUNT_NAME={wallet_account_name}\n")
     dotenv.write(f"CUSTODY_PRIVATE_KEYS={wallet_custody_private_keys}\n")
     dotenv.write(
@@ -139,7 +140,7 @@ with open(wallet_env_file_path, "w") as dotenv:
     dotenv.write(f"VASP_COMPLIANCE_KEY={VASP_COMPLIANCE_KEY}\n")
     dotenv.write(f"LIQUIDITY_SERVICE_HOST={LIQUIDITY_SERVICE_HOST}\n")
     dotenv.write(f"LIQUIDITY_SERVICE_PORT={LIQUIDITY_SERVICE_PORT}\n")
-    dotenv.write(f"OFFCHAIN_SERVICE_PORT={OFFCHAIN_SERVICE_PORT}\n")
+    dotenv.write(f"OFFCHAIN_SERVICE_PORT=5091\n")
     dotenv.write(f"NETWORK={NETWORK}\n")
     dotenv.write(f"JSON_RPC_URL={JSON_RPC_URL}\n")
     dotenv.write(f"FAUCET_URL={FAUCET_URL}\n")
@@ -175,7 +176,7 @@ with open(liquidity_env_file_path, "w") as dotenv:
         compliance_key=LIQUIDITY_PUBLIC_KEY_BYTES,
     )
 
-    amount = 999 * 1_000_000
+    amount = 9_999 * 1_000_000
     print("Mint currencies to liquidity account")
     mint_all_currencies(lp_account, amount)
 

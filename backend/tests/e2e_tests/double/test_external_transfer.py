@@ -1,12 +1,10 @@
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-import time
 import requests
 import json
 import random
 from .. import User, Doubler, LRW_WEB_1, LRW_WEB_2
-from libra_utils.types.currencies import LibraCurrency
 
 
 def test_init() -> None:
@@ -34,12 +32,17 @@ def test_create_account() -> None:
     Doubler(create_account).exec()
 
 
-def test_external_transfer() -> None:
+def xtest_external_transfer() -> None:
     """
     Test an external transfer of Coin1 from VASP1 to VASP2
     """
 
-    transfer(starting_amount=950 * 1_000_000, transfer_amount=1 * 1_000_000)
+    currency = "Coin1"
+    user1 = User.create(LRW_WEB_1, "transfer_test_user1")
+    user2 = User.create(LRW_WEB_2, "transfer_test_user2")
+    user1.buy(9_000_000, currency, "USD")
+
+    transfer(user1, user2, 1_000_000, currency)
 
 
 def test_external_transfer_requires_offchain() -> None:
@@ -47,55 +50,36 @@ def test_external_transfer_requires_offchain() -> None:
     Test an external transfer of Coin1 from VASP1 to VASP2
     """
 
-    transfer(starting_amount=2_000 * 1_000_000, transfer_amount=1_100 * 1_000_000)
+    currency = "Coin1"
+    user1 = User.create(LRW_WEB_1, "offchain_test_user1")
+    user2 = User.create(LRW_WEB_2, "offchain_test_user2")
+
+    # under threshold of travel rule to buy enough coins for test
+    user1.buy(600_000_000, currency, "USD")
+    user1.buy(600_000_000, currency, "USD")
+
+    transfer(user1, user2, 1_100 * 1_000_000, currency)
 
 
-def transfer(starting_amount, transfer_amount):
-    # create an account on each wallet
-    headers1 = get_test_user_and_auth(LRW_WEB_1)
-    headers2 = get_test_user_and_auth(LRW_WEB_2)
+def transfer(user1: User, user2: User, transfer_amount: int, currency: str):
+    user1_balance_before_transfer = user1.get_balance(currency)
 
-    invoke_kyc_check(LRW_WEB_1, headers1)
-    invoke_kyc_check(LRW_WEB_2, headers2)
-
-    # sleep for KYC check
-    time.sleep(10)
-
-    payment_method1 = get_test_payment_method(LRW_WEB_1, headers1)
-    get_test_payment_method(LRW_WEB_2, headers2)
-
-    # USD --> Coin1
-    quote_id = get_test_quote(
-        LRW_WEB_1, headers1, amount=starting_amount, buy_sell="buy", pair="Coin1_USD"
-    )
-
-    # pay with the first payment method added to wallet 1
-    exec_test_quote(LRW_WEB_1, payment_method1, quote_id, headers1)
-    time.sleep(10)
-
-    addr2 = get_recv_addr(LRW_WEB_2, headers2)
-
-    exec_external_txn(
-        LRW_WEB_1, headers1, addr2, transfer_amount, currency=LibraCurrency.Coin1
-    )
-    time.sleep(10)
-
-    # received
-    txns2 = get_user_transactions(LRW_WEB_2, headers2)
-    assert len(txns2) > 0
-    assert txns2[0].get("amount") == transfer_amount
+    addr2 = user2.get_recv_addr()
+    user1.transfer(addr2, transfer_amount, currency)
 
     # sent
-    txns1 = get_user_transactions(LRW_WEB_1, headers1)
-    assert len(txns1) > 1  # mint and transfer
-    assert any(
-        [txn.get("amount") == transfer_amount for txn in txns1]
-    )  # txn order not guaranteed
+    user1.wait_for_balance(
+        currency, user1_balance_before_transfer - transfer_amount, 20
+    )
+    sent_txns = [
+        txn for txn in user1.get_transactions() if txn.get("direction") == "sent"
+    ]
 
-    balances1 = get_user_balances(LRW_WEB_1, headers1)
-    coin1_balance1 = get_balance_from_balances_lst(balances1, LibraCurrency.Coin1)
-    assert coin1_balance1 == starting_amount - transfer_amount
+    assert len(sent_txns) == 1
+    assert sent_txns[0].get("amount") == transfer_amount
 
-    balances2 = get_user_balances(LRW_WEB_2, headers2)
-    coin1_balance2 = get_balance_from_balances_lst(balances2, LibraCurrency.Coin1)
-    assert coin1_balance2 == transfer_amount
+    user2.wait_for_balance(currency, transfer_amount, 20)
+    # received
+    txns2 = user2.get_transactions()
+    assert len(txns2) == 1
+    assert txns2[0].get("amount") == transfer_amount

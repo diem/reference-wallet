@@ -18,11 +18,11 @@ from dramatiq.results.backends.redis import RedisBackend
 import logging
 
 logging.basicConfig(
-    format="[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s",
+    format="[%(asctime)s][%(threadName)s][%(levelname)s] %(name)s: %(message)s",
     datefmt="%Y-%m-%d %I:%M:%S %p",
 )
 logging.getLogger().setLevel(logging.DEBUG)
-logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
+# logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
 
 
 REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
