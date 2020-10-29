@@ -42,7 +42,6 @@ COMPOSE_YAML=docker/docker-compose.yaml
 COMPOSE_DEV_YAML=docker/dev.docker-compose.yaml
 COMPOSE_DEBUG_YAML=docker/debug.docker-compose.yaml
 COMPOSE_E2E_YAML=docker/e2e.docker-compose.yaml
-COMPOSE_E2E_BLIND=docker/e2e.blind.docker-compose.yaml
 COMPOSE_E2E_TEST=docker/e2e.test.docker-compose.yaml
 COMPOSE_STATIC_YAML=docker/static.docker-compose.yaml
 PG_VOLUME=pg-data
@@ -145,8 +144,6 @@ build() {
   elif [ "$build_mode" = "e2e" ]; then
     mkdir -p gateway/tmp/frontend
     docker-compose -f ${COMPOSE_YAML} build  || fail 'docker-compose build failed!'
-  elif [ "$build_mode" = "e2e-blind" ]; then
-    docker-compose -f ${COMPOSE_YAML} -f ${COMPOSE_E2E_BLIND} build  || fail 'docker-compose build failed!'
   elif [ "$build_mode" = "dev" ]; then
     docker-compose -f ${COMPOSE_YAML} -f ${COMPOSE_DEV_YAML} build || fail 'docker-compose build failed!'
   else
@@ -239,8 +236,8 @@ e2e() {
       echo "export GW_PORT_1=$GW_PORT"
       echo "export GW_OFFCHAIN_SERVICE_PORT_1=$GW_OFFCHAIN_SERVICE_PORT_1"
       echo "export VASP_ADDR_1=$VASP_ADDR_1"
+      echo "export LRW_WEB_1=http://localhost:$GW_PORT"
       docker-compose -p lrw -f $composes up --detach > /dev/null 2>&1
-      docker network connect lrw_default test-runner
     fi
     if [ "$single_double" = "double" ]; then
       export GW_PORT_2=$(get_port)
@@ -253,6 +250,7 @@ e2e() {
       echo "export GW_PORT_2=$GW_PORT_2"
       echo "export GW_OFFCHAIN_SERVICE_PORT_2=$GW_OFFCHAIN_SERVICE_PORT_2"
       echo "export VASP_ADDR_2=$VASP_ADDR_2"
+      echo "export LRW_WEB_2=http://localhost:$GW_PORT_2"
 
       # !!!hacking the env file!!!
       # saves .env to temp and replaces with .env-2
@@ -270,7 +268,6 @@ e2e() {
       export GW_PORT=$GW_PORT_2
       export GW_OFFCHAIN_SERVICE_PORT=$GW_OFFCHAIN_SERVICE_PORT_2
       docker-compose -p lrw2 -f $composes up --detach > /dev/null 2>&1
-      docker network connect lrw2_default test-runner > /dev/null 2>&1
 
       docker network create lrw_to_lrw2_offchain > /dev/null 2>&1
       docker network connect lrw_to_lrw2_offchain lrw_backend-web-server_1 > /dev/null 2>&1

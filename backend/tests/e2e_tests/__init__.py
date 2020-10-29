@@ -50,7 +50,7 @@ class UserClient:
 
     @staticmethod
     def create(backend: str, name: str) -> "UserClient":
-        return create_test_user(backend, name)
+        return create_test_user(backend, f"{name}_{random.randint(0, 1000)}")
 
     def auth_headers(self) -> typing.Dict[str, str]:
         ret = {"Authorization": f"Bearer {self.token}"}

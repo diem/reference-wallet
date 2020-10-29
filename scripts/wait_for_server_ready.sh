@@ -13,7 +13,7 @@ for attempt in {1..60} ; do
     echo "tail logs lines: $lines, expect: $service_num"
     unreachable=$(echo "$logs"| grep unreachable || true)
     echo "unreachable: $unreachable"
-    if [ $lines = $service_num ]; then
+    if [ $lines -ge $service_num ]; then
         if [ -z "$unreachable" ]; then
 	    echo "All services reachable"
 	    exit 0

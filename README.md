@@ -90,4 +90,10 @@ Run e2e test:
 make e2e
 ```
 
+E2E test also support T option for running subset tests
+
+```bash
+T=double make e2e
+```
+
 See Makefile for more details

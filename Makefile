@@ -45,35 +45,26 @@ dev: clean-docker
 
 test: format backend-test
 
-alltests: test e2e
+alltest: test e2e
 
-e2e: clean-docker build-e2e single double
-dtest: clean-docker build-e2e double
+e2e: clean-docker build-e2e double-env e2e-test
 
-
-# build e2e double test images and setup env variables
+# build e2e test images
 build-e2e:
 	./scripts/lrw.sh build 8080 e2e
 
-
-# run e2e single test
-single:
-	./scripts/lrw.sh e2e single up > single.vars
-	# 6 services should have log, 1 gateway has no log
-	./scripts/wait_for_server_ready.sh 6
-	cat single.vars
-	source single.vars && ./scripts/test_e2e.sh single
-
-# run e2e double test
-double:
+# setup e2e tests environment variables
+double-env:
 	./scripts/lrw.sh e2e double up > double.vars
-	# 12 services should have log, 2 gateways has no log
-	./scripts/wait_for_server_ready.sh 12
+
+# run all e2e tests
+e2e-test:
+	./scripts/wait_for_server_ready.sh 12 # 12 services should have log, 2 gateways has no log
 	cat double.vars
-	source double.vars && ./scripts/test_e2e.sh double
+	source double.vars && PIPENV_PIPFILE=backend/Pipfile pipenv run pytest \
+		backend/tests/e2e_tests -k "$(T)" -W ignore::DeprecationWarning
 
-
-.PHONY: test alltests e2e build-e2e single double
+.PHONY: test alltest e2e build-e2e double-env e2e-test
 
 # backend testing
 
