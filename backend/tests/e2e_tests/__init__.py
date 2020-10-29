@@ -72,6 +72,18 @@ class User:
         )
 
     def buy(self, amount: int, currency: str, by_currency: str):
+        err = None
+        for i in range(3):
+            try:
+                self._buy(amount, currency, by_currency)
+                return
+            except Exception as e:
+                err = e
+                pass
+
+        raise RuntimeError(f"failed after retry, last error: {e}")
+
+    def _buy(self, amount: int, currency: str, by_currency: str):
         before_balance = self.get_balance(currency)
 
         pair = f"{currency}_{by_currency}"
