@@ -270,11 +270,11 @@ e2e() {
       export GW_PORT=$GW_PORT_2
       export GW_OFFCHAIN_SERVICE_PORT=$GW_OFFCHAIN_SERVICE_PORT_2
       docker-compose -p lrw2 -f $composes up --detach > /dev/null 2>&1
-      docker network connect lrw2_default test-runner
+      docker network connect lrw2_default test-runner > /dev/null 2>&1
 
-      docker network create lrw_to_lrw2_offchain
-      docker network connect lrw_to_lrw2_offchain lrw_backend-web-server_1
-      docker network connect lrw_to_lrw2_offchain lrw2_backend-web-server_1
+      docker network create lrw_to_lrw2_offchain > /dev/null 2>&1
+      docker network connect lrw_to_lrw2_offchain lrw_backend-web-server_1 > /dev/null 2>&1
+      docker network connect lrw_to_lrw2_offchain lrw2_backend-web-server_1 > /dev/null 2>&1
 
       cp $tmp_backend_env $backend_env
       cp $tmp_liquidity_env $liquidity_env
