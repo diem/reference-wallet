@@ -32,7 +32,7 @@ def test_create_account() -> None:
     Doubler(create_account).exec()
 
 
-def xtest_external_transfer() -> None:
+def test_external_transfer() -> None:
     """
     Test an external transfer of Coin1 from VASP1 to VASP2
     """

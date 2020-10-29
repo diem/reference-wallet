@@ -59,7 +59,7 @@ build-e2e:
 # run e2e single test
 single:
 	./scripts/lrw.sh e2e single up > single.vars
-	# 7 services should have log, 1 gateway has no log
+	# 6 services should have log, 1 gateway has no log
 	./scripts/wait_for_server_ready.sh 6
 	cat single.vars
 	source single.vars && ./scripts/test_e2e.sh single
@@ -67,7 +67,7 @@ single:
 # run e2e double test
 double:
 	./scripts/lrw.sh e2e double up > double.vars
-	# 14 services should have log, 2 gateways has no log
+	# 12 services should have log, 2 gateways has no log
 	./scripts/wait_for_server_ready.sh 12
 	cat double.vars
 	source double.vars && ./scripts/test_e2e.sh double
