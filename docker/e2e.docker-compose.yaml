@@ -24,10 +24,3 @@ services:
       - COMPOSE_ENV="development"
     ports:
       - "5000"
-
-  # backend-offchain:
-  #   environment:
-  #     - COMPOSE_ENV="development"
-  #     - OFFCHAIN_SERVICE_PORT=${OFFCHAIN_SERVICE_PORT:-8091}
-  #   ports:
-  #     - ${OFFCHAIN_SERVICE_PORT:-8091}
