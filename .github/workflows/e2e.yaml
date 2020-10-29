@@ -32,30 +32,7 @@ jobs:
       - name: Install pipenv
         run: |
           pip install --upgrade pipenv
-      - name: Setup env
-        run: |
-          ./scripts/lrw.sh setup_environment true
-      - name: Build docker images
-        run: |
-          ./scripts/lrw.sh build 8080 e2e-blind
       - name: run e2e tests
         if: steps.check_ks.outputs.should_run == 'true'
         run: |
           make setup-env e2e
-      - name: Sleep and list docker containers
-        if: steps.check_ks.outputs.should_run == 'true'
-        run: |
-          sleep 90
-          docker container ls -a
-      - name: Dump container logs
-        if: steps.check_ks.outputs.should_run == 'true'
-        continue-on-error: true
-        run: |
-          IFS=''
-          containers=$(docker ps -a | awk '{ print $1, $NF }' | awk 'NR>1')
-          echo $containers
-          echo $containers | while read line; do
-              echo
-              echo $line | awk '{ print "============", $2, "============" }'
-              echo $line | awk '{ print $1 }' | xargs -L1 docker logs
-          done
