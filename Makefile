@@ -1,6 +1,7 @@
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
+SHELL := /bin/bash
 
 # bootstrap your dev env, do it for a clean environment
 bootstrap: setup-env build-frontend
