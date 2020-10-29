@@ -4,7 +4,7 @@
 import requests
 import json
 import random
-from .. import User, Doubler, LRW_WEB_1, LRW_WEB_2
+from .. import UserClient, Doubler, LRW_WEB_1, LRW_WEB_2
 
 
 def test_init() -> None:
@@ -38,8 +38,8 @@ def xtest_external_transfer() -> None:
     """
 
     currency = "Coin1"
-    user1 = User.create(LRW_WEB_1, "transfer_test_user1")
-    user2 = User.create(LRW_WEB_2, "transfer_test_user2")
+    user1 = UserClient.create(LRW_WEB_1, "transfer_test_user1")
+    user2 = UserClient.create(LRW_WEB_2, "transfer_test_user2")
     user1.buy(9_000_000, currency, "USD")
 
     transfer(user1, user2, 1_000_000, currency)
@@ -51,8 +51,8 @@ def test_external_transfer_requires_offchain() -> None:
     """
 
     currency = "Coin1"
-    user1 = User.create(LRW_WEB_1, "offchain_test_user1")
-    user2 = User.create(LRW_WEB_2, "offchain_test_user2")
+    user1 = UserClient.create(LRW_WEB_1, "offchain_test_user1")
+    user2 = UserClient.create(LRW_WEB_2, "offchain_test_user2")
 
     # under threshold of travel rule to buy enough coins for test
     user1.buy(600_000_000, currency, "USD")
@@ -61,7 +61,7 @@ def test_external_transfer_requires_offchain() -> None:
     transfer(user1, user2, 1_100 * 1_000_000, currency)
 
 
-def transfer(user1: User, user2: User, transfer_amount: int, currency: str):
+def transfer(user1: UserClient, user2: UserClient, transfer_amount: int, currency: str):
     user1_balance_before_transfer = user1.get_balance(currency)
 
     addr2 = user2.get_recv_addr()

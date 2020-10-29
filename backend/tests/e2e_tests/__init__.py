@@ -42,14 +42,14 @@ sherlock_info = {
 
 
 @dataclass
-class User:
+class UserClient:
     name: str
     backend: str
     token: str
     payment_method: str
 
     @staticmethod
-    def create(backend: str, name: str) -> "User":
+    def create(backend: str, name: str) -> "UserClient":
         return create_test_user(backend, name)
 
     def auth_headers(self) -> typing.Dict[str, str]:
@@ -151,7 +151,7 @@ def invoke_kyc_check(backend, headers) -> None:
     res.raise_for_status()
 
 
-def create_test_user(backend, username) -> User:
+def create_test_user(backend, username) -> UserClient:
     """Create a test user"""
 
     payload = {"username": username, "password": "fakepassword"}
@@ -164,7 +164,7 @@ def create_test_user(backend, username) -> User:
     invoke_kyc_check(backend, headers)
     payment_method = create_test_payment_method(backend, headers)
 
-    return User(
+    return UserClient(
         name=username, backend=backend, token=token, payment_method=payment_method
     )
 
