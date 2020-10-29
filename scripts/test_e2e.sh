@@ -22,14 +22,14 @@
 single_double=$1
 
 run_single_e2e_test() {
-    if [ -z "$LRW_WEB_1" ] || [ -z "$GW_PORT_1" ] || [ -z "$VASP_ADDR_1" ] || [ -z "$OFFCHAIN_SERVICE_PORT_1" ]; then
+    if [ -z "$LRW_WEB_1" ] || [ -z "$GW_PORT_1" ] || [ -z "$VASP_ADDR_1" ] || [ -z "$GW_OFFCHAIN_SERVICE_PORT_1" ]; then
 
         echo "Missing environment variables, exiting..."
         exit 1
 
     fi
 
-    docker exec -e GW_PORT_1 -e VASP_ADDR_1 -e LRW_WEB_1 \
+    docker exec -e GW_PORT_1 -e VASP_ADDR_1 -e LRW_WEB_1 -e GW_OFFCHAIN_SERVICE_PORT_1 \
         test-runner pytest tests/e2e_tests/single
 }
 
@@ -47,7 +47,7 @@ run_double_e2e_test() {
     docker exec -e GW_PORT_1 -e GW_PORT_2 \
         -e VASP_ADDR_1 -e VASP_ADDR_2 \
         -e LRW_WEB_1 -e LRW_WEB_2 \
-        -e OFFCHAIN_SERVICE_PORT_1 -e OFFCHAIN_SERVICE_PORT_2 \
+        -e GW_OFFCHAIN_SERVICE_PORT_1 -e GW_OFFCHAIN_SERVICE_PORT_2 \
         test-runner \
         pytest tests/e2e_tests/double
 }
@@ -58,7 +58,7 @@ export LRW_WEB_2="http://lrw2_gateway_1:8000"
 echo "LRW_WEB_1 = $LRW_WEB_1"
 echo "GW_PORT_1 = $GW_PORT_1"
 echo "VASP_ADDR_1 = $VASP_ADDR_1"
-echo "OFFCHAIN_SERVICE_PORT_1 = $OFFCHAIN_SERVICE_PORT_1"
+echo "GW_OFFCHAIN_SERVICE_PORT_1 = $GW_OFFCHAIN_SERVICE_PORT_1"
 
 if [ "$single_double" = "single" ]; then
     run_single_e2e_test
@@ -67,7 +67,7 @@ elif [ "$single_double" = "double" ]; then
     echo "LRW_WEB_2 = $LRW_WEB_2"
     echo "GW_PORT_2 = $GW_PORT_2"
     echo "VASP_ADDR_2 = $VASP_ADDR_2"
-    echo "OFFCHAIN_SERVICE_PORT_2 = $OFFCHAIN_SERVICE_PORT_2"
+    echo "GW_OFFCHAIN_SERVICE_PORT_2 = $GW_OFFCHAIN_SERVICE_PORT_2"
     run_double_e2e_test
 else
     echo "Must specify single or double for e2e test suite"
