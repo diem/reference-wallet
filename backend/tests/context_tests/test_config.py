@@ -41,8 +41,8 @@ def test_generate_config():
     )
     assert conf.compliance_public_key_bytes()
     assert conf.json_rpc_url == config.testnet.JSON_RPC_URL
-    assert conf.offchain_service_port == 8091
-    assert conf.base_url == "http://localhost:8091"
+    assert conf.offchain_service_port == 5091
+    assert conf.base_url == "http://localhost:5091"
     assert conf.chain_id == 2
     assert conf.gas_currency_code == "Coin1"
 

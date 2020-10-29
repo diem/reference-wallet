@@ -54,7 +54,7 @@ def from_env() -> Config:
 
 def generate(index: int) -> typing.Tuple[LocalAccount, Config]:
     account = LocalAccount.generate()
-    port = 8090 + index
+    port = 5090 + index
     conf = Config(
         wallet_custody_account_name=f"wallet{index}",
         vasp_compliance_key=ComplianceKey.generate().export_full(),
