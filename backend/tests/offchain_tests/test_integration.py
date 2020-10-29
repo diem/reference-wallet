@@ -37,7 +37,7 @@ def test_send_payment_between_vasps(lrw1, lrw2, vasp1, vasp2, user1, user2):
 
     reference_id = txn.off_chain[0].reference_id
 
-    num_tries, delay = 20, 1.0
+    num_tries = 20
     while num_tries > 1:
         payment1 = vasp1.get_payment_by_ref(reference_id)
         payment2 = vasp2.get_payment_by_ref(reference_id)

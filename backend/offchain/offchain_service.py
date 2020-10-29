@@ -1,7 +1,7 @@
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-import asyncio
+import asyncio, os
 from threading import Thread
 from offchainapi.core import Vasp
 
@@ -33,16 +33,24 @@ def make_vasp(ctx: Context):
 
 def start_thread(vasp, loop):
     # Initialize the VASP services.
-    vasp.start_services()
-    logger.info(f"thread start: {vasp}")
-
     try:
+        vasp.start_services()
+        logger.info(f"thread start: {vasp.my_addr} {vasp.port}")
         # Start the loop
         loop.run_forever()
+    except Exception:
+        logger.exception("something is wrong, exit.")
+        # direct exit process to avoid process hanging if ioloop get into a waiting state.
+        os._exit(1)
     finally:
         # Do clean up
-        loop.run_until_complete(loop.shutdown_asyncgens())
-        loop.close()
+        try:
+            loop.run_until_complete(loop.shutdown_asyncgens())
+            loop.close()
+        except Exception:
+            logger.exception("shutdown offchain service failed")
+            # direct exit process to avoid process hanging if ioloop get into a waiting state.
+            os._exit(1)
 
     logger.info("thread exit")
 
