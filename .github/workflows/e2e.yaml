@@ -38,85 +38,15 @@ jobs:
       - name: Build docker images
         run: |
           ./scripts/lrw.sh build 8080 e2e-blind
-      - name: Spin up single wallet instance
+      - name: run e2e tests
         if: steps.check_ks.outputs.should_run == 'true'
         run: |
-          ./scripts/lrw.sh e2e single up | tee e2e.vars
-      - name: Wait for services to boot up
-        if: steps.check_ks.outputs.should_run == 'true'
-        continue-on-error: true
-        run: |
-          cat e2e.vars
-          IFS=''
-          for attempt in {1..60} ; do
-            unreachable=$(docker ps -a | awk '{ print $1 }' | awk 'NR>1' | xargs -L1 -I {} sh -c "docker logs {} 2>&1 | tail -1" | grep unreachable || true)
-            if [ -z "$unreachable" ]; then
-              echo "All services reachable"
-              exit 0
-            fi
-            echo "Attempt $attempt, some services still unreachable"
-            sleep 3
-          done
-          echo "Services unhealthy"
-          exit 1
+          make setup-env e2e
       - name: Sleep and list docker containers
         if: steps.check_ks.outputs.should_run == 'true'
         run: |
           sleep 90
           docker container ls -a
-      - name: Run single-wallet tests on test-runner
-        if: steps.check_ks.outputs.should_run == 'true'
-        continue-on-error: true
-        run: |
-          echo "Fetching vars from wallet setup"
-          source e2e.vars
-          ./scripts/test_e2e.sh single
-      - name: Dump container logs
-        if: steps.check_ks.outputs.should_run == 'true'
-        continue-on-error: true
-        run: |
-          IFS=''
-          containers=$(docker ps -a | awk '{ print $1, $NF }' | awk 'NR>1')
-          echo $containers
-          echo $containers | while read line; do
-              echo
-              echo $line | awk '{ print "============", $2, "============" }'
-              echo $line | awk '{ print $1 }' | xargs -L1 docker logs
-          done
-      - name: Spin up second wallet instance
-        if: steps.check_ks.outputs.should_run == 'true'
-        continue-on-error: true
-        run: |
-          ./scripts/lrw.sh e2e double up true | tee -a e2e.vars
-      - name: Wait for services to boot up
-        if: steps.check_ks.outputs.should_run == 'true'
-        continue-on-error: true
-        run: |
-          cat e2e.vars
-          IFS=''
-          for attempt in {1..60} ; do
-            unreachable=$(docker ps -a | awk '{ print $1 }' | awk 'NR>1' | xargs -L1 -I {} sh -c "docker logs {} 2>&1 | tail -1" | grep unreachable || true)
-            if [ -z "$unreachable" ]; then
-              echo "All services reachable"
-              exit 0
-            fi
-            echo "Attempt $attempt, some services still unreachable"
-            sleep 3
-          done
-          echo "Services unhealthy"
-          exit 1
-      - name: Sleep and list docker containers
-        if: steps.check_ks.outputs.should_run == 'true'
-        run: |
-          sleep 90
-          docker container ls -a
-      - name: Run double-wallet tests on test-runner
-        if: steps.check_ks.outputs.should_run == 'true'
-        continue-on-error: true
-        run: |
-          echo "Fetching vars from wallet setup"
-          source e2e.vars
-          ./scripts/test_e2e.sh double
       - name: Dump container logs
         if: steps.check_ks.outputs.should_run == 'true'
         continue-on-error: true
