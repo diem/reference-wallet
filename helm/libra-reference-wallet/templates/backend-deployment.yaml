@@ -56,18 +56,33 @@ spec:
           value: {{ .Values.service.targetPort | quote }}
         - name: LIQUIDITY_SERVICE_HOST
           value: {{ include "libra-reference-wallet.fullname" . }}-liquidity
-        - name: JSON_RPC_URL
-          value: {{ .Values.pylibra.jsonRpc }}
         - name: FAUCET_URL
           value: {{ .Values.pylibra.faucet }}
+        - name: VASP_ADDR
+          value: {{ .Values.vaspAddr }}
+        - name: WALLET_CUSTODY_ACCOUNT_NAME
+          value: "wallet"
+        - name: VASP_COMPLIANCE_KEY
+          value: {{ .Values.vaspComplianceKey | toJson | quote }}
+        - name: JSON_RPC_URL
+          value: {{ .Values.pylibra.jsonRpc }}
+        - name: OFFCHAIN_SERVICE_PORT
+          value: "5091"
+        - name: VASP_BASE_URL
+          value: {{ .Values.ingress.host }}/offchain
         - name: CHAIN_ID
           value: {{ .Values.chainId | quote }}
+        - name: GAS_CURRENCY_CODE
+          value: {{ .Values.gasCurrencyCode }}
         image: "{{ .Values.images.backend }}"
         name: lrw-web
         imagePullPolicy: {{ .Values.images.pullPolicy }}
         ports:
           - name: http
             containerPort: {{.Values.service.targetPort}}
+            protocol: TCP
+          - name: offchain
+            containerPort: 5091
             protocol: TCP
 ---
 apiVersion: apps/v1
@@ -128,12 +143,24 @@ spec:
           value: {{ .Values.workers.numProcs | quote }}
         - name: THREADS
           value: {{ .Values.workers.numThreads | quote }}
-        - name: JSON_RPC_URL
-          value: {{ .Values.pylibra.jsonRpc }}
         - name: FAUCET_URL
           value: {{ .Values.pylibra.faucet }}
+        - name: VASP_ADDR
+          value: {{ .Values.vaspAddr }}
+        - name: WALLET_CUSTODY_ACCOUNT_NAME
+          value: "wallet"
+        - name: VASP_COMPLIANCE_KEY
+          value: {{ .Values.vaspComplianceKey | toJson | quote }}
+        - name: JSON_RPC_URL
+          value: {{ .Values.pylibra.jsonRpc }}
+        - name: OFFCHAIN_SERVICE_PORT
+          value: "5091"
+        - name: VASP_BASE_URL
+          value: {{ .Values.ingress.host }}/offchain
         - name: CHAIN_ID
           value: {{ .Values.chainId | quote }}
+        - name: GAS_CURRENCY_CODE
+          value: {{ .Values.gasCurrencyCode }}
         image: "{{ .Values.images.backend }}"
         imagePullPolicy: {{ .Values.images.pullPolicy }}
         name: lrw-worker
@@ -186,18 +213,30 @@ spec:
           value: {{ include "libra-reference-wallet.peripherals.redis.url" . }}
         - name: DB_URL
           value: {{ include "libra-reference-wallet.peripherals.database.url" . }}
-        - name: VASP_ADDR
-          value: {{ .Values.vaspAddr }}
         - name: CUSTODY_PRIVATE_KEYS
           value: {{ .Values.custodyPrivateKeysWallet | toJson | quote }}
         - name: LIQUIDITY_SERVICE_PORT
           value: {{ .Values.service.targetPort | quote }}
         - name: LIQUIDITY_SERVICE_HOST
           value: {{ include "libra-reference-wallet.fullname" . }}-liquidity
-        - name: JSON_RPC_URL
-          value: {{ .Values.pylibra.jsonRpc }}
         - name: FAUCET_URL
           value: {{ .Values.pylibra.faucet }}
+        - name: VASP_ADDR
+          value: {{ .Values.vaspAddr }}
+        - name: WALLET_CUSTODY_ACCOUNT_NAME
+          value: "wallet"
+        - name: VASP_COMPLIANCE_KEY
+          value: {{ .Values.vaspComplianceKey | toJson | quote }}
+        - name: JSON_RPC_URL
+          value: {{ .Values.pylibra.jsonRpc }}
+        - name: OFFCHAIN_SERVICE_PORT
+          value: "5091"
+        - name: VASP_BASE_URL
+          value: {{ .Values.ingress.host }}/offchain
+        - name: CHAIN_ID
+          value: {{ .Values.chainId | quote }}
+        - name: GAS_CURRENCY_CODE
+          value: {{ .Values.gasCurrencyCode }}
         image: "{{ .Values.images.backend }}"
         imagePullPolicy: {{ .Values.images.pullPolicy }}
         name: lrw-pubsub

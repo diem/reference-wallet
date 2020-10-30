@@ -42,12 +42,16 @@ spec:
           value: {{ include "libra-reference-wallet.peripherals.database.liquidityUrl" . }}
         - name: ADMIN_USERNAME
           value: {{ .Values.peripherals.database.adminUsername }}
+        - name: LIQUIDITY_CUSTODY_ACCOUNT_NAME
+          value: "liquidity"
         - name: CUSTODY_PRIVATE_KEYS
           value: {{ .Values.custodyPrivateKeysLiquidity | toJson | quote }}
         - name: ACCOUNT_WATCHER_AUTH_KEY
           value: {{ .Values.accountWatcherAuthKey | quote }}
+        {{- if .Values.accountWatcherPrivKey }}
         - name: ACCOUNT_WATCHER_PRIVATE_KEY
           value: {{ .Values.accountWatcherPrivKey | quote }}
+        {{- end }}
         - name: LIQUIDITY_SERVICE_PORT
           value: {{ .Values.service.targetPort | quote }}
         - name: LIQUIDITY_SERVICE_HOST
