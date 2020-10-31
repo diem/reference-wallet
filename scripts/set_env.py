@@ -9,7 +9,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from offchainapi.crypto import ComplianceKey
 
-from libra import LocalAccount, utils, testnet
+from libra import LocalAccount, utils, testnet, libra_types
 
 from libra_utils.custody import Custody
 from libra_utils.vasp import Vasp
@@ -30,12 +30,17 @@ def get_private_key_hex(key: Ed25519PrivateKey) -> str:
 
 
 def init_onchain_account(
-    custody_private_keys, account_name, account: LocalAccount, base_url, compliance_key,
+    custody_private_keys,
+    account_name,
+    account: LocalAccount,
+    base_url,
+    compliance_key,
+    chain_id: int,
 ):
     account_addr = utils.account_address_hex(account.account_address)
     print(f"Creating and initialize blockchain account {account_name} @ {account_addr}")
     os.environ["CUSTODY_PRIVATE_KEYS"] = custody_private_keys
-    Custody.init()
+    Custody.init(libra_types.ChainId.from_int(chain_id))
     vasp = Vasp(libra_client, account_name)
     vasp.setup_blockchain(base_url, compliance_key)
     print(f"Account initialization done!")
@@ -73,7 +78,7 @@ LIQUIDITY_SERVICE_PORT = os.getenv("LIQUIDITY_SERVICE_PORT", 5000)
 NETWORK = os.getenv("NETWORK", "testnet")
 JSON_RPC_URL = os.getenv("JSON_RPC_URL", testnet.JSON_RPC_URL)
 FAUCET_URL = os.getenv("FAUCET_URL", testnet.FAUCET_URL)
-CHAIN_ID = os.getenv("CHAIN_ID", testnet.CHAIN_ID.value)
+CHAIN_ID = int(os.getenv("CHAIN_ID", testnet.CHAIN_ID.value))
 VASP_BASE_URL = os.getenv("VASP_BASE_URL", "http://lrw_backend-web-server_1:5091")
 LIQUIDITY_BASE_URL = os.getenv("LIQUIDITY_BASE_URL", "http://0.0.0.0:8092")
 VASP_COMPLIANCE_KEY = os.getenv(
@@ -153,6 +158,7 @@ with open(wallet_env_file_path, "w") as dotenv:
         account=wallet_account,
         base_url=VASP_BASE_URL,
         compliance_key=VASP_PUBLIC_KEY_BYTES,
+        chain_id=CHAIN_ID,
     )
 
 # setup liquidity
@@ -174,6 +180,7 @@ with open(liquidity_env_file_path, "w") as dotenv:
         account=lp_account,
         base_url=LIQUIDITY_BASE_URL,
         compliance_key=LIQUIDITY_PUBLIC_KEY_BYTES,
+        chain_id=CHAIN_ID,
     )
 
     amount = 9_999 * 1_000_000

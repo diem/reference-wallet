@@ -6,7 +6,7 @@
 from typing import Optional, Generator, Union
 from time import time
 
-import pytest
+import pytest, context, typing
 from flask.testing import FlaskClient, Client
 
 from wallet.services import user
@@ -17,6 +17,13 @@ from webapp import app
 
 
 app.secret_key = "testing"
+
+
+@pytest.fixture(autouse=True)
+def env_context() -> typing.Generator[typing.Any, None, None]:
+    context.set(context.from_env())
+    yield
+    context.set(None)
 
 
 class UsersService:

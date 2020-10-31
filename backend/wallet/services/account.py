@@ -187,7 +187,9 @@ def get_deposit_address(
     subaddress = generate_new_subaddress(account.id)
 
     return identifier.encode_account(
-        context.get().config.vasp_account_address(), subaddress
+        context.get().config.vasp_account_address(),
+        subaddress,
+        context.get().config.libra_address_hrp(),
     )
 
 

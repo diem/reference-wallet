@@ -7,7 +7,7 @@ from http import HTTPStatus
 from typing import Dict
 
 from flask import request, Blueprint
-
+import context
 
 from libra import identifier, utils
 from libra_utils.types.currencies import LibraCurrency
@@ -220,7 +220,9 @@ class AccountRoutes:
                 currency = LibraCurrency[tx_params["currency"]]
                 amount = int(tx_params["amount"])
                 recv_address: str = tx_params["receiver_address"]
-                dest_address, dest_subaddress = identifier.decode_account(recv_address)
+                dest_address, dest_subaddress = identifier.decode_account(
+                    recv_address, context.get().config.libra_address_hrp()
+                )
 
                 tx = transaction_service.send_transaction(
                     sender_id=account_id,
@@ -292,14 +294,18 @@ class AccountRoutes:
                 "vasp_name": transaction.source_address,
                 "user_id": transaction.source_subaddress,
                 "full_addr": identifier.encode_account(
-                    transaction.source_address, transaction.source_subaddress
+                    transaction.source_address,
+                    transaction.source_subaddress,
+                    context.get().config.libra_address_hrp(),
                 ),
             },
             "destination": {
                 "vasp_name": transaction.destination_address,
                 "user_id": transaction.destination_subaddress,
                 "full_addr": identifier.encode_account(
-                    transaction.destination_address, transaction.destination_subaddress
+                    transaction.destination_address,
+                    transaction.destination_subaddress,
+                    context.get().config.libra_address_hrp(),
                 ),
             },
             "is_internal": transaction.type == TransactionType.INTERNAL,

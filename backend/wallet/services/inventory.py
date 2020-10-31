@@ -4,8 +4,7 @@
 from typing import Optional
 from uuid import UUID
 
-import time
-
+import time, context
 from libra import utils
 from libra.identifier import decode_account
 from libra_utils.types.currencies import LibraCurrency
@@ -130,7 +129,9 @@ def _cover_buy(order: Order, quote: QuoteData) -> bool:
         cover_status=CoverStatus.PendingCoverValidation,
     )
 
-    vasp_address, internal_subaddress = decode_account(deposit_address)
+    vasp_address, internal_subaddress = decode_account(
+        deposit_address, context.get().config.libra_address_hrp()
+    )
     if not _validate_blockchain_transaction(
         blockchain_version=trade_info.tx_version,
         vasp_address=utils.account_address_hex(vasp_address),
