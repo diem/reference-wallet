@@ -417,11 +417,11 @@
         },
         "libra-client-sdk": {
             "hashes": [
-                "sha256:2781c1569608eeff77d8d64279fb41544cfd2930b31f32e96081f4160be6ea88",
-                "sha256:2b71628529ae1dc481220f0d68cfc09dd35fa58f3ac8afc5e2c65432f33bde44"
+                "sha256:4b1b8278a3ef912bb4ec0da6736b3a994225028bfc3b4e5995601a28e7f835f4",
+                "sha256:5abf5e789102c4147351b50021bdceb3d1d47d012bdff575bca626ad6e97a37c"
             ],
             "index": "pypi",
-            "version": "==0.6.2020102202"
+            "version": "==0.6.2020103001"
         },
         "libra-offchainreference": {
             "hashes": [
