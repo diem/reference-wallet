@@ -13,8 +13,8 @@ bootstrap: setup-env build-frontend
 setup-env:
 	-rm backend/.env
 	-rm backend/.env-2
-	-rm thirdparty/libra-reference-utils/external_services/liquidity/.env
-	-rm thirdparty/libra-reference-utils/external_services/liquidity/.env-2
+	-rm liquidity/.env
+	-rm liquidity/.env-2
 	scripts/lrw.sh setup_environment
 
 # build frontend may take some time to run, but is required for `dev` target
@@ -55,7 +55,7 @@ build-e2e:
 
 # setup e2e tests environment variables
 double-env:
-	./scripts/lrw.sh e2e double up > double.vars
+	./scripts/lrw.sh e2e up > double.vars
 
 # run all e2e tests
 e2e-test:
@@ -83,7 +83,7 @@ format:
 
 
 backend-install:
-	PIPENV_PIPFILE=backend/Pipfile pipenv run python3 backend/setup.py develop
+	cd backend && pipenv run python3 setup.py develop
 
 
 backend-test: backend-install

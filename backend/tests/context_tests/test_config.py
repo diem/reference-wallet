@@ -31,7 +31,7 @@ def test_from_env(monkeypatch):
 
 
 def test_generate_config():
-    account, conf = config.generate(1)
+    account, conf = config.generate(1, "vasp_host")
 
     assert conf.vasp_address == account.account_address.to_hex()
     assert conf.wallet_custody_account_name == "wallet1"
@@ -42,7 +42,7 @@ def test_generate_config():
     assert conf.compliance_public_key_bytes()
     assert conf.json_rpc_url == config.testnet.JSON_RPC_URL
     assert conf.offchain_service_port == 5091
-    assert conf.base_url == "http://localhost:5091"
+    assert conf.base_url == "http://vasp_host:5091"
     assert conf.chain_id == 2
     assert conf.gas_currency_code == "Coin1"
 

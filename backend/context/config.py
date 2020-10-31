@@ -52,7 +52,7 @@ def from_env() -> Config:
     )
 
 
-def generate(index: int) -> typing.Tuple[LocalAccount, Config]:
+def generate(index: int, base_url_host: str) -> typing.Tuple[LocalAccount, Config]:
     account = LocalAccount.generate()
     port = 5090 + index
     conf = Config(
@@ -60,7 +60,7 @@ def generate(index: int) -> typing.Tuple[LocalAccount, Config]:
         vasp_compliance_key=ComplianceKey.generate().export_full(),
         vasp_address=account.account_address.to_hex(),
         offchain_service_port=port,
-        base_url=f"http://localhost:{port}",
+        base_url=f"http://{base_url_host}:{port}",
         json_rpc_url=testnet.JSON_RPC_URL,
         chain_id=testnet.CHAIN_ID.to_int(),
         gas_currency_code=testnet.TEST_CURRENCY_CODE,

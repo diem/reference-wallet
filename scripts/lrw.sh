@@ -42,7 +42,6 @@ COMPOSE_YAML=docker/docker-compose.yaml
 COMPOSE_DEV_YAML=docker/dev.docker-compose.yaml
 COMPOSE_DEBUG_YAML=docker/debug.docker-compose.yaml
 COMPOSE_E2E_YAML=docker/e2e.docker-compose.yaml
-COMPOSE_E2E_TEST=docker/e2e.test.docker-compose.yaml
 COMPOSE_STATIC_YAML=docker/static.docker-compose.yaml
 PG_VOLUME=pg-data
 PG_VOLUME_DOUBLE=pg-data-2
@@ -198,92 +197,68 @@ get_port() {
 #       and will be evaluated as code. Debug statements must be prepended with as comments, and all
 #       unintended output suppressed to /dev/null
 e2e() {
-  local single_double=${1}
-  local up_down=$2
-  local upgrade=${3:-false} # use when upgrading single to double
+  local up_down=$1
   composes="${COMPOSE_YAML} -f ${COMPOSE_E2E_YAML}"
-  volumes="lrw_${PG_VOLUME}"
+  volumes="lrw_${PG_VOLUME} lrw2_${PG_VOLUME_DOUBLE}"
 
   export COMPOSE_PROJECT_NAME=""
 
-  if [ "$single_double" = "single" ]; then
-    if [ "$upgrade" == true ]; then
-      echo "# Cannot upgrade single network"
-      exit 1
-    fi
-    echo "# Operating on single wallet instance"
-  elif [ "$single_double" = "double" ]; then
-    volumes="$volumes lrw2_${PG_VOLUME_DOUBLE}"
-    echo "# Operating on double wallet instance"
-  else
-    echo '# Must specify valid count `single` or `double`'
-    exit 1
-  fi
+  echo "# Operating on double wallet instance"
 
   if [ "$up_down" = "up" ]; then
-    if [ "$upgrade" == false ]; then
+    export GW_PORT=$(get_port)
+    export GW_OFFCHAIN_SERVICE_PORT_1=8091
+    PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 \
+                  GW_PORT=$GW_PORT GW_OFFCHAIN_SERVICE_PORT=$GW_OFFCHAIN_SERVICE_PORT_1 \
+                  VASP_BASE_URL_HOST="lrw_backend-web-server_1" \
+                  pipenv run python3 scripts/set_env.py > /dev/null
+    export VASP_ADDR_1=$(source backend/.env && echo $VASP_ADDR)
+    echo "export GW_PORT_1=$GW_PORT"
+    echo "export GW_OFFCHAIN_SERVICE_PORT_1=$GW_OFFCHAIN_SERVICE_PORT_1"
+    echo "export VASP_ADDR_1=$VASP_ADDR_1"
+    echo "export LRW_WEB_1=http://localhost:$GW_PORT"
+    docker-compose -p lrw -f $composes up --detach > /dev/null
 
-      # set up the test fixtures first
-      docker-compose -f $COMPOSE_E2E_TEST up --detach > /dev/null 2>&1
+    # saves .env to temp for creating second .env
+    tmp_backend_env=$(mktemp)
+    tmp_liquidity_env=$(mktemp)
+    backend_env="${project_dir}/backend/.env"
+    liquidity_env="${project_dir}/liquidity/.env"
+    cp $backend_env $tmp_backend_env
+    cp $liquidity_env $tmp_liquidity_env
 
-      export GW_PORT=$(get_port)
-      export GW_OFFCHAIN_SERVICE_PORT_1=8091
-      ENV_FILE_NAME=".env" PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 \
-        GW_PORT=$GW_PORT GW_OFFCHAIN_SERVICE_PORT=$GW_OFFCHAIN_SERVICE_PORT_1 \
-        VASP_BASE_URL="http://lrw_backend-web-server_1:5091" \
-        pipenv run python3 scripts/set_env.py > /dev/null 2>&1
-      export VASP_ADDR_1=$(source backend/.env && echo $VASP_ADDR)
-      echo "export GW_PORT_1=$GW_PORT"
-      echo "export GW_OFFCHAIN_SERVICE_PORT_1=$GW_OFFCHAIN_SERVICE_PORT_1"
-      echo "export VASP_ADDR_1=$VASP_ADDR_1"
-      echo "export LRW_WEB_1=http://localhost:$GW_PORT"
-      docker-compose -p lrw -f $composes up --detach > /dev/null 2>&1
-    fi
-    if [ "$single_double" = "double" ]; then
-      export GW_PORT_2=$(get_port)
-      export GW_OFFCHAIN_SERVICE_PORT_2=8092
-      ENV_FILE_NAME=".env-2" PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 \
-        GW_PORT=$GW_PORT_2 GW_OFFCHAIN_SERVICE_PORT=$GW_OFFCHAIN_SERVICE_PORT_2 \
-        VASP_BASE_URL="http://lrw2_backend-web-server_1:5091" \
-        pipenv run python3 scripts/set_env.py > /dev/null 2>&1
-      export VASP_ADDR_2=$(source backend/.env-2 && echo $VASP_ADDR)
-      echo "export GW_PORT_2=$GW_PORT_2"
-      echo "export GW_OFFCHAIN_SERVICE_PORT_2=$GW_OFFCHAIN_SERVICE_PORT_2"
-      echo "export VASP_ADDR_2=$VASP_ADDR_2"
-      echo "export LRW_WEB_2=http://localhost:$GW_PORT_2"
+    # second
+    export GW_PORT_2=$(get_port)
+    export GW_OFFCHAIN_SERVICE_PORT_2=8092
+    PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 \
+                  GW_PORT=$GW_PORT_2 GW_OFFCHAIN_SERVICE_PORT=$GW_OFFCHAIN_SERVICE_PORT_2 \
+                  VASP_BASE_URL_HOST="lrw2_backend-web-server_1" \
+                  pipenv run python3 scripts/set_env.py > /dev/null
+    export VASP_ADDR_2=$(source backend/.env && echo $VASP_ADDR)
+    echo "export GW_PORT_2=$GW_PORT_2"
+    echo "export GW_OFFCHAIN_SERVICE_PORT_2=$GW_OFFCHAIN_SERVICE_PORT_2"
+    echo "export VASP_ADDR_2=$VASP_ADDR_2"
+    echo "export LRW_WEB_2=http://localhost:$GW_PORT_2"
 
-      # !!!hacking the env file!!!
-      # saves .env to temp and replaces with .env-2
-      tmp_backend_env=$(mktemp)
-      tmp_liquidity_env=$(mktemp)
-      backend_env="${project_dir}/backend/.env"
-      liquidity_env="${project_dir}/liquidity/.env"
-      backend_env_2="${project_dir}/backend/.env-2"
-      liquidity_env_2="${project_dir}/liquidity/.env-2"
-      cp $backend_env $tmp_backend_env
-      cp $liquidity_env $tmp_liquidity_env
-      cp $backend_env_2 $backend_env
-      cp $liquidity_env_2 $liquidity_env
+    export GW_PORT=$GW_PORT_2
+    export GW_OFFCHAIN_SERVICE_PORT=$GW_OFFCHAIN_SERVICE_PORT_2
+    docker-compose -p lrw2 -f $composes up --detach > /dev/null
 
-      export GW_PORT=$GW_PORT_2
-      export GW_OFFCHAIN_SERVICE_PORT=$GW_OFFCHAIN_SERVICE_PORT_2
-      docker-compose -p lrw2 -f $composes up --detach > /dev/null 2>&1
+    docker network create lrw_to_lrw2_offchain > /dev/null
+    docker network connect lrw_to_lrw2_offchain lrw_backend-web-server_1 > /dev/null
+    docker network connect lrw_to_lrw2_offchain lrw2_backend-web-server_1 > /dev/null
 
-      docker network create lrw_to_lrw2_offchain > /dev/null 2>&1
-      docker network connect lrw_to_lrw2_offchain lrw_backend-web-server_1 > /dev/null 2>&1
-      docker network connect lrw_to_lrw2_offchain lrw2_backend-web-server_1 > /dev/null 2>&1
-
-      cp $tmp_backend_env $backend_env
-      cp $tmp_liquidity_env $liquidity_env
-    fi
+    # save lrw2 .env to .env-2
+    cp $backend_env "${backend_env}-2"
+    cp $liquidity_env "${liquidity_env}-2"
+    # move back lrw .env to .env
+    cp $tmp_backend_env $backend_env
+    cp $tmp_liquidity_env $liquidity_env
   elif [ "$up_down" = "down" ]; then
-    docker-compose -f $COMPOSE_E2E_TEST down
     docker-compose -p lrw -f $composes down
-    if [ "$single_double" = "double" ]; then
-      docker-compose -p lrw2 -f $composes down
-    fi
+    docker-compose -p lrw2 -f $composes down
     echo "# Purging $volumes"
-    docker volume rm -f $volumes > /dev/null 2>&1
+    docker volume rm -f $volumes
   else
     echo '# Must specify either `up` or `down` option'
     exit 1

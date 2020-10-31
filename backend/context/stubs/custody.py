@@ -32,7 +32,7 @@ class Client:
         """get account public key bytes."""
 
         return (
-            self._accounts[account_name]
+            self._get_key(account_name)
             .public_key()
             .public_bytes(
                 encoding=serialization.Encoding.Raw,
@@ -43,13 +43,16 @@ class Client:
     def sign(self, account_name: str, msg: bytes) -> bytes:
         """sign the msg by account private key return signature."""
 
-        private_key = self._accounts[account_name]
+        private_key = self._get_key(account_name)
         return private_key.sign(msg)
 
     def compliance_key(self, account_name: str) -> ComplianceKey:
         # TODO: should not return, sign the message and return sig instead
-        private_key = self._accounts[account_name]
+        private_key = self._get_key(account_name)
         return ComplianceKey(jwk.JWK.from_pyca(private_key))
+
+    def _get_key(self, account_name: str) -> Ed25519PrivateKey:
+        return self._accounts[account_name]
 
 
 def from_env() -> Client:
