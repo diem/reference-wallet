@@ -4,7 +4,7 @@
 import os
 
 VASP_ADDR = os.getenv("VASP_ADDR")
-JSON_RPC_URL = os.getenv("JSON_RPC_URL", "https://testnet.libra.org/v1")
+JSON_RPC_URL = os.getenv("JSON_RPC_URL")
 
 DEFL_CONFIG = {
     "libra_node_uri": JSON_RPC_URL,
