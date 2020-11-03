@@ -457,7 +457,7 @@
         },
         "libra-utils": {
             "git": "https://49decaaaf2e5c1c77eca2805117a36b3135f2c26@github.com/libra/libra-reference-utils.git",
-            "ref": "c9b20689b056862f8780dad8f4483bcfd1e619da"
+            "ref": "44f691bb58188c95d851ac96cddc1e3c470da47a"
         },
         "markupsafe": {
             "hashes": [

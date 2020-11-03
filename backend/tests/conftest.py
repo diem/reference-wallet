@@ -23,7 +23,6 @@ from libra_utils.types.liquidity.quote import QuoteId, QuoteData, Rate
 from libra_utils.types.liquidity.settlement import DebtData
 from libra_utils.types.liquidity.trade import TradeId, TradeData, Direction, TradeStatus
 from libra_utils.sdks.liquidity import LpClient
-from libra_utils.vasp import Vasp
 
 from tests.setup import clear_db
 from tests.wallet_tests.libra_client_sdk_mocks import (
