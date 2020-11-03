@@ -39,14 +39,8 @@ def test_send_payment_between_vasps(lrw1, lrw2, vasp1, vasp2, user1, user2):
 
     num_tries = 20
     while num_tries > 1:
-        payment1 = vasp1.get_payment_by_ref(reference_id)
-        payment2 = vasp2.get_payment_by_ref(reference_id)
-        if (
-            payment1.sender.status.as_status() == Status.ready_for_settlement
-            and payment1.receiver.status.as_status() == Status.ready_for_settlement
-            and payment2.sender.status.as_status() == Status.ready_for_settlement
-            and payment2.receiver.status.as_status() == Status.ready_for_settlement
-        ):
+        txn = get_single_transaction(txn.id)
+        if txn.status == TransactionStatus.COMPLETED:
             break
         num_tries -= 1
         time.sleep(1)
@@ -58,6 +52,3 @@ def test_send_payment_between_vasps(lrw1, lrw2, vasp1, vasp2, user1, user2):
     payment = vasp2.get_payment_by_ref(reference_id)
     assert payment.sender.status.as_status() == Status.ready_for_settlement
     assert payment.receiver.status.as_status() == Status.ready_for_settlement
-
-    txn = get_single_transaction(txn.id)
-    assert txn.status == TransactionStatus.COMPLETED
