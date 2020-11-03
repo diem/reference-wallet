@@ -26,7 +26,7 @@ class Config:
         return utils.account_address(self.vasp_address)
 
     def vasp_libra_address(self) -> LibraAddress:
-        return LibraAddress.from_hex(self.vasp_address, None, self.libra_address_hrp())
+        return LibraAddress.from_hex(self.libra_address_hrp(), self.vasp_address, None)
 
     def libra_address_hrp(self) -> str:
         return identifier.HRPS[self.chain_id]

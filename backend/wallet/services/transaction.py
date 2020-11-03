@@ -453,17 +453,17 @@ def external_offchain_transaction(
 
     # off-chain logic
     sender_address = LibraAddress.from_bytes(
+        context.get().config.libra_address_hrp(),
         bytes.fromhex(sender_onchain_address),
         bytes.fromhex(sender_subaddress),
-        hrp=context.get().config.libra_address_hrp(),
     )
     logger.info(
         f"sender address: {sender_onchain_address}, {sender_address.as_str()}, {sender_address.get_onchain().as_str()}"
     )
     receiver_address = LibraAddress.from_bytes(
+        context.get().config.libra_address_hrp(),
         bytes.fromhex(receiver_address),
         bytes.fromhex(receiver_subaddress),
-        hrp=context.get().config.libra_address_hrp(),
     )
     logger.info(
         f"receiver address: {receiver_address.as_str()}, {receiver_address.get_onchain().as_str()}",

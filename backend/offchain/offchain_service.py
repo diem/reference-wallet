@@ -4,7 +4,7 @@
 import asyncio, os
 from threading import Thread
 from offchainapi.core import Vasp
-
+from offchainapi.sample.sample_db import SampleDB
 
 from . import vasp_info, offchain_business
 from context import Context
@@ -27,7 +27,7 @@ def make_vasp(ctx: Context):
         port=ctx.config.offchain_service_port,
         business_context=offchain_business.LRW(ctx),
         info_context=vasp_info.LRW(ctx),
-        database={},
+        database=SampleDB(),
     )
 
 

@@ -46,10 +46,14 @@ class LRW(BusinessContext):
 
     def user_address(self, user_subaddress_hex: str) -> LibraAddress:
         return LibraAddress.from_hex(
+            self.context.config.libra_address_hrp(),
             self.vasp_address.get_onchain_address_hex(),
             user_subaddress_hex,
-            self.context.config.libra_address_hrp(),
         )
+
+    def get_my_address(self):
+        """Returns this VASP's str Libra address encoded in bech32"""
+        return self.vasp_address.as_str()
 
     def open_channel_to(self, other_vasp_info):
         return True
