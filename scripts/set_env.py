@@ -1,7 +1,7 @@
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-import json, time
+import json
 import os
 
 from cryptography.hazmat.primitives import serialization
@@ -12,12 +12,14 @@ from libra import LocalAccount, testnet
 
 import context
 
+
 def get_private_key_hex(key: Ed25519PrivateKey) -> str:
     return key.private_bytes(
         encoding=serialization.Encoding.Raw,
         format=serialization.PrivateFormat.Raw,
         encryption_algorithm=serialization.NoEncryption(),
     ).hex()
+
 
 ENV_FILE_NAME = os.getenv("ENV_FILE_NAME", ".env")
 print(f"env file name: {ENV_FILE_NAME}")
@@ -27,7 +29,6 @@ GW_OFFCHAIN_SERVICE_PORT = int(os.getenv("GW_OFFCHAIN_SERVICE_PORT", 8091))
 VASP_BASE_URL = os.getenv("VASP_BASE_URL", "http://localhost:8091")
 LIQUIDITY_SERVICE_HOST = os.getenv("LIQUIDITY_SERVICE_HOST", "liquidity")
 LIQUIDITY_SERVICE_PORT = int(os.getenv("LIQUIDITY_SERVICE_PORT", 5000))
-
 
 ctx = context.generate(1)
 ctx.config.base_url = VASP_BASE_URL

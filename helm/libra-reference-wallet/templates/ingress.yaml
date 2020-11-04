@@ -38,7 +38,7 @@ metadata:
   labels:
     {{- include "libra-reference-wallet.labels" . | nindent 4 }}
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /offchain$2
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/x-forwarded-prefix: "/offchain"
     {{- if .Values.ingress.annotations }}
     {{ toYaml .Values.ingress.annotations | nindent 4 }}
