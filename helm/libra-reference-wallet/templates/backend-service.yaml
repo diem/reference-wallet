@@ -12,22 +12,8 @@ spec:
       targetPort: {{ .Values.service.targetPort }}
       protocol: TCP
       name: http
-  selector:
-    {{- include "libra-reference-wallet.selectorLabels" . | nindent 4 }}
-    app: {{ include "libra-reference-wallet.fullname" . }}-web
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ include "libra-reference-wallet.fullname" . }}-offchain
-  labels:
-    {{- include "libra-reference-wallet.labels" . | nindent 4 }}
-    app: {{ include "libra-reference-wallet.fullname" . }}-offchain
-spec:
-  type: {{ .Values.service.type }}
-  ports:
-    - port: {{ .Values.service.port }}
-      targetPort: 5091
+    - port: {{ .Values.service.offchainPort }}
+      targetPort: {{ .Values.service.targetOffchainPort }}
       protocol: TCP
       name: offchain
   selector:

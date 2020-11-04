@@ -67,9 +67,9 @@ spec:
         - name: JSON_RPC_URL
           value: {{ .Values.pylibra.jsonRpc }}
         - name: OFFCHAIN_SERVICE_PORT
-          value: "5091"
+          value: {{ .Values.service.targetOffchainPort | quote }}
         - name: VASP_BASE_URL
-          value: {{ .Values.ingress.host }}/offchain
+          value: http://{{ .Values.ingress.host }}/offchain
         - name: CHAIN_ID
           value: {{ .Values.chainId | quote }}
         - name: GAS_CURRENCY_CODE
@@ -82,7 +82,7 @@ spec:
             containerPort: {{.Values.service.targetPort}}
             protocol: TCP
           - name: offchain
-            containerPort: 5091
+            containerPort: {{ .Values.service.targetOffchainPort }}
             protocol: TCP
 ---
 apiVersion: apps/v1
@@ -154,9 +154,9 @@ spec:
         - name: JSON_RPC_URL
           value: {{ .Values.pylibra.jsonRpc }}
         - name: OFFCHAIN_SERVICE_PORT
-          value: "5091"
+          value: {{ .Values.service.targetOffchainPort | quote }}
         - name: VASP_BASE_URL
-          value: {{ .Values.ingress.host }}/offchain
+          value: http://{{ .Values.ingress.host }}/offchain
         - name: CHAIN_ID
           value: {{ .Values.chainId | quote }}
         - name: GAS_CURRENCY_CODE
@@ -230,9 +230,9 @@ spec:
         - name: JSON_RPC_URL
           value: {{ .Values.pylibra.jsonRpc }}
         - name: OFFCHAIN_SERVICE_PORT
-          value: "5091"
+          value: {{ .Values.service.targetOffchainPort | quote }}
         - name: VASP_BASE_URL
-          value: {{ .Values.ingress.host }}/offchain
+          value: http://{{ .Values.ingress.host }}/offchain
         - name: CHAIN_ID
           value: {{ .Values.chainId | quote }}
         - name: GAS_CURRENCY_CODE
