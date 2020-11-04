@@ -52,15 +52,16 @@ def from_env() -> Config:
     )
 
 
-def generate(index: int, base_url_host: str) -> typing.Tuple[LocalAccount, Config]:
-    account = LocalAccount.generate()
+def generate(index: int) -> typing.Tuple[LocalAccount, Config]:
     port = 5090 + index
+    base_url = f"http://localhost:{port}"
+    account = LocalAccount.generate()
     conf = Config(
         wallet_custody_account_name=f"wallet{index}",
         vasp_compliance_key=ComplianceKey.generate().export_full(),
         vasp_address=account.account_address.to_hex(),
         offchain_service_port=port,
-        base_url=f"http://{base_url_host}:{port}",
+        base_url=base_url,
         json_rpc_url=testnet.JSON_RPC_URL,
         chain_id=testnet.CHAIN_ID.to_int(),
         gas_currency_code=testnet.TEST_CURRENCY_CODE,

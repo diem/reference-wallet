@@ -210,7 +210,7 @@ e2e() {
     export GW_OFFCHAIN_SERVICE_PORT_1=8091
     PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 \
                   GW_PORT=$GW_PORT GW_OFFCHAIN_SERVICE_PORT=$GW_OFFCHAIN_SERVICE_PORT_1 \
-                  VASP_BASE_URL_HOST="lrw_backend-web-server_1" \
+                  VASP_BASE_URL="http://lrw_backend-web-server_1:5091" \
                   pipenv run python3 scripts/set_env.py > /dev/null
     export VASP_ADDR_1=$(source backend/.env && echo $VASP_ADDR)
     echo "export GW_PORT_1=$GW_PORT"
@@ -232,7 +232,7 @@ e2e() {
     export GW_OFFCHAIN_SERVICE_PORT_2=8092
     PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 \
                   GW_PORT=$GW_PORT_2 GW_OFFCHAIN_SERVICE_PORT=$GW_OFFCHAIN_SERVICE_PORT_2 \
-                  VASP_BASE_URL_HOST="lrw2_backend-web-server_1" \
+                  VASP_BASE_URL="http://lrw2_backend-web-server_1:5091" \
                   pipenv run python3 scripts/set_env.py > /dev/null
     export VASP_ADDR_2=$(source backend/.env && echo $VASP_ADDR)
     echo "export GW_PORT_2=$GW_PORT_2"

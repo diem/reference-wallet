@@ -26,11 +26,12 @@ print(f"env file name: {ENV_FILE_NAME}")
 
 GW_PORT = int(os.getenv("GW_PORT", 8080))
 GW_OFFCHAIN_SERVICE_PORT = int(os.getenv("GW_OFFCHAIN_SERVICE_PORT", 8091))
-VASP_BASE_URL_HOST = os.getenv("VASP_BASE_URL_HOST", "localhost")
+VASP_BASE_URL = os.getenv("VASP_BASE_URL", "http://localhost:8091")
 LIQUIDITY_SERVICE_HOST = os.getenv("LIQUIDITY_SERVICE_HOST", "liquidity")
 LIQUIDITY_SERVICE_PORT = int(os.getenv("LIQUIDITY_SERVICE_PORT", 5000))
 
-ctx = context.generate(1, VASP_BASE_URL_HOST)
+ctx = context.generate(1)
+ctx.config.base_url = VASP_BASE_URL
 faucet = testnet.Faucet(ctx.jsonrpc_client)
 
 print("Mint currencies to wallet account")

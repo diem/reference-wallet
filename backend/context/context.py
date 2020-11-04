@@ -172,8 +172,8 @@ def for_local_dev() -> Context:
     return generate(1)
 
 
-def generate(index: int, base_url_host: str = "localhost") -> Context:
-    account, conf = config.generate(index, base_url_host)
+def generate(index: int) -> Context:
+    account, conf = config.generate(index)
     ctx = from_config(conf)
     ctx.register_wallet_private_key(account.private_key)
 
