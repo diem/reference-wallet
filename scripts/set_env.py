@@ -39,6 +39,7 @@ faucet.mint(ctx.auth_key().hex(), 1_000_000, "Coin1")
 print("Reset wallet account dual attestation info")
 ctx.reset_dual_attestation_info()
 
+
 execution_dir_path = os.getcwd()
 wallet_env_file_path = os.path.join(execution_dir_path, "backend", ENV_FILE_NAME)
 liquidity_env_file_path = os.path.join(execution_dir_path, "liquidity", ENV_FILE_NAME)

@@ -445,10 +445,10 @@
         },
         "libra-offchainreference": {
             "hashes": [
-                "sha256:99fc60b4795c958a713aee2c758960c3d36c9af2020622cc034b9defcaf34a59"
+                "sha256:c2120c7b57b761efd2b1f0910f87cb17b61337e9f40e4bcf28e807df7dafd715"
             ],
             "index": "pypi",
-            "version": "==0.0.5.dev1"
+            "version": "==0.0.6.dev1"
         },
         "libra-sample-wallet": {
             "editable": true,
@@ -686,9 +686,11 @@
                 "sha256:0deac2af1a587ae12836aa07970f5cb91964f05a7c6cdb69d8425ff4c15d4e2c",
                 "sha256:0e4dc3d5996760104746e6cfcdb519d9d2cd27c738296525d5867ea695774e67",
                 "sha256:11b9c0ebce097180129e422379b824ae21c8f2a6596b159c7659e2e5a00e1aa0",
+                "sha256:15978a1fbd225583dd8cdaf37e67ccc278b5abecb4caf6b2d6b8e2b948e953f6",
                 "sha256:1fabed9ea2acc4efe4671b92c669a213db744d2af8a9fc5d69a8e9bc14b7a9db",
                 "sha256:2dac98e85565d5688e8ab7bdea5446674a83a3945a8f416ad0110018d1501b94",
                 "sha256:42ec1035841b389e8cc3692277a0bd81cdfe0b65d575a2c8862cec7a80e62e52",
+                "sha256:6422f2ff0919fd720195f64ffd8f924c1395d30f9a495f31e2392c2efafb5056",
                 "sha256:6a32f3a4cb2f6e1a0b15215f448e8ce2da192fd4ff35084d80d5e39da683e79b",
                 "sha256:7312e931b90fe14f925729cde58022f5d034241918a5c4f9797cac62f6b3a9dd",
                 "sha256:7d92a09b788cbb1aec325af5fcba9fed7203897bbd9269d5691bb1e3bce29550",
@@ -1398,11 +1400,11 @@
         },
         "pyre-extensions": {
             "hashes": [
-                "sha256:60e0411e91ecbeaf1fd5d8851ffce42baf6a74ec7ccd01db545c7a97f15aac30",
-                "sha256:e6ad1facef54c982d9c0d9780b1aee9faf5cf53b3c7860a087062a206d1598c8"
+                "sha256:03bfe5c585d8cac941cac38bfb70ff4cc88289f4715a1fe1a356a012a966f7df",
+                "sha256:dd76371ee33fa359edc7b79ada30af8f66419a59ad54cf75428d89e4038c56aa"
             ],
             "index": "pypi",
-            "version": "==0.0.18"
+            "version": "==0.0.19"
         },
         "pytest": {
             "hashes": [
