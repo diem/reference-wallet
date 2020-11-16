@@ -20,7 +20,7 @@ vaspComplianceKey:
   kty: "OKP"
   x:
 
-pylibra:
+sdk:
   jsonRpc: "https://testnet.libra.org/v1"
   faucet: "http://testnet.libra.org/mint"
 

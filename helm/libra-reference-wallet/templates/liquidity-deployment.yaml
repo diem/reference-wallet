@@ -57,9 +57,9 @@ spec:
         - name: LIQUIDITY_SERVICE_HOST
           value: {{ include "libra-reference-wallet.fullname" . }}-liquidity
         - name: JSON_RPC_URL
-          value: {{ .Values.pylibra.jsonRpc }}
+          value: {{ .Values.sdk.jsonRpc }}
         - name: FAUCET_URL
-          value: {{ .Values.pylibra.faucet }}
+          value: {{ .Values.sdk.faucet }}
         - name: CHAIN_ID
           value: {{ .Values.chainId | quote }}
         name: lrw-liquidity
