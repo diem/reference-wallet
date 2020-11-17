@@ -105,6 +105,7 @@ class UserRoutes:
                     phone=data["phone"],
                     country=data["country"],
                     state=data["state"],
+                    city=data["city"],
                     address_1=data["address_1"],
                     address_2=data["address_2"],
                     zip=data["zip"],
