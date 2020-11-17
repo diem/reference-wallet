@@ -7,9 +7,6 @@ dump.rdb
 *.egg-info
 *flask_session
 **/.DS_Store
-.env
-.env-2
-.env-prod
 e2e.vars
 single.vars
 double.vars
@@ -23,6 +20,10 @@ build
 */fastlane/report.xml
 */fastlane/Preview.html
 */fastlane/screenshots
+
+# dotenv
+.env*
+!.env.example
 
 # Bundle artifact
 *.jsbundle

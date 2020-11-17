@@ -57,7 +57,7 @@ spec:
         - name: LIQUIDITY_SERVICE_HOST
           value: {{ include "libra-reference-wallet.fullname" . }}-liquidity
         - name: FAUCET_URL
-          value: {{ .Values.pylibra.faucet }}
+          value: {{ .Values.sdk.faucet }}
         - name: VASP_ADDR
           value: {{ .Values.vaspAddr }}
         - name: WALLET_CUSTODY_ACCOUNT_NAME
@@ -65,7 +65,7 @@ spec:
         - name: VASP_COMPLIANCE_KEY
           value: {{ .Values.vaspComplianceKey | toJson | quote }}
         - name: JSON_RPC_URL
-          value: {{ .Values.pylibra.jsonRpc }}
+          value: {{ .Values.sdk.jsonRpc }}
         - name: OFFCHAIN_SERVICE_PORT
           value: {{ .Values.service.targetOffchainPort | quote }}
         - name: VASP_BASE_URL
@@ -144,7 +144,7 @@ spec:
         - name: THREADS
           value: {{ .Values.workers.numThreads | quote }}
         - name: FAUCET_URL
-          value: {{ .Values.pylibra.faucet }}
+          value: {{ .Values.sdk.faucet }}
         - name: VASP_ADDR
           value: {{ .Values.vaspAddr }}
         - name: WALLET_CUSTODY_ACCOUNT_NAME
@@ -152,7 +152,7 @@ spec:
         - name: VASP_COMPLIANCE_KEY
           value: {{ .Values.vaspComplianceKey | toJson | quote }}
         - name: JSON_RPC_URL
-          value: {{ .Values.pylibra.jsonRpc }}
+          value: {{ .Values.sdk.jsonRpc }}
         - name: OFFCHAIN_SERVICE_PORT
           value: {{ .Values.service.targetOffchainPort | quote }}
         - name: VASP_BASE_URL
@@ -220,7 +220,7 @@ spec:
         - name: LIQUIDITY_SERVICE_HOST
           value: {{ include "libra-reference-wallet.fullname" . }}-liquidity
         - name: FAUCET_URL
-          value: {{ .Values.pylibra.faucet }}
+          value: {{ .Values.sdk.faucet }}
         - name: VASP_ADDR
           value: {{ .Values.vaspAddr }}
         - name: WALLET_CUSTODY_ACCOUNT_NAME
@@ -228,7 +228,7 @@ spec:
         - name: VASP_COMPLIANCE_KEY
           value: {{ .Values.vaspComplianceKey | toJson | quote }}
         - name: JSON_RPC_URL
-          value: {{ .Values.pylibra.jsonRpc }}
+          value: {{ .Values.sdk.jsonRpc }}
         - name: OFFCHAIN_SERVICE_PORT
           value: {{ .Values.service.targetOffchainPort | quote }}
         - name: VASP_BASE_URL
