@@ -90,6 +90,7 @@ def test_kyc_started_user_pending(monkeypatch) -> None:
         phone="123456789",
         country="NY",
         state="NY",
+        city="New York",
         address_1="123 test address",
         zip="12345",
     )
@@ -103,7 +104,7 @@ def test_get_user_kyc() -> None:
     first_name = "first name"
     last_name = "last_name"
     user_id = create_new_user(username, password, False, first_name, last_name)
-    update_user(user_id=user_id, country="US")
+    update_user(user_id=user_id, country="US", city="New York")
     kyc_info = get_additional_user_kyc_info(user_id)
     assert kyc_info == {
         "payload_type": "KYC_DATA",
@@ -113,7 +114,7 @@ def test_get_user_kyc() -> None:
         "surname": last_name,
         "dob": "",
         "address": {
-            "city": "",
+            "city": "New York",
             "country": "US",
             "line1": "",
             "line2": "",
@@ -121,7 +122,7 @@ def test_get_user_kyc() -> None:
             "state": "",
         },
         "place_of_birth": {
-            "city": "",
+            "city": "New York",
             "country": "US",
             "postal_code": "",
             "state": "",

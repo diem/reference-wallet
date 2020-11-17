@@ -111,7 +111,7 @@ class Context:
         self, txn: libra_types.SignedTransaction
     ) -> jsonrpc.Transaction:
         self.jsonrpc_client.submit(txn)
-        return self.jsonrpc_client.wait_for_transaction(txn)
+        return self.jsonrpc_client.wait_for_transaction(txn, 30)
 
     # ---- delegate to jsonrpc client end ----
 
