@@ -4,12 +4,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from http import HTTPStatus
-from uuid import UUID
 
 import pytest
 from flask import Response
 from flask.testing import Client
-
 from libra_utils.types.currencies import Currencies
 from wallet.services import order as order_service
 from wallet.storage import Order

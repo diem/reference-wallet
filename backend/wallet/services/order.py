@@ -11,11 +11,12 @@ from typing import Optional
 
 from libra_utils.precise_amount import Amount
 from libra_utils.types.currencies import LibraCurrency, Currencies
-from libra_utils.types.liquidity.currency import Currency, CurrencyPair
+from libra_utils.types.liquidity.currency import Currency, CurrencyPair, CurrencyPairs
 from wallet import services
 from wallet import storage
 from wallet.services import inventory, INVENTORY_ACCOUNT_NAME
 from wallet.services.fx.fx import get_rate
+from wallet.services.inventory import buy_funds, INVENTORY_COVER_CURRENCY
 from wallet.services.transaction import (
     internal_transaction,
     validate_balance,
@@ -159,14 +160,20 @@ def execute_trade(order: Order):
     user_account_id = get_user(order.user_id).account.id
     order_id = typing.cast(OrderId, order.id)
 
+    base_libra_currency = LibraCurrency[order.base_currency]
+
     if Direction[order.direction] == Direction.Buy:
         sender_id = inventory_account_id
         receiver_id = user_account_id
+
+        if not validate_balance(sender_id, order.amount, base_libra_currency):
+            buy_funds(
+                CurrencyPairs[f"{base_libra_currency}_{INVENTORY_COVER_CURRENCY}"]
+            )
     else:
         sender_id = user_account_id
         receiver_id = inventory_account_id
 
-    base_libra_currency = LibraCurrency[order.base_currency]
     try:
         transaction = internal_transaction(
             sender_id=sender_id,
