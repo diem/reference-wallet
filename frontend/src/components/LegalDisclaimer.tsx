@@ -12,7 +12,7 @@ function LegalDisclaimer({ onClose }: { onClose: () => void }) {
     <div className="container py-4 justify-content-center align-items-center d-flex flex-column h-100">
       <p className="text-justify">{t("legal_disclaimer")}</p>
 
-      <Button color="primary" className="mt-4" onClick={onClose}>
+      <Button color="black" className="mt-4" onClick={onClose}>
         OK
       </Button>
     </div>

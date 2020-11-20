@@ -17,7 +17,7 @@ function Feedback() {
       size="sm"
       href={URL}
       target="_blank"
-      color="primary"
+      color="black"
       className="feedback"
       title={t("feedback.title")}
     >
