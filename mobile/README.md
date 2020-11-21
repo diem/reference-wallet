@@ -13,6 +13,10 @@ npm install
 // or
 yarn install
 ```
+2a. For iOS development, ensure you have `cocoapods` installed.
+```bash
+pod install
+```
 
 3. Run project on iOS / Android.
 

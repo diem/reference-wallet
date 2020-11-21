@@ -1,18 +1,20 @@
 # Copyright (c) The Libra Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
+import logging
+import time
 from typing import Optional
 from uuid import UUID
 
-import time, context
+import context
 from libra import utils
 from libra.identifier import decode_account
+from libra_utils.sdks.liquidity import LpClient
 from libra_utils.types.currencies import LibraCurrency
 from libra_utils.types.liquidity.currency import Currency, CurrencyPairs, CurrencyPair
 from libra_utils.types.liquidity.quote import QuoteData
 from libra_utils.types.liquidity.trade import TradeStatus, TradeData, TradeId
 from wallet.logging import log_execution
-from libra_utils.sdks.liquidity import LpClient
 from wallet.services import INVENTORY_ACCOUNT_NAME
 from wallet.services.account import get_deposit_address, create_account
 from wallet.services.transaction import send_transaction, get_transaction
@@ -24,13 +26,10 @@ from wallet.types import (
     TransactionStatus,
 )
 
-import logging
-
 logger = logging.getLogger(__name__)
 
-
 INVENTORY_COVER_CURRENCY = Currency.USD
-INVENTORY_AMOUNT = 999_000_000
+INVENTORY_AMOUNT = 950_000_000
 
 
 def wait_for_trade_to_complete(trade_id):
@@ -63,22 +62,26 @@ def setup_inventory_account():
 
         for _ in range(retries):
             try:
-                quote = LpClient().get_quote(
-                    pair=currency_pair.value, amount=INVENTORY_AMOUNT
-                )
-                internal_address = get_inventory_deposit_address()
-
-                trade_id = LpClient().trade_and_execute(
-                    quote_id=quote.quote_id,
-                    direction=Direction.Buy,
-                    libra_deposit_address=internal_address,
-                )
-                if wait_for_trade_to_complete(trade_id):
-                    break
+                buy_funds(currency_pair)
 
             except Exception as e:
                 logger.exception("trade and execute quote failed")
                 time.sleep(polling_interval_s)
+
+
+def buy_funds(currency_pair):
+    quote = LpClient().get_quote(pair=currency_pair.value, amount=INVENTORY_AMOUNT)
+
+    internal_address = get_inventory_deposit_address()
+
+    trade_id = LpClient().trade_and_execute(
+        quote_id=quote.quote_id,
+        direction=Direction.Buy,
+        libra_deposit_address=internal_address,
+    )
+
+    if wait_for_trade_to_complete(trade_id):
+        return
 
 
 def cover_order(order: Order):

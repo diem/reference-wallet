@@ -7,7 +7,10 @@ from uuid import UUID
 
 from libra_utils.types.currencies import LibraCurrency, FiatCurrency
 from libra_utils.types.liquidity.currency import CurrencyPairs
-from tests.wallet_tests.resources.seeds.add_funds_seeder import AddFundsSeeder
+from tests.wallet_tests.resources.seeds.add_funds_seeder import (
+    AddFundsSeeder,
+    InventoryWithoutFundsSeeder,
+)
 from wallet import storage
 from wallet.services import order as order_service
 from wallet.storage import db_session, get_order
@@ -37,6 +40,33 @@ def test_add_funds(patch_blockchain: None):
     buy_amount = 1000
     buy_currency = LibraCurrency.Coin1
     inventory_id, account_id, order_id = AddFundsSeeder.run(
+        db_session,
+        buy_amount=buy_amount,
+        buy_currency=buy_currency,
+        pay_currency=FiatCurrency.EUR,
+        pay_price=900,
+    )
+
+    payment_method = "4580 2601 0743 7443"
+
+    order_service.execute_order(order_id, payment_method)
+
+    order = get_order(order_id)
+    assert order.order_status == OrderStatus.Executed.value
+    assert order.cover_status == CoverStatus.Covered.value
+
+    add_funds_transaction = storage.get_transaction(order.internal_ledger_tx)
+    assert add_funds_transaction
+    assert add_funds_transaction.currency == buy_currency
+    assert add_funds_transaction.amount == buy_amount
+    assert add_funds_transaction.source_id == inventory_id
+    assert add_funds_transaction.destination_id == account_id
+
+
+def test_add_funds_refund_inventory(patch_blockchain: None):
+    buy_amount = 1000
+    buy_currency = LibraCurrency.Coin1
+    inventory_id, account_id, order_id = InventoryWithoutFundsSeeder.run(
         db_session,
         buy_amount=buy_amount,
         buy_currency=buy_currency,
