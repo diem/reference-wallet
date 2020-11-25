@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "0fd632cc4329d0a94de7baa04cad7a55f51b4a93f88f2ed187077a50dffa239a"
+            "sha256": "895334b962d114c2af6ca430972dc00f0c2af5d95775d09dfc3344487f2d37ae"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -456,7 +456,7 @@
         },
         "libra-utils": {
             "git": "https://49decaaaf2e5c1c77eca2805117a36b3135f2c26@github.com/libra/libra-reference-utils.git",
-            "ref": "e926d11141557e3aee3b25e1aeb5892d8eec4de6"
+            "ref": "b68343700fbc6a1558c0fffdc993cb406ce7dc38"
         },
         "markupsafe": {
             "hashes": [
@@ -913,6 +913,14 @@
             "index": "pypi",
             "version": "==1.3.20"
         },
+        "sqlalchemy-paginator": {
+            "hashes": [
+                "sha256:9c3690d24a20867ab4151ca3d52e60dc3f085fbe13729e09687aaa1ac66d85c8",
+                "sha256:fabb8fd28904a161252f2afa733e2a10ca0ded4556b36f93f481f605c5fa8948"
+            ],
+            "index": "pypi",
+            "version": "==0.2"
+        },
         "stringcase": {
             "hashes": [
                 "sha256:48a06980661908efe8d9d34eab2b6c13aefa2163b3ced26972902e3bdfd87008"
@@ -924,7 +932,7 @@
                 "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b",
                 "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"
             ],
-            "markers": "python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2'",
+            "markers": "python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==0.10.2"
         },
         "tox": {
@@ -1537,7 +1545,7 @@
                 "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b",
                 "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"
             ],
-            "markers": "python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2'",
+            "markers": "python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==0.10.2"
         },
         "traitlets": {

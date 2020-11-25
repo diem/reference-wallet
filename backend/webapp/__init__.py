@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # pyre-strict
+import logging
 
 import context
 import time
@@ -10,6 +11,7 @@ from threading import Thread
 from flasgger import Swagger
 from flask import Flask
 from offchain import offchain_service, client as offchain_client
+from wallet.services.system import sync_db
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from wallet.config import ADMIN_USERNAME
@@ -42,6 +44,19 @@ def _schedule_update_rates() -> None:
     def run():
         while True:
             update_rates()
+            time.sleep(60)
+
+    Thread(target=run, daemon=True).start()
+
+
+def _sync_db() -> None:
+    def run():
+        while True:
+            try:
+                sync_db()
+            except Exception:
+                logging.getLogger("sync-db").exception("sync db failed")
+
             time.sleep(60)
 
     Thread(target=run, daemon=True).start()
@@ -87,6 +102,7 @@ def init():
         _init_with_log("offchain", _init_offchain)
         _init_with_log("liquidity", setup_inventory_account)
         _init_with_log("update_rates_thread", _schedule_update_rates)
+        _init_with_log("sync-db", _sync_db)
     return app
 
 

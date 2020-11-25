@@ -64,7 +64,9 @@ class AccountRoutes:
                 return self.respond_with_error(
                     HTTPStatus.FORBIDDEN, "User is forbidden for account"
                 )
-            balances = account_service.get_account_balance(account_name=account_name)
+            balances = account_service.get_account_balance_by_name(
+                account_name=account_name
+            )
 
             account_info = {
                 "balances": [

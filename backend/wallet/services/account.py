@@ -57,12 +57,15 @@ def get_account_transactions(
     direction_filter: Optional[TransactionDirection] = None,
     limit: Optional[int] = None,
     sort: Optional[TransactionSortOption] = None,
+    up_to_version=None,
 ) -> List[Transaction]:
     if not account_id:
         account = get_account(account_name=account_name)
         account_id = account.id
 
-    txs = storage.get_account_transactions(account_id=account_id, currency=currency)
+    txs = storage.get_account_transactions(
+        account_id=account_id, currency=currency, up_to_version=up_to_version
+    )
 
     if direction_filter:
         txs[:] = [
@@ -143,12 +146,27 @@ def _get_rates() -> Dict[str, Amount]:
     return rates
 
 
-def get_account_balance(
-    account_id: Optional[int] = None, account_name: Optional[str] = None
-) -> Balance:
-    account = get_account(account_id=account_id, account_name=account_name)
+def get_account_balance_by_name(
+    account_name: Optional[str] = None, up_to_version=None,
+):
+    account = get_account(account_name=account_name)
 
-    account_transactions = get_account_transactions(account_id=account.id)
+    return get_account_balance(account, up_to_version)
+
+
+def get_account_balance_by_id(
+    account_id: Optional[int] = None, up_to_version=None,
+) -> Balance:
+    account = get_account(account_id=account_id)
+
+    return get_account_balance(account, up_to_version)
+
+
+def get_account_balance(account, up_to_version=None):
+    account_transactions = get_account_transactions(
+        account_id=account.id, up_to_version=up_to_version
+    )
+
     return calc_account_balance(
         account_id=account.id, transactions=account_transactions
     )
@@ -169,15 +187,22 @@ def calc_account_balance(account_id: int, transactions: List[Transaction]) -> Ba
 
 
 def generate_new_subaddress(account_id: int) -> str:
-    subaddr = None
-    while not subaddr:
-        subaddr = secrets.token_hex(identifier.LIBRA_SUBADDRESS_SIZE)
-        # generated subaddress is unique
-        if is_subaddress_exists(subaddr):
-            subaddr = None
+    sub_address = generate_sub_address()
+    add_subaddress(account_id=account_id, subaddr=sub_address)
 
-    add_subaddress(account_id=account_id, subaddr=subaddr)
-    return subaddr
+    return sub_address
+
+
+def generate_sub_address():
+    sub_address = None
+
+    while not sub_address:
+        sub_address = secrets.token_hex(identifier.LIBRA_SUBADDRESS_SIZE)
+        # generated subaddress is unique
+        if is_subaddress_exists(sub_address):
+            sub_address = None
+
+    return sub_address
 
 
 def get_deposit_address(

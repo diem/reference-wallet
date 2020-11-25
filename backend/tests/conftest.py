@@ -61,16 +61,19 @@ def clean_db() -> Generator[None, None, None]:
 
 @pytest.fixture(scope="function")
 def patch_blockchain(monkeypatch):
-    monkeypatch.setattr(Faucet, "mint", FaucetUtilsMock.mint)
-    monkeypatch.setattr(LibraClient, "get_account", LibraNetworkMock.get_account)
-    monkeypatch.setattr(
-        LibraClient, "get_account_transaction", LibraNetworkMock.transaction_by_acc_seq
-    )
-    monkeypatch.setattr(
-        LibraClient, "get_transactions", LibraNetworkMock.transactions_by_range
-    )
+    network = LibraNetworkMock()
 
-    monkeypatch.setattr(LibraClient, "submit", LibraNetworkMock.sendTransaction)
+    monkeypatch.setattr(Faucet, "mint", FaucetUtilsMock.mint)
+    monkeypatch.setattr(LibraClient, "get_account", network.get_account)
+    monkeypatch.setattr(
+        LibraClient, "get_account_transaction", network.transaction_by_acc_seq
+    )
+    monkeypatch.setattr(
+        LibraClient, "get_account_transactions", network.get_account_transactions,
+    )
+    monkeypatch.setattr(LibraClient, "get_transactions", network.get_transactions)
+    monkeypatch.setattr(LibraClient, "get_events", network.get_events)
+    monkeypatch.setattr(LibraClient, "submit", network.sendTransaction)
 
     def wait_for_transaction(*args):
         return Transaction(version=1, transaction=TransactionData(sequence_number=1))
@@ -79,7 +82,7 @@ def patch_blockchain(monkeypatch):
         LibraClient, "wait_for_transaction", wait_for_transaction,
     )
 
-    yield
+    yield network
 
 
 @pytest.fixture(autouse=True)

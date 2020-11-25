@@ -12,7 +12,6 @@ from . import db_session, get_user
 from .models import Transaction, TransactionLog, OffChain
 from ..types import TransactionStatus, TransactionType
 from libra_utils.types.currencies import LibraCurrency
-from offchainapi.libra_address import LibraAddress
 
 
 def add_transaction(
@@ -81,6 +80,12 @@ def update_transaction(
     db_session.commit()
 
 
+def delete_transaction_by_id(transaction_id: int) -> None:
+    TransactionLog.query.filter_by(tx_id=transaction_id).delete()
+    Transaction.query.filter_by(id=transaction_id).delete()
+    db_session.commit()
+
+
 def get_transaction(transaction_id: int) -> Transaction:
     return Transaction.query.filter_by(id=transaction_id).first()
 
@@ -116,7 +121,7 @@ def save_transaction_log(transaction_id, log) -> None:
 
 
 def get_account_transactions(
-    account_id: int, currency: Optional[LibraCurrency] = None
+    account_id: int, currency: Optional[LibraCurrency] = None, up_to_version=None
 ) -> List[Transaction]:
     query = Transaction.query.filter(
         or_(
@@ -126,6 +131,9 @@ def get_account_transactions(
     )
     if currency:
         query = query.filter_by(currency=LibraCurrency(currency))
+
+    if up_to_version:
+        query = query.filter(Transaction.blockchain_version <= up_to_version)
 
     return query.order_by(Transaction.id.desc()).all()
 

@@ -59,7 +59,7 @@ def account_balance(monkeypatch):
         return balance
 
     monkeypatch.setattr(
-        account_service, "get_account_balance", get_account_balance_mock
+        account_service, "get_account_balance_by_name", get_account_balance_mock
     )
     yield saved
 

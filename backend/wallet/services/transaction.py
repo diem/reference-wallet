@@ -101,6 +101,7 @@ def process_incoming_transaction(
     ):
         travel_rule_v0 = metadata.value.value
         reference_id = travel_rule_v0.off_chain_reference_id
+
         if reference_id is None:
             raise InvalidTravelRuleMetadata(
                 f"Invalid Travel Rule metadata : reference_id None"
@@ -108,6 +109,7 @@ def process_incoming_transaction(
 
         transaction_id = get_transaction_id_from_reference_id(reference_id)
         transaction = get_transaction(transaction_id)
+
         if (
             transaction.amount == amount
             and transaction.status == TransactionStatus.READY_FOR_ON_CHAIN
@@ -120,6 +122,7 @@ def process_incoming_transaction(
                 sequence=sequence,
                 blockchain_tx_version=blockchain_version,
             )
+
             return
 
         raise InvalidTravelRuleMetadata(
@@ -322,7 +325,7 @@ def get_transaction_direction(
 
 
 def validate_balance(sender_id: int, amount: int, currency: LibraCurrency) -> bool:
-    account_balance = account_service.get_account_balance(account_id=sender_id)
+    account_balance = account_service.get_account_balance_by_id(account_id=sender_id)
     return amount <= account_balance.total[currency]
 
 
@@ -339,7 +342,7 @@ def internal_transaction(
 
     if not validate_balance(sender_id, amount, currency):
         raise BalanceError(
-            f"Balance {account_service.get_account_balance(account_id=sender_id).total[currency]} "
+            f"Balance {account_service.get_account_balance_by_id(account_id=sender_id).total[currency]} "
             f"is less than amount needed {amount}"
         )
 
@@ -381,7 +384,7 @@ def external_transaction(
     )
     if not validate_balance(sender_id, amount, currency):
         raise BalanceError(
-            f"Balance {account_service.get_account_balance(account_id=sender_id).total[currency]} "
+            f"Balance {account_service.get_account_balance_by_id(account_id=sender_id).total[currency]} "
             f"is less than amount needed {amount}"
         )
 
@@ -430,7 +433,7 @@ def external_offchain_transaction(
     )
     if not validate_balance(sender_id, amount, currency):
         raise BalanceError(
-            f"Balance {account_service.get_account_balance(account_id=sender_id).total[currency]} "
+            f"Balance {account_service.get_account_balance_by_id(account_id=sender_id).total[currency]} "
             f"is less than amount needed {amount}"
         )
 
