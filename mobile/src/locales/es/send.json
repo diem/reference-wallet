@@ -3,8 +3,8 @@
   "fail_message": "Error al enviar la transacción",
   "form": {
     "title": "Enviar Dinero a Usuario",
-    "libraCurrency": "moneda",
-    "libraCurrency_placeholder": "Selecciona una moneda",
+    "diemCurrency": "moneda",
+    "diemCurrency_placeholder": "Selecciona una moneda",
     "fiatCurrency": "Moneda Fiat",
     "amount": "Cantidad",
     "price": "actualmente igual a",

@@ -8,7 +8,7 @@
   "sent_to": "Sent to",
   "sent_from": "Sent from",
   "status": "Status",
-  "tx_id": "Libra Transaction ID",
+  "tx_id": "Diem Transaction ID",
   "internal": "Internal",
   "not_available": "Not available"
 }
