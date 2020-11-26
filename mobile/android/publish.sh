@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 if [[ -z ${LRW_KEYSTORE_B64+x} ]]; then
