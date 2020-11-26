@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useEffect, useState } from "react";
@@ -7,7 +7,7 @@ import { match as RouterMatch } from "react-router";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../contexts/app";
 import BackendClient from "../services/backendClient";
-import { LibraCurrency } from "../interfaces/currencies";
+import { Currency } from "../interfaces/currencies";
 import { Transaction } from "../interfaces/transaction";
 import TransactionsList from "../components/TransactionsList";
 import Balance from "../components/Balance";
@@ -22,19 +22,19 @@ import TestnetWarning from "../components/TestnetWarning";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
 
-function Account({ match }: { match: RouterMatch<{ currency: LibraCurrency }> }) {
+function Account({ match }: { match: RouterMatch<{ currency: Currency }> }) {
   const { t } = useTranslation("layout");
   const [settings] = useContext(settingsContext)!;
   const user = settings.user;
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  let selectedLibraCurrency: LibraCurrency | undefined = match.params.currency;
+  let selectedCurrency: Currency | undefined = match.params.currency;
 
   const fetchTransactions = async () => {
     try {
-      if (selectedLibraCurrency) {
-        setTransactions(await new BackendClient().getTransactions(selectedLibraCurrency));
+      if (selectedCurrency) {
+        setTransactions(await new BackendClient().getTransactions(selectedCurrency));
         setTimeout(fetchTransactions, REFRESH_TRANSACTIONS_INTERVAL);
       }
     } catch (e) {
@@ -56,7 +56,7 @@ function Account({ match }: { match: RouterMatch<{ currency: LibraCurrency }> })
     fetchTransactions();
 
     return () => {
-      selectedLibraCurrency = undefined;
+      selectedCurrency = undefined;
     };
   }, []);
 
@@ -69,16 +69,16 @@ function Account({ match }: { match: RouterMatch<{ currency: LibraCurrency }> })
     <>
       <TestnetWarning />
 
-      <Breadcrumbs pageName={settings.currencies[selectedLibraCurrency].name + " Wallet"} />
+      <Breadcrumbs pageName={settings.currencies[selectedCurrency].name + " Wallet"} />
       <Container className="py-5">
         {user && (
           <>
             <h1 className="h5 font-weight-normal text-body text-center mb-4">
-              {settings.currencies[selectedLibraCurrency].name} Wallet
+              {settings.currencies[selectedCurrency].name} Wallet
             </h1>
 
             <section className="my-5 text-center">
-              <Balance currency={selectedLibraCurrency} />
+              <Balance currency={selectedCurrency} />
             </section>
 
             <section className="my-5 text-center">
@@ -105,17 +105,17 @@ function Account({ match }: { match: RouterMatch<{ currency: LibraCurrency }> })
 
             <SendModal
               open={sendModalOpen}
-              initialCurrency={selectedLibraCurrency}
+              initialCurrency={selectedCurrency}
               onClose={() => setSendModalOpen(false)}
             />
             <ReceiveModal
               open={receiveModalOpen}
-              currency={selectedLibraCurrency}
+              currency={selectedCurrency}
               onClose={() => setReceiveModalOpen(false)}
             />
             <TransferModal
               open={transferModalOpen}
-              currency={selectedLibraCurrency}
+              currency={selectedCurrency}
               onClose={() => setTransferModalOpen(false)}
             />
             <TransactionModal

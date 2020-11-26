@@ -1,16 +1,16 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import axios, { AxiosError, AxiosInstance } from "axios";
 import SessionStorage from "../services/sessionStorage";
 import { BackendError, ErrorMessage, UsernameAlreadyExistsError } from "./errors";
 import { PaymentMethod, User, UserInfo } from "../interfaces/user";
-import { Account, LibraCurrencyBalance } from "../interfaces/account";
+import { Account, CurrencyBalance } from "../interfaces/account";
 import { Transaction, TransactionDirection } from "../interfaces/transaction";
-import { FiatCurrency, LibraCurrency } from "../interfaces/currencies";
+import { FiatCurrency, Currency } from "../interfaces/currencies";
 import { Quote, QuoteAction, Rate } from "../interfaces/cico";
 import { Debt } from "../interfaces/settlement";
-import {Chain} from "../interfaces/system";
+import { Chain } from "../interfaces/system";
 
 export default class BackendClient {
   private client: AxiosInstance;
@@ -201,7 +201,7 @@ export default class BackendClient {
   }
 
   async getTransactions(
-    currency?: LibraCurrency,
+    currency?: Currency,
     direction?: TransactionDirection,
     sort?: string,
     limit?: number
@@ -218,7 +218,7 @@ export default class BackendClient {
   }
 
   async createTransaction(
-    currency: LibraCurrency,
+    currency: Currency,
     amount: number,
     receiver_address: string
   ): Promise<Transaction> {
@@ -239,32 +239,32 @@ export default class BackendClient {
 
   async requestDepositQuote(
     fromFiatCurrency: FiatCurrency,
-    toLibraCurrency: LibraCurrency,
-    microlibras: number
+    toCurrency: Currency,
+    amount: number
   ): Promise<Quote> {
-    return this.requestQuote("buy", toLibraCurrency, fromFiatCurrency, microlibras);
+    return this.requestQuote("buy", toCurrency, fromFiatCurrency, amount);
   }
 
   async requestWithdrawQuote(
-    fromLibraCurrency: LibraCurrency,
+    fromCurrency: Currency,
     toFiatCurrency: FiatCurrency,
-    microlibras: number
+    amount: number
   ): Promise<Quote> {
-    return this.requestQuote("sell", fromLibraCurrency, toFiatCurrency, microlibras);
+    return this.requestQuote("sell", fromCurrency, toFiatCurrency, amount);
   }
 
   async requestConvertQuote(
-    fromLibraCurrency: LibraCurrency,
-    toLibraCurrency: LibraCurrency,
-    microlibras: number
+    fromCurrency: Currency,
+    toCurrency: Currency,
+    amount: number
   ): Promise<Quote> {
-    return this.requestQuote("sell", fromLibraCurrency, toLibraCurrency, microlibras);
+    return this.requestQuote("sell", fromCurrency, toCurrency, amount);
   }
 
   private async requestQuote(
     action: QuoteAction,
-    baseCurrency: LibraCurrency,
-    quoteCurrency: LibraCurrency | FiatCurrency,
+    baseCurrency: Currency,
+    quoteCurrency: Currency | FiatCurrency,
     amount: number
   ): Promise<Quote> {
     try {
@@ -342,7 +342,7 @@ export default class BackendClient {
     }
   }
 
-  async getWalletTotalBalances(): Promise<LibraCurrencyBalance[]> {
+  async getWalletTotalBalances(): Promise<CurrencyBalance[]> {
     try {
       const response = await this.client.get("/admin/total-balances");
       return response.data.balances;

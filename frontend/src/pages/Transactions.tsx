@@ -1,11 +1,11 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useEffect, useState } from "react";
 import { Col, Container, Row } from "reactstrap";
 import { settingsContext } from "../contexts/app";
 import BackendClient from "../services/backendClient";
-import { LibraCurrency } from "../interfaces/currencies";
+import { Currency } from "../interfaces/currencies";
 import { Transaction, TransactionDirection } from "../interfaces/transaction";
 import TransactionsList from "../components/TransactionsList";
 import TransactionModal from "../components/TransactionModal";
@@ -13,7 +13,7 @@ import Breadcrumbs from "../components/Breadcrumbs";
 import { useTranslation } from "react-i18next";
 import SelectDropdown from "../components/select";
 import {
-  libraCurrenciesOptions,
+  getCurrenciesOptionsMap,
   transactionSortingOptions,
   transactionDirectionsOptions,
 } from "../utils/dropdown-options";
@@ -27,7 +27,7 @@ function Transactions() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [transactionModal, setTransactionModal] = useState<Transaction>();
 
-  const [libraCurrency, setLibraCurrency] = useState<LibraCurrency>();
+  const [currency, setCurrency] = useState<Currency>();
   const [direction, setDirection] = useState<TransactionDirection>();
   const [sorting, setSorting] = useState<string>("date_desc");
 
@@ -36,9 +36,7 @@ function Transactions() {
   const fetchTransactions = async () => {
     try {
       if (refreshTransactions) {
-        setTransactions(
-          await new BackendClient().getTransactions(libraCurrency, direction, sorting)
-        );
+        setTransactions(await new BackendClient().getTransactions(currency, direction, sorting));
         setTimeout(fetchTransactions, REFRESH_TRANSACTIONS_INTERVAL);
       }
     } catch (e) {
@@ -62,7 +60,7 @@ function Transactions() {
     return () => {
       refreshTransactions = false;
     };
-  }, [libraCurrency, direction, sorting]);
+  }, [currency, direction, sorting]);
 
   return (
     <>
@@ -77,9 +75,9 @@ function Transactions() {
             <Col md={4} className="mb-2 mb-md-0">
               <SelectDropdown
                 label={t("all_currencies")}
-                value={libraCurrency}
-                options={libraCurrenciesOptions(settings.currencies)}
-                onChange={(currency) => setLibraCurrency(currency)}
+                value={currency}
+                options={getCurrenciesOptionsMap(settings.currencies)}
+                onChange={(currency) => setCurrency(currency)}
               />
             </Col>
             <Col md={4} className="mb-2 mb-md-0">

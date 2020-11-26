@@ -1,21 +1,25 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext } from "react";
 import { settingsContext } from "../contexts/app";
-import { LibraCurrency } from "../interfaces/currencies";
-import { fiatToHumanFriendly, libraToFloat, libraToHumanFriendly } from "../utils/amount-precision";
-import { LibraCurrencyBalance } from "../interfaces/account";
+import { Currency } from "../interfaces/currencies";
+import {
+  fiatToDiemHumanFriendly,
+  diemAmountToFloat,
+  diemAmountToHumanFriendly,
+} from "../utils/amount-precision";
+import { CurrencyBalance } from "../interfaces/account";
 
 interface BalancesListProps {
-  balances: LibraCurrencyBalance[];
-  onSelect: (currency: LibraCurrency) => void;
+  balances: CurrencyBalance[];
+  onSelect: (currency: Currency) => void;
 }
 
 function BalancesList({ balances, onSelect }: BalancesListProps) {
   const [settings] = useContext(settingsContext)!;
 
-  const setActiveCurrency = (activeCurrency: LibraCurrency) => () => {
+  const setActiveCurrency = (activeCurrency: Currency) => () => {
     onSelect(activeCurrency);
   };
 
@@ -26,11 +30,11 @@ function BalancesList({ balances, onSelect }: BalancesListProps) {
   return (
     <ul className="list-group">
       {balances.map((currencyBalance) => {
-        const libraCurrency = settings.currencies[currencyBalance.currency];
+        const currency = settings.currencies[currencyBalance.currency];
         const fiatCurrency = settings.fiatCurrencies[settings.defaultFiatCurrencyCode!];
-        const exchangeRate = libraCurrency.rates[settings.defaultFiatCurrencyCode!];
+        const exchangeRate = currency.rates[settings.defaultFiatCurrencyCode!];
 
-        const price = libraToFloat(currencyBalance.balance) * exchangeRate;
+        const price = diemAmountToFloat(currencyBalance.balance) * exchangeRate;
 
         return (
           <li
@@ -39,15 +43,15 @@ function BalancesList({ balances, onSelect }: BalancesListProps) {
             onClick={setActiveCurrency(currencyBalance.currency)}
           >
             <div className="mr-4">
-              <strong className="ml-2 text-black">{libraCurrency.name}</strong>
+              <strong className="ml-2 text-black">{currency.name}</strong>
             </div>
             <div className="ml-auto text-right">
               <div className="text-black">
-                {libraToHumanFriendly(currencyBalance.balance, true)} {libraCurrency.sign}
+                {diemAmountToHumanFriendly(currencyBalance.balance, true)} {currency.sign}
               </div>
               <div className="small">
                 {fiatCurrency.sign}
-                {fiatToHumanFriendly(price, true)} {fiatCurrency.symbol}
+                {fiatToDiemHumanFriendly(price, true)} {fiatCurrency.symbol}
               </div>
             </div>
           </li>

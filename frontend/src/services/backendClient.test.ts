@@ -1,11 +1,11 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import axios, { AxiosResponse } from "axios";
 import * as HttpCodes from "http-status-codes";
 import BackendClient from "./backendClient";
 import SessionStorage from "../services/sessionStorage";
-import { FiatCurrency, LibraCurrency } from "../interfaces/currencies";
+import { FiatCurrency, Currency } from "../interfaces/currencies";
 import { Quote, Rate, RequestForQuote } from "../interfaces/cico";
 import { PaymentMethod, User } from "../interfaces/user";
 import { Account } from "../interfaces/account";
@@ -459,9 +459,9 @@ describe("Account", () => {
 
 describe("CICO", () => {
   const fiatCurrency: FiatCurrency = "USD";
-  const libraCurrency: LibraCurrency = "Coin1";
+  const currency: Currency = "Coin1";
   const currencyPair = "Coin1_USD";
-  const libraAmount = 123;
+  const amount = 123;
   const quoteId = "MAGNA-QUOTUM";
   const paymentMethod = 1;
 
@@ -471,12 +471,12 @@ describe("CICO", () => {
 
   describe.each`
     quoteAction | method
-    ${"sell"}   | ${async () => new BackendClient().requestWithdrawQuote(libraCurrency, fiatCurrency, libraAmount)}
-    ${"buy"}    | ${async () => new BackendClient().requestDepositQuote(fiatCurrency, libraCurrency, libraAmount)}
-  `("$quoteAction libra", ({ quoteAction, method }) => {
+    ${"sell"}   | ${async () => new BackendClient().requestWithdrawQuote(currency, fiatCurrency, amount)}
+    ${"buy"}    | ${async () => new BackendClient().requestDepositQuote(fiatCurrency, currency, amount)}
+  `("$quoteAction quote", ({ quoteAction, method }) => {
     const expectedRequest: RequestForQuote = {
       action: quoteAction,
-      amount: libraAmount,
+      amount: amount,
       currency_pair: currencyPair,
     };
     const expectedResponse = {

@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useEffect, useRef, useState } from "react";
@@ -26,9 +26,9 @@ import SessionStorage from "./services/sessionStorage";
 import BackendClient from "./services/backendClient";
 import { BackendError } from "./services/errors";
 import { LoggedInRoute, LoggedOutRoute } from "./utils/auth-routes";
-import { libraToFloat } from "./utils/amount-precision";
+import { diemAmountToFloat } from "./utils/amount-precision";
 import i18next from "./i18n";
-import "./assets/scss/libra-reference-wallet.scss";
+import "./assets/scss/main.scss";
 import LegalDisclaimer from "./components/LegalDisclaimer";
 
 const REFRESH_USER_INTERVAL = 5000;
@@ -66,7 +66,7 @@ const App = () => {
             paymentMethods,
             rates,
             totalBalances,
-            userCount
+            userCount,
           ] = await Promise.all([
             backendClient.getChain(),
             backendClient.getUser(),
@@ -74,7 +74,7 @@ const App = () => {
             backendClient.getPaymentMethods(),
             backendClient.getRates(),
             getTotalBalances(),
-            getUserCount()
+            getUserCount(),
           ]);
 
           if (settingsRef.current!.language !== user.selected_language) {
@@ -83,18 +83,18 @@ const App = () => {
 
           const currencies = { ...settings.currencies };
           for (const rate of rates) {
-            const [libraCurrency, fiatCurrency] = rate.currency_pair.split("_");
-            currencies[libraCurrency].rates[fiatCurrency] = rate.price;
+            const [currency, fiatCurrency] = rate.currency_pair.split("_");
+            currencies[currency].rates[fiatCurrency] = rate.price;
           }
 
           const sortedBalances = account.balances.sort((a, b) => {
-            const libraCurrencyA = settings.currencies[a.currency];
-            const libraCurrencyB = settings.currencies[b.currency];
+            const currencyA = settings.currencies[a.currency];
+            const currencyB = settings.currencies[b.currency];
 
-            const exchangeRateA = libraCurrencyA.rates[settings.defaultFiatCurrencyCode!];
-            const priceA = libraToFloat(a.balance) * exchangeRateA;
-            const exchangeRateB = libraCurrencyB.rates[settings.defaultFiatCurrencyCode!];
-            const priceB = libraToFloat(b.balance) * exchangeRateB;
+            const exchangeRateA = currencyA.rates[settings.defaultFiatCurrencyCode!];
+            const priceA = diemAmountToFloat(a.balance) * exchangeRateA;
+            const exchangeRateB = currencyB.rates[settings.defaultFiatCurrencyCode!];
+            const priceB = diemAmountToFloat(b.balance) * exchangeRateB;
 
             return priceA <= priceB ? 1 : -1;
           });
@@ -108,7 +108,7 @@ const App = () => {
             currencies,
             defaultFiatCurrencyCode: user.selected_fiat_currency,
             paymentMethods,
-            walletTotals: { balances: totalBalances, userCount }
+            walletTotals: { balances: totalBalances, userCount },
           });
         }
       } catch (e) {
@@ -131,35 +131,35 @@ const App = () => {
   return (
     <settingsContext.Provider value={[settings, setSettings]}>
       <BrowserRouter>
-        <Header/>
+        <Header />
         <main>
           {legalDisclaimer ? (
-            <LegalDisclaimer onClose={() => setLegalDisclaimer(false)}/>
+            <LegalDisclaimer onClose={() => setLegalDisclaimer(false)} />
           ) : (
             <Switch>
               {settings.user && settings.user.is_admin ? (
-                <LoggedInRoute path="/" exact component={AdminHome}/>
+                <LoggedInRoute path="/" exact component={AdminHome} />
               ) : (
-                <LoggedInRoute path="/" exact component={Home}/>
+                <LoggedInRoute path="/" exact component={Home} />
               )}
-              <LoggedInRoute path="/account/:currency" exact component={Account}/>
-              <LoggedInRoute path="/transactions" exact component={Transactions}/>
-              <LoggedInRoute path="/verify" exact component={Verify}/>
-              <LoggedInRoute path="/settings" exact component={Settings}/>
+              <LoggedInRoute path="/account/:currency" exact component={Account} />
+              <LoggedInRoute path="/transactions" exact component={Transactions} />
+              <LoggedInRoute path="/verify" exact component={Verify} />
+              <LoggedInRoute path="/settings" exact component={Settings} />
 
-              <LoggedInRoute path="/admin/users" exact component={Users}/>
-              <LoggedInRoute path="/admin/admins" exact component={Admins}/>
-              <LoggedInRoute path="/admin/liquidity" exact component={Liquidity}/>
+              <LoggedInRoute path="/admin/users" exact component={Users} />
+              <LoggedInRoute path="/admin/admins" exact component={Admins} />
+              <LoggedInRoute path="/admin/liquidity" exact component={Liquidity} />
 
-              <LoggedOutRoute path="/login" exact component={Signin}/>
-              <LoggedOutRoute path="/signup" exact component={Signup}/>
-              <LoggedOutRoute path="/forgot-password" exact component={ForgotPassword}/>
-              <LoggedOutRoute path="/reset-password" exact component={ResetPassword}/>
-              <Redirect to="/"/>
+              <LoggedOutRoute path="/login" exact component={Signin} />
+              <LoggedOutRoute path="/signup" exact component={Signup} />
+              <LoggedOutRoute path="/forgot-password" exact component={ForgotPassword} />
+              <LoggedOutRoute path="/reset-password" exact component={ResetPassword} />
+              <Redirect to="/" />
             </Switch>
           )}
         </main>
-        <Feedback/>
+        <Feedback />
       </BrowserRouter>
     </settingsContext.Provider>
   );

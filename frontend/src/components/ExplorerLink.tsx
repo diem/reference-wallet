@@ -1,9 +1,10 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React from "react";
 import { BlockchainTransaction } from "../interfaces/blockchain";
 
+// FIXME: DIEM
 const EXPLORER_URL_FORMAT =
   process.env.REACT_APP_EXPLORER_URL || "https://librabrowser.io/version/{version}";
 

@@ -4,7 +4,7 @@
   "currency_label": "Each one of your digital currencies has a different address.",
   "currency": "Currency",
   "scan_qr": "Scan QR",
-  "text": "You can copy your unique Libra Address and give it to the person you’d like to receive money from, or others can read the Libra Address by scanning the QR code.",
+  "text": "You can copy your unique Diem Address and give it to the person you’d like to receive money from, or others can read the Diem Address by scanning the QR code.",
   "copy": "Copy Address",
   "copied": "Copied <1 />"
 }

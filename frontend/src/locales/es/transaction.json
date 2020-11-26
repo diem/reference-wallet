@@ -8,7 +8,7 @@
   "sent_to": "Enviar a",
   "sent_from": "Enviado desde",
   "status": "Estado",
-  "tx_id": "ID de transacción de Libra",
+  "tx_id": "ID de transacción de Diem",
   "internal": "Interna",
   "not_available": "No disponible"
 }

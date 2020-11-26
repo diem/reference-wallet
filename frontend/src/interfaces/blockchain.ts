@@ -1,7 +1,9 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-export const LIBRA_ADDR_PROTOCOL_PREFIX = "libra://";
+export const VALID_VASP_ADDRESS_REGEX = new RegExp("^[a-zA-Z0-9]{50}$");
+
+export const ADDR_PROTOCOL_PREFIX = "diem://";
 
 export interface VASPAccount {
   vasp_name: string;

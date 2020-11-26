@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext } from "react";
@@ -6,7 +6,7 @@ import { Button } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../../contexts/app";
 import { Quote } from "../../interfaces/cico";
-import { libraToHumanFriendly } from "../../utils/amount-precision";
+import { diemAmountToHumanFriendly } from "../../utils/amount-precision";
 
 interface ConvertReviewProps {
   quote: Quote;
@@ -30,10 +30,10 @@ function ConvertReview({
 
   const [fromCode, toCode] = quote.rfq.currency_pair.split("_");
 
-  const fromLibraCurrency = settings.currencies[fromCode];
-  const toLibraCurrency = settings.currencies[toCode];
+  const fromCurrency = settings.currencies[fromCode];
+  const toCurrency = settings.currencies[toCode];
 
-  const exchangeRate = fromLibraCurrency.rates[toCode];
+  const exchangeRate = fromCurrency.rates[toCode];
 
   return (
     <>
@@ -43,21 +43,21 @@ function ConvertReview({
       <div>
         <small>{t("convert.review.amount")}</small>
         <p className="text-black">
-          {libraToHumanFriendly(quote.rfq.amount, true)} {fromLibraCurrency.sign}
+          {diemAmountToHumanFriendly(quote.rfq.amount, true)} {fromCurrency.sign}
         </p>
       </div>
 
       <div>
         <small>{t("convert.review.price")}</small>
         <p className="text-black">
-          {libraToHumanFriendly(quote.price)} {toLibraCurrency.sign}
+          {diemAmountToHumanFriendly(quote.price)} {toCurrency.sign}
         </p>
       </div>
 
       <div>
         <small>{t("convert.review.exchange_rate")}</small>
         <p className="text-black">
-          1 {fromLibraCurrency.sign} = {libraToHumanFriendly(exchangeRate)} {toLibraCurrency.sign}
+          1 {fromCurrency.sign} = {diemAmountToHumanFriendly(exchangeRate)} {toCurrency.sign}
         </p>
       </div>
 

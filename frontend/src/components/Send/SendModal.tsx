@@ -1,23 +1,23 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useEffect, useState } from "react";
 import { Modal, ModalBody } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../../contexts/app";
-import { LibraCurrency } from "../../interfaces/currencies";
+import { Currency } from "../../interfaces/currencies";
 import BackendClient from "../../services/backendClient";
 import { Send } from "./interfaces";
 import SendForm from "./SendForm";
 import SendReview from "./SendReview";
 import CloseButton from "../CloseButton";
-import { libraFromFloat } from "../../utils/amount-precision";
+import { diemAmountFromFloat } from "../../utils/amount-precision";
 import ErrorMessage from "../Messages/ErrorMessage";
 import SuccessMessage from "../Messages/SuccessMessage";
 import { BackendError } from "../../services/errors";
 
 interface SendModalProps {
-  initialCurrency?: LibraCurrency;
+  initialCurrency?: Currency;
   open: boolean;
   onClose: () => void;
 }
@@ -27,7 +27,7 @@ function SendModal({ open, onClose, initialCurrency }: SendModalProps) {
   const [settings] = useContext(settingsContext)!;
 
   const [data, setData] = useState<Send>({
-    libraCurrency: initialCurrency,
+    currency: initialCurrency,
     fiatCurrency: settings.defaultFiatCurrencyCode!,
   });
 
@@ -55,7 +55,7 @@ function SendModal({ open, onClose, initialCurrency }: SendModalProps) {
   function onModalClose() {
     setReviewing(false);
     setData({
-      libraCurrency: initialCurrency,
+      currency: initialCurrency,
       fiatCurrency: settings.defaultFiatCurrencyCode!,
     });
     setSentTransactionID(undefined);
@@ -70,9 +70,9 @@ function SendModal({ open, onClose, initialCurrency }: SendModalProps) {
       setSubmitStatus("sending");
       const backendClient = new BackendClient();
       const transaction = await backendClient.createTransaction(
-        data.libraCurrency!,
-        libraFromFloat(data.libraAmount!),
-        data.libraAddress!
+        data.currency!,
+        diemAmountFromFloat(data.amount!),
+        data.address!
       );
 
       setSentTransactionID(transaction.id);
