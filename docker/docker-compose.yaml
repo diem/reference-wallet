@@ -1,0 +1,91 @@
+version: '3.4'
+services:
+  gateway:
+    image: lrw_gateway
+    build:
+      context: ../gateway
+      dockerfile: Dockerfile
+      target: default_conf
+    ports:
+      - ${GW_PORT:-8080}:8000
+      - ${GW_OFFCHAIN_SERVICE_PORT:-8091}:8091
+    restart: always
+
+
+  backend-web-server:
+    image: lrw_backend
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    env_file:
+      - ../backend/.env
+    environment:
+      - REDIS_HOST=redis
+      - COMPOSE_ENV=production
+      - DB_URL=postgresql://backenduser:backendpassword@db/backend_db
+      - LP_DB_URL=postgresql://backenduser:backendpassword@db/liquidity_provider_db
+      - ADMIN_USERNAME=admin@lrw
+    command: sh -c "/wait.sh liquidity 5000 && ./run_web.sh"
+    restart: always
+
+  backend-worker:
+    image: lrw_backend
+    env_file:
+      - ../backend/.env
+    environment:
+      - REDIS_HOST=redis
+      - COMPOSE_ENV=production
+      - DB_URL=postgresql://backenduser:backendpassword@db/backend_db
+      - LP_DB_URL=postgresql://backenduser:backendpassword@db/liquidity_provider_db
+      - ADMIN_USERNAME=admin@lrw
+      - PROCS=${PROCS:-2}
+      - THREADS=${THREADS:-2}
+    command: sh -c "/wait.sh backend-web-server 5000 && ./run_worker.sh"
+    restart: always
+
+  backend-pubsub-worker:
+    image: lrw_backend
+    env_file:
+      - ../backend/.env
+    environment:
+      - REDIS_HOST=redis
+      - COMPOSE_ENV=production
+      - DB_URL=postgresql://backenduser:backendpassword@db/backend_db
+    command: sh -c "/wait.sh backend-web-server 5000 && ./run_pubsub.sh"
+    restart: always
+
+  liquidity:
+    image: lrw_liquidity
+    build:
+      context: ../
+      dockerfile: liquidity/Dockerfile
+    env_file:
+      - ../liquidity/.env
+    environment:
+      - COMPOSE_ENV=production
+      - LP_DB_URL=postgresql://backenduser:backendpassword@db/liquidity_provider_db
+      - ADMIN_USERNAME=admin@lrw
+      - LIQUIDITY_SERVICE_HOST=liquidity
+      - LIQUIDITY_SERVICE_PORT=5000
+    command: sh -c "/liquidity/wait.sh db 5432 && /liquidity/run.sh"
+    restart: always
+
+  redis:
+    image: redis:5
+    restart: always
+
+  db:
+    image: lrw_db
+    build:
+      context: ./pg
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=backenduser
+      - POSTGRES_USER=backendpassword
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
+
+volumes:
+  pg-data:
+    driver: local

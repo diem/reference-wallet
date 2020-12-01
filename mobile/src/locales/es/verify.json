@@ -1,0 +1,60 @@
+{
+  "choose_dummy_identity": "✍🏻 Elija identidad ficticia",
+  "step1": {
+    "title": "Verificar tu identidad",
+    "description": "Necesitamos cierta información para ayudar a verificar su identidad.",
+    "fields": {
+      "first_name": "Nombre",
+      "last_name": "Apellidos",
+      "dob": "Fecha de nacimiento",
+      "phone_prefix": "phone-prefix",
+      "phone_number": "Número de teléfono"
+    },
+    "continue": "Continuar"
+  },
+  "step2": {
+    "title": "Verificar tu identidad",
+    "description": "Ahora agreguemos su país de residencia.",
+    "fields": {
+      "country": "País de residencia"
+    },
+    "back": "Volver",
+    "continue": "Continuar"
+  },
+  "step3": {
+    "title": "Añada su dirección",
+    "description": "Ahora agreguemos su dirección residencial.",
+    "fields": {
+      "address_1": "Dirección 1",
+      "address_2": "Dirección 2",
+      "city": "Comuna",
+      "state": "Estado / Región",
+      "zip": "Código postal"
+    },
+    "back": "Volver",
+    "continue": "Continuar"
+  },
+  "step4": {
+    "title": "Añada su foto",
+    "description": "Cargue una foto de su identificación emitida por el gobierno.",
+    "input": {
+      "description": "Para el &lt;1&gt; {{país}} </1> , tome una foto de una de las siguientes identificaciones emitidas por el gobierno.",
+      "passport": "Pasaporte",
+      "drivers_license": "Licencia de conducir",
+      "identity_card": "Tarjeta identidad",
+      "files_drop": "Suelta archivos aquí",
+      "upload": "Arrastra y suelta o haz clic aquí para seleccionar un archivo"
+    },
+    "back": "Volver",
+    "continue": "Continuar"
+  },
+  "step5": {
+    "title": "Elegir moneda predeterminada",
+    "description": "Usaremos su moneda predeterminada para mostrarle cuánto valen otras monedas. Siempre puedes cambiar esto más tarde.",
+    "fields": {
+      "default_fiat_currency": "Moneda Fiat predeterminada"
+    },
+    "back": "Volver",
+    "continue": "Continuar"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "Diem Wallet",
+  "total_balance": "Total Balance",
+  "balances": "Your Balances",
+  "transactions": "Latest Transactions",
+  "transactions_empty": "You don’t have any transactions yet. Once you send, request or transfer money, the transactions will appear here.",
+  "all_transactions": "All Transactions",
+  "all_transactions_link": "See All",
+  "all_currencies": "All Currencies",
+  "all_sorts": "All Sorts",
+  "price": "Currently equal to",
+  "close": "Close",
+  "actions": {
+    "send": "Send",
+    "request": "Request",
+    "transfer": "Transfer",
+    "settings": "Settings"
+  },
+  "verification_pending": {
+    "title": "Verification Pending",
+    "description": "Your information is being reviewed. We’ll let you know when it’s complete."
+  },
+  "feedback": {
+    "title": "Leave your feedback",
+    "text": "Feedback"
+  }
+}

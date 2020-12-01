@@ -1,0 +1,27 @@
+{
+  "name": "Cartera Diem",
+  "total_balance": "Saldo Total",
+  "balances": "Ver sus saldos",
+  "transactions": "'Últimas transacciones'",
+  "transactions_empty": "Aún no tienes ninguna transacción. Una vez que envíe, solicite o transfiera dinero, las transacciones aparecerán aquí.",
+  "all_transactions": "Todas las Transacciones",
+  "all_transactions_link": "Ver todo",
+  "all_currencies": "Todas las monedas",
+  "all_sorts": "Todo tipo",
+  "price": "Actualmente igual a",
+  "close": "Cerrar",
+  "actions": {
+    "send": "Enviar",
+    "request": "Solicitud",
+    "transfer": "Transferir",
+    "settings": "Configuración"
+  },
+  "verification_pending": {
+    "title": "Verificación pendiente",
+    "description": "Su información está siendo revisada. Te avisaremos cuando esté completo."
+  },
+  "feedback": {
+    "title": "Deje sus comentarios",
+    "text": "Comentarios"
+  }
+}

@@ -1,0 +1,13 @@
+version: '3.4'
+services:
+  gateway:
+    image: nginx:1.17-alpine
+    volumes:
+      - ../gateway/nginx.debug.conf:/etc/nginx/nginx.conf
+
+  docker-host:
+    image: qoomon/docker-host
+    cap_add: [ 'NET_ADMIN', 'NET_RAW' ]
+    restart: on-failure
+    environment:
+      - PORTS=5000

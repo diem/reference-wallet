@@ -1,0 +1,45 @@
+{
+  "title": "Configuración",
+  "success_message": "Ajustes guardados correctamente!",
+  "payment_methods": {
+    "title": "Formas de pago",
+    "credit_cards": {
+      "title": "Tarjetas de Crédito",
+      "not_found": "Aún no ha agregado una tarjeta de crédito",
+      "add": "Añadir nueva",
+      "form": {
+        "title": "Añadir una tarjeta de crédito",
+        "number": "Número de la tarjeta",
+        "name": "Nombre",
+        "expiry": "Válida hasta",
+        "cvc": "CVC",
+        "submit": "Añadir nueva tarjeta de crédito"
+      }
+    },
+    "bank_accounts": {
+      "title": "Cuentas Bancarias",
+      "not_found": "Aún no ha agregado una cuenta bancaria",
+      "add": "Añadir nueva",
+      "form": {
+        "title": "Añadir cuenta bancaria",
+        "account_number": "Numero de Tarjeta de Banco",
+        "bank": "Banco",
+        "name": "Nombre",
+        "submit": "Nueva cuenta bancaria"
+      }
+    }
+  },
+  "preferences": {
+    "general": {
+      "title": "General",
+      "email": "Su correo electrónico"
+    },
+    "form": {
+      "title": "Preferencias",
+      "fiat_currency": "Moneda local",
+      "language": "Idioma",
+      "submit": "Salvar configuración"
+    }
+  },
+  "signout": "Cerrar Sesión"
+}

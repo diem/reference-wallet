@@ -1,0 +1,14 @@
+{
+  "required": "Por favor, complete el campo:",
+  "min": "Ingrese {{field}} arriba {{min}}",
+  "max": "Ingrese {{field}} debajo de {{max}}",
+  "minLength": "Ingrese {{field}} más de {{minLength}}",
+  "maxLength": "Ingrese {{field}} más corto que {{maxLength}}",
+  "pattern": "Introduzca el campo <ph id=\"mtc_1\" equiv-text=\"base64:JXM=\"/> válido",
+  "numbersOnly": "Ingrese {{field}} solo con números",
+  "validDate": "Por favor, introduzca una fecha válida",
+  "pastDateOnly": "Por favor introduce una fecha de inicio en el pasado.",
+  "noEqualCurrencies": "Por favor seleccione diferentes monedas",
+  "noMoreThanBalance": "Ingrese {{field}} menos que su saldo actual de {{currency}}",
+  "passwordsDontMatch": "Las contraseñas no concuerdan"
+}

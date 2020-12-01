@@ -1,0 +1,73 @@
+{
+  "name": "LRW",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "build:ios": "react-native bundle --entry-file='index.js' --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios'",
+    "start": "react-native start",
+    "test": "jest",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+  },
+  "dependencies": {
+    "@react-native-community/async-storage": "^1.11.0",
+    "axios": "^0.19.2",
+    "countries-list": "^2.5.4",
+    "faker": "^4.1.0",
+    "http-status-codes": "^1.4.0",
+    "i18next": "^19.4.5",
+    "moment": "^2.26.0",
+    "react": "16.11.0",
+    "react-hook-form": "^5.7.2",
+    "react-i18next": "^11.5.1",
+    "react-native": "0.62.2",
+    "react-native-camera": "^3.30.0",
+    "react-native-datepicker": "^1.7.2",
+    "react-native-elements": "^2.0.1",
+    "react-native-navigation": "^6.7.1",
+    "react-native-permissions": "^2.1.5",
+    "react-native-picker-select": "^7.0.0",
+    "react-native-qrcode-scanner": "^1.4.1",
+    "react-native-qrcode-svg": "^6.0.6",
+    "react-native-svg": "^12.1.0",
+    "react-native-uuid": "^1.4.9",
+    "react-native-vector-icons": "^6.6.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.6.2",
+    "@babel/runtime": "^7.6.2",
+    "@react-native-community/eslint-config": "^1.0.0",
+    "@types/faker": "^4.1.12",
+    "@types/jest": "^24.0.24",
+    "@types/react-native": "^0.62.0",
+    "@types/react-native-datepicker": "^1.7.0",
+    "@types/react-native-uuid": "^1.4.0",
+    "@types/react-test-renderer": "16.9.2",
+    "@typescript-eslint/eslint-plugin": "^2.27.0",
+    "@typescript-eslint/parser": "^2.27.0",
+    "babel-jest": "^24.9.0",
+    "babel-plugin-transform-inline-environment-variables": "^0.4.3",
+    "eslint": "^6.5.1",
+    "jest": "^24.9.0",
+    "metro-react-native-babel-preset": "^0.58.0",
+    "prettier": "^2.0.4",
+    "react-native-svg-transformer": "^0.14.3",
+    "react-test-renderer": "16.11.0",
+    "typescript": "^3.8.3"
+  },
+  "jest": {
+    "preset": "react-native",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
+  },
+  "prettier": {
+    "printWidth": 100
+  }
+}

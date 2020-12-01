@@ -1,0 +1,48 @@
+{
+  "registered_users": "Usuarios Registrados",
+  "total_balances": "Saldos totales",
+  "navigation": {
+    "liquidity": "liquidez",
+    "administrators": "Administradores",
+    "users": "Usuarios"
+  },
+  "newAdmin": {
+    "button": "Añadir administrador",
+    "title": "Nuevo Usuario Administrador",
+    "submit": "Crear"
+  },
+  "users": {
+    "block": "Bloqueo",
+    "blocked": "Bloqueado"
+  },
+  "liquidity": {
+    "title": "Asentamientos pendientes",
+    "settle": "Resolver"
+  },
+  "notifications": {
+    "no_users": "Usuarios Registrados",
+    "no_admins": "No hay administradores registrados.",
+    "no_debt": "Nada que resolver."
+  },
+  "confirmation": {
+    "title": "Bloqueo",
+    "body_text": "Esta operación impedirá que el usuario acceda a la billetera. ¿Estás seguro?",
+    "yes": "Si",
+    "no": "No"
+  },
+  "fields": {
+    "first_name": "Nombre",
+    "last_name": "Apellidos",
+    "username": "Nombre de usuario",
+    "password": "Contraseña",
+    "new_password": "Nueva contraseña",
+    "confirm_password": "Confirmar contraseña",
+    "password_strength": {
+      "title": "Fuerza de la contraseña",
+      "text": "La contraseña debe tener letras y números de al menos 8 caracteres de longitud.",
+      "weak": "débil",
+      "strong": "fuerte",
+      "error": "Por favor, usa una contraseña fuerte"
+    }
+  }
+}

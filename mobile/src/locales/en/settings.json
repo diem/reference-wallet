@@ -1,0 +1,45 @@
+{
+  "title": "Settings",
+  "success_message": "Settings saved successfully!",
+  "payment_methods": {
+    "title": "Payment Methods",
+    "credit_cards": {
+      "title": "Credit Cards",
+      "not_found": "You haven't added a credit card yet",
+      "add": "Add New",
+      "form": {
+        "title": "Add Credit Card",
+        "number": "Card number",
+        "name": "Name",
+        "expiry": "Valid Thru",
+        "cvc": "CVC",
+        "submit": "Add New Credit Card"
+      }
+    },
+    "bank_accounts": {
+      "title": "Bank Accounts",
+      "not_found": "You haven't added a bank account yet",
+      "add": "Add New",
+      "form": {
+        "title": "Add Bank Account",
+        "account_number": "Account Number",
+        "bank": "Bank",
+        "name": "Name",
+        "submit": "Add New Bank Account"
+      }
+    }
+  },
+  "preferences": {
+    "general": {
+      "title": "General",
+      "email": "Your email"
+    },
+    "form": {
+      "title": "Preferences",
+      "fiat_currency": "Local currency",
+      "language": "Language",
+      "submit": "Save Settings"
+    }
+  },
+  "signout": "Logout"
+}

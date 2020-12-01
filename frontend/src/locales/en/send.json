@@ -1,0 +1,27 @@
+{
+  "success_message": "Your transaction is on the way!",
+  "fail_message": "Failed to send transaction",
+  "form": {
+    "title": "Send Money",
+    "currency": "currency",
+    "currency_placeholder": "Select a currency",
+    "fiatCurrency": "fiat currency",
+    "amount": "amount",
+    "price": "currently equal to",
+    "address": "recipient",
+    "address_placeholder": "Enter an address",
+    "exchange_rate": "Exchange rate",
+    "review": "Review"
+  },
+  "review": {
+    "title": "Review Transaction",
+    "description": "Please review your transaction. Once you send money, the transaction can’t be reversed.",
+    "amount": "You’re sending",
+    "price": "Currently equal to",
+    "exchange_rate": "Exchange rate",
+    "address": "To",
+    "confirm": "Send",
+    "done": "Done",
+    "back": "Back"
+  }
+}

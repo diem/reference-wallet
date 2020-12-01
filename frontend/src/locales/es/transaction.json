@@ -1,0 +1,14 @@
+{
+  "sent": "Enviado",
+  "received": "Recibido",
+  "price": "Actualmente igual a",
+  "date": "Fecha",
+  "to": "a",
+  "from": "desde",
+  "sent_to": "Enviar a",
+  "sent_from": "Enviado desde",
+  "status": "Estado",
+  "tx_id": "ID de transacción de Diem",
+  "internal": "Interna",
+  "not_available": "No disponible"
+}

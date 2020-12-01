@@ -1,0 +1,14 @@
+{
+  "required": "Please enter {{field}}",
+  "min": "Please enter {{field}} above {{min}}",
+  "max": "Please enter {{field}} below {{max}}",
+  "minLength": "Please enter {{field}} longer than {{minLength}}",
+  "maxLength": "Please enter {{field}} shorter than {{maxLength}}",
+  "pattern": "Please enter valid {{field}}",
+  "numbersOnly": "Please enter {{field}} with numbers only",
+  "validDate": "Please enter a valid date",
+  "pastDateOnly": "Please enter a date in the past",
+  "noEqualCurrencies": "Please select different currencies",
+  "noMoreThanBalance": "Please enter {{field}} less than your current {{currency}} balance",
+  "passwordsDontMatch": "Passwords do not match"
+}

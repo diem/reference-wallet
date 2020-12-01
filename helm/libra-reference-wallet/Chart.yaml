@@ -1,0 +1,9 @@
+apiVersion: v2
+name: libra-reference-wallet
+description: A Helm chart for Diem reference wallet
+
+type: application
+
+version: 0.1.0
+
+appVersion: 0.1.0

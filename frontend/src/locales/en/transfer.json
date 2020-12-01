@@ -1,0 +1,85 @@
+{
+  "title": "Transfer Funds",
+  "modes": {
+    "deposit": "Add",
+    "withdraw": "Withdraw",
+    "convert": "Convert"
+  },
+  "deposit": {
+    "success_message": "Your request for adding funds was successful",
+    "form": {
+      "title": "Add Money",
+      "funding_source": "Select a funding source to use for this transaction",
+      "funding_source_placeholder": "funding source",
+      "manage_payment_methods": "Manage payment methods",
+      "currency": "Choose which balance you want to add funds to",
+      "currency_placeholder": "currency",
+      "fiatCurrency": "fiat currency",
+      "amount": "Adding",
+      "price": "currently equal to",
+      "exchange_rate": "Exchange rate",
+      "review": "Review"
+    },
+    "review": {
+      "title": "Review and Confirm",
+      "description": "Please review your transaction details before confirming. Depending on your funding source, transactions can take several business days to complete.",
+      "funding_source": "Funding Source",
+      "price": "Debited from funding source",
+      "amount": "Added to your balance",
+      "exchange_rate": "Exchange rate",
+      "confirm": "Confirm",
+      "done": "Done",
+      "back": "Back"
+    }
+  },
+  "withdraw": {
+    "success_message": "Your request for withdrawing funds was successful",
+    "form": {
+      "title": "Withdraw Funds",
+      "funding_source": "Select a funding source to use for this transaction",
+      "funding_source_placeholder": "funding source",
+      "manage_payment_methods": "Manage payment methods",
+      "currency": "Choose which balance to withdraw funds from",
+      "currency_placeholder": "currency",
+      "fiatCurrency": "fiat currency",
+      "amount": "amount to withdraw",
+      "price": "currently equal to",
+      "exchange_rate": "Exchange rate",
+      "review": "Review"
+    },
+    "review": {
+      "title": "Review and Confirm",
+      "description": "Please review your transaction details before confirming. Depending on your funding source, transactions can take several business days to complete.",
+      "funding_source": "Withdrawing to",
+      "amount": "Debited from funding source",
+      "price": "Transferred to your funding source",
+      "exchange_rate": "Exchange rate",
+      "confirm": "Confirm",
+      "done": "Done",
+      "back": "Back"
+    }
+  },
+  "convert": {
+    "success_message": "Your request for converting funds was successful",
+    "form": {
+      "title": "Convert Funds",
+      "currency_from": "converting from",
+      "currency_to": "converting to",
+      "currency_placeholder": "currency",
+      "amount": "amount to convert",
+      "price": "currently equal to",
+      "exchange_rate": "Exchange rate",
+      "review": "Review"
+    },
+    "review": {
+      "title": "Review and Confirm",
+      "description": "Please review your transaction details before confirming. Funds are usually converted instantly.",
+      "amount": "Original amount",
+      "price": "New amount",
+      "exchange_rate": "Exchange rate",
+      "confirm": "Confirm",
+      "done": "Done",
+      "back": "Back"
+    }
+  }
+}

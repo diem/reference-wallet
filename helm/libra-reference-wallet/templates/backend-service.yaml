@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "libra-reference-wallet.fullname" . }}-web
+  labels:
+    {{- include "libra-reference-wallet.labels" . | nindent 4 }}
+    app: {{ include "libra-reference-wallet.fullname" . }}-web
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+      name: http
+    - port: {{ .Values.service.offchainPort }}
+      targetPort: {{ .Values.service.targetOffchainPort }}
+      protocol: TCP
+      name: offchain
+  selector:
+    {{- include "libra-reference-wallet.selectorLabels" . | nindent 4 }}
+    app: {{ include "libra-reference-wallet.fullname" . }}-web
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "libra-reference-wallet.fullname" . }}-worker
+  labels:
+    {{- include "libra-reference-wallet.labels" . | nindent 4 }}
+    app: {{ include "libra-reference-wallet.fullname" . }}-worker
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "libra-reference-wallet.selectorLabels" . | nindent 4 }}
+    app: {{ include "libra-reference-wallet.fullname" . }}-worker
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "libra-reference-wallet.fullname" . }}-pubsub
+  labels:
+    {{- include "libra-reference-wallet.labels" . | nindent 4 }}
+    app: {{ include "libra-reference-wallet.fullname" . }}-pubsub
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "libra-reference-wallet.selectorLabels" . | nindent 4 }}
+    app: {{ include "libra-reference-wallet.fullname" . }}-pubsub
