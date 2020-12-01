@@ -110,6 +110,28 @@ def test_process_incoming_general_txn() -> None:
     assert tx is not None
 
 
+def test_process_incoming_general_txn_no_subaddr() -> None:
+    account = create_account("fake_account")
+    sender_addr = "46db232847705e05525db0336fd9f337"
+
+    meta = general_metadata()
+    process_incoming_transaction(
+        sender_address=sender_addr,
+        receiver_address="lrw_vasp",
+        sequence=1,
+        amount=100,
+        currency=LibraCurrency.Coin1,
+        metadata=libra_types.Metadata__GeneralMetadata.lcs_deserialize(meta),
+        blockchain_version=1,
+    )
+
+    # successfully parse meta and sequence
+    tx = storage.get_transaction_by_details(
+        source_address=sender_addr, source_subaddress=None, sequence=1
+    )
+    assert tx is not None
+
+
 def test_process_incoming_travel_rule_txn() -> None:
     account = create_account("fake_account")
     sender_addr = "46db232847705e05525db0336fd9f337"

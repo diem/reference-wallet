@@ -226,12 +226,16 @@ class AccountRoutes:
                     recv_address, context.get().config.diem_address_hrp()
                 )
 
+                dest_subaddress_hex = None
+                if dest_subaddress is not None:
+                    dest_subaddress_hex = dest_subaddress.hex()
+
                 tx = transaction_service.send_transaction(
                     sender_id=account_id,
                     amount=amount,
                     currency=currency,
                     destination_address=utils.account_address_bytes(dest_address).hex(),
-                    destination_subaddress=dest_subaddress.hex(),
+                    destination_subaddress=dest_subaddress_hex,
                 )
                 transaction = AccountRoutes.get_transaction_response_object(
                     user.account_id, tx
