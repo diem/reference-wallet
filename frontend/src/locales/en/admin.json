@@ -1,0 +1,48 @@
+{
+  "registered_users": "Registered Users",
+  "total_balances": "Total Balances",
+  "navigation": {
+    "liquidity": "Liquidity",
+    "administrators": "Administrators",
+    "users": "Users"
+  },
+  "newAdmin": {
+    "button": "Add administrator",
+    "title": "New Admin User",
+    "submit": "Create"
+  },
+  "users": {
+    "block": "Block",
+    "blocked": "Blocked"
+  },
+  "liquidity": {
+    "title": "Pending Settlements",
+    "settle": "Settle"
+  },
+  "notifications": {
+    "no_users": "No registered users.",
+    "no_admins": "No registered administrators.",
+    "no_debt": "Nothing to settle."
+  },
+  "confirmation": {
+    "title": "Block",
+    "body_text": "This operation will block the user from accessing the wallet. Are you sure?",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "fields": {
+    "first_name": "First name",
+    "last_name": "Last name",
+    "username": "Username",
+    "password": "Password",
+    "new_password": "New password",
+    "confirm_password": "Confirm password",
+    "password_strength": {
+      "title": "Password strength",
+      "text": "The password must be with letters and numbers at least 8 characters long.",
+      "weak": "weak",
+      "strong": "strong",
+      "error": "Please use a strong password"
+    }
+  }
+}

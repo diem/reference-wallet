@@ -1,0 +1,7 @@
+version: '3.4'
+services:
+  gateway:
+    build:
+      target: static_conf
+    volumes:
+      - ../gateway/nginx.static.conf:/etc/nginx/nginx.conf

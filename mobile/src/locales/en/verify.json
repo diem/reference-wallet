@@ -1,0 +1,59 @@
+{
+  "choose_dummy_identity": "✍\uD83C\uDFFB Choose Dummy Identity",
+  "step1": {
+    "title": "Verify Your Identity",
+    "description": "We need some information to help verify your identity.",
+    "fields": {
+      "first_name": "First name",
+      "last_name": "Last name",
+      "dob": "Date of birth",
+      "phone_prefix": "Phone prefix",
+      "phone_number": "Phone number"
+    },
+    "continue": "Continue"
+  },
+  "step2": {
+    "title": "Verify Your Identity",
+    "description": "Now let’s add your country of residence.",
+    "fields": {
+      "country": "Country of Residence"
+    },
+    "back": "Back",
+    "continue": "Continue"
+  },
+  "step3": {
+    "title": "Add Your Address",
+    "description": "Now let’s add your residential address.",
+    "fields": {
+      "address_1": "Address 1",
+      "address_2": "Address 2",
+      "city": "City",
+      "state": "State",
+      "zip": "Zip"
+    },
+    "back": "Back",
+    "continue": "Continue"
+  },
+  "step4": {
+    "title": "Add Your Photo ID",
+    "description": "Upload a photo of your government-issued ID.",
+    "input": {
+      "description": "For the <1>{{country}}</1>, please take a photo of one of the following government-issued IDs.",
+      "passport": "Passport",
+      "drivers_license": "Driver's License",
+      "identity_card": "Identity Card",
+      "upload": "Tap here to select a file"
+    },
+    "back": "Back",
+    "continue": "Continue"
+  },
+  "step5": {
+    "title": "Choose Default Currency",
+    "description": "We’ll use your default currency to show you how much other currencies are worth. You can always change this later.",
+    "fields": {
+      "default_fiat_currency": "Default Fiat Currency"
+    },
+    "back": "Back",
+    "continue": "Continue"
+  }
+}

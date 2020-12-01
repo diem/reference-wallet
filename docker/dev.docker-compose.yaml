@@ -1,0 +1,53 @@
+version: '3.4'
+services:
+  gateway:
+    build:
+      target: dynamic_conf
+    volumes:
+      - ../gateway/nginx.dev.conf:/etc/nginx/nginx.conf
+
+  backend-web-server:
+    environment:
+      COMPOSE_ENV: development
+      ADMIN_LOGIN_ENABLED: 1
+    ports:
+      - 5000:5000
+      - ${OFFCHAIN_SERVICE_PORT:-5091}:5091
+    volumes:
+      - ../backend:/libra-wallet
+      - /tmp:/tmp
+
+  backend-worker:
+    environment:
+      COMPOSE_ENV: development
+    volumes:
+      - ../backend:/libra-wallet
+      - /tmp:/tmp
+
+  backend-pubsub-worker:
+    environment:
+      COMPOSE_ENV: development
+    volumes:
+      - ../backend:/libra-wallet
+
+  liquidity:
+    environment:
+      COMPOSE_ENV: development
+    volumes:
+      - ../liquidity:/liquidity
+      - ../backend/libra_utils:/backend/libra_utils
+    ports:
+    - "5001:5000"
+
+  frontend:
+    image: lrw_frontend
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ../frontend/:/app
+      - /app/node_modules/
+
+  db:
+    ports:
+      - 15432:5432

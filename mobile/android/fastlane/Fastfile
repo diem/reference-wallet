@@ -1,0 +1,47 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:android)
+
+platform :android do
+  desc "Runs all the tests"
+  lane :test do
+    gradle(task: "test")
+  end
+
+  desc "Submit a new Beta Build to Play Store"
+  lane :beta do
+    store_password = ENV["STORE_PASSWORD"]
+    key_password = ENV["KEY_PASSWORD"]
+    releaseFilePath = "/tmp/lrw-release-key.keystore"
+    gradle(task: 'clean', flags: '--no-daemon')
+    gradle(
+      task: 'bundle',
+      build_type: 'Release',
+      print_command: false,
+      properties: {
+        "android.injected.signing.store.file" => releaseFilePath,
+        "android.injected.signing.store.password" => store_password,
+        "android.injected.signing.key.alias" => "lrw-key-alias",
+        "android.injected.signing.key.password" => key_password,
+      },
+      flags: '--no-daemon'
+    )
+
+    upload_to_play_store(
+      track: 'internal'
+    )
+  end
+end
