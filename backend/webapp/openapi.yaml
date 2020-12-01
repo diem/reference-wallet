@@ -331,7 +331,7 @@ paths:
                 amount:
                   type: number
                 currency:
-                  $ref: '#/components/schemas/LibraCurrencies'
+                  $ref: '#/components/schemas/DiemCurrencies'
       responses:
         200:
           description: Success
@@ -386,7 +386,7 @@ components:
       scheme: bearer
       type: http
   schemas:
-    LibraCurrencies:
+    DiemCurrencies:
       type: string
       enum:
         - Coin1USD
@@ -424,13 +424,13 @@ components:
               - balance
             properties:
               currency:
-                $ref: '#/components/schemas/LibraCurrencies'
+                $ref: '#/components/schemas/DiemCurrencies'
               balance:
                 type: number
         created:
           type: integer
       example:
-        user_id: sunmilee@libra.com
+        user_id: sunmilee@diem.com
         subaddress: abcde
         balances:
           - currency: Coin1GBP

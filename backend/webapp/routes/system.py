@@ -2,7 +2,7 @@ import os
 from http import HTTPStatus
 
 from flask import Blueprint
-from libra import chain_ids
+from diem import chain_ids
 from webapp.schemas import Chain
 
 from .strict_schema_view import StrictSchemaView, response_definition

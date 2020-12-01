@@ -16,7 +16,7 @@ pytest-watch = "*"
 ipython = "*"
 
 [packages]
-libra-sample-wallet = {editable = true,path = "."}
+diem-sample-wallet = {editable = true,path = "."}
 dramatiq = {extras = ["redis", "watch"],version = "*"}
 flask-redis = "*"
 redis = "*"
@@ -76,9 +76,10 @@ psycopg2-binary = "*"
 python-dotenv = "*"
 dataclasses-json = "*"
 jwcrypto = "*"
-libra-utils = {git = "https://49decaaaf2e5c1c77eca2805117a36b3135f2c26@github.com/libra/libra-reference-utils.git",ref = "master"}
+reference-utils = {git = "https://49decaaaf2e5c1c77eca2805117a36b3135f2c26@github.com/firstdag/reference-utils.git", editable = true, ref = "LibraMigration"}
 libra-offchainreference = "*"
-libra-client-sdk = "*"
+client-python-sdk = {git = "https://49decaaaf2e5c1c77eca2805117a36b3135f2c26@github.com/libra/client-sdk-python.git", editable = true, ref = "diem-migration"}
+sqlalchemy-paginator = "*"
 
 [pipenv]
 allow_prereleases = true

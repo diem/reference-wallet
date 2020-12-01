@@ -1,4 +1,4 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 import asyncio, os
@@ -22,7 +22,7 @@ def bootstrap(context: Context):
 
 def make_vasp(ctx: Context):
     return Vasp(
-        ctx.config.vasp_libra_address(),
+        ctx.config.vasp_diem_address(),
         host="0.0.0.0",
         port=ctx.config.offchain_service_port,
         business_context=offchain_business.LRW(ctx),

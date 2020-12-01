@@ -1,6 +1,6 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 
@@ -12,22 +12,22 @@ from typing import Dict, Optional, List, Generator
 from uuid import uuid4
 
 import pytest
-from libra.jsonrpc import Client as LibraClient, Transaction, TransactionData
-from libra.testnet import Faucet
-from libra.txnmetadata import general_metadata
-from libra import libra_types, identifier
+from diem.jsonrpc import Client as DiemClient, Transaction, TransactionData
+from diem.testnet import Faucet
+from diem.txnmetadata import general_metadata
+from diem import diem_types, identifier
 
-from libra_utils.types.liquidity.currency import CurrencyPair
-from libra_utils.types.liquidity.lp import LPDetails
-from libra_utils.types.liquidity.quote import QuoteId, QuoteData, Rate
-from libra_utils.types.liquidity.settlement import DebtData
-from libra_utils.types.liquidity.trade import TradeId, TradeData, Direction, TradeStatus
-from libra_utils.sdks.liquidity import LpClient
+from diem_utils.types.liquidity.currency import CurrencyPair
+from diem_utils.types.liquidity.lp import LPDetails
+from diem_utils.types.liquidity.quote import QuoteId, QuoteData, Rate
+from diem_utils.types.liquidity.settlement import DebtData
+from diem_utils.types.liquidity.trade import TradeId, TradeData, Direction, TradeStatus
+from diem_utils.sdks.liquidity import LpClient
 
 from tests.setup import clear_db
-from tests.wallet_tests.libra_client_sdk_mocks import (
+from tests.wallet_tests.client_sdk_mocks import (
     FaucetUtilsMock,
-    LibraNetworkMock,
+    DiemNetworkMock,
     TransactionsMocker,
 )
 from tests.wallet_tests.services.fx.test_fx import rates
@@ -61,25 +61,28 @@ def clean_db() -> Generator[None, None, None]:
 
 @pytest.fixture(scope="function")
 def patch_blockchain(monkeypatch):
-    monkeypatch.setattr(Faucet, "mint", FaucetUtilsMock.mint)
-    monkeypatch.setattr(LibraClient, "get_account", LibraNetworkMock.get_account)
-    monkeypatch.setattr(
-        LibraClient, "get_account_transaction", LibraNetworkMock.transaction_by_acc_seq
-    )
-    monkeypatch.setattr(
-        LibraClient, "get_transactions", LibraNetworkMock.transactions_by_range
-    )
+    network = DiemNetworkMock()
 
-    monkeypatch.setattr(LibraClient, "submit", LibraNetworkMock.sendTransaction)
+    monkeypatch.setattr(Faucet, "mint", FaucetUtilsMock.mint)
+    monkeypatch.setattr(DiemClient, "get_account", network.get_account)
+    monkeypatch.setattr(
+        DiemClient, "get_account_transaction", network.transaction_by_acc_seq
+    )
+    monkeypatch.setattr(
+        DiemClient, "get_account_transactions", network.get_account_transactions,
+    )
+    monkeypatch.setattr(DiemClient, "get_transactions", network.get_transactions)
+    monkeypatch.setattr(DiemClient, "get_events", network.get_events)
+    monkeypatch.setattr(DiemClient, "submit", network.sendTransaction)
 
     def wait_for_transaction(*args):
         return Transaction(version=1, transaction=TransactionData(sequence_number=1))
 
     monkeypatch.setattr(
-        LibraClient, "wait_for_transaction", wait_for_transaction,
+        DiemClient, "wait_for_transaction", wait_for_transaction,
     )
 
-    yield
+    yield network
 
 
 @pytest.fixture(autouse=True)
@@ -120,19 +123,19 @@ class LpClientMock:
         self,
         quote_id: QuoteId,
         direction: Direction,
-        libra_deposit_address: Optional[str] = None,
+        diem_deposit_address: Optional[str] = None,
         tx_version: Optional[int] = None,
     ) -> TradeId:
         quote = LpClientMock.QUOTES[quote_id]
         trade_id = TradeId(uuid4())
-        metadata = libra_types.Metadata__Undefined()
-        if libra_deposit_address is not None:
-            addr, subaddr = identifier.decode_account(libra_deposit_address, "tlb")
+        metadata = diem_types.Metadata__Undefined()
+        if diem_deposit_address is not None:
+            addr, subaddr = identifier.decode_account(diem_deposit_address, "tlb")
             metadata = general_metadata(to_subaddress=subaddr)
         if direction == Direction.Buy:
             process_incoming_transaction(
                 sender_address="",
-                receiver_address=libra_deposit_address,
+                receiver_address=diem_deposit_address,
                 sequence=1,
                 amount=quote.amount,
                 currency=quote.rate.pair.base.value,

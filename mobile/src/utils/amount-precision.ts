@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 const FIAT_MAX_FRACTION_DIGITS = 6;
@@ -73,49 +73,49 @@ export function fiatToFloat(amount: number): number {
 }
 
 /**
- * Convert the Libra amount from its internal representation to a human
+ * Convert the Diem amount from its internal representation to a human
  * readable decimal fraction.
  *
- * Libra amounts are handled internally as fixed point scaled numbers and are
+ * Diem amounts are handled internally as fixed point scaled numbers and are
  * converted to decimal fraction only for UI presentation.
  *
- * @param amount  Fixed point scaled Libra amount.
+ * @param amount  Fixed point scaled Diem amount.
  * @param useGrouping  Group thousands separated with comma.
  */
-export function libraToHumanFriendly(amount: number, useGrouping: boolean = false): string {
-  return libraToFloat(amount).toLocaleString(undefined, { ...LIBRA_VISUAL_FORMAT, useGrouping });
+export function diemToHumanFriendly(amount: number, useGrouping: boolean = false): string {
+  return diemToFloat(amount).toLocaleString(undefined, { ...LIBRA_VISUAL_FORMAT, useGrouping });
 }
 
 /**
- * Convert the Libra amount from a human readable decimal fraction
+ * Convert the Diem amount from a human readable decimal fraction
  * representation to the fixed point internal format.
  *
- * Libra amounts are handled internally as fixed point scaled numbers
+ * Diem amounts are handled internally as fixed point scaled numbers
  * and are converted to decimal fraction only for UI presentation.
  *
- * @param amount  String containing Libra amount as a decimal fraction.
+ * @param amount  String containing Diem amount as a decimal fraction.
  */
-export function libraFromHumanFriendly(amount: string): number {
-  return libraFromFloat(Number.parseFloat(amount));
+export function diemFromHumanFriendly(amount: string): number {
+  return diemFromFloat(Number.parseFloat(amount));
 }
 
 /**
- * Convert the Libra amount from a floating point number representation
+ * Convert the Diem amount from a floating point number representation
  * to the fixed point internal format.
  *
- * Libra amounts are handled internally as fixed point scaled numbers
+ * Diem amounts are handled internally as fixed point scaled numbers
  * and are converted to decimal fraction only for UI presentation.
  *
- * @param amount  Libra amount as a floating point number.
+ * @param amount  Diem amount as a floating point number.
  */
-export function libraFromFloat(amount: number): number {
+export function diemFromFloat(amount: number): number {
   return Math.round(amount * LIBRA_SCALING_FACTOR);
 }
 
-export function libraToFloat(amount: number): number {
+export function diemToFloat(amount: number): number {
   return Math.trunc(amount) / LIBRA_SCALING_FACTOR;
 }
 
-export function normalizeLibra(amount: number): number {
-  return libraToFloat(libraFromFloat(amount));
+export function normalizeDiem(amount: number): number {
+  return diemToFloat(diemFromFloat(amount));
 }

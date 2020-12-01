@@ -1,4 +1,4 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 # keep config import first, because we MUST configure dramatiq broker prior to background_tasks import

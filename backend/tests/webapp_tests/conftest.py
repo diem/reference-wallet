@@ -1,6 +1,6 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import Optional, Generator, Union
@@ -12,7 +12,7 @@ from flask.testing import FlaskClient, Client
 from wallet.services import user
 from wallet.storage import User, Token, Account
 from wallet.types import RegistrationStatus
-from libra_utils.types.currencies import FiatCurrency
+from diem_utils.types.currencies import FiatCurrency
 from webapp import app
 
 

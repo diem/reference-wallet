@@ -1,9 +1,9 @@
 # pyre-strict
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-from libra import libra_types, jsonrpc
+from diem import diem_types, jsonrpc
 
 
 class LRWPubSubEvent:
@@ -26,9 +26,9 @@ class LRWPubSubEvent:
 
         # The metadata deserializer is totally a prickly drama queen
         # It breaks on data directly from the blockchain without saying much
-        self.metadata = libra_types.Metadata__Undefined()
+        self.metadata = diem_types.Metadata__Undefined()
         try:
-            self.metadata = libra_types.Metadata.lcs_deserialize(metadata)
+            self.metadata = diem_types.Metadata.lcs_deserialize(metadata)
         except:
             pass
 

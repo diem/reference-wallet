@@ -1,11 +1,11 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 import asyncio
 import pytest
 import context
 
-from libra import testnet, utils, libra_types, stdlib
+from diem import testnet, utils, diem_types, stdlib
 
 
 def test_get_set():
@@ -87,8 +87,8 @@ def test_p2p_by_general():
     assert script.amount == 1000
     assert script.metadata_signature == ""
 
-    metadata = libra_types.Metadata.lcs_deserialize(bytes.fromhex(script.metadata))
-    assert isinstance(metadata, libra_types.Metadata__GeneralMetadata)
+    metadata = diem_types.Metadata.lcs_deserialize(bytes.fromhex(script.metadata))
+    assert isinstance(metadata, diem_types.Metadata__GeneralMetadata)
     assert metadata.value.value.from_subaddress.hex() == "ccccc28bdeb62af2"
     assert metadata.value.value.to_subaddress.hex() == "aaaaa28bdeb62af3"
 
@@ -122,6 +122,6 @@ def test_p2p_by_travel_rule():
     assert script.amount == amount
     assert script.metadata_signature == metadata_signature.hex()
 
-    metadata = libra_types.Metadata.lcs_deserialize(bytes.fromhex(script.metadata))
-    assert isinstance(metadata, libra_types.Metadata__TravelRuleMetadata)
+    metadata = diem_types.Metadata.lcs_deserialize(bytes.fromhex(script.metadata))
+    assert isinstance(metadata, diem_types.Metadata__TravelRuleMetadata)
     assert metadata.value.value.off_chain_reference_id == reference_id

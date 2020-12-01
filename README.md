@@ -1,16 +1,16 @@
-# Libra Reference Wallet
+# Diem Reference Wallet
 
-Libra Reference Wallet is an open-source project aimed at helping developers kickstart wallet building in the Libra ecosystem. We tried to incorporate both technical and design aspects to show not only how the different technical pieces fit together but also demonstrate thoughtful design, content, and best experience practices.
+Diem Reference Wallet is an open-source project aimed at helping developers kickstart wallet building in the Diem ecosystem. We tried to incorporate both technical and design aspects to show not only how the different technical pieces fit together but also demonstrate thoughtful design, content, and best experience practices.
 
 
 ## Note to Developers
-* Libra Reference Wallet is a reference implementation, and not meant to be fully production grade.
-* The project will continue to develop to include the different aspects of the evolving Libra ecosystem.
+* Diem Reference Wallet is a reference implementation, and not meant to be fully production grade.
+* The project will continue to develop to include the different aspects of the evolving Diem ecosystem.
 
 
 ## Getting Started
 
-Setup instructions and system requirements can be found here: [backend](/backend#libra-reference-wallet)
+Setup instructions and system requirements can be found here: [backend](/backend#diem-reference-wallet)
 
 ## Project Organization
 

@@ -1,4 +1,4 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 import json
@@ -6,9 +6,8 @@ import os
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from offchainapi.crypto import ComplianceKey
 
-from libra import LocalAccount, testnet
+from diem import LocalAccount, testnet
 
 import context
 

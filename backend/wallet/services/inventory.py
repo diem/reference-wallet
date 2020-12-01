@@ -1,4 +1,4 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
@@ -7,13 +7,13 @@ from typing import Optional
 from uuid import UUID
 
 import context
-from libra import utils
-from libra.identifier import decode_account
-from libra_utils.sdks.liquidity import LpClient
-from libra_utils.types.currencies import LibraCurrency
-from libra_utils.types.liquidity.currency import Currency, CurrencyPairs, CurrencyPair
-from libra_utils.types.liquidity.quote import QuoteData
-from libra_utils.types.liquidity.trade import TradeStatus, TradeData, TradeId
+from diem import utils
+from diem.identifier import decode_account
+from diem_utils.sdks.liquidity import LpClient
+from diem_utils.types.currencies import DiemCurrency
+from diem_utils.types.liquidity.currency import Currency, CurrencyPairs, CurrencyPair
+from diem_utils.types.liquidity.quote import QuoteData
+from diem_utils.types.liquidity.trade import TradeStatus, TradeData, TradeId
 from wallet.logging import log_execution
 from wallet.services import INVENTORY_ACCOUNT_NAME
 from wallet.services.account import get_deposit_address, create_account
@@ -77,7 +77,7 @@ def buy_funds(currency_pair):
     trade_id = LpClient().trade_and_execute(
         quote_id=quote.quote_id,
         direction=Direction.Buy,
-        libra_deposit_address=internal_address,
+        diem_deposit_address=internal_address,
     )
 
     if wait_for_trade_to_complete(trade_id):
@@ -116,7 +116,7 @@ def _cover_buy(order: Order, quote: QuoteData) -> bool:
     trade_id = LpClient().trade_and_execute(
         quote_id=quote.quote_id,
         direction=Direction[order.direction],
-        libra_deposit_address=deposit_address,
+        diem_deposit_address=deposit_address,
     )
     trade_info = _wait_for_trade(order=order, trade_id=trade_id)
 
@@ -133,7 +133,7 @@ def _cover_buy(order: Order, quote: QuoteData) -> bool:
     )
 
     vasp_address, internal_subaddress = decode_account(
-        deposit_address, context.get().config.libra_address_hrp()
+        deposit_address, context.get().config.diem_address_hrp()
     )
     if not _validate_blockchain_transaction(
         blockchain_version=trade_info.tx_version,
@@ -183,7 +183,7 @@ def _transfer_funds_to_lp(order: Order) -> int:
     tx = send_transaction(
         sender_id=inventory_account,
         amount=order.amount,
-        currency=LibraCurrency[order.base_currency],
+        currency=DiemCurrency[order.base_currency],
         destination_address=lp_details.vasp,
         destination_subaddress=lp_details.sub_address,
     )

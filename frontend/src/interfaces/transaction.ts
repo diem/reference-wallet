@@ -1,7 +1,7 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { LibraCurrency } from "./currencies";
+import { Currency } from "./currencies";
 import { BlockchainTransaction, VASPAccount } from "./blockchain";
 
 export type TransactionDirection = "received" | "sent";
@@ -12,7 +12,7 @@ export interface Transaction {
   id: number;
   direction: TransactionDirection;
   status: TransactionStatus;
-  currency: LibraCurrency;
+  currency: Currency;
   source: VASPAccount;
   destination: VASPAccount;
   amount: number;

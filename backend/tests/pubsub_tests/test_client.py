@@ -1,6 +1,6 @@
 # pyre-strict
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 import os, typing, tempfile, pytest
@@ -8,7 +8,7 @@ from time import time
 
 from pubsub import types, DEFL_CONFIG
 from pubsub.client import LRWPubSubClient
-from libra import testnet, utils, txnmetadata, stdlib, libra_types, identifier
+from diem import testnet, utils, txnmetadata, stdlib, diem_types, identifier
 from offchainapi.crypto import ComplianceKey
 from cryptography.hazmat.primitives import serialization
 from wallet.storage import get_transaction_id_from_reference_id

@@ -1,11 +1,11 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 from itertools import chain
-from libra_utils.precise_amount import Amount
-from libra_utils.sdks.liquidity import LpClient
-from libra_utils.types.currencies import LibraCurrency, FiatCurrency
-from libra_utils.types.liquidity.currency import Currency, CurrencyPair, CurrencyPairs
+from diem_utils.precise_amount import Amount
+from diem_utils.sdks.liquidity import LpClient
+from diem_utils.types.currencies import DiemCurrency, FiatCurrency
+from diem_utils.types.liquidity.currency import Currency, CurrencyPair, CurrencyPairs
 
 RATES = {}
 
@@ -20,9 +20,9 @@ def get_rate(base_currency: Currency, quote_currency: Currency) -> Amount:
 def update_rates():
     all_currencies = [
         Currency(c)
-        for c in chain(list(FiatCurrency.__members__), list(LibraCurrency.__members__))
+        for c in chain(list(FiatCurrency.__members__), list(DiemCurrency.__members__))
     ]
-    base_currencies = [Currency(c) for c in LibraCurrency]
+    base_currencies = [Currency(c) for c in DiemCurrency]
 
     for base_currency in base_currencies:
         for quote_currency in all_currencies:

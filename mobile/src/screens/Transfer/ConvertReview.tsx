@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useState } from "react";
@@ -12,9 +12,9 @@ import ScreenLayout from "../../components/ScreenLayout";
 import { appTheme } from "../../styles";
 import { ratesContext, withRatesContext } from "../../contexts/rates";
 import { Quote } from "../../interfaces/cico";
-import { libraCurrencies } from "../../currencies";
-import { libraToHumanFriendly } from "../../utils/amount-precision";
-import { LibraCurrency } from "../../interfaces/currencies";
+import { diemCurrencies } from "../../currencies";
+import { diemToHumanFriendly } from "../../utils/amount-precision";
+import { DiemCurrency } from "../../interfaces/currencies";
 import BackendClient from "../../services/backendClient";
 import SessionStorage from "../../services/sessionStorage";
 import { BackendError } from "../../services/errors";
@@ -70,15 +70,15 @@ function ConvertReview({ quote, componentId }: ConvertReviewProps & NavigationCo
               <>
                 {(() => {
                   const [
-                    fromLibraCurrencyCode,
-                    toLibraCurrencyCode,
+                    fromDiemCurrencyCode,
+                    toDiemCurrencyCode,
                   ] = quote.rfq.currency_pair.split("_");
-                  const fromLibraCurrency = libraCurrencies[fromLibraCurrencyCode as LibraCurrency];
-                  const toLibraCurrency = libraCurrencies[toLibraCurrencyCode as LibraCurrency];
+                  const fromDiemCurrency = diemCurrencies[fromDiemCurrencyCode as DiemCurrency];
+                  const toDiemCurrency = diemCurrencies[toDiemCurrencyCode as DiemCurrency];
 
                   const exchangeRate =
-                    rates[fromLibraCurrencyCode as LibraCurrency][
-                      toLibraCurrencyCode as LibraCurrency
+                    rates[fromDiemCurrencyCode as DiemCurrency][
+                      toDiemCurrencyCode as DiemCurrency
                     ];
 
                   return (
@@ -93,22 +93,22 @@ function ConvertReview({ quote, componentId }: ConvertReviewProps & NavigationCo
                       <View style={theme.Section}>
                         <Text>{t("convert.review.amount")}</Text>
                         <Text style={{ color: "black" }}>
-                          {libraToHumanFriendly(quote.rfq.amount, true)} {fromLibraCurrency.sign}
+                          {diemToHumanFriendly(quote.rfq.amount, true)} {fromDiemCurrency.sign}
                         </Text>
                       </View>
 
                       <View style={theme.Section}>
                         <Text>{t("convert.review.price")}</Text>
                         <Text style={{ color: "black" }}>
-                          {libraToHumanFriendly(quote.price, true)} {toLibraCurrency.sign}
+                          {diemToHumanFriendly(quote.price, true)} {toDiemCurrency.sign}
                         </Text>
                       </View>
 
                       <View style={theme.Section}>
                         <Text>{t("convert.review.exchange_rate")}</Text>
                         <Text style={{ color: "black" }}>
-                          1 {fromLibraCurrency.sign} = {libraToHumanFriendly(exchangeRate)}{" "}
-                          {toLibraCurrency.sign}
+                          1 {fromDiemCurrency.sign} = {diemToHumanFriendly(exchangeRate)}{" "}
+                          {toDiemCurrency.sign}
                         </Text>
                       </View>
 

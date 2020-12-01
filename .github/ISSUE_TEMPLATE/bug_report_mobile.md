@@ -1,6 +1,6 @@
 ---
 name: "\U0001F41B \U0001F4F1 Mobile App Bug report"
-about: Create a bug report to help improve the Libra Reference Wallet Mobile App
+about: Create a bug report to help improve the Diem Reference Wallet Mobile App
 title: "[Bug]"
 labels: bug, mobile
 assignees: ''
@@ -9,7 +9,7 @@ assignees: ''
 
 # 🐛 Bug
 
-If you're looking to report an issue with the Libra Core project go to https://github.com/libra/libra
+If you're looking to report an issue with the Diem Core project go to https://github.com/libra/libra
 
 <!-- A clear and concise description of what the bug is.
 

@@ -14,27 +14,31 @@ services:
       - 5000:5000
       - ${OFFCHAIN_SERVICE_PORT:-5091}:5091
     volumes:
-      - ../backend:/libra-wallet
+      - ../backend:/wallet
+      - /wallet/src
       - /tmp:/tmp
 
   backend-worker:
     environment:
       COMPOSE_ENV: development
     volumes:
-      - ../backend:/libra-wallet
+      - ../backend:/wallet
+      - /wallet/src
       - /tmp:/tmp
 
   backend-pubsub-worker:
     environment:
       COMPOSE_ENV: development
     volumes:
-      - ../backend:/libra-wallet
+      - ../backend:/wallet
+      - /wallet/src
 
   liquidity:
     environment:
       COMPOSE_ENV: development
     volumes:
       - ../liquidity:/liquidity
+      - /liquidity/src
       - ../backend/libra_utils:/backend/libra_utils
     ports:
     - "5001:5000"

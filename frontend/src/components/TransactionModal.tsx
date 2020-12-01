@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext } from "react";
@@ -8,7 +8,11 @@ import { settingsContext } from "../contexts/app";
 import ExplorerLink from "./ExplorerLink";
 import { Transaction } from "../interfaces/transaction";
 import CloseButton from "./CloseButton";
-import { fiatToHumanFriendly, libraToFloat, libraToHumanFriendly } from "../utils/amount-precision";
+import {
+  fiatToDiemHumanFriendly,
+  diemAmountToFloat,
+  diemAmountToHumanFriendly,
+} from "../utils/amount-precision";
 
 const STATUS_COLORS = {
   completed: "success",
@@ -31,10 +35,10 @@ function TransactionModal({ open, onClose, transaction }: TransactionModalProps)
     return null;
   }
 
-  const libraCurrency = settings.currencies[transaction.currency];
+  const currency = settings.currencies[transaction.currency];
   const fiatCurrency = settings.fiatCurrencies[settings.defaultFiatCurrencyCode!];
 
-  const exchangeRate = libraCurrency.rates[settings.defaultFiatCurrencyCode!] || 0;
+  const exchangeRate = currency.rates[settings.defaultFiatCurrencyCode!] || 0;
 
   return (
     <Modal className="modal-dialog-centered" isOpen={open} onClosed={onClose}>
@@ -44,12 +48,15 @@ function TransactionModal({ open, onClose, transaction }: TransactionModalProps)
           <div className="h2 text-capitalize-first">{t(transaction.direction)}</div>
 
           <h2 className="h2 m-0">
-            {libraToHumanFriendly(transaction.amount, true)} {libraCurrency.sign}
+            {diemAmountToHumanFriendly(transaction.amount, true)} {currency.sign}
           </h2>
 
           <div>
             {t("price")} {fiatCurrency.sign}
-            {fiatToHumanFriendly(libraToFloat(transaction.amount) * exchangeRate, true)}{" "}
+            {fiatToDiemHumanFriendly(
+              diemAmountToFloat(transaction.amount) * exchangeRate,
+              true
+            )}{" "}
             {fiatCurrency.symbol}
           </div>
         </div>

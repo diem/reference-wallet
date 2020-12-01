@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useEffect, useRef, useState } from "react";
@@ -17,21 +17,21 @@ import { Transaction } from "../interfaces/transaction";
 import TransactionsList from "../components/TransactionsList";
 import { BackendError } from "../services/errors";
 import httpStatus from "http-status-codes";
-import { LibraCurrency } from "../interfaces/currencies";
-import { libraCurrencies } from "../currencies";
+import { DiemCurrency } from "../interfaces/currencies";
+import { diemCurrencies } from "../currencies";
 import CurrencyBalance from "../components/CurrencyBalance";
 import TestnetWarning from "../components/TestnetWarning";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
 
 interface AccountProps {
-  currencyCode: LibraCurrency;
+  currencyCode: DiemCurrency;
 }
 
 function Account({ currencyCode, componentId }: AccountProps & NavigationComponentProps) {
   const { t } = useTranslation("layout");
 
-  const libraCurrency = libraCurrencies[currencyCode];
+  const diemCurrency = diemCurrencies[currencyCode];
 
   const user = useContext(userContext);
   const account = useContext(accountContext);
@@ -92,7 +92,7 @@ function Account({ currencyCode, componentId }: AccountProps & NavigationCompone
             {user && rates && account ? (
               <>
                 <View style={{ ...theme.Container, alignItems: "center" }}>
-                  <Text style={theme.SubTitle}>{libraCurrency.name} Wallet</Text>
+                  <Text style={theme.SubTitle}>{diemCurrency.name} Wallet</Text>
                 </View>
 
                 <View style={StyleSheet.flatten([theme.Container, theme.Section])}>

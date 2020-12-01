@@ -4,15 +4,15 @@ This project welcomes contributions.
 
 ## Contributor License Agreement
 
-For pull request to be accepted by any Libra projects, a CLA must be signed.
-You will only need to do this once to work on any of Libra's open source
+For pull request to be accepted by any Diem projects, a CLA must be signed.
+You will only need to do this once to work on any of Diem's open source
 projects.
 
 When submitting a PR, the libra-github-bot will check your comment for a valid CLA. If one is not found, then you will need to submit an Individual CLA for yourself or a Corporate CLA for your company.
 
 ## Submitting Issues and Feature Requests
 
-The Libra Reference Wallet uses [GitHub issues](https://github.com/libra/libra-reference-wallet/issues) to track bugs and feature requests. Please include necessary information and instructions to reproduce your issue or describe your use case.
+The Diem Reference Wallet uses [GitHub issues](https://github.com/libra/libra-reference-wallet/issues) to track bugs and feature requests. Please include necessary information and instructions to reproduce your issue or describe your use case.
 
 ## Other Ways to Provide Feedback
 

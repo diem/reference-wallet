@@ -1,6 +1,6 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 from copy import deepcopy
@@ -13,7 +13,7 @@ from wallet.storage import (
     Transaction,
     User,
 )
-from libra_utils.types.currencies import LibraCurrency
+from diem_utils.types.currencies import DiemCurrency
 from wallet.types import TransactionType, TransactionStatus, RegistrationStatus
 
 
@@ -22,7 +22,7 @@ class OneUser:
     def run(
         db_session,
         account_amount: Optional[int] = None,
-        account_currency: Optional[LibraCurrency] = None,
+        account_currency: Optional[DiemCurrency] = None,
         registration_status: Optional[RegistrationStatus] = RegistrationStatus.Approved,
         account_name: str = "fake_account",
         username: Optional[str] = None,

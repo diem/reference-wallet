@@ -1,6 +1,6 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 from copy import deepcopy
@@ -12,7 +12,7 @@ import pytest
 from flask import Response
 from werkzeug import Client
 
-from libra_utils.types.currencies import LibraCurrency
+from diem_utils.types.currencies import DiemCurrency
 from wallet.services import account as account_service
 from wallet.services import transaction as transaction_service
 from wallet.storage import Transaction
@@ -28,7 +28,7 @@ INTERNAL_TX = Transaction(
     id=1,
     type=TransactionType.INTERNAL.value,
     amount=100,
-    currency=LibraCurrency.Coin1.value,
+    currency=DiemCurrency.Coin1.value,
     status=TransactionStatus.COMPLETED.value,
     source_id=1,
     source_address="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -55,11 +55,11 @@ def account_balance(monkeypatch):
     def get_account_balance_mock(account_name: str):
         saved["account_name"] = account_name
         balance = Balance()
-        balance.total = {LibraCurrency.Coin1: 100}
+        balance.total = {DiemCurrency.Coin1: 100}
         return balance
 
     monkeypatch.setattr(
-        account_service, "get_account_balance", get_account_balance_mock
+        account_service, "get_account_balance_by_name", get_account_balance_mock
     )
     yield saved
 
@@ -71,7 +71,7 @@ def account_transactions_mock(monkeypatch):
     def get_mock(
         account_id: Optional[int] = None,
         account_name: Optional[str] = None,
-        currency: Optional[LibraCurrency] = None,
+        currency: Optional[DiemCurrency] = None,
         direction_filter: Optional[TransactionDirection] = None,
         limit: Optional[int] = None,
         sort: Optional[TransactionSortOption] = None,
@@ -110,7 +110,7 @@ def send_transaction_mock(monkeypatch):
     def send_mock(
         sender_id: int,
         amount: int,
-        currency: LibraCurrency,
+        currency: DiemCurrency,
         destination_address: str,
         destination_subaddress: Optional[str] = None,
         payment_type: Optional[TransactionType] = None,
@@ -164,7 +164,7 @@ class TestAccountInfo:
         balances = rv.get_json()["balances"]
         assert account_balance["account_name"] == "fake_account"
         assert len(balances) == 1
-        assert balances[0]["currency"] == LibraCurrency.Coin1.value
+        assert balances[0]["currency"] == DiemCurrency.Coin1.value
         assert balances[0]["balance"] == 100
 
 
@@ -182,7 +182,7 @@ class TestAccountTransactions:
         assert transaction == {
             "id": 1,
             "amount": 100,
-            "currency": LibraCurrency.Coin1.value,
+            "currency": DiemCurrency.Coin1.value,
             "direction": TransactionDirection.SENT.value,
             "status": TransactionStatus.COMPLETED.value,
             "timestamp": "2020-06-23T19:49:26.989849",
@@ -224,7 +224,7 @@ class TestAccountTransactions:
             {
                 "id": 1,
                 "amount": 100,
-                "currency": LibraCurrency.Coin1.value,
+                "currency": DiemCurrency.Coin1.value,
                 "direction": TransactionDirection.SENT.value,
                 "status": TransactionStatus.COMPLETED.value,
                 "timestamp": "2020-06-23T19:49:26.989849",
@@ -249,7 +249,7 @@ class TestAccountTransactions:
         allow_user_to_account,
         account_transactions_mock,
     ) -> None:
-        requested_currency = LibraCurrency.Coin1.value
+        requested_currency = DiemCurrency.Coin1.value
         rv: Response = authorized_client.get(
             f"/account/transactions?currency={requested_currency}"
         )
@@ -260,7 +260,7 @@ class TestAccountTransactions:
 
 
 class TestSendTransaction:
-    currency = LibraCurrency.Coin1.value
+    currency = DiemCurrency.Coin1.value
     amount = 100
     receiver_address, receiver_subaddress = (
         "12db232847705e05525db0336fd9f334",
@@ -284,7 +284,7 @@ class TestSendTransaction:
         assert transaction == {
             "id": 5,
             "amount": 100,
-            "currency": LibraCurrency.Coin1.value,
+            "currency": DiemCurrency.Coin1.value,
             "direction": TransactionDirection.SENT.value,
             "status": TransactionStatus.PENDING.value,
             "timestamp": "2020-06-23T19:50:26.989849",
@@ -314,7 +314,7 @@ class TestSendTransaction:
         def send_transaction_mock_risk_failure(
             sender_id: int,
             amount: int,
-            currency: LibraCurrency,
+            currency: DiemCurrency,
             destination_address: str,
             destination_subaddress: Optional[str] = None,
             payment_type: Optional[TransactionType] = None,
@@ -336,7 +336,7 @@ class TestSendTransaction:
         def send_transaction_mock_self_as_destination_failure(
             sender_id: int,
             amount: int,
-            currency: LibraCurrency,
+            currency: DiemCurrency,
             destination_address: str,
             destination_subaddress: Optional[str] = None,
             payment_type: Optional[TransactionType] = None,

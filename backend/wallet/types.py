@@ -1,4 +1,4 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 from dataclasses import dataclass
@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Optional, Dict, NewType
 from uuid import UUID
 
-from libra_utils.types.currencies import LibraCurrency, FiatCurrency
+from diem_utils.types.currencies import DiemCurrency, FiatCurrency
 
 OrderId = NewType("OrderId", UUID)
 
@@ -34,8 +34,8 @@ class TransactionType(str, Enum):
 class TransactionSortOption(str, Enum):
     DATE_ASC = "date_asc"
     DATE_DESC = "date_desc"
-    LIBRA_AMOUNT_DESC = "libra_amount_desc"
-    LIBRA_AMOUNT_ASC = "libra_amount_asc"
+    DIEM_AMOUNT_DESC = "diem_amount_desc"
+    DIEM_AMOUNT_ASC = "diem_amount_asc"
     FIAT_AMOUNT_DESC = "fiat_amount_desc"
     FIAT_AMOUNT_ASC = "fiat_amount_asc"
 
@@ -171,16 +171,16 @@ class PaymentMethodAction(Enum):
 
 class OrderType(str, Enum):
     Trade = "Trade"
-    DirectConvert = "DirectConvert"  # Libra sub currency to Libra sub currency.
+    DirectConvert = "DirectConvert"  # Diem sub currency to Diem sub currency.
 
 
 class Balance:
     def __init__(self):
-        self.total: Dict[LibraCurrency, int] = {
-            LibraCurrency.Coin1: 0,
+        self.total: Dict[DiemCurrency, int] = {
+            DiemCurrency.Coin1: 0,
         }
-        self.frozen: Dict[LibraCurrency, int] = {
-            LibraCurrency.Coin1: 0,
+        self.frozen: Dict[DiemCurrency, int] = {
+            DiemCurrency.Coin1: 0,
         }
 
 

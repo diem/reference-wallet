@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useState } from "react";
@@ -13,14 +13,14 @@ import { appTheme } from "../../styles";
 import { ratesContext, withRatesContext } from "../../contexts/rates";
 import { Quote } from "../../interfaces/cico";
 import { paymentMethodsLabels } from "../../interfaces/user";
-import { fiatCurrencies, libraCurrencies } from "../../currencies";
+import { fiatCurrencies, diemCurrencies } from "../../currencies";
 import {
   fiatToHumanFriendly,
   fiatToHumanFriendlyRate,
-  libraFromFloat,
-  libraToHumanFriendly,
+  diemFromFloat,
+  diemToHumanFriendly,
 } from "../../utils/amount-precision";
-import { FiatCurrency, LibraCurrency } from "../../interfaces/currencies";
+import { FiatCurrency, DiemCurrency } from "../../interfaces/currencies";
 import BackendClient from "../../services/backendClient";
 import SessionStorage from "../../services/sessionStorage";
 import { BackendError } from "../../services/errors";
@@ -29,17 +29,17 @@ import ErrorMessage from "../../components/Messages/ErrorMessage";
 type SubmitStatuses = "edit" | "sending" | "fail" | "success";
 
 interface SendReviewProps {
-  libraCurrencyCode: LibraCurrency;
+  diemCurrencyCode: DiemCurrency;
   fiatCurrencyCode: FiatCurrency;
-  libraAmount: number;
-  libraAddress: string;
+  diemAmount: number;
+  diemAddress: string;
 }
 
 function SendReview({
-  libraCurrencyCode,
+  diemCurrencyCode,
   fiatCurrencyCode,
-  libraAmount,
-  libraAddress,
+  diemAmount,
+  diemAddress,
   componentId,
 }: SendReviewProps & NavigationComponentProps) {
   const { t } = useTranslation("send");
@@ -56,9 +56,9 @@ function SendReview({
       setSubmitStatus("sending");
       const token = await SessionStorage.getAccessToken();
       const transaction = await new BackendClient(token).createTransaction(
-        libraCurrencyCode,
-        libraFromFloat(libraAmount),
-        libraAddress
+        diemCurrencyCode,
+        diemFromFloat(diemAmount),
+        diemAddress
       );
       setSubmitStatus("success");
     } catch (e) {
@@ -88,10 +88,10 @@ function SendReview({
             {user && account && rates ? (
               <>
                 {(() => {
-                  const libraCurrency = libraCurrencies[libraCurrencyCode];
+                  const diemCurrency = diemCurrencies[diemCurrencyCode];
                   const fiatCurrency = fiatCurrencies[fiatCurrencyCode];
 
-                  const exchangeRate = rates[libraCurrencyCode][fiatCurrencyCode];
+                  const exchangeRate = rates[diemCurrencyCode][fiatCurrencyCode];
 
                   return (
                     <View style={theme.Container}>
@@ -105,7 +105,7 @@ function SendReview({
                       <View style={theme.Section}>
                         <Text>{t("review.amount")}</Text>
                         <Text style={{ color: "black" }}>
-                          {libraAmount} {libraCurrency.sign}
+                          {diemAmount} {diemCurrency.sign}
                         </Text>
                       </View>
 
@@ -113,7 +113,7 @@ function SendReview({
                         <Text>{t("review.price")}</Text>
                         <Text style={{ color: "black" }}>
                           {fiatCurrency.sign}
-                          {fiatToHumanFriendly(libraAmount * exchangeRate, true)}{" "}
+                          {fiatToHumanFriendly(diemAmount * exchangeRate, true)}{" "}
                           {fiatCurrency.symbol}
                         </Text>
                       </View>
@@ -121,14 +121,14 @@ function SendReview({
                       <View style={theme.Section}>
                         <Text>{t("review.exchange_rate")}</Text>
                         <Text style={{ color: "black" }}>
-                          1 {libraCurrency.sign} = {fiatToHumanFriendlyRate(exchangeRate)}{" "}
+                          1 {diemCurrency.sign} = {fiatToHumanFriendlyRate(exchangeRate)}{" "}
                           {fiatCurrency.symbol}
                         </Text>
                       </View>
 
                       <View style={theme.Section}>
                         <Text>{t("review.address")}</Text>
-                        <Text style={{ color: "black" }}>{libraAddress}</Text>
+                        <Text style={{ color: "black" }}>{diemAddress}</Text>
                       </View>
 
                       {submitStatus !== "success" && (

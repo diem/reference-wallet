@@ -1,11 +1,15 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { ReactElement, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../contexts/app";
 import { Transaction } from "../interfaces/transaction";
-import { fiatToHumanFriendly, libraToFloat, libraToHumanFriendly } from "../utils/amount-precision";
+import {
+  fiatToDiemHumanFriendly,
+  diemAmountToFloat,
+  diemAmountToHumanFriendly,
+} from "../utils/amount-precision";
 import { classNames } from "../utils/class-names";
 
 const STATUS_COLORS = {
@@ -38,9 +42,9 @@ function TransactionsList({ transactions, onSelect, bottom }: TransactionsListPr
   return (
     <ul className="list-group my-4">
       {transactions.map((transaction) => {
-        const libraCurrency = settings.currencies[transaction.currency];
+        const currency = settings.currencies[transaction.currency];
         const fiatCurrency = settings.fiatCurrencies[settings.defaultFiatCurrencyCode!];
-        const exchangeRate = libraCurrency.rates[settings.defaultFiatCurrencyCode!];
+        const exchangeRate = currency.rates[settings.defaultFiatCurrencyCode!];
 
         return (
           <li
@@ -57,7 +61,7 @@ function TransactionsList({ transactions, onSelect, bottom }: TransactionsListPr
                   </span>
 
                   <span className="text-black ml-auto text-nowrap">
-                    {libraToHumanFriendly(transaction.amount, true)} {libraCurrency.sign}
+                    {diemAmountToHumanFriendly(transaction.amount, true)} {currency.sign}
                   </span>
                 </>
               )}
@@ -70,7 +74,7 @@ function TransactionsList({ transactions, onSelect, bottom }: TransactionsListPr
                   </span>
 
                   <span className="text-black ml-auto text-nowrap">
-                    - {libraToHumanFriendly(transaction.amount, true)} {libraCurrency.sign}
+                    - {diemAmountToHumanFriendly(transaction.amount, true)} {currency.sign}
                   </span>
                 </>
               )}
@@ -82,7 +86,10 @@ function TransactionsList({ transactions, onSelect, bottom }: TransactionsListPr
               </span>
               <span className="small ml-auto">
                 {fiatCurrency.sign}
-                {fiatToHumanFriendly(libraToFloat(transaction.amount) * exchangeRate, true)}{" "}
+                {fiatToDiemHumanFriendly(
+                  diemAmountToFloat(transaction.amount) * exchangeRate,
+                  true
+                )}{" "}
                 {fiatCurrency.symbol}
               </span>
             </div>

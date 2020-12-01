@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useEffect, useState } from "react";
@@ -8,22 +8,22 @@ import { Button, Text, ThemeConsumer } from "react-native-elements";
 import { useTranslation } from "react-i18next";
 import ScreenLayout from "../components/ScreenLayout";
 import { appTheme } from "../styles";
-import { LibraCurrency } from "../interfaces/currencies";
+import { DiemCurrency } from "../interfaces/currencies";
 import BackendClient from "../services/backendClient";
 import { BackendError } from "../services/errors";
 import SelectDropdown from "../components/Select";
-import { libraCurrenciesWithBalanceOptions } from "../utils/dropdown-options";
+import { diemCurrenciesWithBalanceOptions } from "../utils/dropdown-options";
 import { accountContext, withAccountContext } from "../contexts/account";
 import QRCode from "react-native-qrcode-svg";
 import ErrorMessage from "../components/Messages/ErrorMessage";
 import SessionStorage from "../services/sessionStorage";
 
-export const LIBRA_ADDR_PROTOCOL_PREFIX = "libra://";
+export const LIBRA_ADDR_PROTOCOL_PREFIX = "diem://";
 
 const Logo = require("../assets/logo.png");
 
 interface ReceiveProps {
-  currency?: LibraCurrency;
+  currency?: DiemCurrency;
 }
 
 type SubmitStatuses = "edit" | "sending" | "fail" | "success";
@@ -33,7 +33,7 @@ function Receive({ currency, componentId }: ReceiveProps & NavigationComponentPr
 
   const account = useContext(accountContext);
 
-  const [selectedCurrency, setSelectedCurrency] = useState<LibraCurrency | undefined>(currency);
+  const [selectedCurrency, setSelectedCurrency] = useState<DiemCurrency | undefined>(currency);
   const [submitStatus, setSubmitStatus] = useState<SubmitStatuses>("edit");
   const [errorMessage, setErrorMessage] = useState<string>();
   const [receivingAddress, setReceivingAddress] = useState<string>();
@@ -83,7 +83,7 @@ function Receive({ currency, componentId }: ReceiveProps & NavigationComponentPr
                   <SelectDropdown
                     label={t("currency")}
                     value={selectedCurrency}
-                    options={libraCurrenciesWithBalanceOptions(account.balances)}
+                    options={diemCurrenciesWithBalanceOptions(account.balances)}
                     onChange={(val) => setSelectedCurrency(val)}
                   />
                 </View>

@@ -1,4 +1,4 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 import pytest, os
@@ -53,18 +53,18 @@ def test_vasp_account_address():
     assert conf.vasp_account_address().to_hex() == conf.vasp_address
 
 
-def test_vasp_libra_address():
+def test_vasp_diem_address():
     conf = config.from_env()
-    address = conf.vasp_libra_address()
+    address = conf.vasp_diem_address()
     assert address
     assert address.get_onchain_address_hex() == conf.vasp_address
     assert address.get_subaddress_hex() is None
     assert address.hrp == "tlb"
 
 
-def test_libra_address_hrp():
+def test_diem_address_hrp():
     conf = config.from_env()
     conf.chain_id = 1
-    assert conf.libra_address_hrp() == "lbr"
+    assert conf.diem_address_hrp() == "lbr"
     conf.chain_id = 2
-    assert conf.libra_address_hrp() == "tlb"
+    assert conf.diem_address_hrp() == "tlb"

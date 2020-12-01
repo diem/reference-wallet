@@ -1,17 +1,17 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import { Button, Modal, ModalBody } from "reactstrap";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { LibraCurrency } from "../interfaces/currencies";
+import { Currency } from "../interfaces/currencies";
 import Deposit from "./Transfer/Deposit";
 import Withdraw from "./Transfer/Withdraw";
 import Convert from "./Transfer/Convert";
 import CloseButton from "./CloseButton";
 
 interface TransferModalProps {
-  currency?: LibraCurrency;
+  currency?: Currency;
   open: boolean;
   onClose: () => void;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useEffect, useRef, useState } from "react";
@@ -17,10 +17,10 @@ import { Transaction, TransactionDirection } from "../interfaces/transaction";
 import TransactionsList from "../components/TransactionsList";
 import { BackendError } from "../services/errors";
 import httpStatus from "http-status-codes";
-import { LibraCurrency } from "../interfaces/currencies";
+import { DiemCurrency } from "../interfaces/currencies";
 import SelectDropdown from "../components/Select";
 import {
-  libraCurrenciesOptions,
+  diemCurrenciesOptions,
   transactionDirectionsOptions,
   transactionSortingOptions,
 } from "../utils/dropdown-options";
@@ -36,7 +36,7 @@ function Transactions({ componentId }: NavigationComponentProps) {
   const account = useContext(accountContext);
   const rates = useContext(ratesContext);
 
-  const [libraCurrency, setLibraCurrency] = useState<LibraCurrency>();
+  const [diemCurrency, setDiemCurrency] = useState<DiemCurrency>();
   const [direction, setDirection] = useState<TransactionDirection>();
   const [sorting, setSorting] = useState<string>("date_desc");
 
@@ -62,7 +62,7 @@ function Transactions({ componentId }: NavigationComponentProps) {
       try {
         const token = await SessionStorage.getAccessToken();
         setTransactions(
-          await new BackendClient(token).getTransactions(libraCurrency, direction, sorting)
+          await new BackendClient(token).getTransactions(diemCurrency, direction, sorting)
         );
 
         fetchTransactionsTimeout.current = setTimeout(
@@ -83,7 +83,7 @@ function Transactions({ componentId }: NavigationComponentProps) {
     return () => {
       clearTimeout(fetchTransactionsTimeout.current!);
     };
-  }, [libraCurrency, direction, sorting]);
+  }, [diemCurrency, direction, sorting]);
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
@@ -105,9 +105,9 @@ function Transactions({ componentId }: NavigationComponentProps) {
                     <View style={theme.ButtonsGroup.buttonStyle}>
                       <SelectDropdown
                         label={t("all_currencies")}
-                        value={libraCurrency}
-                        options={libraCurrenciesOptions()}
-                        onChange={(val) => setLibraCurrency(val)}
+                        value={diemCurrency}
+                        options={diemCurrenciesOptions()}
+                        onChange={(val) => setDiemCurrency(val)}
                       />
                     </View>
 

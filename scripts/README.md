@@ -1,4 +1,4 @@
-# Libra reference wallet (LRW) launcher
+# Diem reference wallet (LRW) launcher
 Command & control utility deploy debug and develop libra reference wallet through a consistent and reproducible docker environment.
 
 

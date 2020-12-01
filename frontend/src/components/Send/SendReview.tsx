@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext } from "react";
@@ -6,7 +6,7 @@ import { Button } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../../contexts/app";
 import { Send } from "./interfaces";
-import { fiatToHumanFriendly, fiatToHumanFriendlyRate } from "../../utils/amount-precision";
+import { fiatToDiemHumanFriendly, fiatToHumanFriendlyRate } from "../../utils/amount-precision";
 
 interface SendReviewProps {
   data: Required<Send>;
@@ -28,13 +28,13 @@ function SendReview({
   const { t } = useTranslation("send");
   const [settings] = useContext(settingsContext)!;
 
-  const libraCurrency = settings.currencies[data.libraCurrency];
+  const currency = settings.currencies[data.currency];
   const fiatCurrency = settings.fiatCurrencies[data.fiatCurrency];
 
-  const exchangeRate = libraCurrency.rates[fiatCurrency.symbol];
+  const exchangeRate = currency.rates[fiatCurrency.symbol];
 
-  function calcPrice(libraAmount: number) {
-    return libraAmount * exchangeRate;
+  function calcPrice(amount: number) {
+    return amount * exchangeRate;
   }
 
   return (
@@ -45,27 +45,27 @@ function SendReview({
       <div>
         <small>{t("review.amount")}</small>
         <p className="text-black">
-          {data.libraAmount} {libraCurrency.sign}
+          {data.amount} {currency.sign}
         </p>
       </div>
 
       <div>
         <small>{t("review.price")}</small>
         <p className="text-black">
-          {fiatToHumanFriendly(calcPrice(data.libraAmount), true)} {fiatCurrency.symbol}
+          {fiatToDiemHumanFriendly(calcPrice(data.amount), true)} {fiatCurrency.symbol}
         </p>
       </div>
 
       <div>
         <small>{t("review.exchange_rate")}</small>
         <p className="text-black">
-          1 {libraCurrency.sign} = {fiatToHumanFriendlyRate(exchangeRate)} {fiatCurrency.symbol}
+          1 {currency.sign} = {fiatToHumanFriendlyRate(exchangeRate)} {fiatCurrency.symbol}
         </p>
       </div>
 
       <div>
         <small>{t("review.address")}</small>
-        <p className="text-black">{data.libraAddress}</p>
+        <p className="text-black">{data.address}</p>
       </div>
 
       {!submitted && (

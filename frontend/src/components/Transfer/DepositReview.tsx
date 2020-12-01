@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext } from "react";
@@ -6,9 +6,9 @@ import { Badge, Button } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../../contexts/app";
 import {
-  fiatToHumanFriendly,
+  fiatToDiemHumanFriendly,
   fiatToHumanFriendlyRate,
-  libraToHumanFriendly,
+  diemAmountToHumanFriendly,
 } from "../../utils/amount-precision";
 import { Quote } from "../../interfaces/cico";
 import { paymentMethodsLabels } from "../../interfaces/user";
@@ -39,12 +39,12 @@ function DepositReview({
     (paymentMethod) => paymentMethod.id == fundingSourceId
   )!;
 
-  const [libraCode, fiatCode] = quote.rfq.currency_pair.split("_");
+  const [currencyCode, fiatCode] = quote.rfq.currency_pair.split("_");
 
-  const libraCurrency = settings.currencies[libraCode];
+  const currency = settings.currencies[currencyCode];
   const fiatCurrency = settings.fiatCurrencies[fiatCode];
 
-  const exchangeRate = libraCurrency.rates[fiatCode];
+  const exchangeRate = currency.rates[fiatCode];
 
   return (
     <>
@@ -62,21 +62,21 @@ function DepositReview({
         <small>{t("deposit.review.price")}</small>
         <p className="text-black">
           {fiatCurrency.sign}
-          {fiatToHumanFriendly(quote.price, true)} {fiatCurrency.symbol}
+          {fiatToDiemHumanFriendly(quote.price, true)} {fiatCurrency.symbol}
         </p>
       </div>
 
       <div>
         <small>{t("deposit.review.amount")}</small>
         <p className="text-black">
-          {libraToHumanFriendly(quote.rfq.amount, true)} {libraCurrency.sign}
+          {diemAmountToHumanFriendly(quote.rfq.amount, true)} {currency.sign}
         </p>
       </div>
 
       <div>
         <small>{t("deposit.review.exchange_rate")}</small>
         <p className="text-black">
-          1 {libraCurrency.sign} = {fiatToHumanFriendlyRate(exchangeRate)} {fiatCurrency.symbol}
+          1 {currency.sign} = {fiatToHumanFriendlyRate(exchangeRate)} {fiatCurrency.symbol}
         </p>
       </div>
 

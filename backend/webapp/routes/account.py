@@ -1,6 +1,6 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 from http import HTTPStatus
@@ -9,8 +9,8 @@ from typing import Dict
 from flask import request, Blueprint
 import context
 
-from libra import identifier, utils
-from libra_utils.types.currencies import LibraCurrency
+from diem import identifier, utils
+from diem_utils.types.currencies import DiemCurrency
 from wallet.services import account as account_service
 from wallet.services import transaction as transaction_service
 from wallet.services.transaction import get_transaction_direction
@@ -64,7 +64,9 @@ class AccountRoutes:
                 return self.respond_with_error(
                     HTTPStatus.FORBIDDEN, "User is forbidden for account"
                 )
-            balances = account_service.get_account_balance(account_name=account_name)
+            balances = account_service.get_account_balance_by_name(
+                account_name=account_name
+            )
 
             account_info = {
                 "balances": [
@@ -117,7 +119,7 @@ class AccountRoutes:
                 name="currency",
                 description="currency name",
                 required=False,
-                allowed_vlaues=list(LibraCurrency.__members__),
+                allowed_vlaues=list(DiemCurrency.__members__),
             ),
             query_str_param(
                 name="direction",
@@ -137,8 +139,8 @@ class AccountRoutes:
                 allowed_vlaues=[
                     "date_asc",
                     "date_desc",
-                    "libra_amount_desc",
-                    "libra_amount_asc",
+                    "diem_amount_desc",
+                    "diem_amount_asc",
                     "fiat_amount_desc",
                     "fiat_amount_asc",
                 ],
@@ -177,7 +179,7 @@ class AccountRoutes:
         @staticmethod
         def get_request_params():
             currency = (
-                LibraCurrency(request.args["currency"])
+                DiemCurrency(request.args["currency"])
                 if "currency" in request.args
                 else None
             )
@@ -217,11 +219,11 @@ class AccountRoutes:
                 user = self.user
                 account_id = user.account_id
 
-                currency = LibraCurrency[tx_params["currency"]]
+                currency = DiemCurrency[tx_params["currency"]]
                 amount = int(tx_params["amount"])
                 recv_address: str = tx_params["receiver_address"]
                 dest_address, dest_subaddress = identifier.decode_account(
-                    recv_address, context.get().config.libra_address_hrp()
+                    recv_address, context.get().config.diem_address_hrp()
                 )
 
                 tx = transaction_service.send_transaction(
@@ -296,7 +298,7 @@ class AccountRoutes:
                 "full_addr": identifier.encode_account(
                     transaction.source_address,
                     transaction.source_subaddress,
-                    context.get().config.libra_address_hrp(),
+                    context.get().config.diem_address_hrp(),
                 ),
             },
             "destination": {
@@ -305,7 +307,7 @@ class AccountRoutes:
                 "full_addr": identifier.encode_account(
                     transaction.destination_address,
                     transaction.destination_subaddress,
-                    context.get().config.libra_address_hrp(),
+                    context.get().config.diem_address_hrp(),
                 ),
             },
             "is_internal": transaction.type == TransactionType.INTERNAL,

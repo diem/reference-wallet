@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useEffect } from "react";
@@ -16,8 +16,8 @@ import SessionStorage from "../services/sessionStorage";
 import { BackendError } from "../services/errors";
 import httpStatus from "http-status-codes";
 import { Transaction, TransactionStatus } from "../interfaces/transaction";
-import { fiatToHumanFriendly, libraToFloat, libraToHumanFriendly } from "../utils/amount-precision";
-import { fiatCurrencies, libraCurrencies } from "../currencies";
+import { fiatToHumanFriendly, diemToFloat, diemToHumanFriendly } from "../utils/amount-precision";
+import { fiatCurrencies, diemCurrencies } from "../currencies";
 import ExplorerLink from "../components/ExplorerLink";
 import TestnetWarning from "../components/TestnetWarning";
 
@@ -69,7 +69,7 @@ function SingleTransaction({
             {user && rates && account ? (
               <>
                 {(() => {
-                  const libraCurrency = libraCurrencies[transaction.currency];
+                  const diemCurrency = diemCurrencies[transaction.currency];
                   const fiatCurrency = fiatCurrencies[user.selected_fiat_currency];
                   const exchangeRate = rates[transaction.currency][user.selected_fiat_currency];
 
@@ -85,12 +85,12 @@ function SingleTransaction({
                       </View>
                       <View style={StyleSheet.flatten([theme.Section, { alignItems: "center" }])}>
                         <Text style={theme.Title}>
-                          {libraToHumanFriendly(transaction.amount, true)} {libraCurrency.sign}
+                          {diemToHumanFriendly(transaction.amount, true)} {diemCurrency.sign}
                         </Text>
                         <Text>
                           {t("price")} {fiatCurrency.sign}
                           {fiatToHumanFriendly(
-                            libraToFloat(transaction.amount) * exchangeRate,
+                            diemToFloat(transaction.amount) * exchangeRate,
                             true
                           )}{" "}
                           {fiatCurrency.symbol}

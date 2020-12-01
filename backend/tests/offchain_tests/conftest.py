@@ -1,4 +1,4 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 import context, time, pytest, typing
@@ -13,9 +13,9 @@ from offchainapi.payment import (
 )
 from offchainapi.libra_address import LibraAddress
 
-from libra import testnet
+from diem import testnet
 
-from libra_utils.types.currencies import LibraCurrency
+from diem_utils.types.currencies import DiemCurrency
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet.services.account import generate_new_subaddress
 from wallet.storage import User
@@ -23,7 +23,7 @@ from wallet.types import RegistrationStatus
 from wallet.storage import db_session
 
 
-CURRENCY = LibraCurrency.Coin1.value
+CURRENCY = DiemCurrency.Coin1.value
 
 
 @pytest.fixture()
@@ -118,7 +118,7 @@ def make_user(name: str) -> User:
     user = OneUser.run(
         db_session,
         account_amount=2000 * 1_000_000,
-        account_currency=LibraCurrency.Coin1,
+        account_currency=DiemCurrency.Coin1,
         registration_status=RegistrationStatus.Approved,
         account_name=f"{name}_account",
         username=name,

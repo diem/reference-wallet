@@ -1,13 +1,13 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 import uuid
 from datetime import date
 from typing import Optional, List
 
-from libra_utils.types.currencies import FiatCurrency
+from diem_utils.types.currencies import FiatCurrency
 from . import db_session
 from .models import User, PaymentMethod
 from ..types import RegistrationStatus

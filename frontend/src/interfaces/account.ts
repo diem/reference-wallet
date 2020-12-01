@@ -1,13 +1,13 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { LibraCurrency } from "./currencies";
+import { Currency } from "./currencies";
 
-export interface LibraCurrencyBalance {
-  currency: LibraCurrency;
+export interface CurrencyBalance {
+  currency: Currency;
   balance: number;
 }
 
 export interface Account {
-  balances: LibraCurrencyBalance[];
+  balances: CurrencyBalance[];
 }

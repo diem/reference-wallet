@@ -1,8 +1,8 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useEffect, useReducer } from "react";
-import { LibraCurrency } from "../../interfaces/currencies";
+import { Currency } from "../../interfaces/currencies";
 import { settingsContext } from "../../contexts/app";
 import WithdrawReview from "./WithdrawReview";
 import WithdrawForm from "./WithdrawForm";
@@ -10,7 +10,7 @@ import { WithdrawData } from "./interfaces";
 import { Quote } from "../../interfaces/cico";
 import BackendClient from "../../services/backendClient";
 import ErrorMessage from "../Messages/ErrorMessage";
-import { libraFromFloat } from "../../utils/amount-precision";
+import { diemAmountFromFloat } from "../../utils/amount-precision";
 import { BackendError } from "../../services/errors";
 import SuccessMessage from "../Messages/SuccessMessage";
 import { useTranslation } from "react-i18next";
@@ -59,7 +59,7 @@ function reducer(state: State, action: Action): State {
 }
 
 interface WithdrawProps {
-  initialCurrency?: LibraCurrency;
+  initialCurrency?: Currency;
   onComplete: () => void;
 }
 
@@ -70,7 +70,7 @@ function Withdraw({ initialCurrency, onComplete }: WithdrawProps) {
   const [{ phase, requestData, quote, errorMessage }, dispatch] = useReducer(reducer, {
     phase: "collect",
     requestData: {
-      libraCurrency: initialCurrency,
+      currency: initialCurrency,
       fiatCurrency: settings.defaultFiatCurrencyCode!,
     },
   });
@@ -95,9 +95,9 @@ function Withdraw({ initialCurrency, onComplete }: WithdrawProps) {
     const requestQuote = async () => {
       try {
         const newQuote = await new BackendClient().requestWithdrawQuote(
-          requestData.libraCurrency!,
+          requestData.currency!,
           requestData.fiatCurrency,
-          libraFromFloat(requestData.libraAmount!)
+          diemAmountFromFloat(requestData.amount!)
         );
         if (!isOutdated) {
           dispatch({ type: "review", quote: newQuote });

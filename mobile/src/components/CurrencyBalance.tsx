@@ -1,18 +1,18 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import { useTranslation } from "react-i18next";
 import React from "react";
-import { LibraCurrencyBalance } from "../interfaces/account";
+import { DiemCurrencyBalance } from "../interfaces/account";
 import { Text, ThemeConsumer } from "react-native-elements";
 import { appTheme } from "../styles";
 import { View } from "react-native";
 import { FiatCurrency, Rates } from "../interfaces/currencies";
-import { fiatToHumanFriendly, libraToFloat, libraToHumanFriendly } from "../utils/amount-precision";
-import { fiatCurrencies, libraCurrencies } from "../currencies";
+import { fiatToHumanFriendly, diemToFloat, diemToHumanFriendly } from "../utils/amount-precision";
+import { fiatCurrencies, diemCurrencies } from "../currencies";
 
 interface TotalBalanceProps {
-  balance: LibraCurrencyBalance;
+  balance: DiemCurrencyBalance;
   fiatCurrencyCode: FiatCurrency;
   rates: Rates;
 }
@@ -20,18 +20,18 @@ interface TotalBalanceProps {
 function CurrencyBalance({ balance, fiatCurrencyCode, rates }: TotalBalanceProps) {
   const { t } = useTranslation("layout");
 
-  const libraCurrency = libraCurrencies[balance.currency];
+  const diemCurrency = diemCurrencies[balance.currency];
   const fiatCurrency = fiatCurrencies[fiatCurrencyCode];
 
   const exchangeRate = rates[balance.currency][fiatCurrencyCode];
-  const price = libraToFloat(balance.balance) * exchangeRate;
+  const price = diemToFloat(balance.balance) * exchangeRate;
 
   return (
     <ThemeConsumer<typeof appTheme>>
       {({ theme }) => (
         <View style={{ ...theme.Section, alignItems: "center" }}>
           <Text style={theme.Title}>
-            {libraToHumanFriendly(balance.balance)} {libraCurrency.sign}
+            {diemToHumanFriendly(balance.balance)} {diemCurrency.sign}
           </Text>
           <Text>
             {t("price")} {fiatCurrency.sign}

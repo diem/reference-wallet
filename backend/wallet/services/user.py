@@ -1,4 +1,4 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 import hashlib
@@ -8,7 +8,7 @@ from time import time
 from typing import Optional, List
 from uuid import uuid4
 
-from libra_utils.types.currencies import FiatCurrency
+from diem_utils.types.currencies import FiatCurrency
 from wallet import storage
 from wallet.config import ADMIN_LOGIN_ENABLED
 from wallet.storage import (

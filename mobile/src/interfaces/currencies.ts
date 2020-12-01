@@ -1,14 +1,14 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-export type LibraCurrency = "LBR" | "Coin1" | "Coin2";
+export type DiemCurrency = "XDM" | "Coin1" | "Coin2";
 
 export type FiatCurrency = "USD" | "EUR" | "GBP" | "CHF" | "CAD" | "AUD" | "NZD" | "JPY";
 
-export type LibraCurrenciesSettings = {
-  [key in LibraCurrency]: {
+export type DiemCurrenciesSettings = {
+  [key in DiemCurrency]: {
     name: string;
-    symbol: LibraCurrency;
+    symbol: DiemCurrency;
     sign: string;
   };
 };
@@ -21,7 +21,7 @@ export type FiatCurrenciesSettings = {
 };
 
 export type Rates = {
-  [key in LibraCurrency]: {
-    [key in FiatCurrency | LibraCurrency]: number;
+  [key in DiemCurrency]: {
+    [key in FiatCurrency | DiemCurrency]: number;
   };
 };

@@ -1,26 +1,26 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { fiatToHumanFriendly, libraToFloat, libraToHumanFriendly } from "../utils/amount-precision";
-import { LibraCurrencyBalance } from "../interfaces/account";
-import { fiatCurrencies, libraCurrencies } from "../currencies";
+import { fiatToHumanFriendly, diemToFloat, diemToHumanFriendly } from "../utils/amount-precision";
+import { DiemCurrencyBalance } from "../interfaces/account";
+import { fiatCurrencies, diemCurrencies } from "../currencies";
 import { ListItem } from "react-native-elements";
 import React from "react";
-import { FiatCurrency, LibraCurrency, Rates } from "../interfaces/currencies";
+import { FiatCurrency, DiemCurrency, Rates } from "../interfaces/currencies";
 
 interface BalancesListProps {
-  balances: LibraCurrencyBalance[];
+  balances: DiemCurrencyBalance[];
   fiatCurrencyCode: FiatCurrency;
   rates: Rates;
-  onSelect?: (currency: LibraCurrency) => void;
+  onSelect?: (currency: DiemCurrency) => void;
 }
 
 function BalancesList({ balances, fiatCurrencyCode, rates, onSelect }: BalancesListProps) {
   const sortedBalances = balances.sort((a, b) => {
     const exchangeRateA = rates[a.currency][fiatCurrencyCode];
-    const priceA = libraToFloat(a.balance) * exchangeRateA;
+    const priceA = diemToFloat(a.balance) * exchangeRateA;
     const exchangeRateB = rates[b.currency][fiatCurrencyCode];
-    const priceB = libraToFloat(b.balance) * exchangeRateB;
+    const priceB = diemToFloat(b.balance) * exchangeRateB;
 
     return priceA <= priceB ? 1 : -1;
   });
@@ -28,21 +28,21 @@ function BalancesList({ balances, fiatCurrencyCode, rates, onSelect }: BalancesL
   return (
     <>
       {sortedBalances.map((currencyBalance, i) => {
-        const libraCurrency = libraCurrencies[currencyBalance.currency];
+        const diemCurrency = diemCurrencies[currencyBalance.currency];
         const fiatCurrency = fiatCurrencies[fiatCurrencyCode];
         const exchangeRate = rates[currencyBalance.currency][fiatCurrencyCode];
 
-        const price = libraToFloat(currencyBalance.balance) * exchangeRate;
+        const price = diemToFloat(currencyBalance.balance) * exchangeRate;
 
         return (
           <ListItem
             key={i}
             onPress={() => onSelect && onSelect(currencyBalance.currency)}
             bottomDivider={true}
-            title={libraCurrency.name}
+            title={diemCurrency.name}
             titleStyle={{ fontWeight: "bold", color: "#000000" }}
-            rightTitle={`${libraToHumanFriendly(currencyBalance.balance, true)} ${
-              libraCurrency.sign
+            rightTitle={`${diemToHumanFriendly(currencyBalance.balance, true)} ${
+              diemCurrency.sign
             }`}
             rightTitleStyle={{ color: "#000000" }}
             rightSubtitle={`${fiatCurrency.sign}${fiatToHumanFriendly(price, true)} ${

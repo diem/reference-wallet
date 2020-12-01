@@ -1,6 +1,6 @@
 # pyre-strict
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 import time
@@ -11,7 +11,7 @@ import json
 
 from wallet.background_tasks.background import process_incoming_txn
 from .types import LRWPubSubEvent
-from libra import jsonrpc
+from diem import jsonrpc
 
 
 class FileProgressStorage:
@@ -35,14 +35,14 @@ class LRWPubSubClient:
         self.sync_interval_ms = config["sync_interval_ms"]
         self.accounts = config["accounts"]
 
-        self.libra_node_uri = config["libra_node_uri"]
+        self.diem_node_uri = config["diem_node_uri"]
         self.progress_file_path = config["progress_file_path"]
         self.fetch_batch_size = 10
         self.processor = config.get("processor", process_incoming_txn)
 
         logging.info(f"Loaded LRWPubSubClient with config: {config}")
 
-        self.client = jsonrpc.Client(self.libra_node_uri)
+        self.client = jsonrpc.Client(self.diem_node_uri)
         self.progress = FileProgressStorage(self.progress_file_path)
 
     def start(self) -> None:

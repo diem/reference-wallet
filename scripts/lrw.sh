@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 script_dir="$(dirname "$0")"
@@ -10,7 +10,7 @@ source "$script_dir/funcs.sh"
 
 show_help() {
   echo ""
-  warn "Libra reference wallet C&C"
+  warn "Diem reference wallet C&C"
   echo ""
   echo "Usage: scripts/lrw.sh <command>"
   echo ""

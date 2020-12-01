@@ -1,4 +1,4 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 import logging, time
@@ -8,10 +8,10 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PublicKey,
 )
 from dataclasses import dataclass
-from libra import (
+from diem import (
     jsonrpc,
     utils,
-    libra_types,
+    diem_types,
     stdlib,
     txnmetadata,
     LocalAccount,
@@ -99,7 +99,7 @@ class Context:
         script = stdlib.encode_peer_to_peer_with_metadata_script(
             currency=utils.currency_code(currency),
             payee=utils.account_address(receiver_vasp_address),
-            amount=libra_types.st.uint64(amount),
+            amount=diem_types.st.uint64(amount),
             metadata=metadata,
             metadata_signature=signature,
         )
@@ -108,34 +108,34 @@ class Context:
         return self._submit_and_wait(txn)
 
     def _submit_and_wait(
-        self, txn: libra_types.SignedTransaction
+        self, txn: diem_types.SignedTransaction
     ) -> jsonrpc.Transaction:
         self.jsonrpc_client.submit(txn)
         return self.jsonrpc_client.wait_for_transaction(txn, 30)
 
     # ---- delegate to jsonrpc client end ----
 
-    # ---- libra transaction utils start ----
+    # ---- diem transaction utils start ----
 
     def create_transaction(
-        self, script: libra_types.Script
-    ) -> libra_types.SignedTransaction:
+        self, script: diem_types.Script
+    ) -> diem_types.SignedTransaction:
         address = self.config.vasp_account_address()
         seq = self.jsonrpc_client.get_account_sequence(address)
-        txn = libra_types.RawTransaction(
+        txn = diem_types.RawTransaction(
             sender=address,
-            sequence_number=libra_types.st.uint64(seq),
-            payload=libra_types.TransactionPayload__Script(value=script),
-            max_gas_amount=libra_types.st.uint64(1_000_000),
-            gas_unit_price=libra_types.st.uint64(0),
+            sequence_number=diem_types.st.uint64(seq),
+            payload=diem_types.TransactionPayload__Script(value=script),
+            max_gas_amount=diem_types.st.uint64(1_000_000),
+            gas_unit_price=diem_types.st.uint64(0),
             gas_currency_code=self.config.gas_currency_code,
-            expiration_timestamp_secs=libra_types.st.uint64(int(time.time()) + 30),
-            chain_id=libra_types.ChainId.from_int(self.config.chain_id),
+            expiration_timestamp_secs=diem_types.st.uint64(int(time.time()) + 30),
+            chain_id=diem_types.ChainId.from_int(self.config.chain_id),
         )
         sig = self.sign(utils.raw_transaction_signing_msg(txn))
         return utils.create_signed_transaction(txn, self.public_key_bytes(), sig)
 
-    # ---- libra transaction utils end ----
+    # ---- diem transaction utils end ----
 
     # ---- delegate to custody start ----
 

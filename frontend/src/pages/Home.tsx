@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useEffect, useState } from "react";
@@ -7,7 +7,7 @@ import { Redirect } from "react-router";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../contexts/app";
-import { LibraCurrency } from "../interfaces/currencies";
+import { Currency } from "../interfaces/currencies";
 import { RegistrationStatus } from "../interfaces/user";
 import { Transaction } from "../interfaces/transaction";
 import VerifyingMessage from "../components/VerifyingMessage";
@@ -36,7 +36,7 @@ function Home() {
       user.registration_status as RegistrationStatus
     );
 
-  const [activeCurrency, setActiveCurrency] = useState<LibraCurrency | undefined>();
+  const [activeCurrency, setActiveCurrency] = useState<Currency | undefined>();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [transactionModal, setTransactionModal] = useState<Transaction>();
 

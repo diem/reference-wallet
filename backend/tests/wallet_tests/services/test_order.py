@@ -1,12 +1,12 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 from uuid import UUID
 
-from libra_utils.types.currencies import LibraCurrency, FiatCurrency
-from libra_utils.types.liquidity.currency import CurrencyPairs
+from diem_utils.types.currencies import DiemCurrency, FiatCurrency
+from diem_utils.types.liquidity.currency import CurrencyPairs
 from tests.wallet_tests.resources.seeds.add_funds_seeder import (
     AddFundsSeeder,
     InventoryWithoutFundsSeeder,
@@ -29,7 +29,7 @@ def test_create_order():
         user_id=1,
         direction=Direction.Buy,
         amount=amount,
-        base_currency=LibraCurrency.Coin1,
+        base_currency=DiemCurrency.Coin1,
         quote_currency=FiatCurrency.USD,
     )
 
@@ -38,7 +38,7 @@ def test_create_order():
 
 def test_add_funds(patch_blockchain: None):
     buy_amount = 1000
-    buy_currency = LibraCurrency.Coin1
+    buy_currency = DiemCurrency.Coin1
     inventory_id, account_id, order_id = AddFundsSeeder.run(
         db_session,
         buy_amount=buy_amount,
@@ -65,7 +65,7 @@ def test_add_funds(patch_blockchain: None):
 
 def test_add_funds_refund_inventory(patch_blockchain: None):
     buy_amount = 1000
-    buy_currency = LibraCurrency.Coin1
+    buy_currency = DiemCurrency.Coin1
     inventory_id, account_id, order_id = InventoryWithoutFundsSeeder.run(
         db_session,
         buy_amount=buy_amount,
@@ -94,9 +94,9 @@ def test_convert_insufficient_user_balance():
     inventory_id, account_id, order = ConvertSeeder.run(
         db_session,
         account_amount=500,
-        account_currency=LibraCurrency.Coin1,
+        account_currency=DiemCurrency.Coin1,
         inventory_amount=600,
-        inventory_currency=LibraCurrency.Coin1,
+        inventory_currency=DiemCurrency.Coin1,
         convert_from_amount=700,
         convert_to_amount=500,
     )
@@ -108,9 +108,9 @@ def test_convert_insufficient_inventory_balance():
     inventory_id, account_id, order = ConvertSeeder.run(
         db_session,
         account_amount=1000,
-        account_currency=LibraCurrency.Coin1,
+        account_currency=DiemCurrency.Coin1,
         inventory_amount=300,
-        inventory_currency=LibraCurrency.Coin1,
+        inventory_currency=DiemCurrency.Coin1,
         convert_from_amount=1000,
         convert_to_amount=500,
     )
@@ -125,7 +125,7 @@ def test_withdraw_funds(patch_blockchain: None):
     inventory_id, account_id, order_id = WithdrawFundsSeeder.run(
         db_session,
         account_amount=1000,
-        account_currency=LibraCurrency.Coin1,
+        account_currency=DiemCurrency.Coin1,
         withdraw_amount=500,
         withdraw_to_currency=FiatCurrency.USD,
         price=550,
@@ -140,7 +140,7 @@ def test_withdraw_funds(patch_blockchain: None):
 
     withdraw_transaction = storage.get_transaction(order.internal_ledger_tx)
     assert withdraw_transaction
-    assert withdraw_transaction.currency == LibraCurrency.Coin1
+    assert withdraw_transaction.currency == DiemCurrency.Coin1
     assert withdraw_transaction.amount == 500
     assert withdraw_transaction.source_id == account_id
     assert withdraw_transaction.destination_id == inventory_id

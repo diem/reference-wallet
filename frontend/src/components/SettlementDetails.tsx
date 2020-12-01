@@ -1,9 +1,9 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext } from "react";
 import { settingsContext } from "../contexts/app";
-import { libraToHumanFriendly } from "../utils/amount-precision";
+import { diemAmountToHumanFriendly } from "../utils/amount-precision";
 import { Debt } from "../interfaces/settlement";
 
 export interface SettlementDetailsProps {
@@ -27,7 +27,7 @@ export default function SettlementDetails({ debt }: SettlementDetailsProps) {
             </div>
             <div className="ml-auto text-right">
               <div className="text-black">
-                {libraToHumanFriendly(amount, true)} {symbol}
+                {diemAmountToHumanFriendly(amount, true)} {symbol}
               </div>
             </div>
           </li>

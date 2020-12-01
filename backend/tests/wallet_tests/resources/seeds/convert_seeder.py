@@ -1,6 +1,6 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 from copy import deepcopy
@@ -18,7 +18,7 @@ from wallet.types import (
     OrderType,
     TransactionType,
 )
-from libra_utils.types.currencies import LibraCurrency
+from diem_utils.types.currencies import DiemCurrency
 
 
 class ConvertSeeder:
@@ -26,9 +26,9 @@ class ConvertSeeder:
     def run(
         db_session,
         account_amount: int,
-        account_currency: LibraCurrency,
+        account_currency: DiemCurrency,
         inventory_amount: int,
-        inventory_currency: LibraCurrency,
+        inventory_currency: DiemCurrency,
         convert_from_amount: int,
         convert_to_amount: int,
     ) -> Tuple[int, int, Order]:
