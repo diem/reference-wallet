@@ -1,4 +1,4 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 """ Risk module determines if a transaction by a user can be executed. Risk check is stubbed out for LRW

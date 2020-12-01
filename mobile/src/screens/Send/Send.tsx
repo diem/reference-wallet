@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useEffect, useRef, useState } from "react";
@@ -12,37 +12,37 @@ import { accountContext, withAccountContext } from "../../contexts/account";
 import ScreenLayout from "../../components/ScreenLayout";
 import { appTheme } from "../../styles";
 import { ratesContext, withRatesContext } from "../../contexts/rates";
-import { FiatCurrency, LibraCurrency } from "../../interfaces/currencies";
+import { FiatCurrency, DiemCurrency } from "../../interfaces/currencies";
 import SelectDropdown from "../../components/Select";
 import {
   fiatCurrenciesOptions,
-  libraCurrenciesWithBalanceOptions,
+  diemCurrenciesWithBalanceOptions,
 } from "../../utils/dropdown-options";
-import { fiatCurrencies, libraCurrencies } from "../../currencies";
+import { fiatCurrencies, diemCurrencies } from "../../currencies";
 import {
   fiatFromFloat,
   fiatToHumanFriendly,
   fiatToHumanFriendlyRate,
-  libraFromFloat,
-  libraToFloat,
-  normalizeLibra,
+  diemFromFloat,
+  diemToFloat,
+  normalizeDiem,
 } from "../../utils/amount-precision";
 import InputErrorMessage from "../../components/InputErrorMessage";
 // @ts-ignore
 import ScanQR from "../../assets/scan-qr.svg";
 
 const VALID_VASP_ADDRESS_REGEX = new RegExp("^[a-zA-Z0-9]{50}$");
-const LIBRA_PREFIX = "libra://";
+const LIBRA_PREFIX = "diem://";
 
 interface AddressWithIntents {
   address: string;
-  currency?: LibraCurrency;
+  currency?: DiemCurrency;
   amount?: number;
 }
 
-function parseLibraAddress(address: string): AddressWithIntents {
+function parseDiemAddress(address: string): AddressWithIntents {
   let amount: number | undefined = undefined;
-  let currency: LibraCurrency | undefined = undefined;
+  let currency: DiemCurrency | undefined = undefined;
   if (address.startsWith(LIBRA_PREFIX)) {
     address = address.substring(LIBRA_PREFIX.length);
   }
@@ -54,10 +54,10 @@ function parseLibraAddress(address: string): AddressWithIntents {
       const [key, value] = intent.split("=", 2);
       switch (key) {
         case "c":
-          currency = decodeURIComponent(value) as LibraCurrency;
+          currency = decodeURIComponent(value) as DiemCurrency;
           break;
         case "am":
-          amount = libraToFloat(parseInt(decodeURIComponent(value)));
+          amount = diemToFloat(parseInt(decodeURIComponent(value)));
           break;
       }
     });
@@ -72,10 +72,10 @@ function parseLibraAddress(address: string): AddressWithIntents {
 }
 
 interface SendData extends Record<string, any> {
-  libraCurrency?: LibraCurrency;
+  diemCurrency?: DiemCurrency;
   fiatCurrency: FiatCurrency;
-  libraAmount?: string;
-  libraAddress?: string;
+  diemAmount?: string;
+  diemAddress?: string;
 }
 
 interface SendProps {
@@ -92,22 +92,22 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
   const { errors, handleSubmit, control, setValue, watch } = useForm<SendData>();
   const [loading, setLoading] = useState<boolean>(false);
 
-  const libraAmount = watch("libraAmount") || 0;
-  const libraCurrencyCode = watch("libraCurrency");
+  const diemAmount = watch("diemAmount") || 0;
+  const diemCurrencyCode = watch("diemCurrency");
   const fiatCurrencyCode = watch("fiatCurrency");
 
   const priceRef = useRef<Input>(null);
 
-  const libraCurrency = libraCurrencyCode ? libraCurrencies[libraCurrencyCode] : undefined;
+  const diemCurrency = diemCurrencyCode ? diemCurrencies[diemCurrencyCode] : undefined;
   const fiatCurrency = fiatCurrencyCode
     ? fiatCurrencies[fiatCurrencyCode]
     : fiatCurrencies[user!.selected_fiat_currency];
 
   const exchangeRate =
-    rates && libraCurrencyCode && fiatCurrencyCode ? rates[libraCurrencyCode][fiatCurrencyCode] : 0;
+    rates && diemCurrencyCode && fiatCurrencyCode ? rates[diemCurrencyCode][fiatCurrencyCode] : 0;
 
-  function calcPrice(libraAmount: number) {
-    return libraAmount * exchangeRate;
+  function calcPrice(diemAmount: number) {
+    return diemAmount * exchangeRate;
   }
 
   function calcAmount(price: number) {
@@ -115,24 +115,24 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
   }
 
   function setAddressAndIntents(value: string) {
-    const parsedAddress = parseLibraAddress(value);
+    const parsedAddress = parseDiemAddress(value);
 
-    setValue("libraAddress", parsedAddress.address);
+    setValue("diemAddress", parsedAddress.address);
 
     if (parsedAddress.currency) {
-      setValue("libraCurrency", parsedAddress.currency);
+      setValue("diemCurrency", parsedAddress.currency);
     }
 
     if (parsedAddress.amount) {
-      setValue("libraAmount", parsedAddress.amount.toString());
+      setValue("diemAmount", parsedAddress.amount.toString());
     }
   }
 
   async function onFormSubmit({
     fiatCurrency,
-    libraCurrency,
-    libraAmount,
-    libraAddress,
+    diemCurrency,
+    diemAmount,
+    diemAddress,
   }: SendData) {
     setLoading(true);
     Keyboard.dismiss();
@@ -141,9 +141,9 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
         name: "SendReview",
         passProps: {
           fiatCurrencyCode: fiatCurrency,
-          libraCurrencyCode: libraCurrency,
-          libraAmount,
-          libraAddress,
+          diemCurrencyCode: diemCurrency,
+          diemAmount,
+          diemAddress,
         },
       },
     });
@@ -168,25 +168,25 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
                 </Text>
 
                 <View style={theme.Section}>
-                  <Text style={{ textTransform: "capitalize" }}>{t("form.libraCurrency")}</Text>
+                  <Text style={{ textTransform: "capitalize" }}>{t("form.diemCurrency")}</Text>
                   <Controller
                     control={control}
-                    name="libraCurrency"
+                    name="diemCurrency"
                     rules={{
                       required: t<string>("validations:required", {
-                        replace: { field: t("form.libraCurrency") },
+                        replace: { field: t("form.diemCurrency") },
                       }),
                     }}
                     onChangeName="onChange"
                     as={
                       <SelectDropdown
-                        label={t("form.libraCurrency_placeholder")}
-                        options={libraCurrenciesWithBalanceOptions(account.balances)}
+                        label={t("form.diemCurrency_placeholder")}
+                        options={diemCurrenciesWithBalanceOptions(account.balances)}
                       />
                     }
                   />
-                  {!!errors.libraCurrency && (
-                    <InputErrorMessage message={errors.libraCurrency.message as string} />
+                  {!!errors.diemCurrency && (
+                    <InputErrorMessage message={errors.diemCurrency.message as string} />
                   )}
                 </View>
 
@@ -194,7 +194,7 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
                   <Text style={{ textTransform: "capitalize" }}>{t("form.address")}</Text>
                   <Controller
                     control={control}
-                    name="libraAddress"
+                    name="diemAddress"
                     rules={{
                       required: t<string>("validations:required", {
                         replace: { field: t("form.address") },
@@ -232,8 +232,8 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
                       />
                     }
                   />
-                  {!!errors.libraAddress && (
-                    <InputErrorMessage message={errors.libraAddress.message as string} />
+                  {!!errors.diemAddress && (
+                    <InputErrorMessage message={errors.diemAddress.message as string} />
                   )}
                 </View>
 
@@ -244,7 +244,7 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
                     <Text style={{ textTransform: "capitalize" }}>{t("form.amount")}</Text>
                     <Controller
                       control={control}
-                      name="libraAmount"
+                      name="diemAmount"
                       rules={{
                         validate: (enteredAmount) => {
                           if (!isFinite(Number(enteredAmount)) || parseFloat(enteredAmount) < 1) {
@@ -253,13 +253,13 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
                             });
                           }
 
-                          const selectedLibraCurrency = watch("libraCurrency");
+                          const selectedDiemCurrency = watch("diemCurrency");
 
-                          if (selectedLibraCurrency) {
+                          if (selectedDiemCurrency) {
                             const selectedCurrencyBalance = account!.balances.find(
-                              (balance) => balance.currency === selectedLibraCurrency
+                              (balance) => balance.currency === selectedDiemCurrency
                             )!;
-                            if (libraFromFloat(enteredAmount) > selectedCurrencyBalance.balance) {
+                            if (diemFromFloat(enteredAmount) > selectedCurrencyBalance.balance) {
                               return t("validations:noMoreThanBalance", {
                                 replace: {
                                   field: t("form.amount"),
@@ -277,12 +277,12 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
                           keyboardType="numeric"
                           placeholder={t("form.amount")}
                           renderErrorMessage={false}
-                          rightIcon={<Text>{libraCurrency?.sign}</Text>}
+                          rightIcon={<Text>{diemCurrency?.sign}</Text>}
                         />
                       }
                     />
-                    {!!errors.libraAmount && (
-                      <InputErrorMessage message={errors.libraAmount.message as string} />
+                    {!!errors.diemAmount && (
+                      <InputErrorMessage message={errors.diemAmount.message as string} />
                     )}
                   </View>
 
@@ -290,12 +290,12 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
                     <Text style={{ textTransform: "capitalize" }}>{t("form.price")}</Text>
                     <Input
                       ref={priceRef}
-                      disabled={!libraCurrency || !fiatCurrency}
+                      disabled={!diemCurrency || !fiatCurrency}
                       keyboardType="numeric"
                       renderErrorMessage={false}
                       value={
-                        libraAmount && isFinite(Number(libraAmount))
-                          ? fiatToHumanFriendly(calcPrice(parseFloat(libraAmount)))
+                        diemAmount && isFinite(Number(diemAmount))
+                          ? fiatToHumanFriendly(calcPrice(parseFloat(diemAmount)))
                           : ""
                       }
                       onChangeText={(price) => {
@@ -306,8 +306,8 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
                           exchangeRate > 0
                         ) {
                           const newPrice = fiatFromFloat(parseFloat(price));
-                          const amount = normalizeLibra(calcAmount(newPrice));
-                          setValue("libraAmount", amount.toString());
+                          const amount = normalizeDiem(calcAmount(newPrice));
+                          setValue("diemAmount", amount.toString());
                         }
                       }}
                       rightIcon={
@@ -337,11 +337,11 @@ function Send({ componentId, addressWithIntents }: SendProps & NavigationCompone
                   </View>
                 </View>
 
-                {libraCurrency && fiatCurrency && (
+                {diemCurrency && fiatCurrency && (
                   <View style={theme.Section}>
                     <Text style={{ textTransform: "capitalize" }}>{t("form.exchange_rate")}</Text>
                     <Text>
-                      1 {libraCurrency.sign} = {fiatToHumanFriendlyRate(exchangeRate)}{" "}
+                      1 {diemCurrency.sign} = {fiatToHumanFriendlyRate(exchangeRate)}{" "}
                       {fiatCurrency.symbol}
                     </Text>
                   </View>

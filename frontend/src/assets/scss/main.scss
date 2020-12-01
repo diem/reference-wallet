@@ -1,10 +1,10 @@
 @import "../fonts/freesans/style.css";
 @import "../../../node_modules/font-awesome/scss/font-awesome";
 
-@import "libra-reference-wallet/variables";
+@import "variables";
 @import "../../../node_modules/bootstrap/scss/bootstrap";
 
-@import "libra-reference-wallet/credit-cards";
+@import "credit-cards";
 @import "../../../node_modules/react-credit-cards/src/styles.scss";
 
 .btn {

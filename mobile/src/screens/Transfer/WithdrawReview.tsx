@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useState } from "react";
@@ -13,13 +13,13 @@ import { appTheme } from "../../styles";
 import { ratesContext, withRatesContext } from "../../contexts/rates";
 import { Quote } from "../../interfaces/cico";
 import { paymentMethodsLabels } from "../../interfaces/user";
-import { fiatCurrencies, libraCurrencies } from "../../currencies";
+import { fiatCurrencies, diemCurrencies } from "../../currencies";
 import {
   fiatToHumanFriendly,
   fiatToHumanFriendlyRate,
-  libraToHumanFriendly,
+  diemToHumanFriendly,
 } from "../../utils/amount-precision";
-import { FiatCurrency, LibraCurrency } from "../../interfaces/currencies";
+import { FiatCurrency, DiemCurrency } from "../../interfaces/currencies";
 import BackendClient from "../../services/backendClient";
 import SessionStorage from "../../services/sessionStorage";
 import { BackendError } from "../../services/errors";
@@ -83,12 +83,12 @@ function WithdrawReview({
                     (paymentMethod) => paymentMethod.id == fundingSourceId
                   )!;
 
-                  const [libraCurrencyCode, fiatCurrencyCode] = quote.rfq.currency_pair.split("_");
-                  const libraCurrency = libraCurrencies[libraCurrencyCode as LibraCurrency];
+                  const [diemCurrencyCode, fiatCurrencyCode] = quote.rfq.currency_pair.split("_");
+                  const diemCurrency = diemCurrencies[diemCurrencyCode as DiemCurrency];
                   const fiatCurrency = fiatCurrencies[fiatCurrencyCode as FiatCurrency];
 
                   const exchangeRate =
-                    rates[libraCurrencyCode as LibraCurrency][fiatCurrencyCode as FiatCurrency];
+                    rates[diemCurrencyCode as DiemCurrency][fiatCurrencyCode as FiatCurrency];
 
                   return (
                     <View style={theme.Container}>
@@ -112,7 +112,7 @@ function WithdrawReview({
                       <View style={theme.Section}>
                         <Text>{t("withdraw.review.amount")}</Text>
                         <Text style={{ color: "black" }}>
-                          {libraToHumanFriendly(quote.rfq.amount, true)} {libraCurrency.sign}
+                          {diemToHumanFriendly(quote.rfq.amount, true)} {diemCurrency.sign}
                         </Text>
                       </View>
 
@@ -127,7 +127,7 @@ function WithdrawReview({
                       <View style={theme.Section}>
                         <Text>{t("withdraw.review.exchange_rate")}</Text>
                         <Text style={{ color: "black" }}>
-                          1 {libraCurrency.sign} = {fiatToHumanFriendlyRate(exchangeRate)}{" "}
+                          1 {diemCurrency.sign} = {fiatToHumanFriendlyRate(exchangeRate)}{" "}
                           {fiatCurrency.symbol}
                         </Text>
                       </View>

@@ -1,13 +1,13 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-from .cico import cico, CicoRoutes
-from .admin import admin, AdminRoutes
-from .user import user, UserRoutes
 from .account import account, AccountRoutes
+from .admin import admin, AdminRoutes
+from .cico import cico, CicoRoutes
 from .system import system, SystemRoutes
+from .user import user, UserRoutes
 
 
 def account_routes():

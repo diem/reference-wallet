@@ -1,17 +1,17 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import Tuple
 
 import context
-import libra_utils.types.currencies
+import diem_utils.types.currencies
 import pytest
-from libra import libra_types
-from libra.txnmetadata import general_metadata, travel_rule
-from libra.utils import sub_address, account_address_hex, account_address
-from libra_utils.types.currencies import LibraCurrency
+from diem import diem_types
+from diem.txnmetadata import general_metadata, travel_rule
+from diem.utils import sub_address, account_address_hex, account_address
+from diem_utils.types.currencies import DiemCurrency
 
 from tests.wallet_tests.resources.seeds.balances_seeder import BalancesSeeder
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
@@ -75,7 +75,7 @@ def test_transaction_seq_exist() -> None:
     )
     storage.add_transaction(
         amount=100,
-        currency=LibraCurrency.Coin1,
+        currency=DiemCurrency.Coin1,
         payment_type=TransactionType.INTERNAL,
         status=TransactionStatus.COMPLETED,
         source_address=source_addr,
@@ -98,8 +98,8 @@ def test_process_incoming_general_txn() -> None:
         receiver_address="lrw_vasp",
         sequence=1,
         amount=100,
-        currency=LibraCurrency.Coin1,
-        metadata=libra_types.Metadata__GeneralMetadata.lcs_deserialize(meta),
+        currency=DiemCurrency.Coin1,
+        metadata=diem_types.Metadata__GeneralMetadata.lcs_deserialize(meta),
         blockchain_version=1,
     )
 
@@ -118,7 +118,7 @@ def test_process_incoming_travel_rule_txn() -> None:
     amount = 1000 * 1_000_000
     sender = account_address(sender_addr)
     sequence = 1
-    currency = LibraCurrency.Coin1
+    currency = DiemCurrency.Coin1
     blockchain_version = 1
 
     off_chain_reference_id = "32323abc"
@@ -142,7 +142,7 @@ def test_process_incoming_travel_rule_txn() -> None:
         sequence=sequence,
         amount=amount,
         currency=currency,
-        metadata=libra_types.Metadata__TravelRuleMetadata.lcs_deserialize(metadata),
+        metadata=diem_types.Metadata__TravelRuleMetadata.lcs_deserialize(metadata),
         blockchain_version=blockchain_version,
     )
 
@@ -162,13 +162,13 @@ def test_balance_calculation_simple_income() -> None:
         source_id=counter_id,
         destination_id=account_id,
         amount=100,
-        currency=LibraCurrency.Coin1,
+        currency=DiemCurrency.Coin1,
         status=TransactionStatus.COMPLETED,
     )
     balance = calc_account_balance(account_id=account_id, transactions=[tx])
 
     assert balance.total == {
-        LibraCurrency.Coin1: 100,
+        DiemCurrency.Coin1: 100,
     }
 
 
@@ -179,14 +179,14 @@ def test_balance_calculation_in_and_out() -> None:
         source_id=counter_id,
         destination_id=account_id,
         amount=100,
-        currency=LibraCurrency.Coin1,
+        currency=DiemCurrency.Coin1,
         status=TransactionStatus.COMPLETED,
     )
     outgoing = Transaction(
         source_id=account_id,
         destination_id=counter_id,
         amount=50,
-        currency=LibraCurrency.Coin1,
+        currency=DiemCurrency.Coin1,
         status=TransactionStatus.COMPLETED,
     )
     balance = calc_account_balance(
@@ -194,7 +194,7 @@ def test_balance_calculation_in_and_out() -> None:
     )
 
     assert balance.total == {
-        LibraCurrency.Coin1: 50,
+        DiemCurrency.Coin1: 50,
     }
 
 
@@ -205,13 +205,13 @@ def test_balance_calculation_in_pending() -> None:
         source_id=counter_id,
         destination_id=account_id,
         amount=100,
-        currency=LibraCurrency.Coin1,
+        currency=DiemCurrency.Coin1,
         status=TransactionStatus.PENDING,
     )
     balance = calc_account_balance(account_id=account_id, transactions=[income])
 
     assert balance.total == {
-        LibraCurrency.Coin1: 0,
+        DiemCurrency.Coin1: 0,
     }
 
 
@@ -222,14 +222,14 @@ def test_balance_calculation_out_pending() -> None:
         source_id=counter_id,
         destination_id=account_id,
         amount=100,
-        currency=LibraCurrency.Coin1,
+        currency=DiemCurrency.Coin1,
         status=TransactionStatus.COMPLETED,
     )
     outgoing = Transaction(
         source_id=account_id,
         destination_id=counter_id,
         amount=50,
-        currency=LibraCurrency.Coin1,
+        currency=DiemCurrency.Coin1,
         status=TransactionStatus.PENDING,
     )
     balance = calc_account_balance(
@@ -237,10 +237,10 @@ def test_balance_calculation_out_pending() -> None:
     )
 
     assert balance.total == {
-        LibraCurrency.Coin1: 50,
+        DiemCurrency.Coin1: 50,
     }
     assert balance.frozen == {
-        LibraCurrency.Coin1: 50,
+        DiemCurrency.Coin1: 50,
     }
 
 
@@ -251,14 +251,14 @@ def test_balance_calculation_out_canceled() -> None:
         source_id=counter_id,
         destination_id=account_id,
         amount=100,
-        currency=LibraCurrency.Coin1,
+        currency=DiemCurrency.Coin1,
         status=TransactionStatus.COMPLETED,
     )
     outgoing = Transaction(
         source_id=account_id,
         destination_id=counter_id,
         amount=50,
-        currency=LibraCurrency.Coin1,
+        currency=DiemCurrency.Coin1,
         status=TransactionStatus.CANCELED,
     )
     balance = calc_account_balance(
@@ -266,10 +266,10 @@ def test_balance_calculation_out_canceled() -> None:
     )
 
     assert balance.total == {
-        LibraCurrency.Coin1: 100,
+        DiemCurrency.Coin1: 100,
     }
     assert balance.frozen == {
-        LibraCurrency.Coin1: 0,
+        DiemCurrency.Coin1: 0,
     }
 
 
@@ -283,12 +283,12 @@ def test_total_balances_calculation() -> None:
 
 def send_fake_tx(amount=100, send_to_self=False) -> Tuple[int, Transaction]:
     user = OneUser.run(
-        db_session, account_amount=100_000_000_000, account_currency=LibraCurrency.Coin1
+        db_session, account_amount=100_000_000_000, account_currency=DiemCurrency.Coin1
     )
     account_id = user.account_id
     amount = amount
     payment_type = types.TransactionType.EXTERNAL
-    currency = libra_utils.types.currencies.LibraCurrency.Coin1
+    currency = diem_utils.types.currencies.DiemCurrency.Coin1
     destination_address = "receiver_address"
     destination_subaddress = "receiver_subaddress"
 

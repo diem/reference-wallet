@@ -2,7 +2,7 @@
 from http import HTTPStatus
 from typing import Tuple, List, Optional
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 from flasgger import SwaggerView, utils

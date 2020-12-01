@@ -1,6 +1,6 @@
 apiVersion: v2
 name: libra-reference-wallet
-description: A Helm chart for Libra reference wallet
+description: A Helm chart for Diem reference wallet
 
 type: application
 

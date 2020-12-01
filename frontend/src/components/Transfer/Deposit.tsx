@@ -1,17 +1,17 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useEffect, useReducer } from "react";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../../contexts/app";
-import { LibraCurrency } from "../../interfaces/currencies";
+import { Currency } from "../../interfaces/currencies";
 import { Quote } from "../../interfaces/cico";
 import { DepositData } from "./interfaces";
 import DepositReview from "./DepositReview";
 import DepositForm from "./DepositForm";
 import BackendClient from "../../services/backendClient";
 import ErrorMessage from "../Messages/ErrorMessage";
-import { libraFromFloat } from "../../utils/amount-precision";
+import { diemAmountFromFloat } from "../../utils/amount-precision";
 import { BackendError } from "../../services/errors";
 import SuccessMessage from "../Messages/SuccessMessage";
 
@@ -59,7 +59,7 @@ function reducer(state: State, action: Action): State {
 }
 
 interface DepositProps {
-  initialCurrency?: LibraCurrency;
+  initialCurrency?: Currency;
   onComplete: () => void;
 }
 
@@ -70,7 +70,7 @@ function Deposit({ initialCurrency, onComplete }: DepositProps) {
   const [{ phase, requestData, quote, errorMessage }, dispatch] = useReducer(reducer, {
     phase: "collect",
     requestData: {
-      libraCurrency: initialCurrency,
+      currency: initialCurrency,
       fiatCurrency: settings.defaultFiatCurrencyCode!,
     },
   });
@@ -96,8 +96,8 @@ function Deposit({ initialCurrency, onComplete }: DepositProps) {
       try {
         const newQuote = await new BackendClient().requestDepositQuote(
           requestData.fiatCurrency,
-          requestData.libraCurrency!,
-          libraFromFloat(requestData.libraAmount!)
+          requestData.currency!,
+          diemAmountFromFloat(requestData.amount!)
         );
         if (!isOutdated) {
           dispatch({ type: "review", quote: newQuote });

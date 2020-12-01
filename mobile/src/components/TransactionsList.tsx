@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React from "react";
@@ -6,10 +6,10 @@ import { Badge, BadgeProps, ListItem, Text } from "react-native-elements";
 import { Transaction, TransactionStatus } from "../interfaces/transaction";
 import { FiatCurrency, Rates } from "../interfaces/currencies";
 import { View } from "react-native";
-import { fiatCurrencies, libraCurrencies } from "../currencies";
-import { fiatToHumanFriendly, libraToFloat, libraToHumanFriendly } from "../utils/amount-precision";
+import { fiatCurrencies, diemCurrencies } from "../currencies";
+import { fiatToHumanFriendly, diemToFloat, diemToHumanFriendly } from "../utils/amount-precision";
 import { useTranslation } from "react-i18next";
-import { shortenLibraAddress } from "../utils/shorten-address";
+import { shortenDiemAddress } from "../utils/shorten-address";
 
 const STATUS_COLORS: { [key in TransactionStatus]: BadgeProps["status"] } = {
   completed: "success",
@@ -37,28 +37,28 @@ function TransactionsList({
   const TXExternalReceived = ({ transaction }: { transaction: Transaction }) => (
     <Text style={{ color: "#000000" }}>
       <Text style={{ fontWeight: "bold", color: "#000000" }}>{t("received")}</Text> {t("from")}{" "}
-      {shortenLibraAddress(transaction.source.full_addr)}
+      {shortenDiemAddress(transaction.source.full_addr)}
     </Text>
   );
 
   const TXExternalSent = ({ transaction }: { transaction: Transaction }) => (
     <Text style={{ color: "#000000" }}>
       <Text style={{ fontWeight: "bold", color: "#000000" }}>{t("sent")}</Text> {t("to")}{" "}
-      {shortenLibraAddress(transaction.destination.full_addr)}
+      {shortenDiemAddress(transaction.destination.full_addr)}
     </Text>
   );
 
   const TXInternalReceived = ({ transaction }: { transaction: Transaction }) => (
     <Text style={{ color: "#000000" }}>
       <Text style={{ fontWeight: "bold", color: "#000000" }}>{t("received")}</Text> {t("from")}{" "}
-      {shortenLibraAddress(transaction.source.full_addr)}
+      {shortenDiemAddress(transaction.source.full_addr)}
     </Text>
   );
 
   const TXInternalSent = ({ transaction }: { transaction: Transaction }) => (
     <Text style={{ color: "#000000" }}>
       <Text style={{ fontWeight: "bold", color: "#000000" }}>{t("sent")}</Text> {t("to")}{" "}
-      {shortenLibraAddress(transaction.destination.full_addr)}
+      {shortenDiemAddress(transaction.destination.full_addr)}
     </Text>
   );
 
@@ -72,11 +72,11 @@ function TransactionsList({
   );
 
   const TXAmount = ({ transaction }: { transaction: Transaction }) => {
-    const libraCurrency = libraCurrencies[transaction.currency];
+    const diemCurrency = diemCurrencies[transaction.currency];
     return (
       <Text style={{ color: "#000000" }}>
         {transaction.direction === "received" ? "+" : "-"}{" "}
-        {libraToHumanFriendly(transaction.amount, true)} {libraCurrency.sign}
+        {diemToHumanFriendly(transaction.amount, true)} {diemCurrency.sign}
       </Text>
     );
   };
@@ -85,7 +85,7 @@ function TransactionsList({
     const fiatCurrency = fiatCurrencies[fiatCurrencyCode];
     const exchangeRate = rates[transaction.currency][fiatCurrencyCode];
 
-    const price = libraToFloat(transaction.amount) * exchangeRate;
+    const price = diemToFloat(transaction.amount) * exchangeRate;
 
     return (
       <Text style={{ fontSize: 14 }}>

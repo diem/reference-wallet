@@ -1,12 +1,12 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 from wallet.storage import db_session, engine, Base
 from wallet.storage.models import User, Account
 from wallet.types import RegistrationStatus
-from libra_utils.types.currencies import FiatCurrency
+from diem_utils.types.currencies import FiatCurrency
 
 
 def clear_db() -> None:

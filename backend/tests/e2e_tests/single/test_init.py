@@ -1,11 +1,11 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-import time
-import requests
 import json
 import random
-from .. import *
+
+import requests
+from tests.e2e_tests import LRW_WEB_1
 
 
 def test_init() -> None:

@@ -1,6 +1,6 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 from copy import deepcopy
@@ -20,7 +20,7 @@ from wallet.types import (
     TransactionStatus,
     OrderId,
 )
-from libra_utils.types.currencies import LibraCurrency, FiatCurrency
+from diem_utils.types.currencies import DiemCurrency, FiatCurrency
 
 
 class WithdrawFundsSeeder:
@@ -28,7 +28,7 @@ class WithdrawFundsSeeder:
     def run(
         db_session,
         account_amount: int,
-        account_currency: LibraCurrency,
+        account_currency: DiemCurrency,
         withdraw_amount: int,
         withdraw_to_currency: FiatCurrency,
         price: int,

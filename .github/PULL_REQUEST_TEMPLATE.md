@@ -1,5 +1,5 @@
 <!--
-Thank you for sending a PR. We appreciate your help improving the Libra Reference Wallet project.
+Thank you for sending a PR. We appreciate your help improving the Diem Reference Wallet project.
 -->
 
 ## Motivation

@@ -1,9 +1,9 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 # import pytest
 #
-# from libra_utils.types.liquidity.currency import CurrencyPair, Currency
+# from diem_utils.types.liquidity.currency import CurrencyPair, Currency
 # from liquidity.fx import fixed_rates
 # from wallet.lp_client import LpClient
 #

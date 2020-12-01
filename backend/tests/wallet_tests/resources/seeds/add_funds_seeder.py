@@ -1,6 +1,6 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 from copy import deepcopy
@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from typing import Tuple
 from uuid import UUID
 
-from libra_utils.types.currencies import LibraCurrency, FiatCurrency
+from diem_utils.types.currencies import DiemCurrency, FiatCurrency
 from tests.wallet_tests.resources.seeds import prototypes
 from wallet.services import INVENTORY_ACCOUNT_NAME
 from wallet.storage import Account, Transaction, Order
@@ -28,7 +28,7 @@ class AddFundsSeeder:
     def run(
         db_session,
         buy_amount: int,
-        buy_currency: LibraCurrency,
+        buy_currency: DiemCurrency,
         pay_currency: FiatCurrency,
         pay_price: int,
     ) -> Tuple[int, int, OrderId]:
@@ -74,7 +74,7 @@ class InventoryWithoutFundsSeeder:
     def run(
         db_session,
         buy_amount: int,
-        buy_currency: LibraCurrency,
+        buy_currency: DiemCurrency,
         pay_currency: FiatCurrency,
         pay_price: int,
     ) -> Tuple[int, int, OrderId]:

@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useRef, useState } from "react";
@@ -12,20 +12,20 @@ import { accountContext, withAccountContext } from "../../contexts/account";
 import ScreenLayout from "../../components/ScreenLayout";
 import { appTheme } from "../../styles";
 import { ratesContext, withRatesContext } from "../../contexts/rates";
-import { FiatCurrency, LibraCurrency } from "../../interfaces/currencies";
+import { FiatCurrency, DiemCurrency } from "../../interfaces/currencies";
 import SelectDropdown from "../../components/Select";
 import {
   fiatCurrenciesOptions,
-  libraCurrenciesWithBalanceOptions,
+  diemCurrenciesWithBalanceOptions,
   paymentMethodOptions,
 } from "../../utils/dropdown-options";
-import { fiatCurrencies, libraCurrencies } from "../../currencies";
+import { fiatCurrencies, diemCurrencies } from "../../currencies";
 import {
   fiatFromFloat,
   fiatToHumanFriendly,
   fiatToHumanFriendlyRate,
-  libraFromFloat,
-  normalizeLibra,
+  diemFromFloat,
+  normalizeDiem,
 } from "../../utils/amount-precision";
 import InputErrorMessage from "../../components/InputErrorMessage";
 import { BackendError } from "../../services/errors";
@@ -36,8 +36,8 @@ import SessionStorage from "../../services/sessionStorage";
 interface WithdrawData extends Record<string, any> {
   fundingSource?: number;
   fiatCurrency: FiatCurrency;
-  libraCurrency?: LibraCurrency;
-  libraAmount?: string;
+  diemCurrency?: DiemCurrency;
+  diemAmount?: string;
 }
 
 function Withdraw({ componentId }: NavigationComponentProps) {
@@ -51,22 +51,22 @@ function Withdraw({ componentId }: NavigationComponentProps) {
   const [errorMessage, setErrorMessage] = useState<string>();
   const [loading, setLoading] = useState<boolean>(false);
 
-  const libraAmount = watch("libraAmount") || 0;
-  const libraCurrencyCode = watch("libraCurrency");
+  const diemAmount = watch("diemAmount") || 0;
+  const diemCurrencyCode = watch("diemCurrency");
   const fiatCurrencyCode = watch("fiatCurrency");
 
   const priceRef = useRef<Input>(null);
 
-  const libraCurrency = libraCurrencyCode ? libraCurrencies[libraCurrencyCode] : undefined;
+  const diemCurrency = diemCurrencyCode ? diemCurrencies[diemCurrencyCode] : undefined;
   const fiatCurrency = fiatCurrencyCode
     ? fiatCurrencies[fiatCurrencyCode]
     : fiatCurrencies[user!.selected_fiat_currency];
 
   const exchangeRate =
-    rates && libraCurrencyCode && fiatCurrencyCode ? rates[libraCurrencyCode][fiatCurrencyCode] : 0;
+    rates && diemCurrencyCode && fiatCurrencyCode ? rates[diemCurrencyCode][fiatCurrencyCode] : 0;
 
-  function calcPrice(libraAmount: number) {
-    return libraAmount * exchangeRate;
+  function calcPrice(diemAmount: number) {
+    return diemAmount * exchangeRate;
   }
 
   function calcAmount(price: number) {
@@ -76,8 +76,8 @@ function Withdraw({ componentId }: NavigationComponentProps) {
   async function onFormSubmit({
     fundingSource,
     fiatCurrency,
-    libraCurrency,
-    libraAmount,
+    diemCurrency,
+    diemAmount,
   }: WithdrawData) {
     setLoading(true);
     Keyboard.dismiss();
@@ -85,9 +85,9 @@ function Withdraw({ componentId }: NavigationComponentProps) {
       setErrorMessage(undefined);
       const token = await SessionStorage.getAccessToken();
       const quote = await new BackendClient(token).requestWithdrawQuote(
-        libraCurrency!,
+        diemCurrency!,
         fiatCurrency!,
-        libraFromFloat(parseFloat(libraAmount!))
+        diemFromFloat(parseFloat(diemAmount!))
       );
       await Navigation.push(componentId, {
         component: {
@@ -163,7 +163,7 @@ function Withdraw({ componentId }: NavigationComponentProps) {
                   <Text>{t("withdraw.form.currency")}</Text>
                   <Controller
                     control={control}
-                    name="libraCurrency"
+                    name="diemCurrency"
                     rules={{
                       required: t<string>("validations:required", {
                         replace: { field: t("withdraw.form.currency_placeholder") },
@@ -173,12 +173,12 @@ function Withdraw({ componentId }: NavigationComponentProps) {
                     as={
                       <SelectDropdown
                         label={t("withdraw.form.currency_placeholder")}
-                        options={libraCurrenciesWithBalanceOptions(account.balances)}
+                        options={diemCurrenciesWithBalanceOptions(account.balances)}
                       />
                     }
                   />
-                  {!!errors.libraCurrency && (
-                    <InputErrorMessage message={errors.libraCurrency.message as string} />
+                  {!!errors.diemCurrency && (
+                    <InputErrorMessage message={errors.diemCurrency.message as string} />
                   )}
                 </View>
 
@@ -189,7 +189,7 @@ function Withdraw({ componentId }: NavigationComponentProps) {
                     <Text>{t("withdraw.form.amount")}</Text>
                     <Controller
                       control={control}
-                      name="libraAmount"
+                      name="diemAmount"
                       rules={{
                         validate: (value) => {
                           if (!isFinite(Number(value)) || parseFloat(value) < 1) {
@@ -198,12 +198,12 @@ function Withdraw({ componentId }: NavigationComponentProps) {
                             });
                           }
 
-                          const selectedLibraCurrency = watch("libraCurrency");
-                          if (selectedLibraCurrency) {
+                          const selectedDiemCurrency = watch("diemCurrency");
+                          if (selectedDiemCurrency) {
                             const selectedCurrencyBalance = account!.balances.find(
-                              (balance) => balance.currency === selectedLibraCurrency
+                              (balance) => balance.currency === selectedDiemCurrency
                             )!;
-                            if (libraFromFloat(value) > selectedCurrencyBalance.balance) {
+                            if (diemFromFloat(value) > selectedCurrencyBalance.balance) {
                               return t("validations:noMoreThanBalance", {
                                 replace: {
                                   field: t("withdraw.form.amount"),
@@ -220,12 +220,12 @@ function Withdraw({ componentId }: NavigationComponentProps) {
                           keyboardType="numeric"
                           placeholder={t("withdraw.form.amount")}
                           renderErrorMessage={false}
-                          rightIcon={<Text>{libraCurrency?.sign}</Text>}
+                          rightIcon={<Text>{diemCurrency?.sign}</Text>}
                         />
                       }
                     />
-                    {!!errors.libraAmount && (
-                      <InputErrorMessage message={errors.libraAmount.message as string} />
+                    {!!errors.diemAmount && (
+                      <InputErrorMessage message={errors.diemAmount.message as string} />
                     )}
                   </View>
 
@@ -235,8 +235,8 @@ function Withdraw({ componentId }: NavigationComponentProps) {
                       ref={priceRef}
                       keyboardType="numeric"
                       value={
-                        libraAmount && isFinite(Number(libraAmount))
-                          ? fiatToHumanFriendly(calcPrice(parseFloat(libraAmount)))
+                        diemAmount && isFinite(Number(diemAmount))
+                          ? fiatToHumanFriendly(calcPrice(parseFloat(diemAmount)))
                           : ""
                       }
                       onChangeText={(price) => {
@@ -247,8 +247,8 @@ function Withdraw({ componentId }: NavigationComponentProps) {
                           exchangeRate > 0
                         ) {
                           const newPrice = fiatFromFloat(parseFloat(price));
-                          const amount = normalizeLibra(calcAmount(newPrice));
-                          setValue("libraAmount", amount.toString());
+                          const amount = normalizeDiem(calcAmount(newPrice));
+                          setValue("diemAmount", amount.toString());
                         }
                       }}
                       rightIcon={
@@ -278,11 +278,11 @@ function Withdraw({ componentId }: NavigationComponentProps) {
                   </View>
                 </View>
 
-                {libraCurrency && fiatCurrency && (
+                {diemCurrency && fiatCurrency && (
                   <View style={theme.Section}>
                     <Text>{t("withdraw.form.exchange_rate")}</Text>
                     <Text>
-                      1 {libraCurrency.sign} = {fiatToHumanFriendlyRate(exchangeRate)}{" "}
+                      1 {diemCurrency.sign} = {fiatToHumanFriendlyRate(exchangeRate)}{" "}
                       {fiatCurrency.symbol}
                     </Text>
                   </View>

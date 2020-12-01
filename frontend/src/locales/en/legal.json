@@ -1,5 +1,5 @@
 {
-  "legal_disclaimer": "This is a demonstration wallet with no actual users. Do not use any username and/or password you use for other services. Create a test account instead. The compliance processes depicted in this demo wallet are for demonstration purposes only and do not reflect the specific compliance obligations of VASPs under applicable regulatory frameworks, their compliance programs, and/or standards imposed by Libra Networks.",
+  "legal_disclaimer": "This is a demonstration wallet with no actual users. Do not use any username and/or password you use for other services. Create a test account instead. The compliance processes depicted in this demo wallet are for demonstration purposes only and do not reflect the specific compliance obligations of VASPs under applicable regulatory frameworks, their compliance programs, and/or standards imposed by Diem Networks.",
   "example_section_warning": "Example section. No real data required",
   "testnet_warning": "This demonstration wallet does not use real money"
 }

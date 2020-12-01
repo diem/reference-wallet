@@ -1,4 +1,4 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -20,7 +20,7 @@ from ..services.transaction import (
     process_incoming_transaction,
     settle_offchain,
 )
-from libra_utils.types.currencies import LibraCurrency
+from diem_utils.types.currencies import DiemCurrency
 
 TIME_BEFORE_KYC_APPROVAL = 5
 
@@ -71,7 +71,7 @@ def process_incoming_txn(txn: LRWPubSubEvent) -> None:
     receiver_address = txn.receiver
     sequence = txn.sequence
     amount = txn.amount
-    currency = LibraCurrency[txn.currency]
+    currency = DiemCurrency[txn.currency]
     process_incoming_transaction(
         blockchain_version=blockchain_version,
         sender_address=sender_address,

@@ -1,11 +1,11 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 import pytest
 
-from libra_utils.types.liquidity.currency import CurrencyPairs, Currency
+from diem_utils.types.liquidity.currency import CurrencyPairs, Currency
 from wallet.services.fx.fx import get_rate
 
 rates = {

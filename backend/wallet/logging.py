@@ -1,6 +1,6 @@
 # pyre-strict
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 from functools import wraps

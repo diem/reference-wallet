@@ -1,11 +1,11 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { FiatCurrency, LibraCurrency } from "../../interfaces/currencies";
+import { FiatCurrency, Currency } from "../../interfaces/currencies";
 
 export interface Send {
-  libraCurrency?: LibraCurrency;
+  currency?: Currency;
   fiatCurrency: FiatCurrency;
-  libraAmount?: number;
-  libraAddress?: string;
+  amount?: number;
+  address?: string;
 }

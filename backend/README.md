@@ -1,18 +1,18 @@
-# Libra Reference Wallet
+# Diem Reference Wallet
 
-Libra Reference Wallet is an open-source project aimed at helping developers kickstart wallet building in the Libra ecosystem. 
+Diem Reference Wallet is an open-source project aimed at helping developers kickstart wallet building in the Diem ecosystem. 
 We tried to incorporate both technical and design aspects to show not only how the different technical pieces fit together 
 but also demonstrate thoughtful design, content, and best experience practices.
 
 
 ## Note to Developers
-* Libra Reference Wallet is a reference implementation, and not meant to be fully production grade. 
-* The project will continue to develop to include the different aspects of the evolving Libra ecosystem.   
+* Diem Reference Wallet is a reference implementation, and not meant to be fully production grade. 
+* The project will continue to develop to include the different aspects of the evolving Diem ecosystem.   
 
 
 ## Getting Started
 
-The quickest way to get started testing the Libra Reference Wallet is by using Docker Compose.
+The quickest way to get started testing the Diem Reference Wallet is by using Docker Compose.
 
 * You'll need to install both:
     * [Docker](https://docs.docker.com/get-docker/)
@@ -49,7 +49,7 @@ For testing locally, you can use minikube. Our script includes a deploy_minikube
 
 After deploying, you should be able to see the live address by running `kubectl get ingress`.
 
-If you want to go the extra mile, you can also use helm to install the Libra Reference Wallet onto an existing kubernetes cluster, for example using [eksctl](https://eksctl.io/). You can then install LRW onto the cluster as we did with minikube. You may need to specify an ingress class in the helm values under ingress >> annotations in the provided helm values file, depending on where you deploy.
+If you want to go the extra mile, you can also use helm to install the Diem Reference Wallet onto an existing kubernetes cluster, for example using [eksctl](https://eksctl.io/). You can then install LRW onto the cluster as we did with minikube. You may need to specify an ingress class in the helm values under ingress >> annotations in the provided helm values file, depending on where you deploy.
 
 ### Manually
 

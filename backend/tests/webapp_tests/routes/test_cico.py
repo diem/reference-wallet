@@ -1,6 +1,6 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 from http import HTTPStatus
@@ -8,7 +8,7 @@ from http import HTTPStatus
 import pytest
 from flask import Response
 from flask.testing import Client
-from libra_utils.types.currencies import Currencies
+from diem_utils.types.currencies import Currencies
 from wallet.services import order as order_service
 from wallet.storage import Order
 from wallet.types import OrderId, Direction

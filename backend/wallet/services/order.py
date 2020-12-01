@@ -1,6 +1,6 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 import time
@@ -9,9 +9,9 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Optional
 
-from libra_utils.precise_amount import Amount
-from libra_utils.types.currencies import LibraCurrency, Currencies
-from libra_utils.types.liquidity.currency import Currency, CurrencyPair, CurrencyPairs
+from diem_utils.precise_amount import Amount
+from diem_utils.types.currencies import DiemCurrency, Currencies
+from diem_utils.types.liquidity.currency import Currency, CurrencyPair, CurrencyPairs
 from wallet import services
 from wallet import storage
 from wallet.services import inventory, INVENTORY_ACCOUNT_NAME
@@ -105,7 +105,7 @@ def create_order(
 
     order_type = OrderType.Trade
 
-    if CurrencyPair.is_libra_to_libra(
+    if CurrencyPair.is_diem_to_diem(
         CurrencyPair(Currency(base_currency), Currency(quote_currency))
     ):
         order_type = OrderType.DirectConvert
@@ -160,16 +160,14 @@ def execute_trade(order: Order):
     user_account_id = get_user(order.user_id).account.id
     order_id = typing.cast(OrderId, order.id)
 
-    base_libra_currency = LibraCurrency[order.base_currency]
+    base_diem_currency = DiemCurrency[order.base_currency]
 
     if Direction[order.direction] == Direction.Buy:
         sender_id = inventory_account_id
         receiver_id = user_account_id
 
-        if not validate_balance(sender_id, order.amount, base_libra_currency):
-            buy_funds(
-                CurrencyPairs[f"{base_libra_currency}_{INVENTORY_COVER_CURRENCY}"]
-            )
+        if not validate_balance(sender_id, order.amount, base_diem_currency):
+            buy_funds(CurrencyPairs[f"{base_diem_currency}_{INVENTORY_COVER_CURRENCY}"])
     else:
         sender_id = user_account_id
         receiver_id = inventory_account_id
@@ -179,7 +177,7 @@ def execute_trade(order: Order):
             sender_id=sender_id,
             receiver_id=receiver_id,
             amount=order.amount,
-            currency=base_libra_currency,
+            currency=base_diem_currency,
             payment_type=TransactionType.INTERNAL,
         )
         update_order(
@@ -200,17 +198,17 @@ def execute_convert(order: Order) -> ConvertResult:
     order_id = typing.cast(OrderId, order.id)
 
     from_amount = order.amount
-    from_libra_currency = LibraCurrency[order.base_currency]
+    from_diem_currency = DiemCurrency[order.base_currency]
     to_amount = order.exchange_amount
-    to_libra_currency = LibraCurrency[order.quote_currency]
+    to_diem_currency = DiemCurrency[order.quote_currency]
 
     if not validate_balance(
-        sender_id=user_account, amount=from_amount, currency=from_libra_currency
+        sender_id=user_account, amount=from_amount, currency=from_diem_currency
     ):
         return ConvertResult.InsufficientBalance
 
     if not validate_balance(
-        sender_id=inventory_account, amount=to_amount, currency=to_libra_currency
+        sender_id=inventory_account, amount=to_amount, currency=to_diem_currency
     ):
         return ConvertResult.InsufficientInventoryBalance
 
@@ -219,14 +217,14 @@ def execute_convert(order: Order) -> ConvertResult:
             sender_id=user_account,
             receiver_id=inventory_account,
             amount=from_amount,
-            currency=from_libra_currency,
+            currency=from_diem_currency,
             payment_type=TransactionType.INTERNAL,
         )
         from_inventory_tx = internal_transaction(
             sender_id=inventory_account,
             receiver_id=user_account,
             amount=to_amount,
-            currency=to_libra_currency,
+            currency=to_diem_currency,
             payment_type=TransactionType.INTERNAL,
         )
         update_order(

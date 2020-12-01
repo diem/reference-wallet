@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useRef, useState } from "react";
@@ -12,16 +12,16 @@ import { accountContext, withAccountContext } from "../../contexts/account";
 import ScreenLayout from "../../components/ScreenLayout";
 import { appTheme } from "../../styles";
 import { ratesContext, withRatesContext } from "../../contexts/rates";
-import { LibraCurrency } from "../../interfaces/currencies";
+import { DiemCurrency } from "../../interfaces/currencies";
 import SelectDropdown from "../../components/Select";
-import { libraCurrenciesWithBalanceOptions } from "../../utils/dropdown-options";
-import { libraCurrencies } from "../../currencies";
+import { diemCurrenciesWithBalanceOptions } from "../../utils/dropdown-options";
+import { diemCurrencies } from "../../currencies";
 import {
   fiatFromFloat,
   fiatToHumanFriendly,
-  libraFromFloat,
-  libraToHumanFriendly,
-  normalizeLibra,
+  diemFromFloat,
+  diemToHumanFriendly,
+  normalizeDiem,
 } from "../../utils/amount-precision";
 import InputErrorMessage from "../../components/InputErrorMessage";
 import { BackendError } from "../../services/errors";
@@ -30,9 +30,9 @@ import BackendClient from "../../services/backendClient";
 import SessionStorage from "../../services/sessionStorage";
 
 interface ConvertData extends Record<string, any> {
-  fromLibraCurrency?: LibraCurrency;
-  toLibraCurrency?: LibraCurrency;
-  libraAmount?: string;
+  fromDiemCurrency?: DiemCurrency;
+  toDiemCurrency?: DiemCurrency;
+  diemAmount?: string;
 }
 
 function Convert({ componentId }: NavigationComponentProps) {
@@ -46,40 +46,40 @@ function Convert({ componentId }: NavigationComponentProps) {
   const [errorMessage, setErrorMessage] = useState<string>();
   const [loading, setLoading] = useState<boolean>(false);
 
-  const libraAmount = watch("libraAmount") || 0;
-  const fromLibraCurrencyCode = watch("fromLibraCurrency");
-  const toLibraCurrencyCode = watch("toLibraCurrency");
+  const diemAmount = watch("diemAmount") || 0;
+  const fromDiemCurrencyCode = watch("fromDiemCurrency");
+  const toDiemCurrencyCode = watch("toDiemCurrency");
 
   const priceRef = useRef<Input>(null);
 
-  const fromLibraCurrency = fromLibraCurrencyCode
-    ? libraCurrencies[fromLibraCurrencyCode]
+  const fromDiemCurrency = fromDiemCurrencyCode
+    ? diemCurrencies[fromDiemCurrencyCode]
     : undefined;
-  const toLibraCurrency = toLibraCurrencyCode ? libraCurrencies[toLibraCurrencyCode] : undefined;
+  const toDiemCurrency = toDiemCurrencyCode ? diemCurrencies[toDiemCurrencyCode] : undefined;
 
   const exchangeRate =
-    rates && fromLibraCurrencyCode && toLibraCurrencyCode
-      ? rates[fromLibraCurrencyCode][toLibraCurrencyCode]
+    rates && fromDiemCurrencyCode && toDiemCurrencyCode
+      ? rates[fromDiemCurrencyCode][toDiemCurrencyCode]
       : 0;
 
-  function calcPrice(libraAmount: number) {
-    return libraAmount * exchangeRate;
+  function calcPrice(diemAmount: number) {
+    return diemAmount * exchangeRate;
   }
 
   function calcAmount(price: number) {
     return price / exchangeRate;
   }
 
-  async function onFormSubmit({ fromLibraCurrency, toLibraCurrency, libraAmount }: ConvertData) {
+  async function onFormSubmit({ fromDiemCurrency, toDiemCurrency, diemAmount }: ConvertData) {
     setLoading(true);
     Keyboard.dismiss();
     try {
       setErrorMessage(undefined);
       const token = await SessionStorage.getAccessToken();
       const quote = await new BackendClient(token).requestConvertQuote(
-        fromLibraCurrency!,
-        toLibraCurrency!,
-        libraFromFloat(parseFloat(libraAmount!))
+        fromDiemCurrency!,
+        toDiemCurrency!,
+        diemFromFloat(parseFloat(diemAmount!))
       );
       await Navigation.push(componentId, {
         component: {
@@ -117,7 +117,7 @@ function Convert({ componentId }: NavigationComponentProps) {
                   <Text>{t("convert.form.currency_from")}</Text>
                   <Controller
                     control={control}
-                    name="fromLibraCurrency"
+                    name="fromDiemCurrency"
                     rules={{
                       required: t<string>("validations:required", {
                         replace: { field: t("convert.form.currency_placeholder") },
@@ -127,12 +127,12 @@ function Convert({ componentId }: NavigationComponentProps) {
                     as={
                       <SelectDropdown
                         label={t("convert.form.currency_placeholder")}
-                        options={libraCurrenciesWithBalanceOptions(account.balances)}
+                        options={diemCurrenciesWithBalanceOptions(account.balances)}
                       />
                     }
                   />
-                  {!!errors.fromLibraCurrency && (
-                    <InputErrorMessage message={errors.fromLibraCurrency.message as string} />
+                  {!!errors.fromDiemCurrency && (
+                    <InputErrorMessage message={errors.fromDiemCurrency.message as string} />
                   )}
                 </View>
 
@@ -140,7 +140,7 @@ function Convert({ componentId }: NavigationComponentProps) {
                   <Text>{t("convert.form.currency_to")}</Text>
                   <Controller
                     control={control}
-                    name="toLibraCurrency"
+                    name="toDiemCurrency"
                     rules={{
                       required: t<string>("validations:required", {
                         replace: { field: t("convert.form.currency_placeholder") },
@@ -150,12 +150,12 @@ function Convert({ componentId }: NavigationComponentProps) {
                     as={
                       <SelectDropdown
                         label={t("convert.form.currency_placeholder")}
-                        options={libraCurrenciesWithBalanceOptions(account.balances)}
+                        options={diemCurrenciesWithBalanceOptions(account.balances)}
                       />
                     }
                   />
-                  {!!errors.toLibraCurrency && (
-                    <InputErrorMessage message={errors.toLibraCurrency.message as string} />
+                  {!!errors.toDiemCurrency && (
+                    <InputErrorMessage message={errors.toDiemCurrency.message as string} />
                   )}
                 </View>
 
@@ -166,7 +166,7 @@ function Convert({ componentId }: NavigationComponentProps) {
                     <Text>{t("convert.form.amount")}</Text>
                     <Controller
                       control={control}
-                      name="libraAmount"
+                      name="diemAmount"
                       rules={{
                         required: t<string>("validations:required", {
                           replace: { field: t("convert.form.amount") },
@@ -178,13 +178,13 @@ function Convert({ componentId }: NavigationComponentProps) {
                           }),
                         },
                         validate: (enteredAmount: number) => {
-                          const selectedFromLibraCurrency = watch("fromLibraCurrency");
+                          const selectedFromDiemCurrency = watch("fromDiemCurrency");
 
-                          if (selectedFromLibraCurrency) {
+                          if (selectedFromDiemCurrency) {
                             const selectedCurrencyBalance = account!.balances.find(
-                              (balance) => balance.currency === selectedFromLibraCurrency
+                              (balance) => balance.currency === selectedFromDiemCurrency
                             )!;
-                            if (libraFromFloat(enteredAmount) > selectedCurrencyBalance.balance) {
+                            if (diemFromFloat(enteredAmount) > selectedCurrencyBalance.balance) {
                               return t("validations:noMoreThanBalance", {
                                 replace: {
                                   field: t("convert.form.amount"),
@@ -202,12 +202,12 @@ function Convert({ componentId }: NavigationComponentProps) {
                           keyboardType="numeric"
                           placeholder={t("convert.form.amount")}
                           renderErrorMessage={false}
-                          rightIcon={<Text>{fromLibraCurrency?.sign}</Text>}
+                          rightIcon={<Text>{fromDiemCurrency?.sign}</Text>}
                         />
                       }
                     />
-                    {!!errors.libraAmount && (
-                      <InputErrorMessage message={errors.libraAmount.message as string} />
+                    {!!errors.diemAmount && (
+                      <InputErrorMessage message={errors.diemAmount.message as string} />
                     )}
                   </View>
 
@@ -217,17 +217,17 @@ function Convert({ componentId }: NavigationComponentProps) {
                       ref={priceRef}
                       keyboardType="numeric"
                       value={
-                        libraAmount ? fiatToHumanFriendly(calcPrice(parseFloat(libraAmount))) : ""
+                        diemAmount ? fiatToHumanFriendly(calcPrice(parseFloat(diemAmount))) : ""
                       }
                       onChangeText={(price) => {
                         if (priceRef.current && priceRef.current.isFocused()) {
                           const newPrice = fiatFromFloat(parseFloat(price));
-                          const amount = normalizeLibra(calcAmount(newPrice));
-                          setValue("libraAmount", amount.toString());
+                          const amount = normalizeDiem(calcAmount(newPrice));
+                          setValue("diemAmount", amount.toString());
                         }
                       }}
                       renderErrorMessage={false}
-                      rightIcon={<Text>{toLibraCurrency?.sign}</Text>}
+                      rightIcon={<Text>{toDiemCurrency?.sign}</Text>}
                     />
                     {!!errors.fiatCurrency && (
                       <InputErrorMessage message={errors.fiatCurrency.message as string} />
@@ -235,12 +235,12 @@ function Convert({ componentId }: NavigationComponentProps) {
                   </View>
                 </View>
 
-                {fromLibraCurrency && toLibraCurrency && (
+                {fromDiemCurrency && toDiemCurrency && (
                   <View style={theme.Section}>
                     <Text>{t("convert.form.exchange_rate")}</Text>
                     <Text>
-                      1 {fromLibraCurrency.sign} = {libraToHumanFriendly(exchangeRate)}{" "}
-                      {toLibraCurrency.sign}
+                      1 {fromDiemCurrency.sign} = {diemToHumanFriendly(exchangeRate)}{" "}
+                      {toDiemCurrency.sign}
                     </Text>
                   </View>
                 )}

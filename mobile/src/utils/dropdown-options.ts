@@ -1,35 +1,35 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import { PaymentMethod } from "../interfaces/user";
-import { FiatCurrency, LibraCurrency } from "../interfaces/currencies";
-import { LibraCurrencyBalance } from "../interfaces/account";
-import { libraToHumanFriendly } from "./amount-precision";
-import { fiatCurrencies, libraCurrencies } from "../currencies";
+import { FiatCurrency, DiemCurrency } from "../interfaces/currencies";
+import { DiemCurrencyBalance } from "../interfaces/account";
+import { diemToHumanFriendly } from "./amount-precision";
+import { fiatCurrencies, diemCurrencies } from "../currencies";
 import { TransactionDirection } from "../interfaces/transaction";
 import { Languages } from "../i18n";
 
-type LibraCurrenciesWithBalanceOptions = { [key in LibraCurrency]?: string };
+type DiemCurrenciesWithBalanceOptions = { [key in DiemCurrency]?: string };
 
-export function libraCurrenciesWithBalanceOptions(
-  balances: LibraCurrencyBalance[]
-): LibraCurrenciesWithBalanceOptions {
+export function diemCurrenciesWithBalanceOptions(
+  balances: DiemCurrencyBalance[]
+): DiemCurrenciesWithBalanceOptions {
   return balances.reduce((options, balance) => {
-    const currency = libraCurrencies[balance.currency];
-    const balanceAmount = libraToHumanFriendly(balance.balance, true);
+    const currency = diemCurrencies[balance.currency];
+    const balanceAmount = diemToHumanFriendly(balance.balance, true);
     options[balance.currency] = `${currency.name} (${balanceAmount} ${currency.sign} available)`;
     return options;
-  }, {} as LibraCurrenciesWithBalanceOptions);
+  }, {} as DiemCurrenciesWithBalanceOptions);
 }
 
-type LibraCurrencies = { [key in LibraCurrency]: string };
+type DiemCurrencies = { [key in DiemCurrency]: string };
 
-export function libraCurrenciesOptions(): LibraCurrencies {
-  return Object.keys(libraCurrencies).reduce((currencies, currency) => {
-    const libraCurrency = libraCurrencies[currency as LibraCurrency];
-    currencies[currency as LibraCurrency] = libraCurrency.name;
+export function diemCurrenciesOptions(): DiemCurrencies {
+  return Object.keys(diemCurrencies).reduce((currencies, currency) => {
+    const diemCurrency = diemCurrencies[currency as DiemCurrency];
+    currencies[currency as DiemCurrency] = diemCurrency.name;
     return currencies;
-  }, {} as LibraCurrencies);
+  }, {} as DiemCurrencies);
 }
 
 type FiatCurrenciesOptions = { [key in FiatCurrency]: string };
@@ -62,9 +62,9 @@ export function transactionSortingOptions(): { [key: string]: string } {
   return {
     date_asc: "Newest to Oldest",
     date_desc: "Oldest to Newest",
-    libra_amount_desc: "Highest Amount",
+    diem_amount_desc: "Highest Amount",
     fiat_amount_desc: "Highest Fiat Amount",
-    libra_amount_asc: "Lowest Amount",
+    diem_amount_asc: "Lowest Amount",
     fiat_amount_asc: "Lowest Fiat Amount",
   };
 }

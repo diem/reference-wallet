@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, {
@@ -14,12 +14,12 @@ import { NavigationComponentProps } from "react-native-navigation";
 import SessionStorage from "../services/sessionStorage";
 import BackendClient from "../services/backendClient";
 import { BackendError } from "../services/errors";
-import { FiatCurrency, LibraCurrency, Rates } from "../interfaces/currencies";
+import { FiatCurrency, DiemCurrency, Rates } from "../interfaces/currencies";
 
 const REFRESH_TIMEOUT = 5000;
 
 const initialRates = {
-  LBR: {
+  XDM: {
     USD: 0,
     EUR: 0,
     GBP: 0,
@@ -28,7 +28,7 @@ const initialRates = {
     AUD: 0,
     NZD: 0,
     JPY: 0,
-    LBR: 0,
+    XDM: 0,
     Coin1: 0,
     Coin2: 0,
   },
@@ -41,7 +41,7 @@ const initialRates = {
     AUD: 0,
     NZD: 0,
     JPY: 0,
-    LBR: 0,
+    XDM: 0,
     Coin1: 0,
     Coin2: 0,
   },
@@ -54,7 +54,7 @@ const initialRates = {
     AUD: 0,
     NZD: 0,
     JPY: 0,
-    LBR: 0,
+    XDM: 0,
     Coin1: 0,
     Coin2: 0,
   },
@@ -79,7 +79,7 @@ export const RatesProvider = ({ children }: PropsWithChildren<any>) => {
       const newRates = { ...rates };
       liquidityRates.forEach((rate) => {
         const [baseCurrency, counterCurrency] = rate.currency_pair.split("_");
-        newRates[baseCurrency as LibraCurrency][counterCurrency as FiatCurrency | LibraCurrency] =
+        newRates[baseCurrency as DiemCurrency][counterCurrency as FiatCurrency | DiemCurrency] =
           rate.price;
       });
 

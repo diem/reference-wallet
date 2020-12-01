@@ -1,14 +1,14 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 import context, secrets
 from operator import attrgetter
 from typing import Dict, List, Optional
 
-from libra import identifier
-from libra_utils.precise_amount import Amount
-from libra_utils.types.currencies import LibraCurrency, FiatCurrency
-from libra_utils.types.liquidity.currency import Currency
+from diem import identifier
+from diem_utils.precise_amount import Amount
+from diem_utils.types.currencies import DiemCurrency, FiatCurrency
+from diem_utils.types.liquidity.currency import Currency
 from wallet import storage
 from wallet.services import transaction as transaction_service
 from wallet.services.fx.fx import get_rate
@@ -53,16 +53,19 @@ def is_own_address(sender_id, receiver_vasp, receiver_subaddress) -> bool:
 def get_account_transactions(
     account_id: Optional[int] = None,
     account_name: Optional[str] = None,
-    currency: Optional[LibraCurrency] = None,
+    currency: Optional[DiemCurrency] = None,
     direction_filter: Optional[TransactionDirection] = None,
     limit: Optional[int] = None,
     sort: Optional[TransactionSortOption] = None,
+    up_to_version=None,
 ) -> List[Transaction]:
     if not account_id:
         account = get_account(account_name=account_name)
         account_id = account.id
 
-    txs = storage.get_account_transactions(account_id=account_id, currency=currency)
+    txs = storage.get_account_transactions(
+        account_id=account_id, currency=currency, up_to_version=up_to_version
+    )
 
     if direction_filter:
         txs[:] = [
@@ -98,9 +101,9 @@ def _sort_transactions(
         txs.sort(key=attrgetter("created_timestamp"))
     elif sort_option == TransactionSortOption.DATE_DESC:
         txs.sort(key=attrgetter("created_timestamp"), reverse=True)
-    elif sort_option == TransactionSortOption.LIBRA_AMOUNT_ASC:
+    elif sort_option == TransactionSortOption.DIEM_AMOUNT_ASC:
         txs.sort(key=attrgetter("amount"))
-    elif sort_option == TransactionSortOption.LIBRA_AMOUNT_DESC:
+    elif sort_option == TransactionSortOption.DIEM_AMOUNT_DESC:
         txs.sort(key=attrgetter("amount"), reverse=True)
     elif sort_option == TransactionSortOption.FIAT_AMOUNT_ASC:
         _sort_transactions_by_fiat_amount(txs, fiat_currency_to_sort_by)
@@ -128,7 +131,7 @@ def _sort_transactions_by_fiat_amount(
 def _get_rates() -> Dict[str, Amount]:
     rates = {}
 
-    for base_currency in LibraCurrency.__members__:
+    for base_currency in DiemCurrency.__members__:
         for fiat_currency in FiatCurrency.__members__:
             try:
                 rate = get_rate(
@@ -143,12 +146,27 @@ def _get_rates() -> Dict[str, Amount]:
     return rates
 
 
-def get_account_balance(
-    account_id: Optional[int] = None, account_name: Optional[str] = None
-) -> Balance:
-    account = get_account(account_id=account_id, account_name=account_name)
+def get_account_balance_by_name(
+    account_name: Optional[str] = None, up_to_version=None,
+):
+    account = get_account(account_name=account_name)
 
-    account_transactions = get_account_transactions(account_id=account.id)
+    return get_account_balance(account, up_to_version)
+
+
+def get_account_balance_by_id(
+    account_id: Optional[int] = None, up_to_version=None,
+) -> Balance:
+    account = get_account(account_id=account_id)
+
+    return get_account_balance(account, up_to_version)
+
+
+def get_account_balance(account, up_to_version=None):
+    account_transactions = get_account_transactions(
+        account_id=account.id, up_to_version=up_to_version
+    )
+
     return calc_account_balance(
         account_id=account.id, transactions=account_transactions
     )
@@ -158,26 +176,33 @@ def calc_account_balance(account_id: int, transactions: List[Transaction]) -> Ba
     account_balance = Balance()
     for tx in transactions:
         if tx.destination_id == account_id and tx.status == TransactionStatus.COMPLETED:
-            account_balance.total[LibraCurrency[tx.currency]] += tx.amount
+            account_balance.total[DiemCurrency[tx.currency]] += tx.amount
         if tx.source_id == account_id:
             if tx.status == TransactionStatus.PENDING:
-                account_balance.frozen[LibraCurrency[tx.currency]] += tx.amount
+                account_balance.frozen[DiemCurrency[tx.currency]] += tx.amount
             if tx.status != TransactionStatus.CANCELED:
-                account_balance.total[LibraCurrency[tx.currency]] -= tx.amount
+                account_balance.total[DiemCurrency[tx.currency]] -= tx.amount
 
     return account_balance
 
 
 def generate_new_subaddress(account_id: int) -> str:
-    subaddr = None
-    while not subaddr:
-        subaddr = secrets.token_hex(identifier.LIBRA_SUBADDRESS_SIZE)
-        # generated subaddress is unique
-        if is_subaddress_exists(subaddr):
-            subaddr = None
+    sub_address = generate_sub_address()
+    add_subaddress(account_id=account_id, subaddr=sub_address)
 
-    add_subaddress(account_id=account_id, subaddr=subaddr)
-    return subaddr
+    return sub_address
+
+
+def generate_sub_address():
+    sub_address = None
+
+    while not sub_address:
+        sub_address = secrets.token_hex(identifier.DIEM_SUBADDRESS_SIZE)
+        # generated subaddress is unique
+        if is_subaddress_exists(sub_address):
+            sub_address = None
+
+    return sub_address
 
 
 def get_deposit_address(
@@ -189,7 +214,7 @@ def get_deposit_address(
     return identifier.encode_account(
         context.get().config.vasp_account_address(),
         subaddress,
-        context.get().config.libra_address_hrp(),
+        context.get().config.diem_address_hrp(),
     )
 
 

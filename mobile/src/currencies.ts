@@ -1,13 +1,13 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { FiatCurrenciesSettings, LibraCurrenciesSettings } from "./interfaces/currencies";
+import { FiatCurrenciesSettings, DiemCurrenciesSettings } from "./interfaces/currencies";
 
-export const libraCurrencies: LibraCurrenciesSettings = {
-  LBR: {
-    name: "Libra",
-    symbol: "LBR",
-    sign: "≋LBR",
+export const diemCurrencies: DiemCurrenciesSettings = {
+  XDM: {
+    name: "Diem",
+    symbol: "XDM",
+    sign: "≋XDM",
   },
   Coin1: {
     name: "Coin1",

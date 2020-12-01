@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useRef, useState } from "react";
@@ -12,20 +12,20 @@ import { accountContext, withAccountContext } from "../../contexts/account";
 import ScreenLayout from "../../components/ScreenLayout";
 import { appTheme } from "../../styles";
 import { ratesContext, withRatesContext } from "../../contexts/rates";
-import { FiatCurrency, LibraCurrency } from "../../interfaces/currencies";
+import { FiatCurrency, DiemCurrency } from "../../interfaces/currencies";
 import SelectDropdown from "../../components/Select";
 import {
   fiatCurrenciesOptions,
-  libraCurrenciesWithBalanceOptions,
+  diemCurrenciesWithBalanceOptions,
   paymentMethodOptions,
 } from "../../utils/dropdown-options";
-import { fiatCurrencies, libraCurrencies } from "../../currencies";
+import { fiatCurrencies, diemCurrencies } from "../../currencies";
 import {
   fiatFromFloat,
   fiatToHumanFriendly,
   fiatToHumanFriendlyRate,
-  libraFromFloat,
-  normalizeLibra,
+  diemFromFloat,
+  normalizeDiem,
 } from "../../utils/amount-precision";
 import InputErrorMessage from "../../components/InputErrorMessage";
 import { BackendError } from "../../services/errors";
@@ -36,8 +36,8 @@ import SessionStorage from "../../services/sessionStorage";
 interface DepositData extends Record<string, any> {
   fundingSource?: number;
   fiatCurrency: FiatCurrency;
-  libraCurrency?: LibraCurrency;
-  libraAmount?: string;
+  diemCurrency?: DiemCurrency;
+  diemAmount?: string;
 }
 
 function Deposit({ componentId }: NavigationComponentProps) {
@@ -51,22 +51,22 @@ function Deposit({ componentId }: NavigationComponentProps) {
   const [errorMessage, setErrorMessage] = useState<string>();
   const [loading, setLoading] = useState<boolean>(false);
 
-  const libraAmount = watch("libraAmount") || 0;
-  const libraCurrencyCode = watch("libraCurrency");
+  const diemAmount = watch("diemAmount") || 0;
+  const diemCurrencyCode = watch("diemCurrency");
   const fiatCurrencyCode = watch("fiatCurrency");
 
   const priceRef = useRef<Input>(null);
 
-  const libraCurrency = libraCurrencyCode ? libraCurrencies[libraCurrencyCode] : undefined;
+  const diemCurrency = diemCurrencyCode ? diemCurrencies[diemCurrencyCode] : undefined;
   const fiatCurrency = fiatCurrencyCode
     ? fiatCurrencies[fiatCurrencyCode]
     : fiatCurrencies[user!.selected_fiat_currency];
 
   const exchangeRate =
-    rates && libraCurrencyCode && fiatCurrencyCode ? rates[libraCurrencyCode][fiatCurrencyCode] : 0;
+    rates && diemCurrencyCode && fiatCurrencyCode ? rates[diemCurrencyCode][fiatCurrencyCode] : 0;
 
-  function calcPrice(libraAmount: number) {
-    return libraAmount * exchangeRate;
+  function calcPrice(diemAmount: number) {
+    return diemAmount * exchangeRate;
   }
 
   function calcAmount(price: number) {
@@ -76,8 +76,8 @@ function Deposit({ componentId }: NavigationComponentProps) {
   async function onFormSubmit({
     fundingSource,
     fiatCurrency,
-    libraCurrency,
-    libraAmount,
+    diemCurrency,
+    diemAmount,
   }: DepositData) {
     setLoading(true);
     Keyboard.dismiss();
@@ -86,8 +86,8 @@ function Deposit({ componentId }: NavigationComponentProps) {
       const token = await SessionStorage.getAccessToken();
       const quote = await new BackendClient(token).requestDepositQuote(
         fiatCurrency!,
-        libraCurrency!,
-        libraFromFloat(parseFloat(libraAmount!))
+        diemCurrency!,
+        diemFromFloat(parseFloat(diemAmount!))
       );
       await Navigation.push(componentId, {
         component: {
@@ -163,7 +163,7 @@ function Deposit({ componentId }: NavigationComponentProps) {
                   <Text>{t("deposit.form.currency")}</Text>
                   <Controller
                     control={control}
-                    name="libraCurrency"
+                    name="diemCurrency"
                     rules={{
                       required: t<string>("validations:required", {
                         replace: { field: t("deposit.form.currency_placeholder") },
@@ -173,12 +173,12 @@ function Deposit({ componentId }: NavigationComponentProps) {
                     as={
                       <SelectDropdown
                         label={t("deposit.form.currency_placeholder")}
-                        options={libraCurrenciesWithBalanceOptions(account.balances)}
+                        options={diemCurrenciesWithBalanceOptions(account.balances)}
                       />
                     }
                   />
-                  {!!errors.libraCurrency && (
-                    <InputErrorMessage message={errors.libraCurrency.message as string} />
+                  {!!errors.diemCurrency && (
+                    <InputErrorMessage message={errors.diemCurrency.message as string} />
                   )}
                 </View>
 
@@ -189,7 +189,7 @@ function Deposit({ componentId }: NavigationComponentProps) {
                     <Text>{t("deposit.form.amount")}</Text>
                     <Controller
                       control={control}
-                      name="libraAmount"
+                      name="diemAmount"
                       rules={{
                         validate: (value) => {
                           if (!isFinite(Number(value)) || parseFloat(value) < 1) {
@@ -205,12 +205,12 @@ function Deposit({ componentId }: NavigationComponentProps) {
                           keyboardType="numeric"
                           placeholder={t("deposit.form.amount")}
                           renderErrorMessage={false}
-                          rightIcon={<Text>{libraCurrency?.sign}</Text>}
+                          rightIcon={<Text>{diemCurrency?.sign}</Text>}
                         />
                       }
                     />
-                    {!!errors.libraAmount && (
-                      <InputErrorMessage message={errors.libraAmount.message as string} />
+                    {!!errors.diemAmount && (
+                      <InputErrorMessage message={errors.diemAmount.message as string} />
                     )}
                   </View>
 
@@ -220,8 +220,8 @@ function Deposit({ componentId }: NavigationComponentProps) {
                       ref={priceRef}
                       keyboardType="numeric"
                       value={
-                        libraAmount && isFinite(Number(libraAmount))
-                          ? fiatToHumanFriendly(calcPrice(parseFloat(libraAmount)))
+                        diemAmount && isFinite(Number(diemAmount))
+                          ? fiatToHumanFriendly(calcPrice(parseFloat(diemAmount)))
                           : ""
                       }
                       onChangeText={(price) => {
@@ -232,8 +232,8 @@ function Deposit({ componentId }: NavigationComponentProps) {
                           exchangeRate > 0
                         ) {
                           const newPrice = fiatFromFloat(parseFloat(price));
-                          const amount = normalizeLibra(calcAmount(newPrice));
-                          setValue("libraAmount", amount.toString());
+                          const amount = normalizeDiem(calcAmount(newPrice));
+                          setValue("diemAmount", amount.toString());
                         }
                       }}
                       rightIcon={
@@ -263,13 +263,13 @@ function Deposit({ componentId }: NavigationComponentProps) {
                   </View>
                 </View>
 
-                {libraCurrency && fiatCurrency && (
+                {diemCurrency && fiatCurrency && (
                   <View style={theme.Section}>
                     <Text style={{ textTransform: "capitalize" }}>
                       {t("deposit.form.exchange_rate")}
                     </Text>
                     <Text>
-                      1 {libraCurrency.sign} = {fiatToHumanFriendlyRate(exchangeRate)}{" "}
+                      1 {diemCurrency.sign} = {fiatToHumanFriendlyRate(exchangeRate)}{" "}
                       {fiatCurrency.symbol}
                     </Text>
                   </View>

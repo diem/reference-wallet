@@ -1,17 +1,21 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../contexts/app";
-import { LibraCurrency } from "../interfaces/currencies";
-import { fiatToHumanFriendly, libraToFloat, libraToHumanFriendly } from "../utils/amount-precision";
+import { Currency } from "../interfaces/currencies";
+import {
+  fiatToDiemHumanFriendly,
+  diemAmountToFloat,
+  diemAmountToHumanFriendly,
+} from "../utils/amount-precision";
 
 interface BalanceProps {
-  currency: LibraCurrency;
+  currencyCode: Currency;
 }
 
-function Balance({ currency }: BalanceProps) {
+function Balance({ currencyCode }: BalanceProps) {
   const { t } = useTranslation("layout");
   const [settings] = useContext(settingsContext)!;
 
@@ -20,7 +24,7 @@ function Balance({ currency }: BalanceProps) {
   }
 
   const currencyBalance = settings.account.balances.find(
-    (currencyBalance) => currencyBalance.currency === currency
+    (currencyBalance) => currencyBalance.currency === currencyCode
   );
 
   if (!currencyBalance) {
@@ -29,18 +33,18 @@ function Balance({ currency }: BalanceProps) {
 
   const defaultFiatCurrencyCode = settings.defaultFiatCurrencyCode!;
   const fiatCurrency = settings.fiatCurrencies[defaultFiatCurrencyCode];
-  const libraCurrency = settings.currencies[currency];
+  const currency = settings.currencies[currencyCode];
 
-  const exchangeRate = libraCurrency.rates[defaultFiatCurrencyCode];
-  const price = libraToFloat(currencyBalance.balance) * exchangeRate;
+  const exchangeRate = currency.rates[defaultFiatCurrencyCode];
+  const price = diemAmountToFloat(currencyBalance.balance) * exchangeRate;
 
   return (
     <>
       <div className="h3 m-0">
-        {libraToHumanFriendly(currencyBalance.balance, true)} {libraCurrency.sign}
+        {diemAmountToHumanFriendly(currencyBalance.balance, true)} {currency.sign}
       </div>
       {t("price")} {fiatCurrency.sign}
-      {fiatToHumanFriendly(price, true)} {fiatCurrency.symbol}
+      {fiatToDiemHumanFriendly(price, true)} {fiatCurrency.symbol}
     </>
   );
 }

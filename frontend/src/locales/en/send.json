@@ -3,8 +3,8 @@
   "fail_message": "Failed to send transaction",
   "form": {
     "title": "Send Money",
-    "libraCurrency": "currency",
-    "libraCurrency_placeholder": "Select a currency",
+    "currency": "currency",
+    "currency_placeholder": "Select a currency",
     "fiatCurrency": "fiat currency",
     "amount": "amount",
     "price": "currently equal to",

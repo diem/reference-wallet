@@ -1,6 +1,6 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 """Admin endpoints"""
@@ -10,7 +10,7 @@ from http import HTTPStatus
 from flask import Blueprint, request
 from requests import HTTPError
 
-from libra_utils.sdks.liquidity import LpClient
+from diem_utils.sdks.liquidity import LpClient
 from wallet.services import user as user_service
 from wallet.services.transaction import get_total_balance
 from wallet.types import UsernameExistsError

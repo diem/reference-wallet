@@ -1,4 +1,4 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -27,7 +27,7 @@ from wallet.storage.user import get_user_by_account_id
 from wallet.services.kyc import get_user_kyc_info, get_additional_user_kyc_info
 from wallet.services.transaction import start_settle_offchain
 from wallet.types import TransactionType, TransactionStatus
-from libra_utils.types.currencies import LibraCurrency
+from diem_utils.types.currencies import DiemCurrency
 import logging
 
 from context import Context
@@ -41,18 +41,18 @@ def actor_to_libra_address(actor: PaymentActor) -> LibraAddress:
 
 class LRW(BusinessContext):
     def __init__(self, context: Context):
-        self.vasp_address = context.config.vasp_libra_address()
+        self.vasp_address = context.config.vasp_diem_address()
         self.context = context
 
     def user_address(self, user_subaddress_hex: str) -> LibraAddress:
         return LibraAddress.from_hex(
-            self.context.config.libra_address_hrp(),
+            self.context.config.diem_address_hrp(),
             self.vasp_address.get_onchain_address_hex(),
             user_subaddress_hex,
         )
 
     def get_my_address(self):
-        """Returns this VASP's str Libra address encoded in bech32"""
+        """Returns this VASP's str Diem address encoded in bech32"""
         return self.vasp_address.as_str()
 
     def open_channel_to(self, other_vasp_info):
@@ -246,7 +246,7 @@ class LRW(BusinessContext):
         status. The command could have originated either from the other VASP
         or this VASP (see `command.origin` to determine this).
         Args:
-            other_address (str): the encoded Libra Blockchain address of the other VASP.
+            other_address (str): the encoded Diem Blockchain address of the other VASP.
             seq (int): the sequence number into the shared command sequence.
             command (ProtocolCommand): the command that lead to the new or
                 updated payment.
@@ -280,7 +280,7 @@ class LRW(BusinessContext):
                 ).get_subaddress_hex()
                 txn_id = add_transaction(
                     amount=payment.action.amount,
-                    currency=LibraCurrency(payment.action.currency),
+                    currency=DiemCurrency(payment.action.currency),
                     payment_type=TransactionType.OFFCHAIN,
                     status=TransactionStatus.READY_FOR_ON_CHAIN,
                     source_id=None,

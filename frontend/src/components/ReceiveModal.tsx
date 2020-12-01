@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useEffect, useState } from "react";
@@ -6,19 +6,19 @@ import { Button, FormGroup, FormText, Modal, ModalBody } from "reactstrap";
 import QRCode from "qrcode.react";
 import { Trans, useTranslation } from "react-i18next";
 import { settingsContext } from "../contexts/app";
-import { LibraCurrency } from "../interfaces/currencies";
+import { Currency } from "../interfaces/currencies";
 import SelectDropdown from "./select";
 import CloseButton from "./CloseButton";
 import BackendClient from "../services/backendClient";
 import { BackendError } from "../services/errors";
 import ErrorMessage from "./Messages/ErrorMessage";
-import { libraCurrenciesWithBalanceOptions } from "../utils/dropdown-options";
-import { LIBRA_ADDR_PROTOCOL_PREFIX } from "../interfaces/blockchain";
+import { currenciesWithBalanceOptions } from "../utils/dropdown-options";
+import { ADDR_PROTOCOL_PREFIX } from "../interfaces/blockchain";
 
 interface ReceiveModalProps {
   open: boolean;
   onClose: () => void;
-  currency?: LibraCurrency;
+  currency?: Currency;
 }
 
 function ReceiveModal({ open, onClose, currency }: ReceiveModalProps) {
@@ -26,7 +26,7 @@ function ReceiveModal({ open, onClose, currency }: ReceiveModalProps) {
 
   const [settings] = useContext(settingsContext)!;
 
-  const [selectedCurrency, setSelectedCurrency] = useState<LibraCurrency | undefined>(currency);
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency | undefined>(currency);
   const [submitStatus, setSubmitStatus] = useState<"edit" | "sending" | "fail" | "success">("edit");
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [receivingAddress, setReceivingAddress] = useState<string | undefined>();
@@ -47,7 +47,7 @@ function ReceiveModal({ open, onClose, currency }: ReceiveModalProps) {
     refreshUser();
   }, []);
 
-  async function fetchReceivingAddress(currency: LibraCurrency) {
+  async function fetchReceivingAddress(currency: Currency) {
     try {
       setErrorMessage(undefined);
       setSubmitStatus("sending");
@@ -56,7 +56,7 @@ function ReceiveModal({ open, onClose, currency }: ReceiveModalProps) {
         recvAddress = await new BackendClient().createReceivingAddress();
         setReceivingAddress(recvAddress);
       }
-      setReceivingAddressWithIntents(`${LIBRA_ADDR_PROTOCOL_PREFIX}${recvAddress}?c=${currency}`);
+      setReceivingAddressWithIntents(`${ADDR_PROTOCOL_PREFIX}${recvAddress}?c=${currency}`);
       setSubmitStatus("success");
     } catch (e) {
       setSubmitStatus("fail");
@@ -104,10 +104,7 @@ function ReceiveModal({ open, onClose, currency }: ReceiveModalProps) {
           <FormText>{t("currency_label")}</FormText>
           <SelectDropdown
             label={t("currency")}
-            options={libraCurrenciesWithBalanceOptions(
-              settings.currencies,
-              settings.account!.balances
-            )}
+            options={currenciesWithBalanceOptions(settings.currencies, settings.account!.balances)}
             value={selectedCurrency}
             onChange={(val) => setSelectedCurrency(val)}
           />

@@ -1,16 +1,16 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useEffect, useReducer } from "react";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../../contexts/app";
-import { LibraCurrency } from "../../interfaces/currencies";
+import { Currency } from "../../interfaces/currencies";
 import { ConvertData } from "./interfaces";
 import ConvertReview from "./ConvertReview";
 import ConvertForm from "./ConvertForm";
 import BackendClient from "../../services/backendClient";
 import { Quote } from "../../interfaces/cico";
-import { libraFromFloat } from "../../utils/amount-precision";
+import { diemAmountFromFloat } from "../../utils/amount-precision";
 import { BackendError } from "../../services/errors";
 import ErrorMessage from "../Messages/ErrorMessage";
 import SuccessMessage from "../Messages/SuccessMessage";
@@ -59,7 +59,7 @@ function reducer(state: State, action: Action): State {
 }
 
 interface ConvertProps {
-  initialCurrency?: LibraCurrency;
+  initialCurrency?: Currency;
   onComplete: () => void;
 }
 
@@ -70,7 +70,7 @@ function Convert({ initialCurrency, onComplete }: ConvertProps) {
   const [{ phase, requestData, quote, errorMessage }, dispatch] = useReducer(reducer, {
     phase: "collect",
     requestData: {
-      fromLibraCurrency: initialCurrency,
+      fromCurrency: initialCurrency,
     },
   });
 
@@ -94,9 +94,9 @@ function Convert({ initialCurrency, onComplete }: ConvertProps) {
     const requestQuote = async () => {
       try {
         const newQuote = await new BackendClient().requestConvertQuote(
-          requestData.fromLibraCurrency!,
-          requestData.toLibraCurrency!,
-          libraFromFloat(requestData.libraAmount!)
+          requestData.fromCurrency!,
+          requestData.toCurrency!,
+          diemAmountFromFloat(requestData.amount!)
         );
         if (!isOutdated) {
           dispatch({ type: "review", quote: newQuote });

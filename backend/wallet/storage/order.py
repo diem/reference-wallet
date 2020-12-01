@@ -1,6 +1,6 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import Optional, Union
@@ -15,15 +15,15 @@ from ..types import (
     OrderType,
     OrderId,
 )
-from libra_utils.types.currencies import LibraCurrency, FiatCurrency
+from diem_utils.types.currencies import DiemCurrency, FiatCurrency
 
 
 def create_order(
     user_id: int,
     amount: int,
     direction: Direction,
-    base_currency: Union[LibraCurrency, FiatCurrency],
-    quote_currency: Union[LibraCurrency, FiatCurrency],
+    base_currency: Union[DiemCurrency, FiatCurrency],
+    quote_currency: Union[DiemCurrency, FiatCurrency],
     expiration_time: datetime,
     exchange_amount: int,
     order_type: OrderType,

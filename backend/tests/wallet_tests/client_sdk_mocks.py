@@ -1,23 +1,41 @@
 # pyre-ignore-all-errors
 
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 from dataclasses import dataclass, field
 from typing import Optional, Dict, List, Union, Tuple, cast
 
 import requests
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from libra import LocalAccount
-from libra.identifier import decode_account
-from libra.testnet import DESIGNATED_DEALER_ADDRESS
-from libra.txnmetadata import general_metadata
-from libra.utils import account_address_bytes, account_address_hex
-from libra.jsonrpc import Event
-
-from libra_utils.types.currencies import LibraCurrency
+from diem.identifier import decode_account
+from diem.jsonrpc import Event
+from diem.testnet import DESIGNATED_DEALER_ADDRESS
+from diem.txnmetadata import general_metadata
+from diem.utils import account_address_bytes, account_address_hex
+from diem_utils.types.currencies import DiemCurrency
 from tests.wallet_tests import ASSOC_AUTHKEY
 from wallet.services.transaction import process_incoming_transaction
+
+
+@dataclass
+class MockEventData:
+    amount: int
+    metadate: str
+    receiver: str
+    sender: str
+
+
+@dataclass
+class MockEventResource:
+    data: MockEventData
+    key: str
+    sequence_number: int
+    transaction_version: int
+
+
+class MockedBalance:
+    currency: str
+    amount: int
 
 
 class MockAccountResource:
@@ -25,16 +43,46 @@ class MockAccountResource:
         self.address: Optional[str] = address_hex
         self.sequence_number: int = sequence
         self.transactions: Dict[int, MockSignedTransaction] = {}
+        self._balances: [MockedBalance] = []
+        self.received_events_key: str = None
+        self.sent_events_key: str = None
+
+    @property
+    def balances(self):
+        return self._balances
+
+    @balances.setter
+    def balances(self, value):
+        self._balances = value
+
+    def set_received_events_key(self, received_events_key):
+        self.received_events_key = received_events_key
+
+    def set_sent_events_key(self, sent_events_key):
+        self.sent_events_key = sent_events_key
+
+
+@dataclass
+class MockTransactionP2PScript:
+    receiver: str
+    amount: int
+    currency: str = "Coin1"
+    metadata: bytes = None
+    type: str = "peer_to_peer_with_metadata"
+
+
+@dataclass
+class MockTransactionDetails(object):
+    sequence_number: int
+    sender: str
+    script: MockTransactionP2PScript
+    chain_id: int = 2
+    type: str = "user"
 
 
 @dataclass
 class MockSignedTransaction:
-    sender: bytes
-    amount: int
-    currency: str
-    receiver: bytes
-    metadata: bytes
-    sequence: Optional[int] = None
+    transaction: MockTransactionDetails
     version: Optional[int] = None
 
 
@@ -52,17 +100,18 @@ class Blockchain:
     version: int = 0
     transactions: Dict[int, MockSignedTransaction] = field(default_factory=lambda: {})
     accounts: Dict[str, MockAccountResource] = field(default_factory=lambda: {})
+    events: Dict[str, List[MockEventResource]] = field(default_factory=lambda: {})
 
 
 class BlockchainMock:
-    blockchain = Blockchain()
+    def __init__(self):
+        self.blockchain = Blockchain()
 
-    @classmethod
-    def get_account_resource(cls, address_hex: str) -> MockAccountResource:
-        if address_hex not in cls.blockchain.accounts:
-            cls.blockchain.accounts[address_hex] = MockAccountResource(address_hex)
+    def get_account_resource(self, address_hex: str) -> MockAccountResource:
+        if address_hex not in self.blockchain.accounts:
+            self.blockchain.accounts[address_hex] = MockAccountResource(address_hex)
 
-        return cls.blockchain.accounts[address_hex]
+        return self.blockchain.accounts[address_hex]
 
 
 class TransactionsMocker(BlockchainMock):
@@ -70,7 +119,7 @@ class TransactionsMocker(BlockchainMock):
 
     def send_transaction(
         self,
-        currency: LibraCurrency,
+        currency: DiemCurrency,
         amount: int,
         dest_vasp_address: str,
         dest_sub_address: str,
@@ -112,7 +161,7 @@ class FaucetUtilsMock(BlockchainMock):
             receiver_address=authkey_hex,
             sequence=sequence,
             amount=amount,
-            currency=LibraCurrency.Coin1,
+            currency=DiemCurrency.Coin1,
             metadata=metadata,
         )
 
@@ -134,26 +183,72 @@ class FaucetUtilsMock(BlockchainMock):
         return sequence
 
 
-class LibraNetworkMock(BlockchainMock):
+class DiemNetworkMock(BlockchainMock):
+    def add_events(self, event_stream_key: str, events):
+        if event_stream_key not in self.blockchain.events:
+            self.blockchain.events[event_stream_key] = []
+
+        self.blockchain.events[event_stream_key].extend(events)
+
+    def get_events(
+        self, event_stream_key: str, start: int, limit: int
+    ) -> List[MockEventResource]:
+        result = []
+        stop = start + limit
+
+        if event_stream_key in self.blockchain.events:
+            if len(self.blockchain.events[event_stream_key]) < start + limit:
+                stop = len(self.blockchain.events[event_stream_key])
+
+            for i in range(start, stop):
+                result.append(self.blockchain.events[event_stream_key][i])
+
+        return result
+
+    def add_account_transactions(self, addr_hex, txs):
+        account = self.get_account_resource(addr_hex)
+        account.transactions = txs
+
+        for tx in txs:
+            self.blockchain.transactions[tx.version] = tx
+
+    def get_account_transactions(self, addr_hex: str, sequence: int, limit: int):
+        result = []
+        stop = sequence + limit
+
+        transactions = self.get_account_resource(addr_hex).transactions
+
+        if len(transactions) < stop:
+            stop = len(transactions)
+
+        for i in range(sequence, stop):
+            result.append(transactions[i])
+
+        return result
+
     def get_account(self, address_hex: str) -> Optional[MockAccountResource]:
-        return BlockchainMock.get_account_resource(address_hex)
+        return self.get_account_resource(address_hex)
 
     def transaction_by_acc_seq(
         self, addr_hex: str, seq: int, include_events: bool = False
     ) -> Tuple[
         Optional[MockSignedTransaction], List[Event],
     ]:
-        account = BlockchainMock.get_account_resource(addr_hex)
+        account = self.get_account_resource(addr_hex)
         tx = account.transactions[seq]
 
         return tx, [Event()]
 
-    def transactions_by_range(
+    def get_transactions(
         self, start_version: int, limit: int, include_events: bool = False
-    ) -> List[Tuple[MockSignedTransaction, List[Event]]]:
-        tx = BlockchainMock.blockchain.transactions[start_version]
+    ) -> List[MockSignedTransaction]:
+        result = []
 
-        return [(tx, [Event()])]
+        for j in range(start_version, start_version + limit):
+            tx = self.blockchain.transactions[j]
+            result.append(tx)
+
+        return result
 
     def sendTransaction(self, signed_transaction_bytes: bytes) -> None:
         if isinstance(signed_transaction_bytes, MockSignedTransaction):
@@ -161,17 +256,15 @@ class LibraNetworkMock(BlockchainMock):
                 MockSignedTransaction, signed_transaction_bytes
             )
 
-            account = BlockchainMock.get_account_resource(
-                address_hex=bytes.hex(txn.sender)
-            )
+            account = self.get_account_resource(address_hex=bytes.hex(txn.sender))
             account_sequence = account.sequence_number
             account.sequence_number += 1
-            BlockchainMock.blockchain.version += 1
+            self.blockchain.version += 1
 
-            txn_version = BlockchainMock.blockchain.version
+            txn_version = self.blockchain.version
             txn.version = txn_version
             txn.sequence = account_sequence
 
             TransactionsMocker.transactions.append(txn)
-            BlockchainMock.blockchain.transactions[txn_version + 1] = txn
+            self.blockchain.transactions[txn_version + 1] = txn
             account.transactions[account_sequence] = txn

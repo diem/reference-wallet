@@ -1,4 +1,4 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 import context, time
@@ -6,7 +6,7 @@ from offchain import client
 
 from offchainapi.payment import Status
 
-from libra_utils.types.currencies import LibraCurrency
+from diem_utils.types.currencies import DiemCurrency
 from wallet.services.account import generate_new_subaddress
 from wallet.services.transaction import send_transaction
 from wallet.types import TransactionStatus
@@ -14,8 +14,8 @@ from wallet.storage import get_single_transaction
 
 
 def test_send_payment_between_vasps(lrw1, lrw2, vasp1, vasp2, user1, user2):
-    sender_address = lrw1.context.config.vasp_libra_address()
-    receiver_address = lrw2.context.config.vasp_libra_address()
+    sender_address = lrw1.context.config.vasp_diem_address()
+    receiver_address = lrw2.context.config.vasp_diem_address()
     receiver_subaddress = generate_new_subaddress(account_id=user2.account_id)
 
     # setup global environment as lrw1 app
@@ -25,7 +25,7 @@ def test_send_payment_between_vasps(lrw1, lrw2, vasp1, vasp2, user1, user2):
     txn = send_transaction(
         sender_id=user1.account_id,
         amount=2_000_000_000,
-        currency=LibraCurrency.Coin1,
+        currency=DiemCurrency.Coin1,
         destination_address=receiver_address.get_onchain_address_hex(),
         destination_subaddress=receiver_subaddress,
     )

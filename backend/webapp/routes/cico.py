@@ -1,4 +1,4 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 """Cash-in/cash-out endpoints"""
@@ -12,9 +12,9 @@ from uuid import UUID
 from flask import Blueprint, request
 from itertools import chain
 
-from libra_utils.precise_amount import Amount
-from libra_utils.types.currencies import LibraCurrency, FiatCurrency
-from libra_utils.types.liquidity.currency import Currency
+from diem_utils.precise_amount import Amount
+from diem_utils.types.currencies import DiemCurrency, FiatCurrency
+from diem_utils.types.liquidity.currency import Currency
 from wallet.services import order as order_service
 from wallet.services.fx.fx import get_rate
 from wallet.types import OrderId, Direction
@@ -118,7 +118,7 @@ class CicoRoutes:
             return "OK", HTTPStatus.NO_CONTENT
 
     class GetRatesView(CicoView):
-        summary = "Return rates for all Fiat and Libra currency pairs"
+        summary = "Return rates for all Fiat and Diem currency pairs"
         responses = {
             HTTPStatus.OK: response_definition(
                 "currency pairs with rates", schema=RateResponse
@@ -127,20 +127,20 @@ class CicoRoutes:
 
         def get(self):
             rates = []
-            for base_currency in LibraCurrency:
+            for base_currency in DiemCurrency:
                 for quote_currency in chain(
-                    list(FiatCurrency.__members__), list(LibraCurrency.__members__)
+                    list(FiatCurrency.__members__), list(DiemCurrency.__members__)
                 ):
                     if base_currency == quote_currency:
                         continue
 
-                    one_libra = Amount().deserialize(Amount.unit)
+                    one_diem = Amount().deserialize(Amount.unit)
 
                     conversion_rate = get_rate(
                         base_currency=Currency(base_currency),
                         quote_currency=Currency(quote_currency),
                     )
-                    price = one_libra * conversion_rate
+                    price = one_diem * conversion_rate
 
                     rates.append(
                         {

@@ -1,4 +1,4 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useRef, useState } from "react";
@@ -19,35 +19,30 @@ import { Controller, useForm } from "react-hook-form";
 import NumberInput from "react-number-format";
 import SelectDropdown from "../select";
 import { settingsContext } from "../../contexts/app";
-import { FiatCurrency, LibraCurrency } from "../../interfaces/currencies";
+import { FiatCurrency, Currency } from "../../interfaces/currencies";
 import { Send } from "./interfaces";
 import {
-  fiatFromFloat,
-  fiatToHumanFriendly,
+  fiatFromDiemFloat,
+  fiatToDiemHumanFriendly,
   fiatToHumanFriendlyRate,
-  libraFromFloat,
-  libraToFloat,
-  normalizeLibra,
+  diemAmountFromFloat,
+  diemAmountToFloat,
+  normalizeDiemAmount,
 } from "../../utils/amount-precision";
-import {
-  fiatCurrenciesOptions,
-  libraCurrenciesWithBalanceOptions,
-} from "../../utils/dropdown-options";
-
-const VALID_VASP_ADDRESS_REGEX = new RegExp("^[a-zA-Z0-9]{50}$");
-const LIBRA_PREFIX = "libra://";
+import { fiatCurrenciesOptions, currenciesWithBalanceOptions } from "../../utils/dropdown-options";
+import { ADDR_PROTOCOL_PREFIX, VALID_VASP_ADDRESS_REGEX } from "../../interfaces/blockchain";
 
 interface AddressWithIntents {
   address: string;
-  currency?: LibraCurrency;
+  currency?: Currency;
   amount?: number;
 }
 
-function parseLibraAddress(address: string): AddressWithIntents {
+function parseAddressIntents(address: string): AddressWithIntents {
   let amount: number | undefined = undefined;
-  let currency: LibraCurrency | undefined = undefined;
-  if (address.startsWith(LIBRA_PREFIX)) {
-    address = address.substring(LIBRA_PREFIX.length);
+  let currency: Currency | undefined = undefined;
+  if (address.startsWith(ADDR_PROTOCOL_PREFIX)) {
+    address = address.substring(ADDR_PROTOCOL_PREFIX.length);
   }
 
   const parts = address.split("?", 2);
@@ -57,10 +52,10 @@ function parseLibraAddress(address: string): AddressWithIntents {
       const [key, value] = intent.split("=", 2);
       switch (key) {
         case "c":
-          currency = decodeURIComponent(value) as LibraCurrency;
+          currency = decodeURIComponent(value) as Currency;
           break;
         case "am":
-          amount = libraToFloat(parseInt(decodeURIComponent(value)));
+          amount = diemAmountToFloat(parseInt(decodeURIComponent(value)));
           break;
       }
     });
@@ -84,27 +79,23 @@ function SendForm({ value, onSubmit }: SendFormProps) {
   const [settings] = useContext(settingsContext)!;
   const { register, errors, handleSubmit, control, setValue, watch } = useForm<Send>();
 
-  const [selectedLibraCurrency, setSelectedLibraCurrency] = useState<LibraCurrency | undefined>(
-    value.libraCurrency
-  );
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency | undefined>(value.currency);
   const [selectedFiatCurrency, setSelectedFiatCurrency] = useState<FiatCurrency>(
     value.fiatCurrency
   );
-  const libraAmount = watch("libraAmount") || 0;
+  const amount = watch("amount") || 0;
   const priceRef = useRef<HTMLInputElement>(null);
 
-  const libraCurrency = selectedLibraCurrency
-    ? settings.currencies[selectedLibraCurrency]
-    : undefined;
+  const currency = selectedCurrency ? settings.currencies[selectedCurrency] : undefined;
 
   const fiatCurrency = selectedFiatCurrency
     ? settings.fiatCurrencies[selectedFiatCurrency]
     : undefined;
 
-  const exchangeRate = libraCurrency?.rates[selectedFiatCurrency] || 0;
+  const exchangeRate = currency?.rates[selectedFiatCurrency] || 0;
 
-  function calcPrice(libraAmount: number) {
-    return libraAmount * exchangeRate;
+  function calcPrice(amount: number) {
+    return amount * exchangeRate;
   }
 
   function calcAmount(price: number) {
@@ -112,53 +103,53 @@ function SendForm({ value, onSubmit }: SendFormProps) {
   }
 
   function setAddressAndIntents(value: string) {
-    const parsedAddress = parseLibraAddress(value);
+    const parsedAddress = parseAddressIntents(value);
 
-    setValue("libraAddress", parsedAddress.address);
+    setValue("address", parsedAddress.address);
 
     if (parsedAddress.currency) {
-      setSelectedLibraCurrency(parsedAddress.currency);
-      setValue("libraCurrency", parsedAddress.currency);
+      setSelectedCurrency(parsedAddress.currency);
+      setValue("currency", parsedAddress.currency);
     }
 
-    if (parsedAddress.amount) setValue("libraAmount", parsedAddress.amount);
+    if (parsedAddress.amount) setValue("amount", parsedAddress.amount);
   }
 
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
       <h3>{t("form.title")}</h3>
       <FormGroup>
-        <FormText className="text-capitalize-first">{t("form.libraCurrency")}</FormText>
+        <FormText className="text-capitalize-first">{t("form.currency")}</FormText>
         <Controller
-          invalid={!!errors.libraCurrency}
+          invalid={!!errors.currency}
           control={control}
-          name="libraCurrency"
+          name="currency"
           rules={{
             required: (
-              <Trans i18nKey="validations:required" values={{ field: t("form.libraCurrency") }} />
+              <Trans i18nKey="validations:required" values={{ field: t("form.currency") }} />
             ),
           }}
-          defaultValue={value.libraCurrency}
+          defaultValue={value.currency}
           onChange={([val]) => {
-            setSelectedLibraCurrency(val);
+            setSelectedCurrency(val);
             return val;
           }}
           as={
             <SelectDropdown
-              label={t("form.libraCurrency_placeholder")}
-              options={libraCurrenciesWithBalanceOptions(
+              label={t("form.currency_placeholder")}
+              options={currenciesWithBalanceOptions(
                 settings.currencies,
                 settings.account!.balances
               )}
             />
           }
         />
-        {errors.libraCurrency && <FormText color="danger">{errors.libraCurrency.message}</FormText>}
+        {errors.currency && <FormText color="danger">{errors.currency.message}</FormText>}
       </FormGroup>
       <FormGroup>
         <FormText className="text-capitalize-first">{t("form.address")}</FormText>
         <Input
-          invalid={!!errors.libraAddress}
+          invalid={!!errors.address}
           innerRef={register({
             required: (
               <Trans i18nKey="validations:required" values={{ field: t("form.address") }} />
@@ -170,10 +161,10 @@ function SendForm({ value, onSubmit }: SendFormProps) {
               ),
             },
           })}
-          name="libraAddress"
+          name="address"
           type="text"
           placeholder={t("form.address_placeholder")}
-          defaultValue={value.libraAddress}
+          defaultValue={value.address}
           onPaste={(e) => {
             e.preventDefault();
             const value = e.clipboardData.getData("Text");
@@ -184,7 +175,7 @@ function SendForm({ value, onSubmit }: SendFormProps) {
             setAddressAndIntents(value);
           }}
         />
-        {errors.libraAddress && <FormText color="danger">{errors.libraAddress.message}</FormText>}
+        {errors.address && <FormText color="danger">{errors.address.message}</FormText>}
       </FormGroup>
       <Row>
         <Col sm="6">
@@ -192,9 +183,9 @@ function SendForm({ value, onSubmit }: SendFormProps) {
             <FormText className="text-capitalize-first">{t("form.amount")}</FormText>
             <InputGroup>
               <Controller
-                invalid={!!errors.libraAmount}
+                invalid={!!errors.amount}
                 control={control}
-                name="libraAmount"
+                name="amount"
                 rules={{
                   required: (
                     <Trans i18nKey="validations:required" values={{ field: t("form.amount") }} />
@@ -209,13 +200,13 @@ function SendForm({ value, onSubmit }: SendFormProps) {
                     ),
                   },
                   validate: (enteredAmount: number) => {
-                    const selectedLibraCurrency = watch("libraCurrency");
+                    const selectedCurrency = watch("currency");
 
-                    if (selectedLibraCurrency) {
+                    if (selectedCurrency) {
                       const selectedCurrencyBalance = settings.account!.balances.find(
-                        (balance) => balance.currency === selectedLibraCurrency
+                        (balance) => balance.currency === selectedCurrency
                       )!;
-                      if (libraFromFloat(enteredAmount) > selectedCurrencyBalance.balance) {
+                      if (diemAmountFromFloat(enteredAmount) > selectedCurrencyBalance.balance) {
                         return t("validations:noMoreThanBalance", {
                           replace: {
                             field: t("form.amount"),
@@ -227,33 +218,33 @@ function SendForm({ value, onSubmit }: SendFormProps) {
                     return true;
                   },
                 }}
-                defaultValue={value.libraAmount || 0}
+                defaultValue={value.amount || 0}
                 onChange={([e]) => {
                   const value = parseFloat(e.target.value);
-                  return isNaN(value) ? "" : normalizeLibra(value);
+                  return isNaN(value) ? "" : normalizeDiemAmount(value);
                 }}
                 onClick={(e) => {
                   const value = parseFloat(e.target.value);
                   if (!value) {
-                    setValue("libraAmount", ("" as unknown) as number);
+                    setValue("amount", ("" as unknown) as number);
                   }
                 }}
                 onBlur={([e]) => {
                   const value = e.target.value;
                   if (!value.length) {
-                    setValue("libraAmount", 0);
+                    setValue("amount", 0);
                   }
                 }}
-                disabled={!selectedLibraCurrency}
+                disabled={!selectedCurrency}
                 as={<Input min={0} step="any" type="number" />}
               />
-              {libraCurrency && (
+              {currency && (
                 <InputGroupAddon addonType="append">
-                  <InputGroupText>{libraCurrency.sign}</InputGroupText>
+                  <InputGroupText>{currency.sign}</InputGroupText>
                 </InputGroupAddon>
               )}
             </InputGroup>
-            {errors.libraAmount && <FormText color="danger">{errors.libraAmount.message}</FormText>}
+            {errors.amount && <FormText color="danger">{errors.amount.message}</FormText>}
           </FormGroup>
         </Col>
         <Col sm="6">
@@ -267,15 +258,15 @@ function SendForm({ value, onSubmit }: SendFormProps) {
                 allowNegative={false}
                 allowEmptyFormatting={false}
                 thousandSeparator={true}
-                value={libraAmount ? fiatToHumanFriendly(calcPrice(libraAmount)) : ""}
+                value={amount ? fiatToDiemHumanFriendly(calcPrice(amount)) : ""}
                 onValueChange={(values) => {
                   if (priceRef.current === document.activeElement) {
-                    const newPrice = fiatFromFloat(values.floatValue || 0);
-                    const amount = normalizeLibra(calcAmount(newPrice));
-                    setValue("libraAmount", amount);
+                    const newPrice = fiatFromDiemFloat(values.floatValue || 0);
+                    const amount = normalizeDiemAmount(calcAmount(newPrice));
+                    setValue("amount", amount);
                   }
                 }}
-                disabled={!selectedLibraCurrency}
+                disabled={!selectedCurrency}
               />
               <Controller
                 invalid={!!errors.fiatCurrency}
@@ -308,11 +299,11 @@ function SendForm({ value, onSubmit }: SendFormProps) {
           </FormGroup>
         </Col>
       </Row>
-      {libraCurrency && fiatCurrency && (
+      {currency && fiatCurrency && (
         <FormGroup>
           <FormText className="text-capitalize-first">{t("form.exchange_rate")}</FormText>
           <p className="text-black">
-            1 {libraCurrency.sign} = {fiatToHumanFriendlyRate(exchangeRate)} {fiatCurrency.symbol}
+            1 {currency.sign} = {fiatToHumanFriendlyRate(exchangeRate)} {fiatCurrency.symbol}
           </p>
         </FormGroup>
       )}

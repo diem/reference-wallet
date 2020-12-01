@@ -1,4 +1,4 @@
-# Copyright (c) The Libra Core Contributors
+# Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 import os
 
@@ -7,7 +7,7 @@ walk_dir = os.getcwd()
 print("walk_dir = " + os.path.abspath(walk_dir))
 
 copyright_header_lines = [
-    "Copyright (c) The Libra Core Contributors",
+    "Copyright (c) The Diem Core Contributors",
     "SPDX-License-Identifier: Apache-2.0",
 ]
 

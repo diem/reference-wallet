@@ -1,13 +1,13 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { FiatCurrency, LibraCurrency } from "./currencies";
+import { FiatCurrency, Currency } from "./currencies";
 import { PaymentMethod, User } from "./user";
-import { Account, LibraCurrencyBalance } from "./account";
+import { Account, CurrencyBalance } from "./account";
 
-export interface LibraCurrencySettings {
+export interface CurrencySettings {
   name: string;
-  symbol: LibraCurrency;
+  symbol: Currency;
   sign: string;
   rates: {
     [key in FiatCurrency]: number;
@@ -20,14 +20,14 @@ export interface FiatCurrencySettings {
 }
 
 export interface WalletTotals {
-  balances: LibraCurrencyBalance[];
+  balances: CurrencyBalance[];
   userCount: number;
 }
 
 export interface AppSettings {
   network: string;
   currencies: {
-    [key in LibraCurrency]: LibraCurrencySettings;
+    [key in Currency]: CurrencySettings;
   };
   fiatCurrencies: {
     [key in FiatCurrency]: FiatCurrencySettings;

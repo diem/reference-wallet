@@ -1,10 +1,10 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
 const FIAT_MAX_FRACTION_DIGITS = 6;
 const FIAT_SCALING_FACTOR = Math.pow(10, FIAT_MAX_FRACTION_DIGITS);
-const LIBRA_MAX_FRACTION_DIGITS = 6;
-const LIBRA_SCALING_FACTOR = Math.pow(10, LIBRA_MAX_FRACTION_DIGITS);
+const DIEM_MAX_FRACTION_DIGITS = 6;
+const DIEM_SCALING_FACTOR = Math.pow(10, DIEM_MAX_FRACTION_DIGITS);
 
 const FIAT_VISUAL_FORMAT = {
   minimumFractionDigits: 2,
@@ -16,9 +16,9 @@ const FIAT_RATE_VISUAL_FORMAT = {
   maximumFractionDigits: 4,
 };
 
-const LIBRA_VISUAL_FORMAT = {
+const DIEM_VISUAL_FORMAT = {
   minimumFractionDigits: 0,
-  maximumFractionDigits: LIBRA_MAX_FRACTION_DIGITS,
+  maximumFractionDigits: DIEM_MAX_FRACTION_DIGITS,
 };
 
 /**
@@ -31,12 +31,12 @@ const LIBRA_VISUAL_FORMAT = {
  * @param amount  Fixed point scaled fiat amount.
  * @param useGrouping  Group thousands separated with comma.
  */
-export function fiatToHumanFriendly(amount: number, useGrouping: boolean = false): string {
-  return fiatToFloat(amount).toLocaleString(undefined, { ...FIAT_VISUAL_FORMAT, useGrouping });
+export function fiatToDiemHumanFriendly(amount: number, useGrouping: boolean = false): string {
+  return fiatToDiemFloat(amount).toLocaleString(undefined, { ...FIAT_VISUAL_FORMAT, useGrouping });
 }
 
 export function fiatToHumanFriendlyRate(amount: number): string {
-  return fiatToFloat(amount).toLocaleString(undefined, {
+  return fiatToDiemFloat(amount).toLocaleString(undefined, {
     ...FIAT_RATE_VISUAL_FORMAT,
     useGrouping: false,
   });
@@ -52,7 +52,7 @@ export function fiatToHumanFriendlyRate(amount: number): string {
  * @param amount  String containing fiat amount as a decimal fraction.
  */
 export function fiatFromHumanFriendly(amount: string): number {
-  return fiatFromFloat(Number.parseFloat(amount));
+  return fiatFromDiemFloat(Number.parseFloat(amount));
 }
 
 /**
@@ -64,58 +64,61 @@ export function fiatFromHumanFriendly(amount: string): number {
  *
  * @param amount  Fixed point scaled fiat amount.
  */
-export function fiatFromFloat(amount: number): number {
+export function fiatFromDiemFloat(amount: number): number {
   return Math.round(amount * FIAT_SCALING_FACTOR);
 }
 
-export function fiatToFloat(amount: number): number {
+export function fiatToDiemFloat(amount: number): number {
   return Math.trunc(amount) / FIAT_SCALING_FACTOR;
 }
 
 /**
- * Convert the Libra amount from its internal representation to a human
+ * Convert the amount from its internal representation to a human
  * readable decimal fraction.
  *
- * Libra amounts are handled internally as fixed point scaled numbers and are
+ * amounts are handled internally as fixed point scaled numbers and are
  * converted to decimal fraction only for UI presentation.
  *
- * @param amount  Fixed point scaled Libra amount.
+ * @param amount  Fixed point scaled amount.
  * @param useGrouping  Group thousands separated with comma.
  */
-export function libraToHumanFriendly(amount: number, useGrouping: boolean = false): string {
-  return libraToFloat(amount).toLocaleString(undefined, { ...LIBRA_VISUAL_FORMAT, useGrouping });
+export function diemAmountToHumanFriendly(amount: number, useGrouping: boolean = false): string {
+  return diemAmountToFloat(amount).toLocaleString(undefined, {
+    ...DIEM_VISUAL_FORMAT,
+    useGrouping,
+  });
 }
 
 /**
- * Convert the Libra amount from a human readable decimal fraction
+ * Convert the amount from a human readable decimal fraction
  * representation to the fixed point internal format.
  *
- * Libra amounts are handled internally as fixed point scaled numbers
+ * amounts are handled internally as fixed point scaled numbers
  * and are converted to decimal fraction only for UI presentation.
  *
- * @param amount  String containing Libra amount as a decimal fraction.
+ * @param amount  String containing amount as a decimal fraction.
  */
-export function libraFromHumanFriendly(amount: string): number {
-  return libraFromFloat(Number.parseFloat(amount));
+export function diemAmountFromHumanFriendly(amount: string): number {
+  return diemAmountFromFloat(Number.parseFloat(amount));
 }
 
 /**
- * Convert the Libra amount from a floating point number representation
+ * Convert the amount from a floating point number representation
  * to the fixed point internal format.
  *
- * Libra amounts are handled internally as fixed point scaled numbers
+ * amounts are handled internally as fixed point scaled numbers
  * and are converted to decimal fraction only for UI presentation.
  *
- * @param amount  Libra amount as a floating point number.
+ * @param amount amount as a floating point number.
  */
-export function libraFromFloat(amount: number): number {
-  return Math.round(amount * LIBRA_SCALING_FACTOR);
+export function diemAmountFromFloat(amount: number): number {
+  return Math.round(amount * DIEM_SCALING_FACTOR);
 }
 
-export function libraToFloat(amount: number): number {
-  return Math.trunc(amount) / LIBRA_SCALING_FACTOR;
+export function diemAmountToFloat(amount: number): number {
+  return Math.trunc(amount) / DIEM_SCALING_FACTOR;
 }
 
-export function normalizeLibra(amount: number): number {
-  return libraToFloat(libraFromFloat(amount));
+export function normalizeDiemAmount(amount: number): number {
+  return diemAmountToFloat(diemAmountFromFloat(amount));
 }

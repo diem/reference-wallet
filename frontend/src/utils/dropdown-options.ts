@@ -1,32 +1,31 @@
-// Copyright (c) The Libra Core Contributors
+// Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { libraToHumanFriendly } from "./amount-precision";
-import { LibraCurrencyBalance } from "../interfaces/account";
-import { FiatCurrency, LibraCurrency } from "../interfaces/currencies";
-import { FiatCurrencySettings, LibraCurrencySettings } from "../interfaces/settings";
+import { diemAmountToHumanFriendly } from "./amount-precision";
+import { CurrencyBalance } from "../interfaces/account";
+import { Currency, FiatCurrency } from "../interfaces/currencies";
+import { CurrencySettings, FiatCurrencySettings } from "../interfaces/settings";
 import { PaymentMethod } from "../interfaces/user";
 import { TransactionDirection } from "../interfaces/transaction";
 
-export function libraCurrenciesWithBalanceOptions(
-  currencies: { [key in LibraCurrency]: LibraCurrencySettings },
-  balances: LibraCurrencyBalance[]
-): { [key in LibraCurrency]?: string } {
+export function currenciesWithBalanceOptions(
+  currencies: { [key in Currency]: CurrencySettings },
+  balances: CurrencyBalance[]
+): { [key in Currency]?: string } {
   return balances.reduce((options, balance) => {
     const currency = currencies[balance.currency];
-    const balanceAmount = libraToHumanFriendly(balance.balance, true);
+    const balanceAmount = diemAmountToHumanFriendly(balance.balance, true);
     options[balance.currency] = `${currency.name} (${balanceAmount} ${currency.sign} available)`;
     return options;
   }, {});
 }
 
-export function libraCurrenciesOptions(
-  libraCurrencies: { [key in LibraCurrency]: LibraCurrencySettings }
-): { [key in LibraCurrency]?: string } {
-  return Object.keys(libraCurrencies).reduce((currencies, libra) => {
-    const currency = libraCurrencies[libra];
-    currencies[libra] = currency.name;
-    return currencies;
+export function getCurrenciesOptionsMap(
+  currencies: { [key in Currency]: CurrencySettings }
+): { [key in Currency]?: string } {
+  return Object.keys(currencies).reduce((map, c) => {
+    map[c] = currencies[c].name;
+    return map;
   }, {});
 }
 
@@ -58,9 +57,9 @@ export function transactionSortingOptions(): { [key: string]: string } {
   return {
     date_asc: "Newest to Oldest",
     date_desc: "Oldest to Newest",
-    libra_amount_desc: "Highest Amount",
+    amount_desc: "Highest Amount",
     fiat_amount_desc: "Highest Fiat Amount",
-    libra_amount_asc: "Lowest Amount",
+    amount_asc: "Lowest Amount",
     fiat_amount_asc: "Lowest Fiat Amount",
   };
 }
