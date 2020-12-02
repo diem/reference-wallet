@@ -21,7 +21,7 @@ bech32 = "*"
 dataclasses-json = "*"
 python-dotenv = "*"
 cryptography = "*"
-client-python-sdk = {path="client-sdk-python", editable=true}
+client-python-sdk = {git="https://github.com/libra/client-sdk-python.git", editable=true}
 
 [pipenv]
 allow_prereleases = true
