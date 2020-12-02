@@ -1,0 +1,9 @@
+/venv
+.pyre
+/build
+/dist
+__pycache__
+/src/diem_client_sdk.egg-info
+
+# JetBrains IDEs configuration
+.idea
