@@ -8,7 +8,7 @@ verify_ssl = true
 
 [dev-packages]
 fakeredis = "*"
-black = "==19.10b0"
+black = "*"
 pyre-check = "*"
 pyre-extensions = "*"
 pytest = "*"
@@ -76,9 +76,8 @@ psycopg2-binary = "*"
 python-dotenv = "*"
 dataclasses-json = "*"
 jwcrypto = "*"
-reference-utils = {git = "https://49decaaaf2e5c1c77eca2805117a36b3135f2c26@github.com/firstdag/reference-utils.git", editable = true, ref = "LibraMigration"}
 libra-offchainreference = "*"
-client-python-sdk = {git = "https://49decaaaf2e5c1c77eca2805117a36b3135f2c26@github.com/libra/client-sdk-python.git", editable = true, ref = "diem-migration"}
+client-python-sdk = {path="client-sdk-python", editable=true}
 sqlalchemy-paginator = "*"
 
 [pipenv]
