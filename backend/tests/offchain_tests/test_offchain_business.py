@@ -204,5 +204,9 @@ async def test_get_additional_kyc(lrw1, lrw2, payment):
 
 def make_kyc_data():
     return KYCData(
-        {"payload_type": "KYC_DATA", "payload_version": 1, "type": "individual",}
+        {
+            "payload_type": "KYC_DATA",
+            "payload_version": 1,
+            "type": "individual",
+        }
     )

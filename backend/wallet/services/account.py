@@ -147,7 +147,8 @@ def _get_rates() -> Dict[str, Amount]:
 
 
 def get_account_balance_by_name(
-    account_name: Optional[str] = None, up_to_version=None,
+    account_name: Optional[str] = None,
+    up_to_version=None,
 ):
     account = get_account(account_name=account_name)
 
@@ -155,7 +156,8 @@ def get_account_balance_by_name(
 
 
 def get_account_balance_by_id(
-    account_id: Optional[int] = None, up_to_version=None,
+    account_id: Optional[int] = None,
+    up_to_version=None,
 ) -> Balance:
     account = get_account(account_id=account_id)
 

@@ -98,7 +98,8 @@ def create_order(
     expiration_time = datetime.utcnow() + timedelta(minutes=10)
 
     conversion_rate = get_rate(
-        base_currency=Currency(base_currency), quote_currency=Currency(quote_currency),
+        base_currency=Currency(base_currency),
+        quote_currency=Currency(quote_currency),
     )
     request_amount = Amount().deserialize(amount)
     exchange_amount = request_amount * conversion_rate

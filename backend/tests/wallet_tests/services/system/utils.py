@@ -132,7 +132,12 @@ def setup_incoming_transaction(
 
 
 def add_incoming_transaction_to_db(
-    receiver_sub_address, amount, sender_address, sequence, version, account_name,
+    receiver_sub_address,
+    amount,
+    sender_address,
+    sequence,
+    version,
+    account_name,
 ):
     user = add_user_in_db(account_name=account_name)
 
@@ -278,7 +283,8 @@ def check_balance(expected_balance):
 
         for account in accounts:
             balance = account_service.get_account_balance(
-                account=account, up_to_version=0,
+                account=account,
+                up_to_version=0,
             ).total.get(CURRENCY)
 
             lrw_balance += balance
@@ -291,7 +297,12 @@ def check_number_of_transactions(expected):
 
 
 def add_incoming_transaction_to_blockchain(
-    patch_blockchain, receiver_sub_address, amount, sender_address, sequence, version,
+    patch_blockchain,
+    receiver_sub_address,
+    amount,
+    sender_address,
+    sequence,
+    version,
 ):
     metadata_1 = general_metadata(to_subaddress=bytes.fromhex(receiver_sub_address))
     transaction = mock_transaction(
@@ -320,7 +331,12 @@ def add_incoming_transaction_to_blockchain(
 
 
 def add_outgoing_transaction_to_blockchain(
-    patch_blockchain, sender_sub_address, amount, receiver_address, sequence, version,
+    patch_blockchain,
+    sender_sub_address,
+    amount,
+    receiver_address,
+    sequence,
+    version,
 ):
     metadata = general_metadata(from_subaddress=bytes.fromhex(sender_sub_address))
     transaction = mock_transaction(

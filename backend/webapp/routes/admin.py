@@ -182,7 +182,10 @@ class AdminRoutes:
             return (
                 {
                     "balances": [
-                        {"currency": currency.value, "balance": int(balance),}
+                        {
+                            "currency": currency.value,
+                            "balance": int(balance),
+                        }
                         for currency, balance in get_total_balance().total.items()
                     ]
                 },

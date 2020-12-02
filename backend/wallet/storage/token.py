@@ -15,7 +15,10 @@ def get_token(token_id: str):
 
 
 def create_token(user_id, expiration_time: float) -> str:
-    token = Token(user_id=user_id, expiration_time=expiration_time,)
+    token = Token(
+        user_id=user_id,
+        expiration_time=expiration_time,
+    )
     db_session.add(token)
     db_session.commit()
     return token.id

@@ -87,7 +87,9 @@ class Context:
         metadata_signature: bytes,
     ) -> jsonrpc.Transaction:
         metadata, _ = txnmetadata.travel_rule(
-            off_chain_reference_id, self.config.vasp_account_address(), amount,
+            off_chain_reference_id,
+            self.config.vasp_account_address(),
+            amount,
         )
         return self._p2p_transfer(
             currency, amount, receiver_vasp_address, metadata, metadata_signature

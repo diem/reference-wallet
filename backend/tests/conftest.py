@@ -69,7 +69,9 @@ def patch_blockchain(monkeypatch):
         DiemClient, "get_account_transaction", network.transaction_by_acc_seq
     )
     monkeypatch.setattr(
-        DiemClient, "get_account_transactions", network.get_account_transactions,
+        DiemClient,
+        "get_account_transactions",
+        network.get_account_transactions,
     )
     monkeypatch.setattr(DiemClient, "get_transactions", network.get_transactions)
     monkeypatch.setattr(DiemClient, "get_events", network.get_events)
@@ -79,7 +81,9 @@ def patch_blockchain(monkeypatch):
         return Transaction(version=1, transaction=TransactionData(sequence_number=1))
 
     monkeypatch.setattr(
-        DiemClient, "wait_for_transaction", wait_for_transaction,
+        DiemClient,
+        "wait_for_transaction",
+        wait_for_transaction,
     )
 
     yield network

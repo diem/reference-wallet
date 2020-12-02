@@ -159,7 +159,9 @@ class TestAccountInfo:
     def test_get_account_info(
         self, authorized_client: Client, allow_user_to_account, account_balance
     ) -> None:
-        rv: Response = authorized_client.get("/account",)
+        rv: Response = authorized_client.get(
+            "/account",
+        )
         assert rv.status_code == 200
         balances = rv.get_json()["balances"]
         assert account_balance["account_name"] == "fake_account"
@@ -175,7 +177,9 @@ class TestAccountTransactions:
         allow_user_to_account,
         get_transaction_by_id_mock,
     ) -> None:
-        rv: Response = authorized_client.get("/account/transactions/1",)
+        rv: Response = authorized_client.get(
+            "/account/transactions/1",
+        )
         assert rv.status_code == 200
         transaction = rv.get_json()
         assert get_transaction_by_id_mock["transaction_id"] == 1
@@ -206,7 +210,9 @@ class TestAccountTransactions:
         allow_user_to_account,
         get_transaction_by_id_mock,
     ) -> None:
-        rv: Response = authorized_client.get("/account/transactions/2",)
+        rv: Response = authorized_client.get(
+            "/account/transactions/2",
+        )
         assert get_transaction_by_id_mock["transaction_id"] == 2
         assert rv.status_code == 404
 
@@ -216,7 +222,9 @@ class TestAccountTransactions:
         allow_user_to_account,
         account_transactions_mock,
     ) -> None:
-        rv: Response = authorized_client.get("/account/transactions",)
+        rv: Response = authorized_client.get(
+            "/account/transactions",
+        )
         assert rv.status_code == 200
         transactions = rv.get_json()
         assert len(transactions) == 1

@@ -34,7 +34,10 @@ class UsersService:
             self.user_token: {
                 "id": 1,
                 "is_admin": False,
-                "token": Token(user_id=1, expiration_time=time() + 120,),
+                "token": Token(
+                    user_id=1,
+                    expiration_time=time() + 120,
+                ),
                 "user": User(
                     username="username",
                     registration_status=RegistrationStatus.Approved,
@@ -52,7 +55,10 @@ class UsersService:
             self.admin_token: {
                 "id": 2,
                 "is_admin": True,
-                "token": Token(user_id=2, expiration_time=time() + 120,),
+                "token": Token(
+                    user_id=2,
+                    expiration_time=time() + 120,
+                ),
                 "user": User(
                     username="admin",
                     registration_status=RegistrationStatus.Approved,
@@ -98,7 +104,12 @@ def client() -> Generator[Client, None, None]:
 
 
 class AuthorizedClient(FlaskClient):
-    def __init__(self, *args, token: Union[str, None] = None, **kwargs,) -> None:
+    def __init__(
+        self,
+        *args,
+        token: Union[str, None] = None,
+        **kwargs,
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.token = token
 
@@ -115,7 +126,9 @@ class AuthorizedClient(FlaskClient):
 
 
 @pytest.fixture
-def authorized_client(users_service: UsersService,) -> Generator[Client, None, None]:
+def authorized_client(
+    users_service: UsersService,
+) -> Generator[Client, None, None]:
     token = users_service.get_user_token()
 
     app.test_client_class = AuthorizedClient
@@ -125,7 +138,9 @@ def authorized_client(users_service: UsersService,) -> Generator[Client, None, N
 
 
 @pytest.fixture
-def admin_client(users_service: UsersService,) -> Generator[Client, None, None]:
+def admin_client(
+    users_service: UsersService,
+) -> Generator[Client, None, None]:
     token = users_service.get_admin_token()
 
     app.test_client_class = AuthorizedClient

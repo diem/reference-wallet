@@ -6,7 +6,11 @@ swagger_template = {
     "openapi": "3.0.0",
     "components": {
         "securitySchemes": {
-            "BearerAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT",}
+            "BearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+            }
         }
     },
     "definitions": {
@@ -33,8 +37,14 @@ swagger_template = {
                 "address": "1 Hacker Way",
             },
         },
-        "DiemCurrencies": {"type": "string", "enum": ["Coin1"],},
-        "TransactionDirections": {"type": "string", "enum": ["received", "sent"],},
+        "DiemCurrencies": {
+            "type": "string",
+            "enum": ["Coin1"],
+        },
+        "TransactionDirections": {
+            "type": "string",
+            "enum": ["received", "sent"],
+        },
         "Transaction": {
             "type": "object",
             "properties": {

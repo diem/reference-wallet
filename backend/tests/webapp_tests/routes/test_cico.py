@@ -40,7 +40,11 @@ class TestCreateQuote:
     def test_200_usd(self, authorized_client: Client, mock_create_order) -> None:
         rv: Response = authorized_client.post(
             "/account/quotes",
-            json=dict(action="buy", amount=10000, currency_pair="Coin1_USD",),
+            json=dict(
+                action="buy",
+                amount=10000,
+                currency_pair="Coin1_USD",
+            ),
         )
         assert rv.status_code == 200
         data = rv.get_json()
@@ -50,14 +54,22 @@ class TestCreateQuote:
     def test_wrong_action(self, authorized_client: Client) -> None:
         rv: Response = authorized_client.post(
             "/account/quotes",
-            json=dict(action="steal", amount=100, currency_pair="Coin1_USD",),
+            json=dict(
+                action="steal",
+                amount=100,
+                currency_pair="Coin1_USD",
+            ),
         )
         assert rv.status_code == 400
 
     def test_illegal_amount(self, authorized_client: Client) -> None:
         rv: Response = authorized_client.post(
             "/account/quotes",
-            json=dict(action="buy", amount="what?!", currency_pair="Coin1_USD",),
+            json=dict(
+                action="buy",
+                amount="what?!",
+                currency_pair="Coin1_USD",
+            ),
         )
         assert rv.status_code == 400
 

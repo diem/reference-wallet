@@ -73,14 +73,14 @@ class LRW(BusinessContext):
         )
 
     def is_recipient(self, payment: PaymentObject, ctx=None):
-        """ Returns true if the VASP is the recipient of a payment.
+        """Returns true if the VASP is the recipient of a payment.
         Returns:
             bool: Whether the VASP is the recipient of the payment.
         """
         return not self.is_sender(payment)
 
     async def check_account_existence(self, payment: PaymentObject, ctx=None):
-        """ Checks that the actor (sub-account / sub-address) on this VASP
+        """Checks that the actor (sub-account / sub-address) on this VASP
             exists. This may be either the recipient or the sender, since VASPs
             can initiate payments in both directions. If not throw an exception.
         Raises:
@@ -95,7 +95,7 @@ class LRW(BusinessContext):
     # ----- VASP Signature -----
 
     def validate_recipient_signature(self, payment: PaymentObject, ctx=None):
-        """ Validates the recipient signature is correct. Raise an
+        """Validates the recipient signature is correct. Raise an
             exception if the signature is invalid or not present.
             If the signature is valid do nothing.
         Raises:
@@ -135,24 +135,28 @@ class LRW(BusinessContext):
         sender_address_bytes = actor_to_libra_address(
             payment.sender
         ).onchain_address_bytes
-        signed = self.context.config.offchain_compliance_key().sign_dual_attestation_data(
-            payment.reference_id, sender_address_bytes, payment.action.amount,
+        signed = (
+            self.context.config.offchain_compliance_key().sign_dual_attestation_data(
+                payment.reference_id,
+                sender_address_bytes,
+                payment.action.amount,
+            )
         )
         return bytes.hex(signed)
 
     # ----- KYC/Compliance checks -----
 
     async def next_kyc_to_provide(self, payment: PaymentObject, ctx=None):
-        """ Returns the level of kyc to provide to the other VASP based on its
-            status. Can provide more if deemed necessary or less.
-            Returns:
-                Status: A set of status indicating to level of kyc to provide,
-                that can include:
-                    - `status_logic.Status.needs_kyc_data`
-                    - `status_logic.Status.needs_recipient_signature`
-            An empty set indicates no KYC should be provided at this moment.
-            Raises:
-                BusinessForceAbort : To abort the payment.
+        """Returns the level of kyc to provide to the other VASP based on its
+        status. Can provide more if deemed necessary or less.
+        Returns:
+            Status: A set of status indicating to level of kyc to provide,
+            that can include:
+                - `status_logic.Status.needs_kyc_data`
+                - `status_logic.Status.needs_recipient_signature`
+        An empty set indicates no KYC should be provided at this moment.
+        Raises:
+            BusinessForceAbort : To abort the payment.
         """
 
         my_actor = payment.sender if self.is_sender(payment) else payment.receiver
@@ -177,21 +181,21 @@ class LRW(BusinessContext):
         return kyc_data
 
     async def next_kyc_level_to_request(self, payment, ctx=None):
-        """ Returns the next level of KYC to request from the other VASP. Must
-            not request a level that is either already requested or provided.
-            Args:
-                payment (PaymentCommand): The concerned payment.
-                ctx (Any): Optional context object that business can store custom data
-            Returns:
-                Status: Returns Status.none or the current status
-                if no new information is required, otherwise a status
-                code from:
-                    - `status_logic.Status.needs_kyc_data`
-                    - `status_logic.Status.needs_recipient_signature`
-                    - `status_logic.soft_match`
-                    - `status_logic.pending_review`
-            Raises:
-                BusinessForceAbort : To abort the payment.
+        """Returns the next level of KYC to request from the other VASP. Must
+        not request a level that is either already requested or provided.
+        Args:
+            payment (PaymentCommand): The concerned payment.
+            ctx (Any): Optional context object that business can store custom data
+        Returns:
+            Status: Returns Status.none or the current status
+            if no new information is required, otherwise a status
+            code from:
+                - `status_logic.Status.needs_kyc_data`
+                - `status_logic.Status.needs_recipient_signature`
+                - `status_logic.soft_match`
+                - `status_logic.pending_review`
+        Raises:
+            BusinessForceAbort : To abort the payment.
         """
 
         my_actor = payment.sender if self.is_sender(payment) else payment.receiver
@@ -208,13 +212,13 @@ class LRW(BusinessContext):
         return Status.none
 
     async def get_extended_kyc(self, payment: PaymentObject, ctx=None):
-        """ Provides the extended KYC information for this payment.
-            Raises:
-                   BusinessNotAuthorized: If the other VASP is not authorized to
-                    receive extended KYC data for this payment.
-            Returns:
-                KYCData: Returns the extended KYC information for
-                this payment.
+        """Provides the extended KYC information for this payment.
+        Raises:
+               BusinessNotAuthorized: If the other VASP is not authorized to
+                receive extended KYC data for this payment.
+        Returns:
+            KYCData: Returns the extended KYC information for
+            this payment.
         """
 
         user_info = get_user_kyc_info(self.get_user_id(payment))
@@ -222,16 +226,16 @@ class LRW(BusinessContext):
         return KYCData(user_info)
 
     async def get_additional_kyc(self, payment: PaymentObject, ctx=None):
-        """ Provides the additional KYC information for this payment.
-            The additional information is requested or may be provided in case
-            of a `soft_match` state from the other VASP indicating more
-            information is required to disambiguate an individual.
-            Raises:
-                   BusinessNotAuthorized: If the other VASP is not authorized to
-                    receive extended KYC data for this payment.
-            Returns:
-                KYCData: Returns the extended KYC information for
-                this payment.
+        """Provides the additional KYC information for this payment.
+        The additional information is requested or may be provided in case
+        of a `soft_match` state from the other VASP indicating more
+        information is required to disambiguate an individual.
+        Raises:
+               BusinessNotAuthorized: If the other VASP is not authorized to
+                receive extended KYC data for this payment.
+        Returns:
+            KYCData: Returns the extended KYC information for
+            this payment.
         """
 
         user_info = get_additional_user_kyc_info(self.get_user_id(payment))
@@ -240,7 +244,7 @@ class LRW(BusinessContext):
     # ----- Payment Processing -----
 
     async def payment_pre_processing(self, other_address, seq, command, payment):
-        """ An async method to let VASP perform custom business logic to a
+        """An async method to let VASP perform custom business logic to a
         successsful (sequenced & ACKed) command prior to normal processing.
         For example it can be used to check whether the payment is in terminal
         status. The command could have originated either from the other VASP
@@ -304,28 +308,28 @@ class LRW(BusinessContext):
     # ----- Settlement -----
 
     async def ready_for_settlement(self, payment, ctx=None):
-        """ Indicates whether a payment is ready for settlement as far as this
-            VASP is concerned. Once it returns True it must never return False.
-            In particular it **must** check that:
-                - Accounts exist and have the funds necessary.
-                - Sender of funds intends to perform the payment (VASPs can
-                  initiate payments from an account on the other VASP.)
-                - KYC information provided **on both sides** is correct and to
-                  the VASPs satisfaction. On payment creation a VASP may suggest
-                  KYC information on both sides.
-            If all the above are true, then return `True`.
-            If any of the above are untrue throw an BusinessForceAbort.
-            If any more KYC is necessary then return `False`.
-            This acts as the finality barrier and last check for this VASP.
-            After this call returns True this VASP can no more abort the
-            payment (unless the other VASP aborts it).
-            Args:
-                payment (PaymentCommand): The concerned payment.
-            Raises:
-                BusinessForceAbort: If any of the above condutions are untrue.
-            Returns:
-                bool: Whether the VASP is ready to settle the payment.
-            """
+        """Indicates whether a payment is ready for settlement as far as this
+        VASP is concerned. Once it returns True it must never return False.
+        In particular it **must** check that:
+            - Accounts exist and have the funds necessary.
+            - Sender of funds intends to perform the payment (VASPs can
+              initiate payments from an account on the other VASP.)
+            - KYC information provided **on both sides** is correct and to
+              the VASPs satisfaction. On payment creation a VASP may suggest
+              KYC information on both sides.
+        If all the above are true, then return `True`.
+        If any of the above are untrue throw an BusinessForceAbort.
+        If any more KYC is necessary then return `False`.
+        This acts as the finality barrier and last check for this VASP.
+        After this call returns True this VASP can no more abort the
+        payment (unless the other VASP aborts it).
+        Args:
+            payment (PaymentCommand): The concerned payment.
+        Raises:
+            BusinessForceAbort: If any of the above condutions are untrue.
+        Returns:
+            bool: Whether the VASP is ready to settle the payment.
+        """
 
         my_role = self.get_my_role(payment)
         other_role = self.get_other_role(payment)
