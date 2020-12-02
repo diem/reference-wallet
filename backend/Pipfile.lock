@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "bfdd57415015492788b13c345b9f8a8dc5a8729cf518c6af13f6f81449d58ac1"
+            "sha256": "3d35856fe8e4fd3697aba9dfb0242ac9516645ec9cacd852c62715ce71c7be3b"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -186,7 +186,8 @@
         },
         "client-python-sdk": {
             "editable": true,
-            "path": "client-sdk-python"
+            "git": "https://github.com/libra/client-sdk-python.git",
+            "ref": "7059a9ef03304c2790f78ce94eeadd4ccecb1e05"
         },
         "cryptography": {
             "hashes": [
@@ -223,10 +224,6 @@
             ],
             "index": "pypi",
             "version": "==0.5.2"
-        },
-        "diem-client-sdk": {
-            "editable": true,
-            "path": "./client-sdk-python"
         },
         "diem-sample-wallet": {
             "editable": true,
