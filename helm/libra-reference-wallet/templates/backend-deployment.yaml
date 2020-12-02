@@ -36,7 +36,7 @@ spec:
         command: ["sh", "-c", '/wait.sh {{ include "libra-reference-wallet.fullname" . }}-liquidity {{ .Values.service.port }} || exit 1']
       containers:
       - command:
-          - /libra-wallet/run_web.sh
+          - /wallet/run_web.sh
         env:
         - name: COMPOSE_ENV
           value: "production"
@@ -123,7 +123,7 @@ spec:
         command: ["sh", "-c", '/wait.sh {{ include "libra-reference-wallet.fullname" . }}-web {{ .Values.service.port }} || exit 1']
       containers:
       - command:
-          - /libra-wallet/run_worker.sh
+          - /wallet/run_worker.sh
         env:
         - name: REDIS_HOST
           value: {{ include "libra-reference-wallet.peripherals.redis.url" . }}
@@ -207,7 +207,7 @@ spec:
         command: ["sh", "-c", '/wait.sh {{ include "libra-reference-wallet.fullname" . }}-web {{ .Values.service.port }} || exit 1']
       containers:
       - command:
-          - /libra-wallet/run_pubsub.sh
+          - /wallet/run_pubsub.sh
         env:
         - name: REDIS_HOST
           value: {{ include "libra-reference-wallet.peripherals.redis.url" . }}
