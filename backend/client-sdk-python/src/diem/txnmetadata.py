@@ -40,12 +40,18 @@ def travel_rule(
 
     metadata = diem_types.Metadata__TravelRuleMetadata(
         value=diem_types.TravelRuleMetadata__TravelRuleMetadataVersion0(
-            value=diem_types.TravelRuleMetadataV0(off_chain_reference_id=off_chain_reference_id)
+            value=diem_types.TravelRuleMetadataV0(
+                off_chain_reference_id=off_chain_reference_id
+            )
         )
     )
 
     # receiver_lcs_data = lcs(metadata, sender_address, amount) + "@@$$LIBRA_ATTEST$$@@" /*ASCII-encoded string*/
-    attest = Attest(metadata=metadata, sender_address=sender_address, amount=serde_types.uint64(amount))  # pyre-ignore
+    attest = Attest(
+        metadata=metadata,
+        sender_address=sender_address,
+        amount=serde_types.uint64(amount),
+    )  # pyre-ignore
     signing_msg = attest.lcs_serialize() + b"@@$$LIBRA_ATTEST$$@@"
 
     return (metadata.lcs_serialize(), signing_msg)
@@ -75,7 +81,9 @@ def general_metadata(
             value=diem_types.GeneralMetadataV0(  # pyre-ignore
                 from_subaddress=from_subaddress,
                 to_subaddress=to_subaddress,
-                referenced_event=serde_types.uint64(referenced_event) if referenced_event else None,
+                referenced_event=serde_types.uint64(referenced_event)
+                if referenced_event
+                else None,
             )
         )
     )
@@ -83,7 +91,8 @@ def general_metadata(
 
 
 def find_refund_reference_event(
-    txn: typing.Optional[jsonrpc.Transaction], receiver: typing.Union[diem_types.AccountAddress, str]
+    txn: typing.Optional[jsonrpc.Transaction],
+    receiver: typing.Union[diem_types.AccountAddress, str],
 ) -> typing.Optional[jsonrpc.Event]:
     """Find refund reference event from given transaction
 
@@ -131,12 +140,20 @@ def refund_metadata_from_event(event: jsonrpc.Event) -> typing.Optional[bytes]:
         metadata = diem_types.Metadata.lcs_deserialize(metadata_bytes)
 
         if isinstance(metadata, diem_types.Metadata__GeneralMetadata):
-            if isinstance(metadata.value, diem_types.GeneralMetadata__GeneralMetadataVersion0):
+            if isinstance(
+                metadata.value, diem_types.GeneralMetadata__GeneralMetadataVersion0
+            ):
                 gmv0 = metadata.value.value
-                return general_metadata(gmv0.to_subaddress, gmv0.from_subaddress, event.sequence_number)
+                return general_metadata(
+                    gmv0.to_subaddress, gmv0.from_subaddress, event.sequence_number
+                )
 
-            raise InvalidEventMetadataForRefundError("unknown metadata type: {metadata}")
+            raise InvalidEventMetadataForRefundError(
+                "unknown metadata type: {metadata}"
+            )
 
         raise InvalidEventMetadataForRefundError(f"unknown metadata type: {metadata}")
     except ValueError as e:
-        raise InvalidEventMetadataForRefundError(f"invalid event metadata for refund: {e}, event: {event}")
+        raise InvalidEventMetadataForRefundError(
+            f"invalid event metadata for refund: {e}, event: {event}"
+        )

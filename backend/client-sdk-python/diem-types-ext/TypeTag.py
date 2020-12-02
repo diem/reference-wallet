@@ -1,5 +1,7 @@
+CORE_CODE_ADDRESS: AccountAddress = AccountAddress.from_hex(
+    "00000000000000000000000000000001"
+)
 
-CORE_CODE_ADDRESS: AccountAddress = AccountAddress.from_hex("00000000000000000000000000000001")
 
 @staticmethod
 def from_currency_code(code: str) -> "TypeTag":

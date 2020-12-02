@@ -18,7 +18,9 @@ class AuthKey:
     @staticmethod
     def from_public_key(public_key: Ed25519PublicKey) -> "AuthKey":
         single_key_scheme = b"\x00"
-        return AuthKey(utils.hash(utils.public_key_bytes(public_key), single_key_scheme))
+        return AuthKey(
+            utils.hash(utils.public_key_bytes(public_key), single_key_scheme)
+        )
 
     def __init__(self, data: bytes) -> None:
         self.data = data

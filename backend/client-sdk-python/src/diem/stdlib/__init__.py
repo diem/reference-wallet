@@ -1704,7 +1704,9 @@ def encode_add_currency_to_account_script(currency: TypeTag) -> Script:
     )
 
 
-def encode_add_recovery_rotation_capability_script(recovery_address: AccountAddress) -> Script:
+def encode_add_recovery_rotation_capability_script(
+    recovery_address: AccountAddress,
+) -> Script:
     """# Summary
     Stores the sending accounts ability to rotate its authentication key with a designated recovery
     account.
@@ -1754,7 +1756,9 @@ def encode_add_recovery_rotation_capability_script(recovery_address: AccountAddr
     )
 
 
-def encode_add_to_script_allow_list_script(hash: bytes, sliding_nonce: st.uint64) -> Script:
+def encode_add_to_script_allow_list_script(
+    hash: bytes, sliding_nonce: st.uint64
+) -> Script:
     """# Summary
     Adds a script hash to the transaction allowlist.
 
@@ -1794,7 +1798,10 @@ def encode_add_to_script_allow_list_script(hash: bytes, sliding_nonce: st.uint64
     return Script(
         code=ADD_TO_SCRIPT_ALLOW_LIST_CODE,
         ty_args=[],
-        args=[TransactionArgument__U8Vector(value=hash), TransactionArgument__U64(value=sliding_nonce)],
+        args=[
+            TransactionArgument__U8Vector(value=hash),
+            TransactionArgument__U64(value=sliding_nonce),
+        ],
     )
 
 
@@ -1860,7 +1867,9 @@ def encode_add_validator_and_reconfigure_script(
     )
 
 
-def encode_burn_script(token: TypeTag, sliding_nonce: st.uint64, preburn_address: AccountAddress) -> Script:
+def encode_burn_script(
+    token: TypeTag, sliding_nonce: st.uint64, preburn_address: AccountAddress
+) -> Script:
     """# Summary
     Burns all coins held in the preburn resource at the specified
     preburn address and removes them from the system.
@@ -1917,7 +1926,10 @@ def encode_burn_script(token: TypeTag, sliding_nonce: st.uint64, preburn_address
     return Script(
         code=BURN_CODE,
         ty_args=[token],
-        args=[TransactionArgument__U64(value=sliding_nonce), TransactionArgument__Address(value=preburn_address)],
+        args=[
+            TransactionArgument__U64(value=sliding_nonce),
+            TransactionArgument__Address(value=preburn_address),
+        ],
     )
 
 
@@ -1967,7 +1979,9 @@ def encode_burn_txn_fees_script(coin_type: TypeTag) -> Script:
     )
 
 
-def encode_cancel_burn_script(token: TypeTag, preburn_address: AccountAddress) -> Script:
+def encode_cancel_burn_script(
+    token: TypeTag, preburn_address: AccountAddress
+) -> Script:
     """# Summary
     Cancels and returns all coins held in the preburn area under
     `preburn_address` and returns the funds to the `preburn_address`'s balance.
@@ -2269,7 +2283,10 @@ def encode_create_recovery_address_script() -> Script:
 
 
 def encode_create_validator_account_script(
-    sliding_nonce: st.uint64, new_account_address: AccountAddress, auth_key_prefix: bytes, human_name: bytes
+    sliding_nonce: st.uint64,
+    new_account_address: AccountAddress,
+    auth_key_prefix: bytes,
+    human_name: bytes,
 ) -> Script:
     """# Summary
     Creates a Validator account.
@@ -2328,7 +2345,10 @@ def encode_create_validator_account_script(
 
 
 def encode_create_validator_operator_account_script(
-    sliding_nonce: st.uint64, new_account_address: AccountAddress, auth_key_prefix: bytes, human_name: bytes
+    sliding_nonce: st.uint64,
+    new_account_address: AccountAddress,
+    auth_key_prefix: bytes,
+    human_name: bytes,
 ) -> Script:
     """# Summary
     Creates a Validator Operator account.
@@ -2383,7 +2403,9 @@ def encode_create_validator_operator_account_script(
     )
 
 
-def encode_freeze_account_script(sliding_nonce: st.uint64, to_freeze_account: AccountAddress) -> Script:
+def encode_freeze_account_script(
+    sliding_nonce: st.uint64, to_freeze_account: AccountAddress
+) -> Script:
     """# Summary
     Freezes the account at `address`.
 
@@ -2433,12 +2455,19 @@ def encode_freeze_account_script(sliding_nonce: st.uint64, to_freeze_account: Ac
     return Script(
         code=FREEZE_ACCOUNT_CODE,
         ty_args=[],
-        args=[TransactionArgument__U64(value=sliding_nonce), TransactionArgument__Address(value=to_freeze_account)],
+        args=[
+            TransactionArgument__U64(value=sliding_nonce),
+            TransactionArgument__Address(value=to_freeze_account),
+        ],
     )
 
 
 def encode_peer_to_peer_with_metadata_script(
-    currency: TypeTag, payee: AccountAddress, amount: st.uint64, metadata: bytes, metadata_signature: bytes
+    currency: TypeTag,
+    payee: AccountAddress,
+    amount: st.uint64,
+    metadata: bytes,
+    metadata_signature: bytes,
 ) -> Script:
     """# Summary
     Transfers a given number of coins in a specified currency from one account to another.
@@ -2746,7 +2775,9 @@ def encode_rotate_authentication_key_script(new_key: bytes) -> Script:
     )
 
 
-def encode_rotate_authentication_key_with_nonce_script(sliding_nonce: st.uint64, new_key: bytes) -> Script:
+def encode_rotate_authentication_key_with_nonce_script(
+    sliding_nonce: st.uint64, new_key: bytes
+) -> Script:
     """# Summary
     Rotates the sender's authentication key to the supplied new authentication key.
 
@@ -2784,11 +2815,16 @@ def encode_rotate_authentication_key_with_nonce_script(sliding_nonce: st.uint64,
     return Script(
         code=ROTATE_AUTHENTICATION_KEY_WITH_NONCE_CODE,
         ty_args=[],
-        args=[TransactionArgument__U64(value=sliding_nonce), TransactionArgument__U8Vector(value=new_key)],
+        args=[
+            TransactionArgument__U64(value=sliding_nonce),
+            TransactionArgument__U8Vector(value=new_key),
+        ],
     )
 
 
-def encode_rotate_authentication_key_with_nonce_admin_script(sliding_nonce: st.uint64, new_key: bytes) -> Script:
+def encode_rotate_authentication_key_with_nonce_admin_script(
+    sliding_nonce: st.uint64, new_key: bytes
+) -> Script:
     """# Summary
     Rotates the specified account's authentication key to the supplied new authentication key.
 
@@ -2826,7 +2862,10 @@ def encode_rotate_authentication_key_with_nonce_admin_script(sliding_nonce: st.u
     return Script(
         code=ROTATE_AUTHENTICATION_KEY_WITH_NONCE_ADMIN_CODE,
         ty_args=[],
-        args=[TransactionArgument__U64(value=sliding_nonce), TransactionArgument__U8Vector(value=new_key)],
+        args=[
+            TransactionArgument__U64(value=sliding_nonce),
+            TransactionArgument__U8Vector(value=new_key),
+        ],
     )
 
 
@@ -2879,7 +2918,9 @@ def encode_rotate_authentication_key_with_recovery_address_script(
     )
 
 
-def encode_rotate_dual_attestation_info_script(new_url: bytes, new_key: bytes) -> Script:
+def encode_rotate_dual_attestation_info_script(
+    new_url: bytes, new_key: bytes
+) -> Script:
     """# Summary
     Updates the url used for off-chain communication, and the public key used to verify dual
     attestation on-chain.
@@ -2922,7 +2963,10 @@ def encode_rotate_dual_attestation_info_script(new_url: bytes, new_key: bytes) -
     return Script(
         code=ROTATE_DUAL_ATTESTATION_INFO_CODE,
         ty_args=[],
-        args=[TransactionArgument__U8Vector(value=new_url), TransactionArgument__U8Vector(value=new_key)],
+        args=[
+            TransactionArgument__U8Vector(value=new_url),
+            TransactionArgument__U8Vector(value=new_key),
+        ],
     )
 
 
@@ -3020,7 +3064,9 @@ def encode_set_validator_config_and_reconfigure_script(
     )
 
 
-def encode_set_validator_operator_script(operator_name: bytes, operator_account: AccountAddress) -> Script:
+def encode_set_validator_operator_script(
+    operator_name: bytes, operator_account: AccountAddress
+) -> Script:
     """# Summary
     Sets the validator operator for a validator in the validator's configuration resource "locally"
     and does not reconfigure the system.
@@ -3065,7 +3111,10 @@ def encode_set_validator_operator_script(operator_name: bytes, operator_account:
     return Script(
         code=SET_VALIDATOR_OPERATOR_CODE,
         ty_args=[],
-        args=[TransactionArgument__U8Vector(value=operator_name), TransactionArgument__Address(value=operator_account)],
+        args=[
+            TransactionArgument__U8Vector(value=operator_name),
+            TransactionArgument__Address(value=operator_account),
+        ],
     )
 
 
@@ -3207,7 +3256,9 @@ def encode_tiered_mint_script(
     )
 
 
-def encode_unfreeze_account_script(sliding_nonce: st.uint64, to_unfreeze_account: AccountAddress) -> Script:
+def encode_unfreeze_account_script(
+    sliding_nonce: st.uint64, to_unfreeze_account: AccountAddress
+) -> Script:
     """# Summary
     Unfreezes the account at `address`.
 
@@ -3247,11 +3298,16 @@ def encode_unfreeze_account_script(sliding_nonce: st.uint64, to_unfreeze_account
     return Script(
         code=UNFREEZE_ACCOUNT_CODE,
         ty_args=[],
-        args=[TransactionArgument__U64(value=sliding_nonce), TransactionArgument__Address(value=to_unfreeze_account)],
+        args=[
+            TransactionArgument__U64(value=sliding_nonce),
+            TransactionArgument__Address(value=to_unfreeze_account),
+        ],
     )
 
 
-def encode_update_dual_attestation_limit_script(sliding_nonce: st.uint64, new_micro_lbr_limit: st.uint64) -> Script:
+def encode_update_dual_attestation_limit_script(
+    sliding_nonce: st.uint64, new_micro_lbr_limit: st.uint64
+) -> Script:
     """# Summary
     Update the dual attestation limit on-chain.
 
@@ -3286,7 +3342,10 @@ def encode_update_dual_attestation_limit_script(sliding_nonce: st.uint64, new_mi
     return Script(
         code=UPDATE_DUAL_ATTESTATION_LIMIT_CODE,
         ty_args=[],
-        args=[TransactionArgument__U64(value=sliding_nonce), TransactionArgument__U64(value=new_micro_lbr_limit)],
+        args=[
+            TransactionArgument__U64(value=sliding_nonce),
+            TransactionArgument__U64(value=new_micro_lbr_limit),
+        ],
     )
 
 
@@ -3345,7 +3404,9 @@ def encode_update_exchange_rate_script(
     )
 
 
-def encode_update_libra_version_script(sliding_nonce: st.uint64, major: st.uint64) -> Script:
+def encode_update_libra_version_script(
+    sliding_nonce: st.uint64, major: st.uint64
+) -> Script:
     """# Summary
     Updates the Libra major version that is stored on-chain and is used by the VM.
 
@@ -3378,11 +3439,16 @@ def encode_update_libra_version_script(sliding_nonce: st.uint64, major: st.uint6
     return Script(
         code=UPDATE_LIBRA_VERSION_CODE,
         ty_args=[],
-        args=[TransactionArgument__U64(value=sliding_nonce), TransactionArgument__U64(value=major)],
+        args=[
+            TransactionArgument__U64(value=sliding_nonce),
+            TransactionArgument__U64(value=major),
+        ],
     )
 
 
-def encode_update_minting_ability_script(currency: TypeTag, allow_minting: st.bool) -> Script:
+def encode_update_minting_ability_script(
+    currency: TypeTag, allow_minting: st.bool
+) -> Script:
     """# Summary
     Script to allow or disallow minting of new coins in a specified currency.
 
@@ -3582,14 +3648,18 @@ def decode_rotate_authentication_key_with_nonce_script(script: Script) -> Script
     )
 
 
-def decode_rotate_authentication_key_with_nonce_admin_script(script: Script) -> ScriptCall:
+def decode_rotate_authentication_key_with_nonce_admin_script(
+    script: Script,
+) -> ScriptCall:
     return ScriptCall__RotateAuthenticationKeyWithNonceAdmin(
         sliding_nonce=decode_u64_argument(script.args[0]),
         new_key=decode_u8vector_argument(script.args[1]),
     )
 
 
-def decode_rotate_authentication_key_with_recovery_address_script(script: Script) -> ScriptCall:
+def decode_rotate_authentication_key_with_recovery_address_script(
+    script: Script,
+) -> ScriptCall:
     return ScriptCall__RotateAuthenticationKeyWithRecoveryAddress(
         recovery_address=decode_address_argument(script.args[0]),
         to_recover=decode_address_argument(script.args[1]),
@@ -3750,7 +3820,9 @@ UPDATE_LIBRA_VERSION_CODE = b"\xa1\x1c\xeb\x0b\x01\x00\x00\x00\x05\x01\x00\x04\x
 UPDATE_MINTING_ABILITY_CODE = b"\xa1\x1c\xeb\x0b\x01\x00\x00\x00\x06\x01\x00\x02\x03\x02\x06\x04\x08\x02\x05\x0a\x08\x07\x12\x1d\x08\x2f\x10\x00\x00\x00\x01\x00\x01\x01\x01\x00\x02\x02\x06\x0c\x01\x00\x01\x09\x00\x05\x4c\x69\x62\x72\x61\x16\x75\x70\x64\x61\x74\x65\x5f\x6d\x69\x6e\x74\x69\x6e\x67\x5f\x61\x62\x69\x6c\x69\x74\x79\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x01\x01\x00\x01\x04\x0b\x00\x0a\x01\x38\x00\x02"
 
 # pyre-ignore
-SCRIPT_ENCODER_MAP: typing.Dict[typing.Type[ScriptCall], typing.Callable[[ScriptCall], Script]] = {
+SCRIPT_ENCODER_MAP: typing.Dict[
+    typing.Type[ScriptCall], typing.Callable[[ScriptCall], Script]
+] = {
     ScriptCall__AddCurrencyToAccount: encode_add_currency_to_account_script,
     ScriptCall__AddRecoveryRotationCapability: encode_add_recovery_rotation_capability_script,
     ScriptCall__AddToScriptAllowList: encode_add_to_script_allow_list_script,

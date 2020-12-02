@@ -103,8 +103,12 @@ def test_p2p_by_travel_rule():
 
     reference_id = "reference_id"
     amount = 1_800_000_000
-    metadata_signature = receiver.config.offchain_compliance_key().sign_dual_attestation_data(
-        reference_id, sender.config.vasp_account_address().to_bytes(), amount,
+    metadata_signature = (
+        receiver.config.offchain_compliance_key().sign_dual_attestation_data(
+            reference_id,
+            sender.config.vasp_account_address().to_bytes(),
+            amount,
+        )
     )
 
     txn = sender.p2p_by_travel_rule(

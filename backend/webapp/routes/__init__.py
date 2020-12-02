@@ -107,7 +107,9 @@ def admin_routes():
 
 def user_routes():
     user.add_url_rule(
-        rule="/user", view_func=UserRoutes.GetUser.as_view("get_user"), methods=["GET"],
+        rule="/user",
+        view_func=UserRoutes.GetUser.as_view("get_user"),
+        methods=["GET"],
     )
     user.add_url_rule(
         rule="/user",

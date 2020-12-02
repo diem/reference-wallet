@@ -187,7 +187,10 @@ def get_total_currency_credits():
                 Transaction.destination_id.isnot(None),
             )
         )
-        .group_by(Transaction.currency, Transaction.status,)
+        .group_by(
+            Transaction.currency,
+            Transaction.status,
+        )
         .all()
     )
 
@@ -205,7 +208,10 @@ def get_total_currency_debits():
                 Transaction.source_id.isnot(None),
             )
         )
-        .group_by(Transaction.currency, Transaction.status,)
+        .group_by(
+            Transaction.currency,
+            Transaction.status,
+        )
         .all()
     )
 
@@ -224,7 +230,10 @@ def get_transaction_id_from_reference_id(reference_id):
     return off_chain.transaction_id
 
 
-def add_metadata_signature(reference_id: str, metadata_signature: str,) -> None:
+def add_metadata_signature(
+    reference_id: str,
+    metadata_signature: str,
+) -> None:
     off_chain_tx = OffChain.query.filter_by(reference_id=reference_id).first()
     if off_chain_tx is None:
         raise ValueError(f"Off Chain object with ref id {reference_id} does not exist")

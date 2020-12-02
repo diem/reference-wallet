@@ -49,14 +49,22 @@ def test_find_refund_reference_event():
 
     receiver = utils.account_address("f72589b71ff4f8d139674a3f7369c69b")
     txn = jsonrpc.Transaction()
-    txn.events.add(data=jsonrpc.EventData(type="unknown", receiver="f72589b71ff4f8d139674a3f7369c69b"))
+    txn.events.add(
+        data=jsonrpc.EventData(
+            type="unknown", receiver="f72589b71ff4f8d139674a3f7369c69b"
+        )
+    )
     txn.events.add(data=jsonrpc.EventData(type="receivedpayment", receiver="unknown"))
 
     # None for not found
     event = txnmetadata.find_refund_reference_event(txn, receiver)
     assert event is None
 
-    txn.events.add(data=jsonrpc.EventData(type="receivedpayment", receiver="f72589b71ff4f8d139674a3f7369c69b"))
+    txn.events.add(
+        data=jsonrpc.EventData(
+            type="receivedpayment", receiver="f72589b71ff4f8d139674a3f7369c69b"
+        )
+    )
     event = txnmetadata.find_refund_reference_event(txn, receiver)
     assert event is not None
     assert event.data.type == "receivedpayment"
@@ -68,7 +76,9 @@ def test_refund_metadata_from_event():
     to_sub_address = "111111153010a111"
     reference_event_seq = 324
 
-    metadata = txnmetadata.general_metadata(utils.sub_address(from_sub_address), utils.sub_address(to_sub_address))
+    metadata = txnmetadata.general_metadata(
+        utils.sub_address(from_sub_address), utils.sub_address(to_sub_address)
+    )
     event = jsonrpc.Event(
         data=jsonrpc.EventData(
             metadata=metadata.hex(),

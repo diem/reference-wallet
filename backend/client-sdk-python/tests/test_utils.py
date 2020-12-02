@@ -2,7 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-from diem import diem_types, utils, InvalidAccountAddressError, InvalidSubAddressError, jsonrpc
+from diem import (
+    diem_types,
+    utils,
+    InvalidAccountAddressError,
+    InvalidSubAddressError,
+    jsonrpc,
+)
 
 import pytest
 
@@ -59,12 +65,16 @@ def test_decode_transaction_script():
     assert type(script_call).__name__ == "ScriptCall__PeerToPeerWithMetadata"
     assert script_call.amount == 1_000_000
 
-    script_call = utils.decode_transaction_script(jsonrpc.TransactionData(script_bytes=script_bytes))
+    script_call = utils.decode_transaction_script(
+        jsonrpc.TransactionData(script_bytes=script_bytes)
+    )
     assert type(script_call).__name__ == "ScriptCall__PeerToPeerWithMetadata"
     assert script_call.amount == 1_000_000
 
     script_call = utils.decode_transaction_script(
-        jsonrpc.Transaction(transaction=jsonrpc.TransactionData(script_bytes=script_bytes))
+        jsonrpc.Transaction(
+            transaction=jsonrpc.TransactionData(script_bytes=script_bytes)
+        )
     )
     assert type(script_call).__name__ == "ScriptCall__PeerToPeerWithMetadata"
     assert script_call.amount == 1_000_000

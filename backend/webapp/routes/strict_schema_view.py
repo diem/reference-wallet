@@ -165,7 +165,10 @@ def path_uuid_param(name, description):
         "in": "path",
         "required": True,
         "description": description,
-        "schema": {"type": "string", "format": "uuid",},
+        "schema": {
+            "type": "string",
+            "format": "uuid",
+        },
     }
 
 

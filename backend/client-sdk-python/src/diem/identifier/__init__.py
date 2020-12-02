@@ -68,7 +68,9 @@ class Intent:
         return self.account_address.to_bytes()
 
 
-def encode_intent(encoded_account_identifier: str, currency_code: str, amount: int) -> str:
+def encode_intent(
+    encoded_account_identifier: str, currency_code: str, amount: int
+) -> str:
     """
     Encode account identifier string(encoded), currency code and amount into
     Diem intent identifier (https://lip.libra.org/lip-5/)
@@ -90,7 +92,8 @@ def decode_intent(encoded_intent_identifier: str, hrp: str) -> Intent:
     result = parse.urlparse(encoded_intent_identifier)
     if result.scheme != "diem":
         raise InvalidIntentIdentifierError(
-            f"Unknown intent identifier scheme {result.scheme} " f"in {encoded_intent_identifier}"
+            f"Unknown intent identifier scheme {result.scheme} "
+            f"in {encoded_intent_identifier}"
         )
 
     account_identifier = result.netloc
@@ -114,13 +117,19 @@ def decode_intent(encoded_intent_identifier: str, hrp: str) -> Intent:
 
 def _decode_param(name, params, field, convert):  # pyre-ignore
     if field not in params:
-        raise InvalidIntentIdentifierError(f"Can't decode {name}: not found in params {params}")
+        raise InvalidIntentIdentifierError(
+            f"Can't decode {name}: not found in params {params}"
+        )
 
     if not isinstance(params[field], list):
-        raise InvalidIntentIdentifierError(f"Can't decode {name}: unknown type {params}")
+        raise InvalidIntentIdentifierError(
+            f"Can't decode {name}: unknown type {params}"
+        )
 
     if len(params[field]) != 1:
-        raise InvalidIntentIdentifierError(f"Can't decode {name}: too many values {params}")
+        raise InvalidIntentIdentifierError(
+            f"Can't decode {name}: too many values {params}"
+        )
 
     value = params[field][0]
     try:
@@ -140,7 +149,9 @@ def encode_account(
     subaddress_bytes = utils.sub_address(subaddr) if subaddr else None
 
     try:
-        encoded_address = bech32_address_encode(hrp, onchain_address_bytes, subaddress_bytes)
+        encoded_address = bech32_address_encode(
+            hrp, onchain_address_bytes, subaddress_bytes
+        )
     except Bech32Error as e:
         raise ValueError(
             f"Can't encode from "
@@ -151,12 +162,20 @@ def encode_account(
     return encoded_address
 
 
-def decode_account(encoded_address: str, hrp: str) -> typing.Tuple[diem_types.AccountAddress, typing.Optional[bytes]]:
+def decode_account(
+    encoded_address: str, hrp: str
+) -> typing.Tuple[diem_types.AccountAddress, typing.Optional[bytes]]:
     """Return (addrees_str, subaddress_str) given a bech32 encoded str & human readable prefix(hrp)"""
     try:
-        (_version, onchain_address_bytes, subaddress_bytes) = bech32.bech32_address_decode(hrp, encoded_address)
+        (
+            _version,
+            onchain_address_bytes,
+            subaddress_bytes,
+        ) = bech32.bech32_address_decode(hrp, encoded_address)
     except Bech32Error as e:
-        raise ValueError(f"Can't decode from encoded str {encoded_address}, " f"got error: {e}")
+        raise ValueError(
+            f"Can't decode from encoded str {encoded_address}, " f"got error: {e}"
+        )
 
     address = utils.account_address(onchain_address_bytes)
     # If subaddress is absent, subaddress_bytes is a list of 0

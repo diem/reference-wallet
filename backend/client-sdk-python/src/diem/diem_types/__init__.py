@@ -438,7 +438,9 @@ class SignedTransaction:
         return v
 
     @staticmethod
-    def from_raw_txn_and_ed25519_key(txn: RawTransaction, public_key: bytes, signature: bytes) -> "SignedTransaction":
+    def from_raw_txn_and_ed25519_key(
+        txn: RawTransaction, public_key: bytes, signature: bytes
+    ) -> "SignedTransaction":
         return SignedTransaction(
             raw_txn=txn,
             authenticator=TransactionAuthenticator__Ed25519(
@@ -691,7 +693,9 @@ class TypeTag:
             raise st.DeserializationError("Some input bytes were not read")
         return v
 
-    CORE_CODE_ADDRESS: AccountAddress = AccountAddress.from_hex("00000000000000000000000000000001")
+    CORE_CODE_ADDRESS: AccountAddress = AccountAddress.from_hex(
+        "00000000000000000000000000000001"
+    )
 
     @staticmethod
     def from_currency_code(code: str) -> "TypeTag":

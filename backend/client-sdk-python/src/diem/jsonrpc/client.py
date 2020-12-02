@@ -93,7 +93,10 @@ class RequestStrategy:
     """
 
     def send_request(
-        self, client: "Client", request: typing.Dict[str, typing.Any], ignore_stale_response: bool
+        self,
+        client: "Client",
+        request: typing.Dict[str, typing.Any],
+        ignore_stale_response: bool,
     ) -> typing.Dict[str, typing.Any]:
         return client._send_http_request(client._url, request, ignore_stale_response)
 
@@ -142,24 +145,36 @@ class RequestWithBackups(RequestStrategy):
         self._fallback = fallback
 
     def send_request(
-        self, client: "Client", request: typing.Dict[str, typing.Any], ignore_stale_response: bool
+        self,
+        client: "Client",
+        request: typing.Dict[str, typing.Any],
+        ignore_stale_response: bool,
     ) -> typing.Dict[str, typing.Any]:
-        primary = self._executor.submit(client._send_http_request, client._url, request, ignore_stale_response)
+        primary = self._executor.submit(
+            client._send_http_request, client._url, request, ignore_stale_response
+        )
         backup = self._executor.submit(
-            client._send_http_request, random.choice(self._backups), request, ignore_stale_response
+            client._send_http_request,
+            random.choice(self._backups),
+            request,
+            ignore_stale_response,
         )
 
         if self._fallback:
             return self._fallback_to_backup(primary, backup)
         return self._first_success(primary, backup)
 
-    def _fallback_to_backup(self, primary: Future, backup: Future) -> typing.Dict[str, typing.Any]:
+    def _fallback_to_backup(
+        self, primary: Future, backup: Future
+    ) -> typing.Dict[str, typing.Any]:
         try:
             return primary.result()
         except Exception as e:
             return backup.result()
 
-    def _first_success(self, primary: Future, backup: Future) -> typing.Dict[str, typing.Any]:
+    def _first_success(
+        self, primary: Future, backup: Future
+    ) -> typing.Dict[str, typing.Any]:
         futures = as_completed({primary, backup})
         first = next(futures)
         try:
@@ -184,8 +199,13 @@ class Client:
     ) -> None:
         self._url: str = server_url
         self._session: requests.Session = session or requests.Session()
-        self._timeout: typing.Tuple[float, float] = timeout or (DEFAULT_CONNECT_TIMEOUT_SECS, DEFAULT_TIMEOUT_SECS)
-        self._last_known_server_state: State = State(chain_id=-1, version=-1, timestamp_usecs=-1)
+        self._timeout: typing.Tuple[float, float] = timeout or (
+            DEFAULT_CONNECT_TIMEOUT_SECS,
+            DEFAULT_TIMEOUT_SECS,
+        )
+        self._last_known_server_state: State = State(
+            chain_id=-1, version=-1, timestamp_usecs=-1
+        )
         self._lock = threading.Lock()
         self._retry: Retry = retry or Retry(5, 0.2, StaleResponseError)
         self._rs: RequestStrategy = rs or RequestStrategy()
@@ -216,9 +236,13 @@ class Client:
             return self.get_parent_vasp_account(account.role.parent_vasp_address)
 
         hex = utils.account_address_hex(vasp_account_address)
-        raise ValueError(f"given account address({hex}) is not a VASP account: {account}")
+        raise ValueError(
+            f"given account address({hex}) is not a VASP account: {account}"
+        )
 
-    def get_account_sequence(self, account_address: typing.Union[diem_types.AccountAddress, str]) -> int:
+    def get_account_sequence(
+        self, account_address: typing.Union[diem_types.AccountAddress, str]
+    ) -> int:
         """get on-chain account sequence number
 
         Calls get_account to find on-chain account information and return it's sequence.
@@ -247,7 +271,9 @@ class Client:
         with self._lock:
             return copy.copy(self._last_known_server_state)
 
-    def update_last_known_state(self, chain_id: int, version: int, timestamp_usecs: int) -> None:
+    def update_last_known_state(
+        self, chain_id: int, version: int, timestamp_usecs: int
+    ) -> None:
         """update last known server state
 
         Raises InvalidServerResponse if given chain_id mismatches with previous value
@@ -258,11 +284,17 @@ class Client:
         with self._lock:
             curr = self._last_known_server_state
             if curr.chain_id != -1 and curr.chain_id != chain_id:
-                raise InvalidServerResponse(f"last known chain id {curr.chain_id}, " f"but got {chain_id}")
+                raise InvalidServerResponse(
+                    f"last known chain id {curr.chain_id}, " f"but got {chain_id}"
+                )
             if curr.version > version:
-                raise StaleResponseError(f"last known version {curr.version} > {version}")
+                raise StaleResponseError(
+                    f"last known version {curr.version} > {version}"
+                )
             if curr.timestamp_usecs > timestamp_usecs:
-                raise StaleResponseError(f"last known timestamp_usecs {curr.timestamp_usecs} > {timestamp_usecs}")
+                raise StaleResponseError(
+                    f"last known timestamp_usecs {curr.timestamp_usecs} > {timestamp_usecs}"
+                )
 
             self._last_known_server_state = State(
                 chain_id=chain_id,
@@ -288,7 +320,9 @@ class Client:
         See [JSON-RPC API Doc](https://github.com/libra/libra/blob/master/json-rpc/docs/method_get_currencies.md)
         """
 
-        return self.execute("get_currencies", [], _parse_list(lambda: rpc.CurrencyInfo()))
+        return self.execute(
+            "get_currencies", [], _parse_list(lambda: rpc.CurrencyInfo())
+        )
 
     def get_account(
         self, account_address: typing.Union[diem_types.AccountAddress, str]
@@ -317,7 +351,9 @@ class Client:
 
         address = utils.account_address_hex(account_address)
         params = [address, int(sequence), bool(include_events)]
-        return self.execute("get_account_transaction", params, _parse_obj(lambda: rpc.Transaction()))
+        return self.execute(
+            "get_account_transaction", params, _parse_obj(lambda: rpc.Transaction())
+        )
 
     def get_account_transactions(
         self,
@@ -335,7 +371,9 @@ class Client:
 
         address = utils.account_address_hex(account_address)
         params = [address, int(sequence), int(limit), bool(include_events)]
-        return self.execute("get_account_transactions", params, _parse_list(lambda: rpc.Transaction()))
+        return self.execute(
+            "get_account_transactions", params, _parse_list(lambda: rpc.Transaction())
+        )
 
     def get_transactions(
         self,
@@ -351,9 +389,13 @@ class Client:
         """
 
         params = [int(start_version), int(limit), bool(include_events)]
-        return self.execute("get_transactions", params, _parse_list(lambda: rpc.Transaction()))
+        return self.execute(
+            "get_transactions", params, _parse_list(lambda: rpc.Transaction())
+        )
 
-    def get_events(self, event_stream_key: str, start: int, limit: int) -> typing.List[rpc.Event]:
+    def get_events(
+        self, event_stream_key: str, start: int, limit: int
+    ) -> typing.List[rpc.Event]:
         """get events
 
         Returns empty list if no events found
@@ -366,7 +408,9 @@ class Client:
 
     def get_state_proof(self, version: int) -> rpc.StateProof:
         params = [int(version)]
-        return self.execute("get_state_proof", params, _parse_obj(lambda: rpc.StateProof()))
+        return self.execute(
+            "get_state_proof", params, _parse_obj(lambda: rpc.StateProof())
+        )
 
     def get_account_state_with_proof(
         self,
@@ -376,7 +420,11 @@ class Client:
     ) -> rpc.AccountStateWithProof:
         address = utils.account_address_hex(account_address)
         params = [address, version, ledger_version]
-        return self.execute("get_account_state_with_proof", params, _parse_obj(lambda: rpc.AccountStateWithProof()))
+        return self.execute(
+            "get_account_state_with_proof",
+            params,
+            _parse_obj(lambda: rpc.AccountStateWithProof()),
+        )
 
     def submit(
         self,
@@ -397,10 +445,17 @@ class Client:
         if isinstance(txn, diem_types.SignedTransaction):
             return self.submit(txn.lcs_serialize().hex())
 
-        self.execute_without_retry("submit", [txn], result_parser=None, ignore_stale_response=not raise_stale_response)
+        self.execute_without_retry(
+            "submit",
+            [txn],
+            result_parser=None,
+            ignore_stale_response=not raise_stale_response,
+        )
 
     def wait_for_transaction(
-        self, txn: typing.Union[diem_types.SignedTransaction, str], timeout_secs: typing.Optional[float] = None
+        self,
+        txn: typing.Union[diem_types.SignedTransaction, str],
+        timeout_secs: typing.Optional[float] = None,
     ) -> rpc.Transaction:
         """wait for transaction executed
 
@@ -455,12 +510,16 @@ class Client:
         with same account address and sequence).
         """
 
-        max_wait = time.time() + (timeout_secs or DEFAULT_WAIT_FOR_TRANSACTION_TIMEOUT_SECS)
+        max_wait = time.time() + (
+            timeout_secs or DEFAULT_WAIT_FOR_TRANSACTION_TIMEOUT_SECS
+        )
         while time.time() < max_wait:
             txn = self.get_account_transaction(address, seq, True)
             if txn is not None:
                 if txn.hash != txn_hash:
-                    raise TransactionHashMismatchError(f"expected hash {txn_hash}, but got {txn.hash}")
+                    raise TransactionHashMismatchError(
+                        f"expected hash {txn_hash}, but got {txn.hash}"
+                    )
                 if txn.vm_status.type != constants.VM_STATUS_EXECUTED:
                     raise TransactionExecutionFailed(f"VM status: {txn.vm_status}")
                 return txn
@@ -470,7 +529,9 @@ class Client:
                     f"latest server ledger timestamp_usecs {state.timestamp_usecs}, "
                     f"transaction expires at {expiration_time_secs}"
                 )
-            time.sleep(wait_duration_secs or DEFAULT_WAIT_FOR_TRANSACTION_WAIT_DURATION_SECS)
+            time.sleep(
+                wait_duration_secs or DEFAULT_WAIT_FOR_TRANSACTION_WAIT_DURATION_SECS
+            )
 
         raise WaitForTransactionTimeout()
 
@@ -489,7 +550,9 @@ class Client:
         """
 
         return self._retry.execute(
-            lambda: self.execute_without_retry(method, params, result_parser, ignore_stale_response)
+            lambda: self.execute_without_retry(
+                method, params, result_parser, ignore_stale_response
+            )
         )
 
     # pyre-ignore
@@ -547,7 +610,9 @@ class Client:
         try:
             json = response.json()
         except ValueError as e:
-            raise InvalidServerResponse(f"Parse response as json failed: {e}, response: {response.text}")
+            raise InvalidServerResponse(
+                f"Parse response as json failed: {e}, response: {response.text}"
+            )
 
         # check stable response before check jsonrpc error
         try:
@@ -564,7 +629,11 @@ class Client:
 
 
 def _parse_obj(factory):  # pyre-ignore
-    return lambda result: parser.ParseDict(result, factory(), ignore_unknown_fields=True) if result else None
+    return (
+        lambda result: parser.ParseDict(result, factory(), ignore_unknown_fields=True)
+        if result
+        else None
+    )
 
 
 def _parse_list(factory):  # pyre-ignore

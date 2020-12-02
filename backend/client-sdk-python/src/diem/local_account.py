@@ -13,7 +13,10 @@ from . import (
 )
 
 from .auth_key import AuthKey
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey, Ed25519PublicKey
+from cryptography.hazmat.primitives.asymmetric.ed25519 import (
+    Ed25519PrivateKey,
+    Ed25519PublicKey,
+)
 
 
 class LocalAccount:

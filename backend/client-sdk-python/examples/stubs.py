@@ -64,7 +64,8 @@ class CustodialApp:
         txn = self.create_transaction(
             self._parent_vasp,
             stdlib.encode_rotate_dual_attestation_info_script(
-                new_url=b"http://helloworld.org", new_key=utils.public_key_bytes(self.compliance_key.public_key())
+                new_url=b"http://helloworld.org",
+                new_key=utils.public_key_bytes(self.compliance_key.public_key()),
             ),
             testnet.TEST_CURRENCY_CODE,
         )
@@ -75,7 +76,9 @@ class CustodialApp:
 
     def payment(self, user_id: int, amount: int) -> str:
         account_id = identifier.encode_account(
-            self._children[0].account_address, self._users[user_id], identifier.TLB  # testnet HRP
+            self._children[0].account_address,
+            self._users[user_id],
+            identifier.TLB,  # testnet HRP
         )
         return identifier.encode_intent(account_id, testnet.TEST_CURRENCY_CODE, amount)
 

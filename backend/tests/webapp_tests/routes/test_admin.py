@@ -64,7 +64,9 @@ def create_new_user_mock(monkeypatch):
 
 class TestAdminGetUsers:
     def test_get_all_users(self, admin_client: Client, get_users_mock) -> None:
-        rv: Response = admin_client.get("/admin/users",)
+        rv: Response = admin_client.get(
+            "/admin/users",
+        )
         assert rv.status_code == 200
         users = rv.get_json()["users"]
         assert len(users) == 1
@@ -72,7 +74,9 @@ class TestAdminGetUsers:
         assert get_users_mock["filter"] == UsersFilter.All
 
     def test_get_admin_users(self, admin_client: Client, get_users_mock) -> None:
-        rv: Response = admin_client.get("/admin/users?admin=true",)
+        rv: Response = admin_client.get(
+            "/admin/users?admin=true",
+        )
         assert rv.status_code == 200
         users = rv.get_json()["users"]
         assert len(users) == 1
@@ -80,7 +84,9 @@ class TestAdminGetUsers:
         assert get_users_mock["filter"] == UsersFilter.Admins
 
     def test_get_non_admin_users(self, admin_client: Client, get_users_mock) -> None:
-        rv: Response = admin_client.get("/admin/users?admin=false",)
+        rv: Response = admin_client.get(
+            "/admin/users?admin=false",
+        )
         assert rv.status_code == 200
         users = rv.get_json()["users"]
         assert len(users) == 1
@@ -88,7 +94,9 @@ class TestAdminGetUsers:
         assert get_users_mock["filter"] == UsersFilter.NotAdmins
 
     def test_low_privilege_request(self, authorized_client: Client) -> None:
-        rv: Response = authorized_client.get("/admin/users",)
+        rv: Response = authorized_client.get(
+            "/admin/users",
+        )
         assert rv.status_code == 403
 
 
@@ -102,7 +110,8 @@ class TestAdminCreateUsers:
             last_name="Test oğlu",
         )
         rv: Response = admin_client.post(
-            "/admin/users", json=user_params,
+            "/admin/users",
+            json=user_params,
         )
 
         assert rv.status_code == 200

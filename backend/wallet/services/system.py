@@ -68,7 +68,8 @@ def calculate_lrw_balance(up_to_version):
 
         for account in accounts:
             balance = account_service.get_account_balance_by_id(
-                account_id=account.id, up_to_version=up_to_version,
+                account_id=account.id,
+                up_to_version=up_to_version,
             ).total.get(CURRENCY)
 
             logger.info(f"account name {account.name} balance {balance}")

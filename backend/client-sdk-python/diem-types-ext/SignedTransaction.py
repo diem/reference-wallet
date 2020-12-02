@@ -1,9 +1,6 @@
-
 @staticmethod
 def from_raw_txn_and_ed25519_key(
-    txn: RawTransaction,
-    public_key: bytes,
-    signature: bytes
+    txn: RawTransaction, public_key: bytes, signature: bytes
 ) -> "SignedTransaction":
     return SignedTransaction(
         raw_txn=txn,

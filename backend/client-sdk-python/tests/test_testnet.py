@@ -123,7 +123,9 @@ def test_get_account_transaction_by_hex_encoded_account_address():
 
 def test_get_account_transaction_include_events():
     client = testnet.create_client()
-    txn = client.get_account_transaction(testnet.DESIGNATED_DEALER_ADDRESS, 0, include_events=True)
+    txn = client.get_account_transaction(
+        testnet.DESIGNATED_DEALER_ADDRESS, 0, include_events=True
+    )
     assert txn is not None
     assert isinstance(txn, jsonrpc.Transaction)
     assert len(txn.events) > 0
@@ -150,7 +152,9 @@ def test_get_account_transactions_not_exist():
 
 def test_get_account_transactions_by_hex_encoded_account_address():
     client = testnet.create_client()
-    txns = client.get_account_transactions(testnet.DESIGNATED_DEALER_ADDRESS.to_hex(), 0, 1)
+    txns = client.get_account_transactions(
+        testnet.DESIGNATED_DEALER_ADDRESS.to_hex(), 0, 1
+    )
     assert txns is not None
     assert isinstance(txns, list)
 
@@ -163,7 +167,9 @@ def test_get_account_transactions_by_hex_encoded_account_address():
 
 def test_get_account_transactions_with_events():
     client = testnet.create_client()
-    txns = client.get_account_transactions(testnet.DESIGNATED_DEALER_ADDRESS, 0, 1, include_events=True)
+    txns = client.get_account_transactions(
+        testnet.DESIGNATED_DEALER_ADDRESS, 0, 1, include_events=True
+    )
     assert txns is not None
     assert isinstance(txns, list)
 
@@ -289,7 +295,12 @@ def test_wait_for_transaction_hash_mismatched_and_execution_failed():
 
     txn = signed_txn.raw_txn
     with pytest.raises(jsonrpc.TransactionHashMismatchError):
-        client.wait_for_transaction2(txn.sender, txn.sequence_number, txn.expiration_timestamp_secs, "mismatched hash")
+        client.wait_for_transaction2(
+            txn.sender,
+            txn.sequence_number,
+            txn.expiration_timestamp_secs,
+            "mismatched hash",
+        )
 
     with pytest.raises(jsonrpc.TransactionExecutionFailed):
         client.wait_for_transaction(signed_txn)
@@ -302,10 +313,14 @@ def test_wait_for_transaction_timeout_and_expire():
     parent_vasp = faucet.gen_account()
 
     with pytest.raises(jsonrpc.TransactionExpired):
-        client.wait_for_transaction2(parent_vasp.account_address, 1, time.time() + 0.2, "hash")
+        client.wait_for_transaction2(
+            parent_vasp.account_address, 1, time.time() + 0.2, "hash"
+        )
 
     with pytest.raises(jsonrpc.WaitForTransactionTimeout):
-        client.wait_for_transaction2(parent_vasp.account_address, 1, time.time() + 5, "hash", 0.1)
+        client.wait_for_transaction2(
+            parent_vasp.account_address, 1, time.time() + 5, "hash", 0.1
+        )
 
 
 def test_get_parent_vasp_account():
@@ -361,7 +376,10 @@ def create_child_vasp_txn(
 
 
 def create_transaction(
-    sender: LocalAccount, script: diem_types.Script, seq: int, currency=testnet.TEST_CURRENCY_CODE
+    sender: LocalAccount,
+    script: diem_types.Script,
+    seq: int,
+    currency=testnet.TEST_CURRENCY_CODE,
 ) -> diem_types.RawTransaction:
     return diem_types.RawTransaction(
         sender=sender.account_address,

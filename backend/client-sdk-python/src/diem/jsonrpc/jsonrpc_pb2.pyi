@@ -42,7 +42,10 @@ class Amount(google___protobuf___message___Message):
         currency: typing___Optional[typing___Text] = None,
     ) -> None: ...
     def ClearField(
-        self, field_name: typing_extensions___Literal["amount", b"amount", "currency", b"currency"]
+        self,
+        field_name: typing_extensions___Literal[
+            "amount", b"amount", "currency", b"currency"
+        ],
     ) -> None: ...
 
 type___Amount = Amount
@@ -60,7 +63,9 @@ class Account(google___protobuf___message___Message):
     @property
     def balances(
         self,
-    ) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[type___Amount]: ...
+    ) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[
+        type___Amount
+    ]: ...
     @property
     def role(self) -> type___AccountRole: ...
     def __init__(
@@ -77,7 +82,9 @@ class Account(google___protobuf___message___Message):
         is_frozen: typing___Optional[builtin___bool] = None,
         role: typing___Optional[type___AccountRole] = None,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions___Literal["role", b"role"]) -> builtin___bool: ...
+    def HasField(
+        self, field_name: typing_extensions___Literal["role", b"role"]
+    ) -> builtin___bool: ...
     def ClearField(
         self,
         field_name: typing_extensions___Literal[
@@ -121,7 +128,9 @@ class AccountRole(google___protobuf___message___Message):
     @property
     def preburn_balances(
         self,
-    ) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[type___Amount]: ...
+    ) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[
+        type___Amount
+    ]: ...
     def __init__(
         self,
         *,
@@ -182,7 +191,9 @@ class Event(google___protobuf___message___Message):
         transaction_version: typing___Optional[builtin___int] = None,
         data: typing___Optional[type___EventData] = None,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions___Literal["data", b"data"]) -> builtin___bool: ...
+    def HasField(
+        self, field_name: typing_extensions___Literal["data", b"data"]
+    ) -> builtin___bool: ...
     def ClearField(
         self,
         field_name: typing_extensions___Literal[
@@ -244,7 +255,9 @@ class EventData(google___protobuf___message___Message):
         role_id: typing___Optional[builtin___int] = None,
         committed_timestamp_secs: typing___Optional[builtin___int] = None,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions___Literal["amount", b"amount"]) -> builtin___bool: ...
+    def HasField(
+        self, field_name: typing_extensions___Literal["amount", b"amount"]
+    ) -> builtin___bool: ...
     def ClearField(
         self,
         field_name: typing_extensions___Literal[
@@ -307,7 +320,9 @@ class Metadata(google___protobuf___message___Message):
         version: typing___Optional[builtin___int] = None,
         timestamp: typing___Optional[builtin___int] = None,
         chain_id: typing___Optional[builtin___int] = None,
-        script_hash_allow_list: typing___Optional[typing___Iterable[typing___Text]] = None,
+        script_hash_allow_list: typing___Optional[
+            typing___Iterable[typing___Text]
+        ] = None,
         module_publishing_allowed: typing___Optional[builtin___bool] = None,
         libra_version: typing___Optional[builtin___int] = None,
     ) -> None: ...
@@ -340,7 +355,11 @@ class Transaction(google___protobuf___message___Message):
     @property
     def transaction(self) -> type___TransactionData: ...
     @property
-    def events(self) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[type___Event]: ...
+    def events(
+        self,
+    ) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[
+        type___Event
+    ]: ...
     @property
     def vm_status(self) -> type___VMStatus: ...
     def __init__(
@@ -355,7 +374,10 @@ class Transaction(google___protobuf___message___Message):
         gas_used: typing___Optional[builtin___int] = None,
     ) -> None: ...
     def HasField(
-        self, field_name: typing_extensions___Literal["transaction", b"transaction", "vm_status", b"vm_status"]
+        self,
+        field_name: typing_extensions___Literal[
+            "transaction", b"transaction", "vm_status", b"vm_status"
+        ],
     ) -> builtin___bool: ...
     def ClearField(
         self,
@@ -428,7 +450,9 @@ class VMStatus(google___protobuf___message___Message):
         code_offset: typing___Optional[builtin___int] = None,
         explanation: typing___Optional[type___MoveAbortExplaination] = None,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions___Literal["explanation", b"explanation"]) -> builtin___bool: ...
+    def HasField(
+        self, field_name: typing_extensions___Literal["explanation", b"explanation"]
+    ) -> builtin___bool: ...
     def ClearField(
         self,
         field_name: typing_extensions___Literal[
@@ -486,7 +510,9 @@ class TransactionData(google___protobuf___message___Message):
         script_bytes: typing___Optional[typing___Text] = None,
         script: typing___Optional[type___Script] = None,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions___Literal["script", b"script"]) -> builtin___bool: ...
+    def HasField(
+        self, field_name: typing_extensions___Literal["script", b"script"]
+    ) -> builtin___bool: ...
     def ClearField(
         self,
         field_name: typing_extensions___Literal[
@@ -529,8 +555,12 @@ class Script(google___protobuf___message___Message):
     DESCRIPTOR: google___protobuf___descriptor___Descriptor = ...
     type: typing___Text = ...
     code: typing___Text = ...
-    arguments: google___protobuf___internal___containers___RepeatedScalarFieldContainer[typing___Text] = ...
-    type_arguments: google___protobuf___internal___containers___RepeatedScalarFieldContainer[typing___Text] = ...
+    arguments: google___protobuf___internal___containers___RepeatedScalarFieldContainer[
+        typing___Text
+    ] = ...
+    type_arguments: google___protobuf___internal___containers___RepeatedScalarFieldContainer[
+        typing___Text
+    ] = ...
     receiver: typing___Text = ...
     amount: builtin___int = ...
     currency: typing___Text = ...
@@ -664,9 +694,14 @@ class AccountStateWithProof(google___protobuf___message___Message):
         blob: typing___Optional[typing___Text] = None,
         proof: typing___Optional[type___AccountStateProof] = None,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions___Literal["proof", b"proof"]) -> builtin___bool: ...
+    def HasField(
+        self, field_name: typing_extensions___Literal["proof", b"proof"]
+    ) -> builtin___bool: ...
     def ClearField(
-        self, field_name: typing_extensions___Literal["blob", b"blob", "proof", b"proof", "version", b"version"]
+        self,
+        field_name: typing_extensions___Literal[
+            "blob", b"blob", "proof", b"proof", "version", b"version"
+        ],
     ) -> None: ...
 
 type___AccountStateWithProof = AccountStateWithProof

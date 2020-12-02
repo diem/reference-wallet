@@ -28,7 +28,9 @@ class Bech32Error(Exception):
     pass
 
 
-def bech32_address_encode(hrp: str, address_bytes: bytes, subaddress_bytes: typing.Optional[bytes]) -> str:
+def bech32_address_encode(
+    hrp: str, address_bytes: bytes, subaddress_bytes: typing.Optional[bytes]
+) -> str:
     """Encode a Diem address (and sub-address if provided).
     Args:
         hrp: Bech32 human readable part
@@ -40,16 +42,22 @@ def bech32_address_encode(hrp: str, address_bytes: bytes, subaddress_bytes: typi
 
     # only accept correct size for Diem address
     if len(address_bytes) != _DIEM_ADDRESS_SIZE:
-        raise Bech32Error(f"Address size should be {_DIEM_ADDRESS_SIZE}, but got: {len(address_bytes)}")
+        raise Bech32Error(
+            f"Address size should be {_DIEM_ADDRESS_SIZE}, but got: {len(address_bytes)}"
+        )
 
     # only accept correct size for Diem subaddress (if set)
     if subaddress_bytes is not None and len(subaddress_bytes) != DIEM_SUBADDRESS_SIZE:
-        raise Bech32Error(f"Subaddress size should be {DIEM_SUBADDRESS_SIZE}, but got: {len(subaddress_bytes)}")
+        raise Bech32Error(
+            f"Subaddress size should be {DIEM_SUBADDRESS_SIZE}, but got: {len(subaddress_bytes)}"
+        )
 
     encoding_version = _DIEM_BECH32_VERSION
 
     # if subaddress has not been provided it's set to 8 zero bytes.
-    subaddress_final_bytes = subaddress_bytes if subaddress_bytes is not None else DIEM_ZERO_SUBADDRESS
+    subaddress_final_bytes = (
+        subaddress_bytes if subaddress_bytes is not None else DIEM_ZERO_SUBADDRESS
+    )
     total_bytes = address_bytes + subaddress_final_bytes
 
     five_bit_data = _convertbits(total_bytes, 8, 5, True)
@@ -59,7 +67,9 @@ def bech32_address_encode(hrp: str, address_bytes: bytes, subaddress_bytes: typi
     return _bech32_encode(hrp, [encoding_version] + five_bit_data)
 
 
-def bech32_address_decode(expected_hrp: str, bech32: str) -> typing.Tuple[int, bytes, bytes]:
+def bech32_address_decode(
+    expected_hrp: str, bech32: str
+) -> typing.Tuple[int, bytes, bytes]:
     """Validate a Bech32 Diem address Bech32 string, and split between version, address and sub-address.
     Args:
         expected_hrp: expected Bech32 human readable part (lbr or tlb)
@@ -70,7 +80,9 @@ def bech32_address_decode(expected_hrp: str, bech32: str) -> typing.Tuple[int, b
     len_bech32 = len(bech32)
     # check expected length
     if len_bech32 != _DIEM_BECH32_SIZE:
-        raise Bech32Error(f"Bech32 size should be {_DIEM_BECH32_SIZE}, but it is: {len_bech32}")
+        raise Bech32Error(
+            f"Bech32 size should be {_DIEM_BECH32_SIZE}, but it is: {len_bech32}"
+        )
 
     # do not allow mixed case per BIP 173
     if bech32 != bech32.lower() and bech32 != bech32.upper():
@@ -96,7 +108,10 @@ def bech32_address_decode(expected_hrp: str, bech32: str) -> typing.Tuple[int, b
     address_version = _BECH32_CHARSET.find(bech32[4])
     # check valid version
     if address_version != _DIEM_BECH32_VERSION:
-        raise Bech32Error(f"Version mismatch. Expected {_DIEM_BECH32_VERSION}, " f"but received {address_version}")
+        raise Bech32Error(
+            f"Version mismatch. Expected {_DIEM_BECH32_VERSION}, "
+            f"but received {address_version}"
+        )
 
     # we've already checked that all characters are in the correct alphabet,
     # thus, this will always succeed

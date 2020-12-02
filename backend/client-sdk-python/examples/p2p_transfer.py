@@ -83,7 +83,9 @@ def test_custodial_to_non_custodial():
         currency=utils.currency_code(currency_code),
         payee=utils.account_address(receiver.account_address),
         amount=amount,
-        metadata=txnmetadata.general_metadata(sender_custodial.find_user_sub_address_by_id(0), None),
+        metadata=txnmetadata.general_metadata(
+            sender_custodial.find_user_sub_address_by_id(0), None
+        ),
         metadata_signature=b"",  # only travel rule metadata requires signature
     )
 
@@ -112,7 +114,9 @@ def test_custodial_to_custodial_under_threshold():
         currency=utils.currency_code(intent.currency_code),
         payee=utils.account_address(intent.account_address),
         amount=intent.amount,
-        metadata=txnmetadata.general_metadata(sender_custodial.find_user_sub_address_by_id(0), intent.sub_address),
+        metadata=txnmetadata.general_metadata(
+            sender_custodial.find_user_sub_address_by_id(0), intent.sub_address
+        ),
         metadata_signature=b"",  # only travel rule metadata requires signature
     )
 

@@ -23,14 +23,25 @@ account: LocalAccount = faucet.gen_account()
 import requests
 import typing
 
-from . import diem_types, jsonrpc, utils, local_account, serde_types, auth_key, chain_ids, lcs
+from . import (
+    diem_types,
+    jsonrpc,
+    utils,
+    local_account,
+    serde_types,
+    auth_key,
+    chain_ids,
+    lcs,
+)
 
 
 JSON_RPC_URL: str = "https://testnet.libra.org/v1"
 FAUCET_URL: str = "https://testnet.libra.org/mint"
 CHAIN_ID: diem_types.ChainId = chain_ids.TESTNET
 
-DESIGNATED_DEALER_ADDRESS: diem_types.AccountAddress = utils.account_address("000000000000000000000000000000dd")
+DESIGNATED_DEALER_ADDRESS: diem_types.AccountAddress = utils.account_address(
+    "000000000000000000000000000000dd"
+)
 TEST_CURRENCY_CODE: str = "Coin1"
 
 
@@ -57,15 +68,21 @@ class Faucet:
         self._retry: jsonrpc.Retry = retry or jsonrpc.Retry(5, 0.2, Exception)
         self._session: requests.Session = requests.Session()
 
-    def gen_account(self, currency_code: str = TEST_CURRENCY_CODE) -> local_account.LocalAccount:
+    def gen_account(
+        self, currency_code: str = TEST_CURRENCY_CODE
+    ) -> local_account.LocalAccount:
         account = local_account.LocalAccount.generate()
         self.mint(account.auth_key.hex(), 5_000_000_000, currency_code)
         return account
 
     def mint(self, authkey: str, amount: int, currency_code: str) -> None:
-        self._retry.execute(lambda: self._mint_without_retry(authkey, amount, currency_code))
+        self._retry.execute(
+            lambda: self._mint_without_retry(authkey, amount, currency_code)
+        )
 
-    def _mint_without_retry(self, authkey: str, amount: int, currency_code: str) -> None:
+    def _mint_without_retry(
+        self, authkey: str, amount: int, currency_code: str
+    ) -> None:
         response = self._session.post(
             FAUCET_URL,
             params={

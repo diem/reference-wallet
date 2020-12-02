@@ -27,7 +27,9 @@ class InvalidSubAddressError(Exception):
     pass
 
 
-def account_address(addr: typing.Union[diem_types.AccountAddress, bytes, str]) -> diem_types.AccountAddress:
+def account_address(
+    addr: typing.Union[diem_types.AccountAddress, bytes, str]
+) -> diem_types.AccountAddress:
     """convert an account address from hex-encoded or bytes into `diem_types.AccountAddress`
 
     Returns given address if it is `diem_types.AccountAddress` already
@@ -81,7 +83,9 @@ def sub_address(addr: typing.Union[str, bytes]) -> bytes:
 def public_key_bytes(public_key: Ed25519PublicKey) -> bytes:
     """convert cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey into bytes"""
 
-    return public_key.public_bytes(encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw)
+    return public_key.public_bytes(
+        encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
+    )
 
 
 def currency_code(code: str) -> diem_types.TypeTag:
@@ -104,7 +108,9 @@ def create_signed_transaction(
 ) -> diem_types.SignedTransaction:
     """create single signed `diem_types.SignedTransaction`"""
 
-    return diem_types.SignedTransaction.from_raw_txn_and_ed25519_key(txn, public_key, signature)
+    return diem_types.SignedTransaction.from_raw_txn_and_ed25519_key(
+        txn, public_key, signature
+    )
 
 
 def raw_transaction_signing_msg(txn: diem_types.RawTransaction) -> bytes:

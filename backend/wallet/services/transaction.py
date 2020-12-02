@@ -273,7 +273,11 @@ def _send_transaction_internal(
 
 
 def _send_transaction_external_offchain(
-    sender_id, destination_address, destination_subaddress, amount, currency,
+    sender_id,
+    destination_address,
+    destination_subaddress,
+    amount,
+    currency,
 ) -> Optional[Transaction]:
     log_execution(
         f"Offchain external transaction from {sender_id} to receiver {destination_address}, "
@@ -472,7 +476,9 @@ def external_offchain_transaction(
         f"receiver address: {receiver_address.as_str()}, {receiver_address.get_onchain().as_str()}",
     )
     sender = PaymentActor(
-        sender_address.as_str(), StatusObject(Status.needs_kyc_data), [],
+        sender_address.as_str(),
+        StatusObject(Status.needs_kyc_data),
+        [],
     )
     receiver = PaymentActor(receiver_address.as_str(), StatusObject(Status.none), [])
     action = PaymentAction(amount, currency, "charge", int(time()))

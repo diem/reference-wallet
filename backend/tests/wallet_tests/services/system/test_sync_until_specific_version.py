@@ -88,7 +88,12 @@ def test_sync_until_specific_version(patch_blockchain):
     )
     ADDED_VERSION = 10132
     add_outgoing_transaction_to_blockchain(
-        patch_blockchain, SUB_ADDRESS_5, 50, OTHER_ADDRESS_5, 2, ADDED_VERSION,
+        patch_blockchain,
+        SUB_ADDRESS_5,
+        50,
+        OTHER_ADDRESS_5,
+        2,
+        ADDED_VERSION,
     )
 
     check_balance(905)

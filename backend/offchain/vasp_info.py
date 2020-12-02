@@ -14,10 +14,10 @@ class LRW(VASPInfo):
     context: Context
 
     def get_peer_base_url(self, other_addr: LibraAddress) -> str:
-        """ Get the base URL that manages off-chain communications of the other
-            VASP.
-            Returns:
-                str: The base url of the other VASP.
+        """Get the base URL that manages off-chain communications of the other
+        VASP.
+        Returns:
+            str: The base url of the other VASP.
         """
 
         return self.context.get_vasp_base_url(other_addr.get_onchain_address_hex())

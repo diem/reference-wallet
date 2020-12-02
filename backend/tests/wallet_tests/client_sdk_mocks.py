@@ -231,9 +231,7 @@ class DiemNetworkMock(BlockchainMock):
 
     def transaction_by_acc_seq(
         self, addr_hex: str, seq: int, include_events: bool = False
-    ) -> Tuple[
-        Optional[MockSignedTransaction], List[Event],
-    ]:
+    ) -> Tuple[Optional[MockSignedTransaction], List[Event],]:
         account = self.get_account_resource(addr_hex)
         tx = account.transactions[seq]
 

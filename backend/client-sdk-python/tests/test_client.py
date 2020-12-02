@@ -65,7 +65,9 @@ def test_fallback_to_second_if_first_failed():
     client = jsonrpc.Client("primary", rs=rs)
 
     # primary will fail immediately, backup is slow but success
-    client._send_http_request = gen_metadata_response(client, fail="primary", snap="backup")
+    client._send_http_request = gen_metadata_response(
+        client, fail="primary", snap="backup"
+    )
     assert client.get_metadata().script_hash_allow_list == ["backup"]
     executor.shutdown()
 
@@ -73,7 +75,9 @@ def test_fallback_to_second_if_first_failed():
 def test_fallback_strategy_always_returns_primary_response_if_it_successes():
     client = jsonrpc.Client(
         "primary",
-        rs=jsonrpc.RequestWithBackups(backups=["backup"], executor=ThreadPoolExecutor(2), fallback=True),
+        rs=jsonrpc.RequestWithBackups(
+            backups=["backup"], executor=ThreadPoolExecutor(2), fallback=True
+        ),
     )
     client._send_http_request = gen_metadata_response(client)
     for _ in range(10):
@@ -84,7 +88,9 @@ def test_fallback_strategy_always_returns_primary_response_if_it_successes():
 def test_fallback_to_backups_when_primary_failed():
     client = jsonrpc.Client(
         "primary",
-        rs=jsonrpc.RequestWithBackups(backups=["backup"], executor=ThreadPoolExecutor(2), fallback=True),
+        rs=jsonrpc.RequestWithBackups(
+            backups=["backup"], executor=ThreadPoolExecutor(2), fallback=True
+        ),
     )
     client._send_http_request = gen_metadata_response(client, fail="primary")
     for _ in range(10):
@@ -93,11 +99,18 @@ def test_fallback_to_backups_when_primary_failed():
 
 def test_raises_error_if_primary_and_backup_both_failed():
     executor = ThreadPoolExecutor(2)
-    client = jsonrpc.Client("url", rs=jsonrpc.RequestWithBackups(backups=["url"], executor=executor))
+    client = jsonrpc.Client(
+        "url", rs=jsonrpc.RequestWithBackups(backups=["url"], executor=executor)
+    )
     with pytest.raises(jsonrpc.NetworkError):
         assert client.get_currencies()
 
-    client = jsonrpc.Client("url", rs=jsonrpc.RequestWithBackups(backups=["url"], executor=executor, fallback=True))
+    client = jsonrpc.Client(
+        "url",
+        rs=jsonrpc.RequestWithBackups(
+            backups=["url"], executor=executor, fallback=True
+        ),
+    )
     with pytest.raises(jsonrpc.NetworkError):
         assert client.get_currencies()
 
