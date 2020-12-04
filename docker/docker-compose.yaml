@@ -57,8 +57,8 @@ services:
   liquidity:
     image: lrw_liquidity
     build:
-      context: ../
-      dockerfile: liquidity/Dockerfile
+      context: ../liquidity
+      dockerfile: Dockerfile
     env_file:
       - ../liquidity/.env
     environment:
