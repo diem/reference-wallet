@@ -77,8 +77,8 @@ python-dotenv = "*"
 dataclasses-json = "*"
 jwcrypto = "*"
 libra-offchainreference = "*"
-client-python-sdk = {git="https://github.com/libra/client-sdk-python.git", editable=true}
 sqlalchemy-paginator = "*"
+diem = "*"
 
 [pipenv]
 allow_prereleases = true
