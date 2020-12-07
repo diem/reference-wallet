@@ -231,7 +231,7 @@ class AccountRoutes:
                     amount=amount,
                     currency=currency,
                     destination_address=utils.account_address_bytes(dest_address).hex(),
-                    destination_subaddress=dest_subaddress.hex(),
+                    destination_subaddress=dest_subaddress.hex() if dest_subaddress else None,
                 )
                 transaction = AccountRoutes.get_transaction_response_object(
                     user.account_id, tx
