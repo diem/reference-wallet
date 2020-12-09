@@ -39,7 +39,6 @@ services:
     volumes:
       - ../liquidity:/liquidity
       - /liquidity/src
-      - ../backend/libra_utils:/backend/libra_utils
     ports:
     - "5001:5000"
 

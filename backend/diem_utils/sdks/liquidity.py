@@ -94,7 +94,7 @@ class LpClient:
 
 
 def raise_if_failed(response, error_description):
-    if 200 > response.status_code >= 300:
+    if response.status_code < 200 or response.status_code >= 300:
         raise LpError(f"{error_description} ({response.status_code})")
 
 
