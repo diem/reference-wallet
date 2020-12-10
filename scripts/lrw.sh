@@ -339,7 +339,7 @@ setup_environment() {
   sh -c "cd liquidity && pipenv install --dev"
 
   info "***Setup Liquidity Provider***"
-  PIPENV_PIPFILE=liquidity/Pipfile pipenv run python liquidity/setup_env.py || fail "Liquidity service setup failed"
+  (cd liquidity; pipenv run python setup_env.py || exit 1) || fail "Liquidity service setup failed"
 
   info "***Setting up environment .env files***"
   PIPENV_PIPFILE=backend/Pipfile pipenv run python3 scripts/set_env.py || fail "Wallet setup failed"
