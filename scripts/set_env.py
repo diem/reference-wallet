@@ -4,12 +4,10 @@
 import json
 import os
 
+import context
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-
-from diem import LocalAccount, testnet, jsonrpc
-
-import context
+from diem import testnet
 
 ENV_FILE_NAME = os.getenv("ENV_FILE_NAME", ".env")
 
@@ -68,35 +66,11 @@ def setup_wallet(ctx):
         dotenv.write(f"LIQUIDITY_SERVICE_PORT={LIQUIDITY_SERVICE_PORT}\n")
 
 
-def setup_liquidity(json_rpc_url, chain_id):
-    liquidity_env_file_path = os.path.join(os.getcwd(), "liquidity", ENV_FILE_NAME)
-    print(f"Creating {liquidity_env_file_path}")
-
-    lp_account_name = "liquidity"
-    lp_account = LocalAccount.generate()
-    lp_custody_private_keys = to_compact_json({
-        lp_account_name: get_private_key_hex(lp_account.private_key)
-    })
-
-    print("Mint to liquidity account")
-    faucet = testnet.Faucet(jsonrpc.Client(json_rpc_url))
-    faucet.mint(lp_account.auth_key.hex(), 2_000_000_000, "Coin1")
-
-    with open(liquidity_env_file_path, "w") as dotenv:
-        dotenv.write(f"LIQUIDITY_CUSTODY_ACCOUNT_NAME=liquidity\n")
-        dotenv.write(f"CUSTODY_PRIVATE_KEYS={lp_custody_private_keys}\n")
-        dotenv.write(f"LIQUIDITY_VASP_ADDR={lp_account.account_address.to_hex()}\n")
-        dotenv.write(f"JSON_RPC_URL={json_rpc_url}\n")
-        dotenv.write(f"CHAIN_ID={chain_id}\n")
-        dotenv.write(f"ACCOUNT_WATCHER_AUTH_KEY={lp_account.auth_key.hex()}\n")
-
-
 def main():
     wallet_ctx = context.generate(1)
     wallet_ctx.config.base_url = VASP_BASE_URL
 
     setup_wallet(wallet_ctx)
-    setup_liquidity(wallet_ctx.config.json_rpc_url, wallet_ctx.config.chain_id)
 
 
 if __name__ == "__main__":

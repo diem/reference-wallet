@@ -86,8 +86,11 @@ class LpClient:
             url=urljoin(self._base_url, f"debt/{debt_id}"),
             json={"settlement_confirmation": settlement_confirmation},
         )
-        raise_if_failed(response, f"Failed to settle debt ID {debt_id}; "
-                                  f"confirmation {settlement_confirmation}")
+        raise_if_failed(
+            response,
+            f"Failed to settle debt ID {debt_id}; "
+            f"confirmation {settlement_confirmation}",
+        )
 
 
 def raise_if_failed(response, error_description):
