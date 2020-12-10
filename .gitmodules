@@ -1,3 +1,3 @@
 [submodule "liquidity"]
 	path = liquidity
-	url = git@github.com:libra/liquidity-emulator.git
+	url = https://github.com/diem/liquidity-emulator.git
