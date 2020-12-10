@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os, typing, tempfile, pytest
-from time import time
+from time import time, sleep
 
 from pubsub import types, DEFL_CONFIG
 from pubsub.client import LRWPubSubClient
@@ -65,6 +65,7 @@ def test_sync():
         # transfer coins to account, one new event should be fetched
         currency = account.balances[0].currency
         faucet.mint(parent_vasp.auth_key.hex(), 1_000, currency)
+        sleep(2)
 
         new_state3 = client.sync(new_state2)
         assert new_state3 == {account.received_events_key: 2}
