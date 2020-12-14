@@ -312,7 +312,7 @@ deploy_minikube() {
 
   build 8080 true
 
-  helm upgrade --install lrw helm/libra-reference-wallet \
+  helm upgrade --install lrw helm/reference-wallet \
     --set peripherals.redis.create=true --set peripherals.database.create=true
 }
 
