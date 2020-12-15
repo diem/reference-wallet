@@ -1,5 +1,9 @@
 import BackendClient from "../services/backendClient";
 
+const promise = new Promise(function (resolve, reject) {
+    resolve(chainDisplayName());
+});
+
 const chainDisplayName = async (): Promise<string> => {
     const backendClient = new BackendClient();
 
@@ -10,7 +14,7 @@ const chainDisplayName = async (): Promise<string> => {
 
 export const initialState = async () => {
     return  {
-        network: await chainDisplayName(),
+        network: await promise,
         currencies: {
             Coin1: {
                 name: "Coin1",
