@@ -14,7 +14,7 @@ export default class BackendClient {
 
   constructor(access_token?: string) {
     // @ts-ignore
-    const baseURL = process.env.BACKEND_URL || "https://demo-wallet.libra.org/api";
+    const baseURL = process.env.BACKEND_URL || "https://demo-wallet.diem.com/api";
     this.client = axios.create({
       baseURL,
       headers: {
