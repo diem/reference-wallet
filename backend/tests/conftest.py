@@ -4,31 +4,27 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-import context
 import inspect
-import json
 from datetime import datetime, timedelta
 from typing import Dict, Optional, List, Generator
 from uuid import uuid4
 
+import context
 import pytest
+from diem import diem_types, identifier
 from diem.jsonrpc import Client as DiemClient, Transaction, TransactionData
 from diem.testnet import Faucet
 from diem.txnmetadata import general_metadata
-from diem import diem_types, identifier
-
+from diem_utils.sdks.liquidity import LpClient
 from diem_utils.types.liquidity.currency import CurrencyPair
 from diem_utils.types.liquidity.lp import LPDetails
 from diem_utils.types.liquidity.quote import QuoteId, QuoteData, Rate
 from diem_utils.types.liquidity.settlement import DebtData
 from diem_utils.types.liquidity.trade import TradeId, TradeData, Direction, TradeStatus
-from diem_utils.sdks.liquidity import LpClient
-
 from tests.setup import clear_db
 from tests.wallet_tests.client_sdk_mocks import (
     FaucetUtilsMock,
     DiemNetworkMock,
-    TransactionsMocker,
 )
 from tests.wallet_tests.services.fx.test_fx import rates
 from wallet import services
@@ -75,7 +71,8 @@ def patch_blockchain(monkeypatch):
     )
     monkeypatch.setattr(DiemClient, "get_transactions", network.get_transactions)
     monkeypatch.setattr(DiemClient, "get_events", network.get_events)
-    monkeypatch.setattr(DiemClient, "submit", network.sendTransaction)
+    monkeypatch.setattr(DiemClient, "submit", network.send_transaction)
+    monkeypatch.setattr(DiemClient, "get_metadata", network.get_metadata)
 
     def wait_for_transaction(*args):
         return Transaction(version=1, transaction=TransactionData(sequence_number=1))

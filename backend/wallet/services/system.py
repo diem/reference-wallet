@@ -30,12 +30,18 @@ def sync_db():
     client = jsonrpc.Client(JSON_RPC_URL)
     onchain_account = client.get_account(VASP_ADDRESS)
 
-    up_to_version = (
-        Transaction.query.filter_by(type=TransactionType.EXTERNAL)
-        .order_by(desc(Transaction.blockchain_version))
-        .first()
-        .blockchain_version
-    )
+    transactions_in_db = Transaction.query.filter_by(type=TransactionType.EXTERNAL)
+    count = transactions_in_db.count()
+
+    if count > 0:
+        up_to_version = (
+            transactions_in_db.order_by(desc(Transaction.blockchain_version))
+            .first()
+            .blockchain_version
+        )
+    else:
+        metadata = client.get_metadata()
+        up_to_version = metadata.version
 
     if sync_required(onchain_account, up_to_version):
         sync(client, onchain_account, up_to_version)
@@ -108,12 +114,15 @@ def sync_transactions(events_key, client, up_to_version):
         for event in events:
             blockchain_version = event.transaction_version
 
-            transaction = client.get_transactions(blockchain_version, 1)[0]
+            transactions = client.get_transactions(blockchain_version, 1)
 
-            if transaction.version <= up_to_version:
-                sync_transaction(transaction)
+            if transactions:
+                transaction = transactions[0]
 
-            processed_transactions.add(transaction.version)
+                if transaction and transaction.version <= up_to_version:
+                    sync_transaction(transaction)
+
+                processed_transactions.add(transaction.version)
 
         start += PAGE_SIZE
 
