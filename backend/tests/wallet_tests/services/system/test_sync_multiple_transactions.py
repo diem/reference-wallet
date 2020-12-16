@@ -40,7 +40,7 @@ def test_sync_multiple_transactions(patch_blockchain):
         2. Remove transaction with version 5 from LRW DB
     """
     setup_inventory_with_initial_transaction(
-        patch_blockchain, 1000, mocked_initial_balance=1000
+        patch_blockchain, 1000, mock_blockchain_initial_balance=1000
     )
 
     NO_CHANGE_VERSION_1 = 1
@@ -51,7 +51,7 @@ def test_sync_multiple_transactions(patch_blockchain):
         sender_address=OTHER_ADDRESS_1,
         sequence=1,
         version=NO_CHANGE_VERSION_1,
-        name="test_user",
+        name="test_account",
     )
 
     NO_CHANGE_VERSION_2 = 2
@@ -62,7 +62,7 @@ def test_sync_multiple_transactions(patch_blockchain):
         receiver_address=OTHER_ADDRESS_2,
         sequence=2,
         version=NO_CHANGE_VERSION_2,
-        name="test_user_2",
+        name="test_account_2",
     )
 
     NO_CHANGE_VERSION_3 = 3
@@ -73,7 +73,7 @@ def test_sync_multiple_transactions(patch_blockchain):
         sender_address=OTHER_ADDRESS_3,
         sequence=3,
         version=NO_CHANGE_VERSION_3,
-        name="test_user_3",
+        name="test_account_3",
     )
 
     # should be removed during sync
@@ -84,7 +84,7 @@ def test_sync_multiple_transactions(patch_blockchain):
         sender_address=OTHER_ADDRESS_4,
         sequence=5,
         version=REMOVED_VERSION,
-        account_name="test_user_4",
+        account_name="test_account_4",
     )
 
     # should be added during sync

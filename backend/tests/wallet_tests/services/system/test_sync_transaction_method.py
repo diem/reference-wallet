@@ -3,7 +3,6 @@ from tests.wallet_tests.services.system.utils import (
     check_number_of_transactions,
 )
 from tests.wallet_tests.services.system.utils import (
-    add_incoming_transaction_to_db,
     setup_inventory_with_initial_transaction,
 )
 from wallet.services.account import generate_sub_address
@@ -16,7 +15,7 @@ SUB_ADDRESS_1 = "8e298f642d08d1af"
 
 def test_sync_transaction(patch_blockchain) -> None:
     setup_inventory_with_initial_transaction(
-        patch_blockchain, 1000, mocked_initial_balance=1000
+        patch_blockchain, 1000, mock_blockchain_initial_balance=1000
     )
 
     ADDED_VERSION = 2

@@ -29,7 +29,7 @@ def test_add_outgoing_transaction_from_blockchain(patch_blockchain) -> None:
         1. Add transaction with version 2 into LRW DB
     """
     setup_inventory_with_initial_transaction(
-        patch_blockchain, 1000, mocked_initial_balance=825
+        patch_blockchain, 1000, mock_blockchain_initial_balance=825
     )
 
     NO_CHANGE_VERSION = 5
@@ -40,7 +40,7 @@ def test_add_outgoing_transaction_from_blockchain(patch_blockchain) -> None:
         receiver_address=OTHER_ADDRESS_1,
         sequence=5,
         version=NO_CHANGE_VERSION,
-        name="user_test",
+        name="test_account",
     )
 
     # should be added during sync
