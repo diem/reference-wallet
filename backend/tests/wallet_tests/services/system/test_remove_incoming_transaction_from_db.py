@@ -31,7 +31,7 @@ def test_remove_incoming_transaction_from_db(patch_blockchain) -> None:
     setup_inventory_with_initial_transaction(
         patch_blockchain=patch_blockchain,
         initial_funds=1000,
-        mocked_initial_balance=1100,
+        mock_blockchain_initial_balance=1100,
     )
 
     # should be removed during sync

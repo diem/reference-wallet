@@ -31,7 +31,7 @@ def test_remove_outgoing_transaction_from_db(patch_blockchain) -> None:
     setup_inventory_with_initial_transaction(
         patch_blockchain=patch_blockchain,
         initial_funds=1000,
-        mocked_initial_balance=1100,
+        mock_blockchain_initial_balance=1100,
     )
 
     REMOVED_VERSION = 1
@@ -41,7 +41,7 @@ def test_remove_outgoing_transaction_from_db(patch_blockchain) -> None:
         receiver_address=OTHER_ADDRESS_1,
         sequence=1,
         version=REMOVED_VERSION,
-        account_name="test_user",
+        account_name="test_account",
     )
 
     NO_CHANGE_VERSION = 2
@@ -52,7 +52,7 @@ def test_remove_outgoing_transaction_from_db(patch_blockchain) -> None:
         receiver_address=OTHER_ADDRESS_2,
         sequence=2,
         version=NO_CHANGE_VERSION,
-        name="test_user_2",
+        name="test_account_2",
     )
 
     check_balance(825)

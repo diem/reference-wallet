@@ -1,22 +1,24 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-import logging, time
-from offchainapi.crypto import ComplianceKey
+import logging
+import time
+from dataclasses import dataclass
+
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,
     Ed25519PublicKey,
 )
-from dataclasses import dataclass
 from diem import (
     jsonrpc,
     utils,
     diem_types,
     stdlib,
     txnmetadata,
-    LocalAccount,
     AuthKey,
 )
+from offchainapi.crypto import ComplianceKey
+
 from . import config, stubs
 
 logger = logging.getLogger(__name__)

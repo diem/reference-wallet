@@ -9,7 +9,6 @@ from tests.wallet_tests.services.system.utils import (
     setup_incoming_transaction,
     setup_inventory_with_initial_transaction,
 )
-from wallet.services.account import generate_sub_address
 from wallet.services.system import sync_db
 from wallet.storage import Transaction
 
@@ -41,7 +40,7 @@ def test_sync_until_specific_version(patch_blockchain):
         2. Remove transaction with version 5 from LRW DB
     """
     setup_inventory_with_initial_transaction(
-        patch_blockchain, 1000, mocked_initial_balance=880
+        patch_blockchain, 1000, mock_blockchain_initial_balance=880
     )
 
     NO_CHANGE_VERSION_1 = 10131
@@ -52,7 +51,7 @@ def test_sync_until_specific_version(patch_blockchain):
         receiver_address=OTHER_ADDRESS_1,
         sequence=0,
         version=NO_CHANGE_VERSION_1,
-        name="user_test",
+        name="test_account",
     )
 
     NO_CHANGE_VERSION_2 = 10137
@@ -63,7 +62,7 @@ def test_sync_until_specific_version(patch_blockchain):
         receiver_address=OTHER_ADDRESS_2,
         sequence=1,
         version=NO_CHANGE_VERSION_2,
-        name="user_test_2",
+        name="test_account_2",
     )
 
     HIGHEST_VERSION_IN_DB = 10139

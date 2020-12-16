@@ -11,6 +11,7 @@ from tests.wallet_tests.client_sdk_mocks import (
     MockSignedTransaction,
 )
 from wallet.services import INVENTORY_ACCOUNT_NAME
+from wallet.services import account as account_service
 from wallet.services.system import VASP_ADDRESS
 from wallet.storage import (
     db_session,
@@ -23,7 +24,6 @@ from wallet.storage import (
     TransactionType,
     TransactionStatus,
 )
-from wallet.services import account as account_service
 
 DD_ADDRESS = "000000000000000000000000000000DD"
 CURRENCY = "Coin1"
@@ -73,16 +73,7 @@ def mock_account(patch_blockchain, mocked_balance_value):
 
 
 def add_inventory_account_with_initial_funds_to_db(amount):
-    inventory_user = User(
-        username=INVENTORY_ACCOUNT_NAME,
-        registration_status=RegistrationStatus.Approved,
-        selected_fiat_currency=FiatCurrency.USD,
-        selected_language="en",
-        password_salt="123",
-        password_hash="deadbeef",
-    )
-
-    inventory_user.account = Account(name=INVENTORY_ACCOUNT_NAME)
+    inventory_user = add_inventory_account_to_db()
 
     tx = Transaction(
         created_timestamp=datetime.now(),
@@ -101,6 +92,23 @@ def add_inventory_account_with_initial_funds_to_db(amount):
 
     db_session.add(inventory_user)
     db_session.commit()
+
+
+def add_inventory_account_to_db():
+    inventory_user = User(
+        username=INVENTORY_ACCOUNT_NAME,
+        registration_status=RegistrationStatus.Approved,
+        selected_fiat_currency=FiatCurrency.USD,
+        selected_language="en",
+        password_salt="123",
+        password_hash="deadbeef",
+    )
+    inventory_user.account = Account(name=INVENTORY_ACCOUNT_NAME)
+
+    db_session.add(inventory_user)
+    db_session.commit()
+
+    return inventory_user
 
 
 def setup_incoming_transaction(
@@ -195,13 +203,13 @@ def add_incoming_user_transaction_to_db(
 
 
 def setup_inventory_with_initial_transaction(
-    patch_blockchain, initial_funds, mocked_initial_balance
+    patch_blockchain, initial_funds, mock_blockchain_initial_balance
 ):
     add_inventory_account_with_initial_funds_to_db(amount=initial_funds)
     add_inventory_account_with_initial_funds_to_blockchain(
         patch_blockchain=patch_blockchain,
         amount=initial_funds,
-        mocked_initial_balance=mocked_initial_balance,
+        mocked_initial_balance=mock_blockchain_initial_balance,
     )
 
 
@@ -304,9 +312,9 @@ def add_incoming_transaction_to_blockchain(
     sequence,
     version,
 ):
-    metadata_1 = general_metadata(to_subaddress=bytes.fromhex(receiver_sub_address))
+    metadata = general_metadata(to_subaddress=bytes.fromhex(receiver_sub_address))
     transaction = mock_transaction(
-        metadata=metadata_1.hex(),
+        metadata=metadata.hex(),
         amount=amount,
         receiver_address=VASP_ADDRESS,
         sequence_number=sequence,
@@ -314,7 +322,7 @@ def add_incoming_transaction_to_blockchain(
         version=version,
     )
     event = mock_event(
-        metadata=metadata_1.hex(),
+        metadata=metadata.hex(),
         amount=amount,
         receiver_address=VASP_ADDRESS,
         sender_address=sender_address,
