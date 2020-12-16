@@ -29,7 +29,7 @@ def test_add_incoming_transaction_from_blockchain(patch_blockchain) -> None:
         1. Add transaction with version 2 into LRW DB
     """
     setup_inventory_with_initial_transaction(
-        patch_blockchain, 1000, mocked_initial_balance=1175
+        patch_blockchain, 1000, mock_blockchain_initial_balance=1175
     )
 
     NO_CHANGE_VERSION = 6

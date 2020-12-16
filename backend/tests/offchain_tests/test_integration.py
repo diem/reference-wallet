@@ -1,16 +1,15 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-import context, time
-from offchain import client
-
-from offchainapi.payment import Status
-
+import context
+import time
 from diem_utils.types.currencies import DiemCurrency
+from offchain import client
+from offchainapi.payment import Status
 from wallet.services.account import generate_new_subaddress
 from wallet.services.transaction import send_transaction
-from wallet.types import TransactionStatus
 from wallet.storage import get_single_transaction
+from wallet.types import TransactionStatus
 
 
 def test_send_payment_between_vasps(lrw1, lrw2, vasp1, vasp2, user1, user2):

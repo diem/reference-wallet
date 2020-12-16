@@ -18,6 +18,11 @@ from wallet.services.transaction import process_incoming_transaction
 
 
 @dataclass
+class MockMetadata:
+    version: int
+
+
+@dataclass
 class MockEventData:
     amount: int
     metadate: str
@@ -248,7 +253,7 @@ class DiemNetworkMock(BlockchainMock):
 
         return result
 
-    def sendTransaction(self, signed_transaction_bytes: bytes) -> None:
+    def send_transaction(self, signed_transaction_bytes: bytes) -> None:
         if isinstance(signed_transaction_bytes, MockSignedTransaction):
             txn: MockSignedTransaction = cast(
                 MockSignedTransaction, signed_transaction_bytes
@@ -266,3 +271,10 @@ class DiemNetworkMock(BlockchainMock):
             TransactionsMocker.transactions.append(txn)
             self.blockchain.transactions[txn_version + 1] = txn
             account.transactions[account_sequence] = txn
+
+    def get_metadata(self, version: int = None) -> MockMetadata:
+        if version:
+            raise NotImplementedError()
+
+        else:
+            return MockMetadata(version=10)
