@@ -1,5 +1,5 @@
 {{- if .Values.ingress.enabled -}}
-{{- $fullName := include "libra-reference-wallet.fullname" . -}}
+{{- $fullName := include "reference-wallet.fullname" . -}}
 {{- $svcPort := .Values.service.port -}}
 {{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
 apiVersion: networking.k8s.io/v1beta1
@@ -10,7 +10,7 @@ kind: Ingress
 metadata:
   name: {{ $fullName }}-backend
   labels:
-    {{- include "libra-reference-wallet.labels" . | nindent 4 }}
+    {{- include "reference-wallet.labels" . | nindent 4 }}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/x-forwarded-prefix: "/api"
@@ -23,7 +23,7 @@ spec:
       http:
         paths:
         - backend:
-            serviceName: {{ include "libra-reference-wallet.fullname" . }}-web
+            serviceName: {{ include "reference-wallet.fullname" . }}-web
             servicePort: {{ .Values.service.port }}
           path: /api(/|$)(.*)
 ---
@@ -36,7 +36,7 @@ kind: Ingress
 metadata:
   name: {{ $fullName }}-offchain
   labels:
-    {{- include "libra-reference-wallet.labels" . | nindent 4 }}
+    {{- include "reference-wallet.labels" . | nindent 4 }}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/x-forwarded-prefix: "/offchain"
@@ -49,7 +49,7 @@ spec:
       http:
         paths:
         - backend:
-            serviceName: {{ include "libra-reference-wallet.fullname" . }}-web
+            serviceName: {{ include "reference-wallet.fullname" . }}-web
             servicePort: {{ .Values.service.offchainPort }}
           path: /offchain(/|$)(.*)
 ---
@@ -62,7 +62,7 @@ kind: Ingress
 metadata:
   name: {{ $fullName }}-frontend
   labels:
-    {{- include "libra-reference-wallet.labels" . | nindent 4 }}
+    {{- include "reference-wallet.labels" . | nindent 4 }}
   {{- if .Values.ingress.annotations }}
   annotations:
     {{ toYaml .Values.ingress.annotations | nindent 4 }}
@@ -73,7 +73,7 @@ spec:
       http:
         paths:
         - backend:
-            serviceName: {{ include "libra-reference-wallet.fullname" . }}-frontend
+            serviceName: {{ include "reference-wallet.fullname" . }}-frontend
             servicePort: {{ .Values.service.port }}
           path: /
 {{- end }}

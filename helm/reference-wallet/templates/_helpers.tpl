@@ -2,7 +2,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "libra-reference-wallet.name" -}}
+{{- define "reference-wallet.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -11,7 +11,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "libra-reference-wallet.fullname" -}}
+{{- define "reference-wallet.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -27,16 +27,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "libra-reference-wallet.chart" -}}
+{{- define "reference-wallet.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "libra-reference-wallet.labels" -}}
-helm.sh/chart: {{ include "libra-reference-wallet.chart" . }}
-{{ include "libra-reference-wallet.selectorLabels" . }}
+{{- define "reference-wallet.labels" -}}
+helm.sh/chart: {{ include "reference-wallet.chart" . }}
+{{ include "reference-wallet.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -46,33 +46,33 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "libra-reference-wallet.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "libra-reference-wallet.name" . }}
+{{- define "reference-wallet.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "reference-wallet.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "libra-reference-wallet.serviceAccountName" -}}
+{{- define "reference-wallet.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "libra-reference-wallet.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "reference-wallet.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
 
-{{- define "libra-reference-wallet.peripherals.redis.url" -}}
+{{- define "reference-wallet.peripherals.redis.url" -}}
 {{- if .Values.peripherals.redis.create }}
-{{- (include "libra-reference-wallet.fullname" .) }}-redis
+{{- (include "reference-wallet.fullname" .) }}-redis
 {{- else }}
 {{ .Values.peripherals.redis.host }}
 {{- end }}
 {{- end }}
 
-{{- define "libra-reference-wallet.peripherals.database.url" -}}
+{{- define "reference-wallet.peripherals.database.url" -}}
 {{- if .Values.peripherals.database.create }}
-{{- $host := printf "%s-db" (include "libra-reference-wallet.fullname" .) }}
+{{- $host := printf "%s-db" (include "reference-wallet.fullname" .) }}
 {{- with .Values.peripherals.database }}
 {{- .protocol }}://{{ .username }}:{{ .password }}@{{ $host }}:{{ .port }}/{{ .dbName }}
 {{- end }}
@@ -81,9 +81,9 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
-{{- define "libra-reference-wallet.peripherals.database.liquidityUrl" -}}
+{{- define "reference-wallet.peripherals.database.liquidityUrl" -}}
 {{- if .Values.peripherals.database.create }}
-{{- $host := printf "%s-db" (include "libra-reference-wallet.fullname" .) }}
+{{- $host := printf "%s-db" (include "reference-wallet.fullname" .) }}
 {{- with .Values.peripherals.database }}
 {{- .protocol }}://{{ .username }}:{{ .password }}@{{ $host }}:{{ .port }}/{{ .liquidityDbName }}
 {{- end }}

@@ -2,15 +2,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "libra-reference-wallet.fullname" . }}-redis
+  name: {{ include "reference-wallet.fullname" . }}-redis
   labels:
-    app: {{ include "libra-reference-wallet.fullname" . }}-redis
-    {{- include "libra-reference-wallet.labels" . | nindent 4 }}
+    app: {{ include "reference-wallet.fullname" . }}-redis
+    {{- include "reference-wallet.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      app: {{ include "libra-reference-wallet.fullname" . }}-redis
-      {{- include "libra-reference-wallet.selectorLabels" . | nindent 6 }}
+      app: {{ include "reference-wallet.fullname" . }}-redis
+      {{- include "reference-wallet.selectorLabels" . | nindent 6 }}
   replicas: 1
   template:
     metadata:
@@ -19,14 +19,14 @@ spec:
         {{- toYaml . | nindent 8 }}
     {{- end }}
       labels:
-        app: {{ include "libra-reference-wallet.fullname" . }}-redis
-        {{- include "libra-reference-wallet.selectorLabels" . | nindent 8 }}
+        app: {{ include "reference-wallet.fullname" . }}-redis
+        {{- include "reference-wallet.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "libra-reference-wallet.serviceAccountName" . }}
+      serviceAccountName: {{ include "reference-wallet.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -37,14 +37,14 @@ spec:
         {{- if .Values.peripherals.redis.persistence }}
         volumeMounts:
           - mountPath: /data
-            name: {{ include "libra-reference-wallet.fullname" . }}-redis-pv
+            name: {{ include "reference-wallet.fullname" . }}-redis-pv
         {{- end }}
       restartPolicy: Always
       {{- if .Values.peripherals.redis.persistence }}
       volumes:
-        - name: {{ include "libra-reference-wallet.fullname" . }}-redis-pv
+        - name: {{ include "reference-wallet.fullname" . }}-redis-pv
           persistentVolumeClaim:
-            claimName: {{ include "libra-reference-wallet.fullname" . }}-redis-pv-claim
+            claimName: {{ include "reference-wallet.fullname" . }}-redis-pv-claim
       {{- end }}
 ---
 {{- end }}
@@ -52,15 +52,15 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "libra-reference-wallet.fullname" . }}-db
+  name: {{ include "reference-wallet.fullname" . }}-db
   labels:
-    app: {{ include "libra-reference-wallet.fullname" . }}-db
-    {{- include "libra-reference-wallet.labels" . | nindent 4 }}
+    app: {{ include "reference-wallet.fullname" . }}-db
+    {{- include "reference-wallet.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      app: {{ include "libra-reference-wallet.fullname" . }}-db
-      {{- include "libra-reference-wallet.selectorLabels" . | nindent 6 }}
+      app: {{ include "reference-wallet.fullname" . }}-db
+      {{- include "reference-wallet.selectorLabels" . | nindent 6 }}
   replicas: 1
   template:
     metadata:
@@ -69,14 +69,14 @@ spec:
         {{- toYaml . | nindent 8 }}
     {{- end }}
       labels:
-        app: {{ include "libra-reference-wallet.fullname" . }}-db
-        {{- include "libra-reference-wallet.selectorLabels" . | nindent 8 }}
+        app: {{ include "reference-wallet.fullname" . }}-db
+        {{- include "reference-wallet.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "libra-reference-wallet.serviceAccountName" . }}
+      serviceAccountName: {{ include "reference-wallet.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -97,13 +97,13 @@ spec:
         {{- if .Values.peripherals.database.persistence }}
         volumeMounts:
           - mountPath: /data
-            name: {{ include "libra-reference-wallet.fullname" . }}-db-pv
+            name: {{ include "reference-wallet.fullname" . }}-db-pv
         {{- end }}
       restartPolicy: Always
       {{- if .Values.peripherals.database.persistence }}
       volumes:
-        - name: {{ include "libra-reference-wallet.fullname" . }}-db-pv
+        - name: {{ include "reference-wallet.fullname" . }}-db-pv
           persistentVolumeClaim:
-            claimName: {{ include "libra-reference-wallet.fullname" . }}-db-pv-claim
+            claimName: {{ include "reference-wallet.fullname" . }}-db-pv-claim
       {{- end }}
 {{- end }}

@@ -1,0 +1,38 @@
+{{- if .Values.peripherals.redis.create -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "reference-wallet.fullname" . }}-redis
+  labels:
+    app: {{ include "reference-wallet.fullname" . }}-redis
+    {{- include "reference-wallet.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: {{ include "reference-wallet.fullname" . }}-redis
+    {{- include "reference-wallet.selectorLabels" . | nindent 4 }}
+  ports:
+  - protocol: "TCP"
+    port: {{ .Values.peripherals.redis.port }}
+    targetPort: {{ .Values.peripherals.redis.port }}
+    name: redis
+---
+{{- end }}
+{{- if .Values.peripherals.database.create -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "reference-wallet.fullname" . }}-db
+  labels:
+    app: {{ include "reference-wallet.fullname" . }}-db
+    {{- include "reference-wallet.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: {{ include "reference-wallet.fullname" . }}-db
+    {{- include "reference-wallet.selectorLabels" . | nindent 4 }}
+  ports:
+  - protocol: "TCP"
+    port: {{ .Values.peripherals.database.port }}
+    targetPort: {{ .Values.peripherals.database.port }}
+    name: db
+---
+{{- end }}
