@@ -389,19 +389,19 @@ components:
     DiemCurrencies:
       type: string
       enum:
-        - Coin1USD
-        - Coin1EUR
-        - Coin1GBP
+        - XUSUSD
+        - XUSEUR
+        - XUSGBP
     CurrencyPairs:
       type: string
       enum:
-        - Coin1USD_USD
-        - Coin1USD_EUR
-        - Coin1USD_GBP
-        - Coin1_USD
-        - Coin1_EUR
-        - Coin1_GBP
-        - Coin1_Coin1USD
+        - XUSUSD_USD
+        - XUSUSD_EUR
+        - XUSUSD_GBP
+        - XUS_USD
+        - XUS_EUR
+        - XUS_GBP
+        - XUS_XUSUSD
     Account:
       type: object
       required:
@@ -433,9 +433,9 @@ components:
         user_id: sunmilee@diem.com
         subaddress: abcde
         balances:
-          - currency: Coin1GBP
+          - currency: XUSGBP
             balance: 0
-          - currency: Coin1USD
+          - currency: XUSUSD
             balance: 100
         created: '04052020'
     VaspAccountDetails:

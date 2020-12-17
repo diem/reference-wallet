@@ -55,7 +55,7 @@ class Custody:
 
     @classmethod
     def create_transaction(
-        cls, account_name, sender_account_sequence, script, gas_currency_code="Coin1"
+        cls, account_name, sender_account_sequence, script, gas_currency_code="XUS"
     ) -> diem_types.SignedTransaction:
         account = cls.get_account(account_name)
 

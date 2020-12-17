@@ -30,7 +30,7 @@ user = User(
 order = Order(
     amount=10,
     direction=Direction.Buy.value,
-    base_currency=Currency.Coin1,
+    base_currency=Currency.XUS,
     quote_currency=Currency.USD,
     order_status=OrderStatus.PendingExecution,
     cover_status=CoverStatus.PendingCover,
@@ -42,7 +42,7 @@ order = Order(
 
 tx = Transaction(
     amount=1000000,
-    currency="Coin1",
+    currency="XUS",
     type="transfer_internal",
     status="completed",
     created_timestamp=datetime.utcnow(),

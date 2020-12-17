@@ -12,7 +12,6 @@ from diem import testnet
 ENV_FILE_NAME = os.getenv("ENV_FILE_NAME", ".env")
 
 GW_PORT = int(os.getenv("GW_PORT", 8080))
-GW_OFFCHAIN_SERVICE_PORT = int(os.getenv("GW_OFFCHAIN_SERVICE_PORT", 8091))
 VASP_BASE_URL = os.getenv("VASP_BASE_URL", "http://localhost:8091")
 LIQUIDITY_SERVICE_HOST = os.getenv("LIQUIDITY_SERVICE_HOST", "liquidity")
 LIQUIDITY_SERVICE_PORT = int(os.getenv("LIQUIDITY_SERVICE_PORT", 5000))
@@ -42,14 +41,13 @@ def setup_wallet(ctx):
 
     print("Mint to wallet account")
     faucet = testnet.Faucet(ctx.jsonrpc_client)
-    faucet.mint(ctx.auth_key().hex(), 1_000_000, "Coin1")
+    faucet.mint(ctx.auth_key().hex(), 1_000_000, "XUS")
 
     print("Reset wallet account dual attestation info")
     ctx.reset_dual_attestation_info()
 
     with open(wallet_env_file_path, "w") as dotenv:
         dotenv.write(f"GW_PORT={GW_PORT}\n")
-        dotenv.write(f"GW_OFFCHAIN_SERVICE_PORT={GW_OFFCHAIN_SERVICE_PORT}\n")
         dotenv.write(f"WALLET_CUSTODY_ACCOUNT_NAME={wallet_account_name}\n")
         dotenv.write(f"CUSTODY_PRIVATE_KEYS={wallet_custody_private_keys}\n")
         dotenv.write(
@@ -57,7 +55,6 @@ def setup_wallet(ctx):
         )
         dotenv.write(f"VASP_BASE_URL={ctx.config.base_url}\n")
         dotenv.write(f"VASP_COMPLIANCE_KEY={ctx.config.vasp_compliance_key}\n")
-        dotenv.write(f"OFFCHAIN_SERVICE_PORT={ctx.config.offchain_service_port}\n")
         dotenv.write(f"JSON_RPC_URL={ctx.config.json_rpc_url}\n")
         dotenv.write(f"CHAIN_ID={ctx.config.chain_id}\n")
         dotenv.write(f"GAS_CURRENCY_CODE={ctx.config.gas_currency_code}\n")

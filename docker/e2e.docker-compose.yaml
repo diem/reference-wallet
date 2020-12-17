@@ -9,7 +9,6 @@ services:
       - COMPOSE_ENV="development"
     ports:
       - "5000"
-      - "${OFFCHAIN_SERVICE_PORT:-5091}"
 
   backend-worker:
     environment:

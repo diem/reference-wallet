@@ -177,10 +177,10 @@ class OrderType(str, Enum):
 class Balance:
     def __init__(self):
         self.total: Dict[DiemCurrency, int] = {
-            DiemCurrency.Coin1: 0,
+            DiemCurrency.XUS: 0,
         }
         self.frozen: Dict[DiemCurrency, int] = {
-            DiemCurrency.Coin1: 0,
+            DiemCurrency.XUS: 0,
         }
 
 

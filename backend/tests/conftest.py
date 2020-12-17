@@ -131,7 +131,7 @@ class LpClientMock:
         trade_id = TradeId(uuid4())
         metadata = diem_types.Metadata__Undefined()
         if diem_deposit_address is not None:
-            addr, subaddr = identifier.decode_account(diem_deposit_address, "tlb")
+            addr, subaddr = identifier.decode_account(diem_deposit_address, "tdm")
             metadata = general_metadata(to_subaddress=subaddr)
         if direction == Direction.Buy:
             process_incoming_transaction(

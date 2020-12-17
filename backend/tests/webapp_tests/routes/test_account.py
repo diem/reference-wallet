@@ -28,7 +28,7 @@ INTERNAL_TX = Transaction(
     id=1,
     type=TransactionType.INTERNAL.value,
     amount=100,
-    currency=DiemCurrency.Coin1.value,
+    currency=DiemCurrency.XUS.value,
     status=TransactionStatus.COMPLETED.value,
     source_id=1,
     source_address="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -38,7 +38,7 @@ INTERNAL_TX = Transaction(
     destination_subaddress="75b12ccd3ab503a6",
     created_timestamp=datetime.fromisoformat("2020-06-23T19:49:26.989849"),
 )
-FULL_ADDRESS = "tlb1pztdjx2z8wp0q25jakqeklk0nxj2wmk2kg9whu8cxdewwy"
+FULL_ADDRESS = "tdm1pztdjx2z8wp0q25jakqeklk0nxj2wmk2kg9whu8c3fdm9u"
 
 
 @pytest.fixture
@@ -55,7 +55,7 @@ def account_balance(monkeypatch):
     def get_account_balance_mock(account_name: str):
         saved["account_name"] = account_name
         balance = Balance()
-        balance.total = {DiemCurrency.Coin1: 100}
+        balance.total = {DiemCurrency.XUS: 100}
         return balance
 
     monkeypatch.setattr(
@@ -166,7 +166,7 @@ class TestAccountInfo:
         balances = rv.get_json()["balances"]
         assert account_balance["account_name"] == "fake_account"
         assert len(balances) == 1
-        assert balances[0]["currency"] == DiemCurrency.Coin1.value
+        assert balances[0]["currency"] == DiemCurrency.XUS.value
         assert balances[0]["balance"] == 100
 
 
@@ -186,17 +186,17 @@ class TestAccountTransactions:
         assert transaction == {
             "id": 1,
             "amount": 100,
-            "currency": DiemCurrency.Coin1.value,
+            "currency": DiemCurrency.XUS.value,
             "direction": TransactionDirection.SENT.value,
             "status": TransactionStatus.COMPLETED.value,
             "timestamp": "2020-06-23T19:49:26.989849",
             "source": {
-                "full_addr": "tlb1p42424242424242424242424242rrhsrrm79jhucp0lc9r",
+                "full_addr": "tdm1p42424242424242424242424242rrhsrrm79jhuckttdwm",
                 "user_id": "863bc063df8b2bf3",
                 "vasp_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             },
             "destination": {
-                "full_addr": "tlb1p4242424242424242424242424f6mztxd826s8fsfpwcy3",
+                "full_addr": "tdm1p4242424242424242424242424f6mztxd826s8fs796d0f",
                 "user_id": "75b12ccd3ab503a6",
                 "vasp_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             },
@@ -232,17 +232,17 @@ class TestAccountTransactions:
             {
                 "id": 1,
                 "amount": 100,
-                "currency": DiemCurrency.Coin1.value,
+                "currency": DiemCurrency.XUS.value,
                 "direction": TransactionDirection.SENT.value,
                 "status": TransactionStatus.COMPLETED.value,
                 "timestamp": "2020-06-23T19:49:26.989849",
                 "source": {
-                    "full_addr": "tlb1p42424242424242424242424242rrhsrrm79jhucp0lc9r",
+                    "full_addr": "tdm1p42424242424242424242424242rrhsrrm79jhuckttdwm",
                     "user_id": "863bc063df8b2bf3",
                     "vasp_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                 },
                 "destination": {
-                    "full_addr": "tlb1p4242424242424242424242424f6mztxd826s8fsfpwcy3",
+                    "full_addr": "tdm1p4242424242424242424242424f6mztxd826s8fs796d0f",
                     "user_id": "75b12ccd3ab503a6",
                     "vasp_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                 },
@@ -257,7 +257,7 @@ class TestAccountTransactions:
         allow_user_to_account,
         account_transactions_mock,
     ) -> None:
-        requested_currency = DiemCurrency.Coin1.value
+        requested_currency = DiemCurrency.XUS.value
         rv: Response = authorized_client.get(
             f"/account/transactions?currency={requested_currency}"
         )
@@ -268,13 +268,13 @@ class TestAccountTransactions:
 
 
 class TestSendTransaction:
-    currency = DiemCurrency.Coin1.value
+    currency = DiemCurrency.XUS.value
     amount = 100
     receiver_address, receiver_subaddress = (
         "12db232847705e05525db0336fd9f334",
         "94edd956415d7e1f",
     )
-    receiver_full_address = "tlb1pztdjx2z8wp0q25jakqeklk0nxj2wmk2kg9whu8cxdewwy"
+    receiver_full_address = "tdm1pztdjx2z8wp0q25jakqeklk0nxj2wmk2kg9whu8c3fdm9u"
     tx_data = {
         "currency": currency,
         "amount": amount,
@@ -292,19 +292,19 @@ class TestSendTransaction:
         assert transaction == {
             "id": 5,
             "amount": 100,
-            "currency": DiemCurrency.Coin1.value,
+            "currency": DiemCurrency.XUS.value,
             "direction": TransactionDirection.SENT.value,
             "status": TransactionStatus.PENDING.value,
             "timestamp": "2020-06-23T19:50:26.989849",
             "source": {
-                "full_addr": "tlb1p4242424242424242424242424gfzee6zpu2ma3gx6wpuy",
+                "full_addr": "tdm1p4242424242424242424242424gfzee6zpu2ma3g3765hu",
                 "user_id": "122ce7420f15bec5",
                 "vasp_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             },
             "destination": {
                 "user_id": TestSendTransaction.receiver_subaddress,
                 "vasp_name": TestSendTransaction.receiver_address,
-                "full_addr": "tlb1pztdjx2z8wp0q25jakqeklk0nxj2wmk2kg9whu8cxdewwy",
+                "full_addr": "tdm1pztdjx2z8wp0q25jakqeklk0nxj2wmk2kg9whu8c3fdm9u",
             },
             "blockchain_tx": {
                 "amount": TestSendTransaction.amount,

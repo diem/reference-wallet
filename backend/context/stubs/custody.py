@@ -9,7 +9,6 @@ import json, os, typing, time
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from offchainapi.crypto import jwk, ComplianceKey
 
 
 class Client:
@@ -45,11 +44,6 @@ class Client:
 
         private_key = self._get_key(account_name)
         return private_key.sign(msg)
-
-    def compliance_key(self, account_name: str) -> ComplianceKey:
-        # TODO: should not return, sign the message and return sig instead
-        private_key = self._get_key(account_name)
-        return ComplianceKey(jwk.JWK.from_pyca(private_key))
 
     def _get_key(self, account_name: str) -> Ed25519PrivateKey:
         return self._accounts[account_name]

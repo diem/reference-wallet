@@ -17,7 +17,7 @@ from wallet.storage import (
     SubAddress,
 )
 
-CURRENCY = "Coin1"
+CURRENCY = "XUS"
 PAGE_SIZE = 10
 
 VASP_ADDRESS = os.getenv("VASP_ADDR")
@@ -186,7 +186,7 @@ def add_transaction_to_db(transaction):
 
 
 def deserialize_metadata(metadata):
-    metadata = diem_types.Metadata.lcs_deserialize(bytes.fromhex(metadata)).value.value
+    metadata = diem_types.Metadata.bcs_deserialize(bytes.fromhex(metadata)).value.value
 
     receiver_sub_address = None
     sender_sub_address = None

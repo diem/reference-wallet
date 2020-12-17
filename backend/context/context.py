@@ -17,7 +17,6 @@ from diem import (
     txnmetadata,
     AuthKey,
 )
-from offchainapi.crypto import ComplianceKey
 
 from . import config, stubs
 
@@ -33,26 +32,12 @@ class Context:
     # ---- delegate to jsonrpc client start ----
 
     def get_vasp_base_url(self, address: str) -> str:
-        account = self.jsonrpc_client.get_parent_vasp_account(address)
-        base_url = account.role.base_url
-
-        if not base_url:
-            raise ValueError(f"base url is empty, peer vasp address: {address}")
-
+        base_url, _ = self.jsonrpc_client.get_base_url_and_compliance_key(address)
         return base_url
 
-    def get_vasp_public_compliance_key(self, address: str) -> ComplianceKey:
-        account = self.jsonrpc_client.get_parent_vasp_account(address)
-        key = account.role.compliance_key
-
-        if not key:
-            raise ValueError(
-                f"compliance verification key is empty, peer vasp address: {address}"
-            )
-
-        ckey = ComplianceKey.from_pub_bytes(bytes.fromhex(key))
-        logger.info(f"vasp ({address}) compliance public key: {ckey.export_pub()}")
-        return ckey
+    def get_vasp_public_compliance_key(self, address: str) -> Ed25519PublicKey:
+        _, key = self.jsonrpc_client.get_base_url_and_compliance_key(address)
+        return key
 
     def reset_dual_attestation_info(self):
         txn = self.create_transaction(

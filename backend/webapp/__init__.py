@@ -10,7 +10,6 @@ import uuid
 from threading import Thread
 from flasgger import Swagger
 from flask import Flask
-from offchain import offchain_service, client as offchain_client
 from wallet.services.system import sync_db
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -88,18 +87,11 @@ def _init_context():
     context.set(context.from_env())
 
 
-def _init_offchain():
-    vasp = offchain_service.make_vasp(context.get())
-    offchain_service.launch(vasp)
-    offchain_client.set(vasp)
-
-
 def init():
     with app.app_context():
         _init_with_log("context", _init_context)
         _init_with_log("storage", setup_wallet_storage)
         _init_with_log("admin_user", _init_admin_user)
-        _init_with_log("offchain", _init_offchain)
         _init_with_log("liquidity", setup_inventory_account)
         _init_with_log("update_rates_thread", _schedule_update_rates)
         _init_with_log("sync-db", _sync_db)
