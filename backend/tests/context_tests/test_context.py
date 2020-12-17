@@ -5,7 +5,7 @@ import asyncio
 import pytest
 import context
 
-from diem import testnet, utils, diem_types, stdlib
+from diem import testnet, utils, diem_types, stdlib, txnmetadata
 
 
 def test_get_set():
@@ -61,10 +61,10 @@ async def test_get_vasp_base_url_and_compliance_key():
 
     key = ctx.get_vasp_public_compliance_key(address)
 
-    sig = await ctx.config.offchain_compliance_key().sign_message("hello")
+    msg = b"hello"
+    sig = ctx.config.compliance_private_key().sign(msg)
     assert sig
-    payload = await key.verify_message(sig)
-    assert payload == "hello"
+    key.verify(sig, msg)
 
 
 def test_p2p_by_general():
@@ -87,7 +87,7 @@ def test_p2p_by_general():
     assert script.amount == 1000
     assert script.metadata_signature == ""
 
-    metadata = diem_types.Metadata.lcs_deserialize(bytes.fromhex(script.metadata))
+    metadata = diem_types.Metadata.bcs_deserialize(bytes.fromhex(script.metadata))
     assert isinstance(metadata, diem_types.Metadata__GeneralMetadata)
     assert metadata.value.value.from_subaddress.hex() == "ccccc28bdeb62af2"
     assert metadata.value.value.to_subaddress.hex() == "aaaaa28bdeb62af3"
@@ -103,14 +103,12 @@ def test_p2p_by_travel_rule():
 
     reference_id = "reference_id"
     amount = 1_800_000_000
-    metadata_signature = (
-        receiver.config.offchain_compliance_key().sign_dual_attestation_data(
-            reference_id,
-            sender.config.vasp_account_address().to_bytes(),
-            amount,
-        )
+    _, sig_msg = txnmetadata.travel_rule(
+        reference_id,
+        sender.config.vasp_account_address(),
+        amount,
     )
-
+    metadata_signature = receiver.config.compliance_private_key().sign(sig_msg)
     txn = sender.p2p_by_travel_rule(
         testnet.TEST_CURRENCY_CODE,
         amount,
@@ -126,6 +124,6 @@ def test_p2p_by_travel_rule():
     assert script.amount == amount
     assert script.metadata_signature == metadata_signature.hex()
 
-    metadata = diem_types.Metadata.lcs_deserialize(bytes.fromhex(script.metadata))
+    metadata = diem_types.Metadata.bcs_deserialize(bytes.fromhex(script.metadata))
     assert isinstance(metadata, diem_types.Metadata__TravelRuleMetadata)
     assert metadata.value.value.off_chain_reference_id == reference_id

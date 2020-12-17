@@ -12,7 +12,6 @@ services:
       ADMIN_LOGIN_ENABLED: 1
     ports:
       - 5000:5000
-      - ${OFFCHAIN_SERVICE_PORT:-5091}:5091
     volumes:
       - ../backend:/wallet
       - /wallet/src

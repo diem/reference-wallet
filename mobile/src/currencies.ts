@@ -9,10 +9,10 @@ export const diemCurrencies: DiemCurrenciesSettings = {
     symbol: "XDM",
     sign: "≋XDM",
   },
-  Coin1: {
-    name: "Coin1",
-    symbol: "Coin1",
-    sign: "≋Coin1",
+  XUS: {
+    name: "XUS",
+    symbol: "XUS",
+    sign: "≋XUS",
   },
   Coin2: {
     name: "Coin2",

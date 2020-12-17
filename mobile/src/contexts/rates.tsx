@@ -29,10 +29,10 @@ const initialRates = {
     NZD: 0,
     JPY: 0,
     XDM: 0,
-    Coin1: 0,
+    XUS: 0,
     Coin2: 0,
   },
-  Coin1: {
+  XUS: {
     USD: 0,
     EUR: 0,
     GBP: 0,
@@ -42,7 +42,7 @@ const initialRates = {
     NZD: 0,
     JPY: 0,
     XDM: 0,
-    Coin1: 0,
+    XUS: 0,
     Coin2: 0,
   },
   Coin2: {
@@ -55,7 +55,7 @@ const initialRates = {
     NZD: 0,
     JPY: 0,
     XDM: 0,
-    Coin1: 0,
+    XUS: 0,
     Coin2: 0,
   },
 };

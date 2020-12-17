@@ -39,7 +39,7 @@ swagger_template = {
         },
         "DiemCurrencies": {
             "type": "string",
-            "enum": ["Coin1"],
+            "enum": ["XUS"],
         },
         "TransactionDirections": {
             "type": "string",

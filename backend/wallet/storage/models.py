@@ -103,7 +103,6 @@ class Transaction(Base):
     destination_account = relationship(
         "Account", backref="received_transactions", foreign_keys=[destination_id]
     )
-    off_chain = relationship("OffChain", backref="tx", lazy=True)
 
 
 # Execution log for transaction
@@ -152,11 +151,3 @@ class Token(Base):
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid1()))
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     expiration_time = Column(Float, nullable=False)
-
-
-class OffChain(Base):
-    __tablename__ = "offchain"
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    reference_id = Column(String, nullable=False)
-    metadata_signature = Column(String, nullable=True)
-    transaction_id = Column(Integer, ForeignKey("transaction.id"), nullable=False)

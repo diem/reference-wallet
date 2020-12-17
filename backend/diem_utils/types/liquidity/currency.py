@@ -17,7 +17,7 @@ class Currency(str, Enum):
     NZD = "NZD"
     JPY = "JPY"
 
-    Coin1 = "Coin1"
+    XUS = "XUS"
 
 
 FIAT_CURRENCIES = [
@@ -61,18 +61,18 @@ class CurrencyPair:
 
 
 class CurrencyPairs(Enum):
-    Coin1_USD = CurrencyPair(base=Currency.Coin1, quote=Currency.USD)
-    Coin1_EUR = CurrencyPair(base=Currency.Coin1, quote=Currency.EUR)
+    XUS_USD = CurrencyPair(base=Currency.XUS, quote=Currency.USD)
+    XUS_EUR = CurrencyPair(base=Currency.XUS, quote=Currency.EUR)
 
-    EUR_Coin1 = CurrencyPair(base=Currency.EUR, quote=Currency.Coin1)
+    EUR_XUS = CurrencyPair(base=Currency.EUR, quote=Currency.XUS)
 
-    Coin1_JPY = CurrencyPair(base=Currency.Coin1, quote=Currency.JPY)
-    Coin1_CHF = CurrencyPair(base=Currency.Coin1, quote=Currency.CHF)
-    Coin1_CAD = CurrencyPair(base=Currency.Coin1, quote=Currency.CAD)
+    XUS_JPY = CurrencyPair(base=Currency.XUS, quote=Currency.JPY)
+    XUS_CHF = CurrencyPair(base=Currency.XUS, quote=Currency.CHF)
+    XUS_CAD = CurrencyPair(base=Currency.XUS, quote=Currency.CAD)
 
-    GBP_Coin1 = CurrencyPair(base=Currency.GBP, quote=Currency.Coin1)
-    AUD_Coin1 = CurrencyPair(base=Currency.AUD, quote=Currency.Coin1)
-    NZD_Coin1 = CurrencyPair(base=Currency.NZD, quote=Currency.Coin1)
+    GBP_XUS = CurrencyPair(base=Currency.GBP, quote=Currency.XUS)
+    AUD_XUS = CurrencyPair(base=Currency.AUD, quote=Currency.XUS)
+    NZD_XUS = CurrencyPair(base=Currency.NZD, quote=Currency.XUS)
 
     @staticmethod
     def from_pair(pair: CurrencyPair):
