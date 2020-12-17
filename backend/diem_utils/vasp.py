@@ -41,7 +41,7 @@ class Vasp:
         print(f"===VASP account has been created successfully===")
 
         for currency in self._diem_client.get_currencies():
-            if currency.code == "Coin1":
+            if currency.code == DiemCurrency.XUS.value:
                 print(f"Adding {currency.code} to account {self.address_str}")
                 self._add_currency_to_vasp_account(DiemCurrency[currency.code])
 
@@ -51,7 +51,7 @@ class Vasp:
     def _add_currency_to_vasp_account(
         self,
         currency: DiemCurrency,
-        gas_currency: DiemCurrency = DiemCurrency.Coin1,
+        gas_currency: DiemCurrency = DiemCurrency.XUS,
     ) -> None:
         """Send a transaction on-chain for adding a new currency to account"""
 
@@ -84,7 +84,7 @@ class Vasp:
 
     def create_vasp_account(self):
         faucet = testnet.Faucet(self._diem_client)
-        faucet.mint(self.account.auth_key.hex(), 1_000_000, "Coin1")
+        faucet.mint(self.account.auth_key.hex(), 1_000_000, "XUS")
 
     def fetch_account_info(self):
         return self._diem_client.get_account(self.account.account_address)
@@ -171,7 +171,7 @@ class Vasp:
         self,
         new_url: str,
         new_key: bytes,
-        gas_currency: DiemCurrency = DiemCurrency.Coin1,
+        gas_currency: DiemCurrency = DiemCurrency.XUS,
     ) -> None:
         """Send a transaction on-chain for rotating base url and compliance key"""
 

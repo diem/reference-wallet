@@ -17,7 +17,7 @@ from wallet.storage import (
     SubAddress,
 )
 
-CURRENCY = "Coin1"
+CURRENCY = "XUS"
 PAGE_SIZE = 10
 
 VASP_ADDRESS = os.getenv("VASP_ADDR")

@@ -42,7 +42,7 @@ def setup_wallet(ctx):
 
     print("Mint to wallet account")
     faucet = testnet.Faucet(ctx.jsonrpc_client)
-    faucet.mint(ctx.auth_key().hex(), 1_000_000, "Coin1")
+    faucet.mint(ctx.auth_key().hex(), 1_000_000, "XUS")
 
     print("Reset wallet account dual attestation info")
     ctx.reset_dual_attestation_info()

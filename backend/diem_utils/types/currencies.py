@@ -6,7 +6,7 @@ from enum import Enum
 
 
 class DiemCurrency(str, Enum):
-    Coin1 = "Coin1"
+    XUS = "XUS"
 
 
 class FiatCurrency(str, Enum):
@@ -22,4 +22,4 @@ class FiatCurrency(str, Enum):
 
 Currencies = typing.Union[FiatCurrency, DiemCurrency]
 
-DEFAULT_DIEM_CURRENCY = DiemCurrency.Coin1.value
+DEFAULT_DIEM_CURRENCY = DiemCurrency.XUS.value

@@ -41,7 +41,7 @@ export const paymentMethod: PaymentMethod = {
 };
 
 export const rate: Rate = {
-  currency_pair: "Coin1",
+  currency_pair: "XUS",
   price: 1.1,
 };
 
@@ -53,7 +53,7 @@ export const transaction: Transaction = {
   id: 0,
   direction: "received",
   status: "completed",
-  currency: "Coin1",
+  currency: "XUS",
   destination: {
     vasp_name: "Some receiving VASP",
     user_id: "user1",

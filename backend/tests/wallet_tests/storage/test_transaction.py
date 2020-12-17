@@ -75,7 +75,7 @@ def test_get_account_transactions():
     print(transactions)
 
     transactions = get_account_transactions(
-        account_id=user.account.id, currency=DiemCurrency.Coin1
+        account_id=user.account.id, currency=DiemCurrency.XUS
     )
 
     assert len(transactions) == 5
@@ -131,7 +131,7 @@ def test_get_account_transactions_tp_to_version():
     )
 
     transactions = get_account_transactions(
-        account_id=user.account.id, currency=DiemCurrency.Coin1, up_to_version=3
+        account_id=user.account.id, currency=DiemCurrency.XUS, up_to_version=3
     )
 
     assert len(transactions) == 3

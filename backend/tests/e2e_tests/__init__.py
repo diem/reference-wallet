@@ -192,7 +192,7 @@ def create_test_payment_method(backend, headers) -> str:
     return str(res.json().get("payment_methods")[0].get("id"))
 
 
-def get_test_quote(backend, headers, amount, buy_sell="buy", pair="Coin1_USD") -> str:
+def get_test_quote(backend, headers, amount, buy_sell="buy", pair="XUS") -> str:
     """Creates a test quote and returns its id"""
     quote_payload = {"action": buy_sell, "amount": amount, "currency_pair": pair}
     quote_res = requests.post(

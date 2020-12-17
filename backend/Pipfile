@@ -77,7 +77,7 @@ python-dotenv = "*"
 dataclasses-json = "*"
 jwcrypto = "*"
 libra-offchainreference = "*"
-diem = "==0.6.2020120202"
+diem = "*"
 sqlalchemy-paginator = "*"
 
 [pipenv]

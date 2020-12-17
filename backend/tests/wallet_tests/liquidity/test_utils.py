@@ -7,6 +7,6 @@ from diem_utils.types.liquidity.currency import CurrencyPairs, CurrencyPair
 
 
 def test_is_not_diem_to_diem():
-    pair = CurrencyPairs.Coin1_USD.value
+    pair = CurrencyPairs.XUS_USD.value
 
     assert CurrencyPair.is_diem_to_diem(pair) is False

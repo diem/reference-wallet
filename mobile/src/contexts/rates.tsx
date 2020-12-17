@@ -29,10 +29,9 @@ const initialRates = {
     NZD: 0,
     JPY: 0,
     XDM: 0,
-    Coin1: 0,
-    Coin2: 0,
+    XUS: 0,
   },
-  Coin1: {
+  XUS: {
     USD: 0,
     EUR: 0,
     GBP: 0,
@@ -42,21 +41,7 @@ const initialRates = {
     NZD: 0,
     JPY: 0,
     XDM: 0,
-    Coin1: 0,
-    Coin2: 0,
-  },
-  Coin2: {
-    USD: 0,
-    EUR: 0,
-    GBP: 0,
-    CHF: 0,
-    CAD: 0,
-    AUD: 0,
-    NZD: 0,
-    JPY: 0,
-    XDM: 0,
-    Coin1: 0,
-    Coin2: 0,
+    XUS: 0,
   },
 };
 

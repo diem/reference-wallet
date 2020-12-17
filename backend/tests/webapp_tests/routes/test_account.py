@@ -28,7 +28,7 @@ INTERNAL_TX = Transaction(
     id=1,
     type=TransactionType.INTERNAL.value,
     amount=100,
-    currency=DiemCurrency.Coin1.value,
+    currency=DiemCurrency.XUS.value,
     status=TransactionStatus.COMPLETED.value,
     source_id=1,
     source_address="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -55,7 +55,7 @@ def account_balance(monkeypatch):
     def get_account_balance_mock(account_name: str):
         saved["account_name"] = account_name
         balance = Balance()
-        balance.total = {DiemCurrency.Coin1: 100}
+        balance.total = {DiemCurrency.XUS: 100}
         return balance
 
     monkeypatch.setattr(
@@ -166,7 +166,7 @@ class TestAccountInfo:
         balances = rv.get_json()["balances"]
         assert account_balance["account_name"] == "fake_account"
         assert len(balances) == 1
-        assert balances[0]["currency"] == DiemCurrency.Coin1.value
+        assert balances[0]["currency"] == DiemCurrency.XUS.value
         assert balances[0]["balance"] == 100
 
 
@@ -186,7 +186,7 @@ class TestAccountTransactions:
         assert transaction == {
             "id": 1,
             "amount": 100,
-            "currency": DiemCurrency.Coin1.value,
+            "currency": DiemCurrency.XUS.value,
             "direction": TransactionDirection.SENT.value,
             "status": TransactionStatus.COMPLETED.value,
             "timestamp": "2020-06-23T19:49:26.989849",
@@ -232,7 +232,7 @@ class TestAccountTransactions:
             {
                 "id": 1,
                 "amount": 100,
-                "currency": DiemCurrency.Coin1.value,
+                "currency": DiemCurrency.XUS.value,
                 "direction": TransactionDirection.SENT.value,
                 "status": TransactionStatus.COMPLETED.value,
                 "timestamp": "2020-06-23T19:49:26.989849",
@@ -257,7 +257,7 @@ class TestAccountTransactions:
         allow_user_to_account,
         account_transactions_mock,
     ) -> None:
-        requested_currency = DiemCurrency.Coin1.value
+        requested_currency = DiemCurrency.XUS.value
         rv: Response = authorized_client.get(
             f"/account/transactions?currency={requested_currency}"
         )
@@ -268,7 +268,7 @@ class TestAccountTransactions:
 
 
 class TestSendTransaction:
-    currency = DiemCurrency.Coin1.value
+    currency = DiemCurrency.XUS.value
     amount = 100
     receiver_address, receiver_subaddress = (
         "12db232847705e05525db0336fd9f334",
@@ -292,7 +292,7 @@ class TestSendTransaction:
         assert transaction == {
             "id": 5,
             "amount": 100,
-            "currency": DiemCurrency.Coin1.value,
+            "currency": DiemCurrency.XUS.value,
             "direction": TransactionDirection.SENT.value,
             "status": TransactionStatus.PENDING.value,
             "timestamp": "2020-06-23T19:50:26.989849",

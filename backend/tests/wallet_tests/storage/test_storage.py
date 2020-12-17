@@ -40,7 +40,7 @@ def test_create_user() -> None:
 def test_add_transaction() -> None:
     tx = add_transaction(
         amount=100,
-        currency=diem_utils.types.currencies.DiemCurrency.Coin1,
+        currency=diem_utils.types.currencies.DiemCurrency.XUS,
         payment_type=types.TransactionType.EXTERNAL,
         status=types.TransactionStatus.PENDING,
         source_id=1,
@@ -57,7 +57,7 @@ def test_add_faulty_offchain_transaction() -> None:
     with pytest.raises(ValueError):
         add_transaction(
             amount=100,
-            currency=diem_utils.types.currencies.DiemCurrency.Coin1,
+            currency=diem_utils.types.currencies.DiemCurrency.XUS,
             payment_type=types.TransactionType.OFFCHAIN,
             status=types.TransactionStatus.PENDING,
             source_id=1,

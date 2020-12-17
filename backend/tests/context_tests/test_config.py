@@ -44,7 +44,7 @@ def test_generate_config():
     assert conf.offchain_service_port == 5091
     assert conf.base_url == "http://localhost:5091"
     assert conf.chain_id == 2
-    assert conf.gas_currency_code == "Coin1"
+    assert conf.gas_currency_code == "XUS"
 
 
 def test_vasp_account_address():

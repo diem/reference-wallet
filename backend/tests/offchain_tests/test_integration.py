@@ -24,7 +24,7 @@ def test_send_payment_between_vasps(lrw1, lrw2, vasp1, vasp2, user1, user2):
     txn = send_transaction(
         sender_id=user1.account_id,
         amount=2_000_000_000,
-        currency=DiemCurrency.Coin1,
+        currency=DiemCurrency.XUS,
         destination_address=receiver_address.get_onchain_address_hex(),
         destination_subaddress=receiver_subaddress,
     )

@@ -23,7 +23,7 @@ from wallet.types import RegistrationStatus
 from wallet.storage import db_session
 
 
-CURRENCY = DiemCurrency.Coin1.value
+CURRENCY = DiemCurrency.XUS.value
 
 
 @pytest.fixture()
@@ -118,7 +118,7 @@ def make_user(name: str) -> User:
     user = OneUser.run(
         db_session,
         account_amount=2000 * 1_000_000,
-        account_currency=DiemCurrency.Coin1,
+        account_currency=DiemCurrency.XUS,
         registration_status=RegistrationStatus.Approved,
         account_name=f"{name}_account",
         username=name,
