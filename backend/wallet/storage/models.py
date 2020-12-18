@@ -86,7 +86,7 @@ class Transaction(Base):
     type = Column(String, nullable=False)
     amount = Column(BigInteger, nullable=False)
     currency = Column(String, nullable=False)
-    status = Column(String, nullable=False)
+    status = Column(String, nullable=False, index=True)
     source_id = Column(Integer, ForeignKey("account.id"), nullable=True)
     source_address = Column(String, nullable=True)
     source_subaddress = Column(String, nullable=True)
@@ -103,6 +103,9 @@ class Transaction(Base):
     destination_account = relationship(
         "Account", backref="received_transactions", foreign_keys=[destination_id]
     )
+
+    reference_id = Column(String, nullable=True, unique=True, index=True)
+    command_json = Column(String, nullable=True)
 
 
 # Execution log for transaction

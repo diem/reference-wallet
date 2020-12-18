@@ -48,8 +48,8 @@ def from_env() -> Config:
 
 
 def generate(index: int) -> typing.Tuple[LocalAccount, Config]:
-    port = 5090 + index
-    base_url = f"http://localhost:{port}"
+    port = 5000 + index
+    base_url = f"http://localhost:{port}/offchain"
     account = LocalAccount.generate()
     conf = Config(
         wallet_custody_account_name=f"wallet{index}",

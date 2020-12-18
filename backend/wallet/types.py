@@ -21,8 +21,14 @@ class TransactionStatus(str, Enum):
     PENDING = "pending"
     COMPLETED = "completed"
     CANCELED = "canceled"
-    READY_FOR_ON_CHAIN = "ready_for_on_chain"
-    OFF_CHAIN_STARTED = "off_chain_started"
+    # both ready for settlement, sender submits onchain txn
+    OFF_CHAIN_READY = "off_chain_ready"
+    # outbound command needs to send to opponent VASP
+    OFF_CHAIN_OUTBOUND = "off_chain_outbound"
+    # inbound command needs take action
+    OFF_CHAIN_INBOUND = "off_chain_inbound"
+    # wait for opponent VASP send update command
+    OFF_CHAIN_WAIT = "off_chain_wait"
 
 
 class TransactionType(str, Enum):
