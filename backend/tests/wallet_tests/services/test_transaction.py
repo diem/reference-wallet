@@ -128,7 +128,7 @@ def test_process_incoming_travel_rule_txn() -> None:
         amount=amount,
         currency=currency,
         payment_type=TransactionType.OFFCHAIN,
-        status=TransactionStatus.READY_FOR_ON_CHAIN,
+        status=TransactionStatus.OFF_CHAIN_READY,
         source_id=account.id,
         source_address=sender_addr,
         source_subaddress=sender_subaddr,

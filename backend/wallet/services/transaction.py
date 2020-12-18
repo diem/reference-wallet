@@ -5,7 +5,11 @@ from typing import Optional
 
 from diem import diem_types
 from diem_utils.types.currencies import DiemCurrency
-from wallet.services import account as account_service
+from wallet.services import (
+    account as account_service,
+    kyc,
+    offchain as offchain_service,
+)
 from wallet.services.risk import risk_check
 from . import INVENTORY_ACCOUNT_NAME
 from .log import add_transaction_log
@@ -19,6 +23,7 @@ from ..storage import (
     get_total_currency_credits,
     get_total_currency_debits,
     get_transaction_status,
+    get_transaction_by_reference_id,
 )
 from ..storage import get_account_id_from_subaddr, get_account
 from ..types import (
@@ -69,7 +74,7 @@ def process_incoming_transaction(
     metadata: diem_types.Metadata,
 ):
     logger.info(
-        f"process_incoming_transaction: sender: {sender_address}, receiver: {receiver_address}, seq: {sequence}, amount: {amount}"
+        f"process_incoming_transaction[{blockchain_version}]: sender: {sender_address}, receiver: {receiver_address}, seq: {sequence}, amount: {amount}"
     )
     log_execution("Attempting to process incoming transaction from chain")
     receiver_id = None
@@ -79,6 +84,7 @@ def process_incoming_transaction(
     if isinstance(metadata, diem_types.Metadata__GeneralMetadata) and isinstance(
         metadata.value, diem_types.GeneralMetadata__GeneralMetadataVersion0
     ):
+        logger.info("general metadata")
         general_v0 = metadata.value.value
 
         if general_v0.to_subaddress:
@@ -91,7 +97,39 @@ def process_incoming_transaction(
     if isinstance(metadata, diem_types.Metadata__TravelRuleMetadata) and isinstance(
         metadata.value, diem_types.TravelRuleMetadata__TravelRuleMetadataVersion0
     ):
-        raise ValueError("travel rule meatadata is not supported yet")
+        travel_rule_v0 = metadata.value.value
+        reference_id = travel_rule_v0.off_chain_reference_id
+        logger.info(f"travel rule metadata: {reference_id}")
+
+        if reference_id is None:
+            raise InvalidTravelRuleMetadata(
+                f"Invalid Travel Rule metadata : reference_id None"
+            )
+
+        transaction = get_transaction_by_reference_id(reference_id)
+        if (
+            transaction.amount == amount
+            and transaction.status == TransactionStatus.OFF_CHAIN_READY
+            and transaction.source_address == sender_address
+            and transaction.destination_address == receiver_address
+        ):
+            logger.info(f"transaction completed: {transaction.id}")
+            update_transaction(
+                transaction_id=transaction.id,
+                status=TransactionStatus.COMPLETED,
+                sequence=sequence,
+                blockchain_tx_version=blockchain_version,
+            )
+
+            return
+
+        raise InvalidTravelRuleMetadata(
+            f"Travel Rule metadata decode failed: Transaction {transaction_id} with reference ID {reference_id} "
+            f"should have amount: {transaction.amount}, status: {TransactionStatus.OFF_CHAIN_READY}, "
+            f"source address: {transaction.source_address}, destination address: {transaction.destination_address},"
+            f" but received transaction has amount: {amount}, status: {transaction.status}, "
+            f"source address: {sender_address}, destination address: {receiver_address}"
+        )
 
     if not receiver_id:
         log_execution("Incoming transaction had no metadata. crediting inventory")
@@ -155,6 +193,12 @@ def send_transaction(
             sender_id=sender_id, destination_address=destination_address
         )
 
+    if not validate_balance(sender_id, amount, currency):
+        raise BalanceError(
+            f"Balance {account_service.get_account_balance_by_id(account_id=sender_id).total[currency]} "
+            f"is less than amount needed {amount}"
+        )
+
     if account_service.is_in_wallet(destination_subaddress, destination_address):
         return _send_transaction_internal(
             sender_id=sender_id,
@@ -164,6 +208,15 @@ def send_transaction(
             currency=currency,
         )
     else:
+        if not risk_check(sender_id, amount):
+            return offchain_service.save_outbound_transaction(
+                sender_id=sender_id,
+                destination_address=destination_address,
+                destination_subaddress=destination_subaddress,
+                amount=amount,
+                currency=currency,
+            )
+
         return _send_transaction_external(
             sender_id=sender_id,
             destination_address=destination_address,

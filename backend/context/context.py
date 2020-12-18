@@ -3,7 +3,7 @@
 
 import logging
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,
@@ -13,6 +13,7 @@ from diem import (
     jsonrpc,
     utils,
     diem_types,
+    offchain,
     stdlib,
     txnmetadata,
     AuthKey,
@@ -28,16 +29,16 @@ class Context:
     config: config.Config
     jsonrpc_client: jsonrpc.Client
     custody: stubs.custody.Client
+    offchain_client: offchain.Client = field(init=False)
+
+    def __post_init__(self) -> None:
+        self.offchain_client = offchain.Client(
+            self.config.vasp_account_address(),
+            self.jsonrpc_client,
+            self.config.diem_address_hrp(),
+        )
 
     # ---- delegate to jsonrpc client start ----
-
-    def get_vasp_base_url(self, address: str) -> str:
-        base_url, _ = self.jsonrpc_client.get_base_url_and_compliance_key(address)
-        return base_url
-
-    def get_vasp_public_compliance_key(self, address: str) -> Ed25519PublicKey:
-        _, key = self.jsonrpc_client.get_base_url_and_compliance_key(address)
-        return key
 
     def reset_dual_attestation_info(self):
         txn = self.create_transaction(
@@ -67,17 +68,12 @@ class Context:
 
     def p2p_by_travel_rule(
         self,
+        receiver_vasp_address: str,
         currency: str,
         amount: int,
-        receiver_vasp_address: str,
-        off_chain_reference_id: str,
+        metadata: bytes,
         metadata_signature: bytes,
     ) -> jsonrpc.Transaction:
-        metadata, _ = txnmetadata.travel_rule(
-            off_chain_reference_id,
-            self.config.vasp_account_address(),
-            amount,
-        )
         return self._p2p_transfer(
             currency, amount, receiver_vasp_address, metadata, metadata_signature
         )

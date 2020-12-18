@@ -207,9 +207,10 @@ e2e() {
 
   if [ "$up_down" = "up" ]; then
     export GW_PORT=$(get_port)
+    export WEB_SERVER_PORT=5000
     PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 \
                   GW_PORT=$GW_PORT \
-                  VASP_BASE_URL="http://lrw_backend-web-server_1:5000" \
+                  VASP_BASE_URL="http://lrw_backend-web-server_1:$WEB_SERVER_PORT/offchain" \
                   pipenv run python3 scripts/set_env.py > /dev/null
     export VASP_ADDR_1=$(source backend/.env && echo $VASP_ADDR)
     echo "export GW_PORT_1=$GW_PORT"
@@ -229,7 +230,7 @@ e2e() {
     export GW_PORT_2=$(get_port)
     PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 \
                   GW_PORT=$GW_PORT_2 \
-                  VASP_BASE_URL="http://lrw2_backend-web-server_1:5000" \
+                  VASP_BASE_URL="http://lrw2_backend-web-server_1:$WEB_SERVER_PORT/offchain" \
                   pipenv run python3 scripts/set_env.py > /dev/null
     export VASP_ADDR_2=$(source backend/.env && echo $VASP_ADDR)
     echo "export GW_PORT_2=$GW_PORT_2"

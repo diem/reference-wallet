@@ -76,8 +76,8 @@ psycopg2-binary = "*"
 python-dotenv = "*"
 dataclasses-json = "*"
 jwcrypto = "*"
-diem = "*"
 sqlalchemy-paginator = "*"
+diem = "*"
 
 [pipenv]
 allow_prereleases = true
