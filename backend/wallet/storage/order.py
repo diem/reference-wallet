@@ -66,10 +66,13 @@ def update_order(
     payment_method: Optional[str] = None,
     correlated_tx: Optional[int] = None,
 ):
-    order = Order.query.get(str(order_id))
-    values = locals()
+    values = dict(locals())
     del values["order_id"]
+
+    order = Order.query.get(str(order_id))
+
     changed = False
+
     for key, value in values.items():
         if value:
             setattr(order, key, value)
