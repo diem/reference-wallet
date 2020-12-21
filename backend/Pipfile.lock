@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c79261d8a3d35e488be3c7817d49656f342686534d480769857d2281745c064c"
+            "sha256": "2ef2e25208d75a349773935dd210982eb25e8cc0a5e75ddf34dff07970bb5a06"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -216,11 +216,11 @@
         },
         "diem": {
             "hashes": [
-                "sha256:7281c95d4b3f2eb114da8e89f8be39c8a9c78d9cfea9414f500be1fd3232dcc4",
-                "sha256:e773e264b103ce2bc323c5d6215772becd86e947ff836cc956d8b62c57124667"
+                "sha256:a9dde1c0301653825a9c3dcb887924f68bd91a14fae971cf89461b364f4e054f",
+                "sha256:ff2620a4b9a9aa5a10bcbdd0f5f35f9f398229b7c9c501cd8c9d9760d9e48fe1"
             ],
             "index": "pypi",
-            "version": "==0.6.2020120202"
+            "version": "==1.1.0"
         },
         "diem-sample-wallet": {
             "editable": true,
@@ -239,11 +239,11 @@
                 "watch"
             ],
             "hashes": [
-                "sha256:360cd436a434a513c87a9769943543c1d065835e3fa0b01f96c4fdd959bfa1c3",
-                "sha256:8112941ab2eda4f0288bacd137a991f9b1b1c600fe3dd5960eaba4256c873839"
+                "sha256:ce23c4520b50785414aca088c25c6a2274512f67ec468042aee0c379ee1d700e",
+                "sha256:d3f629ff01e1da67f46579cba549e115fbe0b32a31fa52c53f6c322a4456566a"
             ],
             "index": "pypi",
-            "version": "==1.9.0"
+            "version": "==1.10.0"
         },
         "entrypoints": {
             "hashes": [
