@@ -40,7 +40,7 @@ jobs:
       - run:
           name: Build and push Liquidity
           command: |
-            docker build -f liquidity/Dockerfile -t ${LIQUIDITY_IMAGE_NAME}:latest -t ${AWS_REGISTRY_URL}/${LIQUIDITY_IMAGE_NAME}:$CIRCLE_BRANCH -t ${AWS_REGISTRY_URL}/${LIQUIDITY_IMAGE_NAME}:<< pipeline.number >> .
+            docker build -f liquidity/Dockerfile -t ${LIQUIDITY_IMAGE_NAME}:latest -t ${AWS_REGISTRY_URL}/${LIQUIDITY_IMAGE_NAME}:$CIRCLE_BRANCH -t ${AWS_REGISTRY_URL}/${LIQUIDITY_IMAGE_NAME}:<< pipeline.number >> ./liquidity
             eval $(aws ecr get-login --region ${AWS_DEFAULT_REGION} --no-include-email)
             docker push ${AWS_REGISTRY_URL}/${LIQUIDITY_IMAGE_NAME}:<< pipeline.number >>
             docker push ${AWS_REGISTRY_URL}/${LIQUIDITY_IMAGE_NAME}:${CIRCLE_BRANCH}
