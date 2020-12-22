@@ -8,6 +8,7 @@ from .admin import admin, AdminRoutes
 from .cico import cico, CicoRoutes
 from .system import system, SystemRoutes
 from .user import user, UserRoutes
+from .offchain import offchain, OffchainRoutes
 
 
 def account_routes():
@@ -166,8 +167,17 @@ def system_routes():
     )
 
 
+def offchain_api_routes():
+    offchain.add_url_rule(
+        rule="/offchain/v2/command",
+        view_func=OffchainRoutes.OffchainV2View.as_view("command_response"),
+        methods=["POST"],
+    )
+
+
 account_routes()
 cico_routes()
 admin_routes()
 user_routes()
 system_routes()
+offchain_api_routes()

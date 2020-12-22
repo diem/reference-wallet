@@ -75,7 +75,7 @@ def test_transaction_seq_exist() -> None:
     )
     storage.add_transaction(
         amount=100,
-        currency=DiemCurrency.Coin1,
+        currency=DiemCurrency.XUS,
         payment_type=TransactionType.INTERNAL,
         status=TransactionStatus.COMPLETED,
         source_address=source_addr,
@@ -98,8 +98,8 @@ def test_process_incoming_general_txn() -> None:
         receiver_address="lrw_vasp",
         sequence=1,
         amount=100,
-        currency=DiemCurrency.Coin1,
-        metadata=diem_types.Metadata__GeneralMetadata.lcs_deserialize(meta),
+        currency=DiemCurrency.XUS,
+        metadata=diem_types.Metadata__GeneralMetadata.bcs_deserialize(meta),
         blockchain_version=1,
     )
 
@@ -118,17 +118,17 @@ def test_process_incoming_travel_rule_txn() -> None:
     amount = 1000 * 1_000_000
     sender = account_address(sender_addr)
     sequence = 1
-    currency = DiemCurrency.Coin1
+    currency = DiemCurrency.XUS
     blockchain_version = 1
 
-    off_chain_reference_id = "32323abc"
+    off_chain_reference_id = "off_chain_reference_id"
     metadata, _ = travel_rule(off_chain_reference_id, sender, amount)
 
     storage.add_transaction(
         amount=amount,
         currency=currency,
         payment_type=TransactionType.OFFCHAIN,
-        status=TransactionStatus.READY_FOR_ON_CHAIN,
+        status=TransactionStatus.OFF_CHAIN_READY,
         source_id=account.id,
         source_address=sender_addr,
         source_subaddress=sender_subaddr,
@@ -142,7 +142,7 @@ def test_process_incoming_travel_rule_txn() -> None:
         sequence=sequence,
         amount=amount,
         currency=currency,
-        metadata=diem_types.Metadata__TravelRuleMetadata.lcs_deserialize(metadata),
+        metadata=diem_types.Metadata__TravelRuleMetadata.bcs_deserialize(metadata),
         blockchain_version=blockchain_version,
     )
 
@@ -162,13 +162,13 @@ def test_balance_calculation_simple_income() -> None:
         source_id=counter_id,
         destination_id=account_id,
         amount=100,
-        currency=DiemCurrency.Coin1,
+        currency=DiemCurrency.XUS,
         status=TransactionStatus.COMPLETED,
     )
     balance = calc_account_balance(account_id=account_id, transactions=[tx])
 
     assert balance.total == {
-        DiemCurrency.Coin1: 100,
+        DiemCurrency.XUS: 100,
     }
 
 
@@ -179,14 +179,14 @@ def test_balance_calculation_in_and_out() -> None:
         source_id=counter_id,
         destination_id=account_id,
         amount=100,
-        currency=DiemCurrency.Coin1,
+        currency=DiemCurrency.XUS,
         status=TransactionStatus.COMPLETED,
     )
     outgoing = Transaction(
         source_id=account_id,
         destination_id=counter_id,
         amount=50,
-        currency=DiemCurrency.Coin1,
+        currency=DiemCurrency.XUS,
         status=TransactionStatus.COMPLETED,
     )
     balance = calc_account_balance(
@@ -194,7 +194,7 @@ def test_balance_calculation_in_and_out() -> None:
     )
 
     assert balance.total == {
-        DiemCurrency.Coin1: 50,
+        DiemCurrency.XUS: 50,
     }
 
 
@@ -205,13 +205,13 @@ def test_balance_calculation_in_pending() -> None:
         source_id=counter_id,
         destination_id=account_id,
         amount=100,
-        currency=DiemCurrency.Coin1,
+        currency=DiemCurrency.XUS,
         status=TransactionStatus.PENDING,
     )
     balance = calc_account_balance(account_id=account_id, transactions=[income])
 
     assert balance.total == {
-        DiemCurrency.Coin1: 0,
+        DiemCurrency.XUS: 0,
     }
 
 
@@ -222,14 +222,14 @@ def test_balance_calculation_out_pending() -> None:
         source_id=counter_id,
         destination_id=account_id,
         amount=100,
-        currency=DiemCurrency.Coin1,
+        currency=DiemCurrency.XUS,
         status=TransactionStatus.COMPLETED,
     )
     outgoing = Transaction(
         source_id=account_id,
         destination_id=counter_id,
         amount=50,
-        currency=DiemCurrency.Coin1,
+        currency=DiemCurrency.XUS,
         status=TransactionStatus.PENDING,
     )
     balance = calc_account_balance(
@@ -237,10 +237,10 @@ def test_balance_calculation_out_pending() -> None:
     )
 
     assert balance.total == {
-        DiemCurrency.Coin1: 50,
+        DiemCurrency.XUS: 50,
     }
     assert balance.frozen == {
-        DiemCurrency.Coin1: 50,
+        DiemCurrency.XUS: 50,
     }
 
 
@@ -251,14 +251,14 @@ def test_balance_calculation_out_canceled() -> None:
         source_id=counter_id,
         destination_id=account_id,
         amount=100,
-        currency=DiemCurrency.Coin1,
+        currency=DiemCurrency.XUS,
         status=TransactionStatus.COMPLETED,
     )
     outgoing = Transaction(
         source_id=account_id,
         destination_id=counter_id,
         amount=50,
-        currency=DiemCurrency.Coin1,
+        currency=DiemCurrency.XUS,
         status=TransactionStatus.CANCELED,
     )
     balance = calc_account_balance(
@@ -266,10 +266,10 @@ def test_balance_calculation_out_canceled() -> None:
     )
 
     assert balance.total == {
-        DiemCurrency.Coin1: 100,
+        DiemCurrency.XUS: 100,
     }
     assert balance.frozen == {
-        DiemCurrency.Coin1: 0,
+        DiemCurrency.XUS: 0,
     }
 
 
@@ -283,12 +283,12 @@ def test_total_balances_calculation() -> None:
 
 def send_fake_tx(amount=100, send_to_self=False) -> Tuple[int, Transaction]:
     user = OneUser.run(
-        db_session, account_amount=100_000_000_000, account_currency=DiemCurrency.Coin1
+        db_session, account_amount=100_000_000_000, account_currency=DiemCurrency.XUS
     )
     account_id = user.account_id
     amount = amount
     payment_type = types.TransactionType.EXTERNAL
-    currency = diem_utils.types.currencies.DiemCurrency.Coin1
+    currency = diem_utils.types.currencies.DiemCurrency.XUS
     destination_address = "receiver_address"
     destination_subaddress = "receiver_subaddress"
 

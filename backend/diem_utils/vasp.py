@@ -41,7 +41,7 @@ class Vasp:
         print(f"===VASP account has been created successfully===")
 
         for currency in self._diem_client.get_currencies():
-            if currency.code == "Coin1":
+            if currency.code == "XUS":
                 print(f"Adding {currency.code} to account {self.address_str}")
                 self._add_currency_to_vasp_account(DiemCurrency[currency.code])
 
@@ -51,7 +51,7 @@ class Vasp:
     def _add_currency_to_vasp_account(
         self,
         currency: DiemCurrency,
-        gas_currency: DiemCurrency = DiemCurrency.Coin1,
+        gas_currency: DiemCurrency = DiemCurrency.XUS,
     ) -> None:
         """Send a transaction on-chain for adding a new currency to account"""
 
@@ -84,7 +84,7 @@ class Vasp:
 
     def create_vasp_account(self):
         faucet = testnet.Faucet(self._diem_client)
-        faucet.mint(self.account.auth_key.hex(), 1_000_000, "Coin1")
+        faucet.mint(self.account.auth_key.hex(), 1_000_000, "XUS")
 
     def fetch_account_info(self):
         return self._diem_client.get_account(self.account.account_address)
@@ -128,50 +128,11 @@ class Vasp:
         onchain_tx = self._diem_client.wait_for_transaction(tx, 30)
         return onchain_tx.version, account_info.sequence_number
 
-    def send_transaction_travel_rule(
-        self,
-        currency: DiemCurrency,
-        amount: int,
-        source_sub_address: str,
-        dest_vasp_address: str,
-        dest_sub_address: str,
-        off_chain_reference_id: str,
-        metadata_signature: bytes,
-    ) -> Tuple[int, int]:
-        account_info = self.fetch_account_info()
-        if not account_info:
-            raise RuntimeError(f"Could not find account {self.address_str}")
-
-        sender = utils.account_address(self.address_str)
-        metadata, metadata_sig = txnmetadata.travel_rule(
-            off_chain_reference_id, sender, amount
-        )
-
-        # sender constructs transaction after off chain communication
-        script = stdlib.encode_peer_to_peer_with_metadata_script(
-            currency=utils.currency_code(currency.value),
-            payee=utils.account_address(dest_vasp_address),
-            amount=amount,
-            metadata=metadata,
-            metadata_signature=metadata_signature,
-        )
-
-        tx = self._custody.create_transaction(
-            self._custody_account_name,
-            account_info.sequence_number,
-            script,
-            currency.value,
-        )
-        self._diem_client.submit(tx)
-
-        onchain_tx = self._diem_client.wait_for_transaction(tx, 30)
-        return onchain_tx.version, account_info.sequence_number
-
     def rotate_dual_attestation_info(
         self,
         new_url: str,
         new_key: bytes,
-        gas_currency: DiemCurrency = DiemCurrency.Coin1,
+        gas_currency: DiemCurrency = DiemCurrency.XUS,
     ) -> None:
         """Send a transaction on-chain for rotating base url and compliance key"""
 

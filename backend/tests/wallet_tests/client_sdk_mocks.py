@@ -71,7 +71,7 @@ class MockAccountResource:
 class MockTransactionP2PScript:
     receiver: str
     amount: int
-    currency: str = "Coin1"
+    currency: str = "XUS"
     metadata: bytes = None
     type: str = "peer_to_peer_with_metadata"
 
@@ -166,7 +166,7 @@ class FaucetUtilsMock(BlockchainMock):
             receiver_address=authkey_hex,
             sequence=sequence,
             amount=amount,
-            currency=DiemCurrency.Coin1,
+            currency=DiemCurrency.XUS,
             metadata=metadata,
         )
 

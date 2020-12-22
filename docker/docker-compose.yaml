@@ -8,7 +8,6 @@ services:
       target: default_conf
     ports:
       - ${GW_PORT:-8080}:8000
-      - ${GW_OFFCHAIN_SERVICE_PORT:-8091}:8091
     restart: always
 
 

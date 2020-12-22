@@ -18,7 +18,7 @@ custodyPrivateKeysLiquidity:
 # accountWatcherPrivKey: null
 
 chainId: 2
-gasCurrencyCode: "Coin1"
+gasCurrencyCode: "XUS"
 vaspComplianceKey:
   crv: "Ed25519"
   d:

@@ -9,7 +9,7 @@
 #
 #
 # def test_get_quote_for_supported_currency_pair(liquidity_provider_session):
-#     pair = CurrencyPair(Currency.Coin1, Currency.USD)
+#     pair = CurrencyPair(Currency.XUS, Currency.USD)
 #     quote = LpClient().get_quote(pair, 1)
 #
 #     assert quote.rate.rate == fixed_rates[str(pair)]

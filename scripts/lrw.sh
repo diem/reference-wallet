@@ -207,14 +207,13 @@ e2e() {
 
   if [ "$up_down" = "up" ]; then
     export GW_PORT=$(get_port)
-    export GW_OFFCHAIN_SERVICE_PORT_1=8091
+    export WEB_SERVER_PORT=5000
     PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 \
-                  GW_PORT=$GW_PORT GW_OFFCHAIN_SERVICE_PORT=$GW_OFFCHAIN_SERVICE_PORT_1 \
-                  VASP_BASE_URL="http://lrw_backend-web-server_1:5091" \
+                  GW_PORT=$GW_PORT \
+                  VASP_BASE_URL="http://lrw_backend-web-server_1:$WEB_SERVER_PORT/offchain" \
                   pipenv run python3 scripts/set_env.py > /dev/null
     export VASP_ADDR_1=$(source backend/.env && echo $VASP_ADDR)
     echo "export GW_PORT_1=$GW_PORT"
-    echo "export GW_OFFCHAIN_SERVICE_PORT_1=$GW_OFFCHAIN_SERVICE_PORT_1"
     echo "export VASP_ADDR_1=$VASP_ADDR_1"
     echo "export LRW_WEB_1=http://localhost:$GW_PORT"
     docker-compose -p lrw -f $composes up --detach > /dev/null
@@ -229,19 +228,16 @@ e2e() {
 
     # second
     export GW_PORT_2=$(get_port)
-    export GW_OFFCHAIN_SERVICE_PORT_2=8092
     PIPENV_PIPFILE=backend/Pipfile PIPENV_DONT_LOAD_ENV=1 \
-                  GW_PORT=$GW_PORT_2 GW_OFFCHAIN_SERVICE_PORT=$GW_OFFCHAIN_SERVICE_PORT_2 \
-                  VASP_BASE_URL="http://lrw2_backend-web-server_1:5091" \
+                  GW_PORT=$GW_PORT_2 \
+                  VASP_BASE_URL="http://lrw2_backend-web-server_1:$WEB_SERVER_PORT/offchain" \
                   pipenv run python3 scripts/set_env.py > /dev/null
     export VASP_ADDR_2=$(source backend/.env && echo $VASP_ADDR)
     echo "export GW_PORT_2=$GW_PORT_2"
-    echo "export GW_OFFCHAIN_SERVICE_PORT_2=$GW_OFFCHAIN_SERVICE_PORT_2"
     echo "export VASP_ADDR_2=$VASP_ADDR_2"
     echo "export LRW_WEB_2=http://localhost:$GW_PORT_2"
 
     export GW_PORT=$GW_PORT_2
-    export GW_OFFCHAIN_SERVICE_PORT=$GW_OFFCHAIN_SERVICE_PORT_2
     docker-compose -p lrw2 -f $composes up --detach > /dev/null
 
     docker network create lrw_to_lrw2_offchain > /dev/null
