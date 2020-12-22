@@ -31,7 +31,7 @@ class ValidatorClient(VaspProxy):
         )
         logging.info(f"Created user {username} (PSW: {password})")
 
-        amount = 900_000_000
+        amount = 5_000_000_000
         validator.add_funds(amount)
         logging.debug(f"Added {amount} coins to the account")
 

@@ -20,8 +20,10 @@ class TransactionStatus(str, Enum):
     PENDING = "pending"
     COMPLETED = "completed"
     CANCELED = "canceled"
-    READY_FOR_ON_CHAIN = "ready_for_on_chain"
-    OFF_CHAIN_STARTED = "off_chain_started"
+    OFF_CHAIN_READY = "off_chain_ready"
+    OFF_CHAIN_OUTBOUND = "off_chain_outbound"
+    OFF_CHAIN_INBOUND = "off_chain_inbound"
+    OFF_CHAIN_WAIT = "off_chain_wait"
 
 
 @dataclass_json
