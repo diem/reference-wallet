@@ -30,7 +30,7 @@ LIQUIDITY_SERVICE_NAME = 'diem-reference-wallet-liquidity'
 
 CHAIN_ID = testnet.CHAIN_ID.to_int()
 JSON_RPC_URL = testnet.JSON_RPC_URL
-CURRENCY = 'Coin1'
+CURRENCY = 'XUS'
 
 
 def get_account_from_private_key(private_key) -> LocalAccount:
