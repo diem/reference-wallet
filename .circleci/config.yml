@@ -1,0 +1,131 @@
+version: 2.1
+environment: &env
+  BACKEND_IMAGE_NAME: diem-reference-wallet-backend
+  LIQUIDITY_IMAGE_NAME: diem-reference-wallet-liquidity
+  AWS_REGISTRY_URL: 695406093586.dkr.ecr.eu-central-1.amazonaws.com
+jobs:
+  build_and_push:
+    environment: *env
+    docker:
+      - image: circleci/python:3.7
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Prepare
+          command: pip install --user awscli
+      - run:
+          name: Fetch submodules
+          command: |
+            git submodule update --init
+      - run:
+          name: Compile Frontend
+          command: |
+            mkdir -p workspace/frontend
+            docker build -f frontend/Dockerfile -t temp-frontend:latest frontend/
+            docker create --name tmp_frontend_container temp-frontend
+            docker cp tmp_frontend_container:/app/build/. workspace/frontend/
+      - persist_to_workspace:
+          root: workspace
+          paths:
+            - frontend
+      - run:
+          name: Build and push Backend
+          command: |
+            docker build -f backend/Dockerfile -t ${BACKEND_IMAGE_NAME}:latest -t ${AWS_REGISTRY_URL}/${BACKEND_IMAGE_NAME}:$CIRCLE_BRANCH -t ${AWS_REGISTRY_URL}/${BACKEND_IMAGE_NAME}:<< pipeline.number >> .
+            eval $(aws ecr get-login --region ${AWS_DEFAULT_REGION} --no-include-email)
+            docker push ${AWS_REGISTRY_URL}/${BACKEND_IMAGE_NAME}:<< pipeline.number >>
+            docker push ${AWS_REGISTRY_URL}/${BACKEND_IMAGE_NAME}:${CIRCLE_BRANCH}
+      - run:
+          name: Build and push Liquidity
+          command: |
+            docker build -f liquidity/Dockerfile -t ${LIQUIDITY_IMAGE_NAME}:latest -t ${AWS_REGISTRY_URL}/${LIQUIDITY_IMAGE_NAME}:$CIRCLE_BRANCH -t ${AWS_REGISTRY_URL}/${LIQUIDITY_IMAGE_NAME}:<< pipeline.number >> .
+            eval $(aws ecr get-login --region ${AWS_DEFAULT_REGION} --no-include-email)
+            docker push ${AWS_REGISTRY_URL}/${LIQUIDITY_IMAGE_NAME}:<< pipeline.number >>
+            docker push ${AWS_REGISTRY_URL}/${LIQUIDITY_IMAGE_NAME}:${CIRCLE_BRANCH}
+  deploy:
+    environment: *env
+    docker:
+      - image: circleci/python:3.7
+    parameters:
+      nirops_tag:
+        type: string
+    steps:
+      - setup_remote_docker
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Prepare
+          command: pip install --user awscli
+      - run:
+          name: Deploy components to EKS
+          command: |
+            eval $(aws ecr get-login --region ${AWS_DEFAULT_REGION} --no-include-email)
+            docker pull ${AWS_REGISTRY_URL}/nirops:<< parameters.nirops_tag >>
+            docker build \
+              --build-arg NIROPS_TAG=<< parameters.nirops_tag >> \
+              -f .circleci/Dockerfile \
+              -t deployer:latest \
+              .circleci/
+
+            docker create \
+              -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+              -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+              --name deployer_container deployer:latest \
+              -b ${ENVIRONMENT} \
+              -e $ENV_PREFIX \
+              --set DiemReferenceWallet.build_tag << pipeline.number >>
+
+            docker cp /tmp/workspace/frontend deployer_container:/
+            docker start -i deployer_container
+  android_build:
+    docker:
+      - image: circleci/android:api-29-node
+    resource_class: large
+    steps:
+      - setup_remote_docker
+      - checkout
+      - run:
+          name: Set build number env var
+          command: |
+            echo 'export BUILD_NUM=$((<< pipeline.number >> + 375))' >> $BASH_ENV
+      - run:
+          name: Deploy to playstore
+          command: |
+            gem install fastlane -NV
+            sdkmanager --install "ndk;${NDK_VERSION}" "cmake;3.10.2.4988404"
+            cd mobile
+            export BACKEND_URL=https://staging-diem-reference-wallet.dev.demo.firstdag.com/api
+            yarn install
+            cd android
+            echo VERSION_CODE == ${BUILD_NUM}
+            VERSION_CODE=${BUILD_NUM} ./publish.sh
+
+
+workflows:
+  staging:
+    jobs:
+      - build_and_push:
+          context: staging
+          filters:
+            branches:
+              only:
+                - master
+      - deploy:
+          context: staging
+          nirops_tag: master
+          requires:
+            - build_and_push
+          filters:
+            branches:
+              only:
+                - master
+      - android_build:
+          context: staging
+          filters:
+            branches:
+              only:
+                - master
+
