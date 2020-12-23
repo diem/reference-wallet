@@ -6,7 +6,7 @@
 #
 
 # If first argument is not a flag, it's a subtest selector
-if [ -n "${1}" ] && [ "${1#-}" == "${1}" ]; then
+if [ -n "${1}" ] && [ "${1#-}" = "${1}" ]; then
   subtests=$1
   shift
 fi
