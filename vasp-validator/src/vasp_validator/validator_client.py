@@ -61,7 +61,7 @@ class ValidatorClient(VaspProxy):
         if tx.status != TransactionStatus.COMPLETED:
             return TxState(
                 status=TxStatus.FAILED,
-                status_description=f"Send transaction was not successful ({tx.status})",
+                status_description=f"Send transaction was not successful ({tx})",
                 # offchain_refid=tx.offchain_refid,
             )
 
@@ -127,17 +127,27 @@ class ValidatorClient(VaspProxy):
         self.wallet.create_new_user(username, password)
         user = self.wallet.get_user()
 
-        user = self.wallet.update_user(
-            user,
-            first_name=first_name,
-            last_name=last_name,
-        )
+        user.first_name = first_name
+        user.last_name = last_name
+        user.address_1 = "221B Baker Street"
+        user.address_2 = ""
+        user.city = "London"
+        user.country = "GB"
+        user.dob = "1861-06-01"
+        user.phone = "44 2079460869"
+        user.selected_fiat_currency = "USD"
+        user.selected_language = "en"
+        user.state = ""
+        user.zip = "NW1 6XE"
 
-        num_of_retries = 20
-        for i in range(num_of_retries):
+        user = self.wallet.update_user(user)
+
+        retries_count = 10
+        seconds_between_retries = 1
+        for i in range(retries_count):
             if user.registration_status == RegistrationStatus.Approved:
                 break
-            time.sleep(1)
+            time.sleep(seconds_between_retries)
             user = self.wallet.get_user()
         else:
             raise VaspValidatorError("Filed to create an approved user")

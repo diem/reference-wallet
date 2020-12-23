@@ -32,9 +32,7 @@ class ReferenceWalletProxy:
         user_response = self._request_authorized("GET", "user")
         return User.from_json(user_response.text)
 
-    def update_user(self, user, first_name="Gurki", last_name="Bond"):
-        user.first_name = first_name
-        user.last_name = last_name
+    def update_user(self, user: User):
         self._request_authorized("PUT", "user", json=user.to_dict())
         return self.get_user()
 
