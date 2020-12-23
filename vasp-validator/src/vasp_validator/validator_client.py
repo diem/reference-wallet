@@ -44,12 +44,13 @@ class ValidatorClient(VaspProxy):
         # TBD: LRW should return the offchain refid, if applicable
         tx = self.wallet.send_transaction(address, amount, currency)
 
-        retries_count = 10
+        retries_count = 20
+        seconds_between_retries = 1
         for i in range(retries_count):
             tx = self.wallet.get_transaction(tx.id)
-            if tx.status != TransactionStatus.PENDING:
+            if tx.status == TransactionStatus.CANCELED or tx.status == TransactionStatus.COMPLETED:
                 break
-            time.sleep(1)
+            time.sleep(seconds_between_retries)
         else:
             return TxState(
                 status=TxStatus.PENDING,
@@ -78,15 +79,15 @@ class ValidatorClient(VaspProxy):
         Note: Consider checking other transaction properties too;
         e.g., amount, currency etc.
         """
-        num_of_retries = 5
-
-        for i in range(num_of_retries):
+        retries_count = 10
+        seconds_between_retries = 1
+        for i in range(retries_count):
             txs = self.wallet.get_transaction_list()
             if txs and version in [
                 tx.blockchain_tx.version for tx in txs if tx.blockchain_tx
             ]:
                 return True
-            time.sleep(1)
+            time.sleep(seconds_between_retries)
 
         return False
 
@@ -114,10 +115,11 @@ class ValidatorClient(VaspProxy):
 
     def wait_for_balance(self, amount, currency):
         retries_count = 10
+        seconds_between_retries = 1
         for i in range(retries_count):
             if self.wallet.get_balance(currency) >= amount:
                 return True
-            time.sleep(1)
+            time.sleep(seconds_between_retries)
 
         return False
 
