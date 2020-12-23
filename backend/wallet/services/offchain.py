@@ -1,6 +1,14 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
+import logging
+from datetime import datetime
+from typing import Optional, Tuple, Callable
 
+import context
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from diem import offchain, identifier
+from diem_utils.types.currencies import DiemCurrency
+from wallet.services import account, kyc
 
 from ..storage import (
     lock_for_update,
@@ -13,15 +21,6 @@ from ..types import (
     TransactionType,
     TransactionStatus,
 )
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from datetime import datetime
-from diem import offchain, identifier
-from diem_utils.types.currencies import DiemCurrency
-from typing import Optional, Tuple, Callable
-from wallet.services import account, kyc
-
-import context
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -250,3 +249,12 @@ def _compliance_private_key() -> Ed25519PrivateKey:
 
 def _hrp() -> str:
     return context.get().config.diem_address_hrp()
+
+
+def get_payment_command(transaction_id: str):
+    transaction = Transaction.query.filter_by(id=transaction_id).one_or_none()
+
+    if transaction:
+        return transaction.command_json
+
+    return None

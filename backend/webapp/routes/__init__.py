@@ -17,7 +17,6 @@ def account_routes():
         view_func=AccountRoutes.AccountInfo.as_view("account_info"),
         methods=["GET"],
     )
-
     account.add_url_rule(
         rule="/account/transactions",
         view_func=AccountRoutes.GetAllTransactions.as_view("account_transactions"),
@@ -28,7 +27,6 @@ def account_routes():
         view_func=AccountRoutes.SendTransaction.as_view("send_transaction"),
         methods=["POST"],
     )
-
     account.add_url_rule(
         rule="/account/transactions/<transaction_id>",
         view_func=AccountRoutes.GetSingleTransaction.as_view(
@@ -36,7 +34,6 @@ def account_routes():
         ),
         methods=["GET"],
     )
-
     account.add_url_rule(
         rule="/account/receiving-addresses",
         view_func=AccountRoutes.GetReceivingAddress.as_view("get_receiving_address"),
@@ -60,7 +57,6 @@ def cico_routes():
         view_func=CicoRoutes.ExecuteQuoteView.as_view("execute_quote"),
         methods=["POST"],
     )
-
     cico.add_url_rule(
         rule="/account/rates",
         view_func=CicoRoutes.GetRatesView.as_view("get_rates"),
@@ -172,6 +168,11 @@ def offchain_api_routes():
         rule="/offchain/v2/command",
         view_func=OffchainRoutes.OffchainV2View.as_view("command_response"),
         methods=["POST"],
+    )
+    offchain.add_url_rule(
+        rule="/offchain/query/payment_command/<transaction_id>",
+        view_func=OffchainRoutes.GetPaymentCommand.as_view("get_payment_command"),
+        methods=["GET"],
     )
 
 
