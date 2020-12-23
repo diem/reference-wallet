@@ -237,6 +237,9 @@ e2e() {
     echo "export VASP_ADDR_2=$VASP_ADDR_2"
     echo "export LRW_WEB_2=http://localhost:$GW_PORT_2"
 
+    # Update the VASP validator settings if it uses local wallets
+    configure_vasp_validator $GW_PORT $GW_PORT_2
+
     export GW_PORT=$GW_PORT_2
     docker-compose -p lrw2 -f $composes up --detach > /dev/null
 
@@ -259,6 +262,29 @@ e2e() {
     echo '# Must specify either `up` or `down` option'
     exit 1
   fi
+}
+
+configure_vasp_validator() {
+  new_validator_url=http://localhost:${1}/api
+  new_vasp_url=http://localhost:${2}/api
+
+  env_file=vasp-validator/.env
+
+  if [ -e ${env_file} ]; then
+    regex='http://localhost:[0-9]\+/api$'
+
+    # Only update the ports if both sides appear to use local reference wallet
+    (source ${env_file} && echo $VALIDATOR_URL) | grep -v -q "${regex}" && return
+    (source ${env_file} && echo $TESTEE_URL) | grep -v -q "${regex}" && return
+
+    sed -i "s|VALIDATOR_URL=${regex}|VALIDATOR_URL=${new_validator_url}|g" ${env_file}
+    sed -i "s|TESTEE_URL=${regex}|TESTEE_URL=${new_vasp_url}|g" ${env_file}
+  else
+    # No configuration - create new
+    echo "VALIDATOR_URL=${new_validator_url}" > ${env_file}
+    echo "TESTEE_URL=${new_vasp_url}" >> ${env_file}
+  fi
+  echo 'VASP Validator configuration has been updated'
 }
 
 purge() {
