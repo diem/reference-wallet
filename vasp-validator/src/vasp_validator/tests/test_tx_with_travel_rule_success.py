@@ -21,8 +21,7 @@ class TestTxSuccessWithTravelRule:
             tx.status == TxStatus.COMPLETED
         ), f"Failed to send transaction: {tx.status_description}"
 
-        # The amount is below $1000 so no off-chain interaction is required
-        # assert tx.offchain_refid is None
+        # assert tx.offchain_refid
 
         # VASP sent the transaction successfully. Validate that it was received
         # by the validator
@@ -35,6 +34,21 @@ class TestTxSuccessWithTravelRule:
         The validator successfully sends to the VASP a transaction, requiring
         travel rule approval.
         """
+        dest_address = vasp_proxy.get_receiving_address()
+
+        tx = validator.send_transaction(dest_address, 2_000_000_000, CURRENCY)
+
+        assert (
+                tx.status == TxStatus.COMPLETED
+        ), f"Failed to send transaction: {tx.status_description}"
+
+        # assert tx.offchain_refid
+
+        # VASP sent the transaction successfully. Validate that it was received
+        # by the validator
+        assert vasp_proxy.knows_transaction(
+            tx.onchain_version
+        ), f"Transaction {tx.onchain_version} is not recognized by the VASP"
 
 
 @pytest.mark.skip(reason="This test outlines future functionality. "
