@@ -48,7 +48,10 @@ class ValidatorClient(VaspProxy):
         seconds_between_retries = 1
         for i in range(retries_count):
             tx = self.wallet.get_transaction(tx.id)
-            if tx.status == TransactionStatus.CANCELED or tx.status == TransactionStatus.COMPLETED:
+            if (
+                tx.status == TransactionStatus.CANCELED
+                or tx.status == TransactionStatus.COMPLETED
+            ):
                 break
             time.sleep(seconds_between_retries)
         else:
