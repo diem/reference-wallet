@@ -96,7 +96,9 @@ def process_offchain_tasks() -> None:
 
     def submit_txn(txn, cmd, _) -> Transaction:
         if cmd.is_sender():
-            logger.info(f"Submitting transaction ID:{txn.id} {txn.amount} {txn.currency}")
+            logger.info(
+                f"Submitting transaction ID:{txn.id} {txn.amount} {txn.currency}"
+            )
             _offchain_client().send_command(cmd, _compliance_private_key().sign)
             rpc_txn = context.get().p2p_by_travel_rule(
                 cmd.receiver_account_address(_hrp()),
@@ -108,7 +110,9 @@ def process_offchain_tasks() -> None:
             txn.sequence = rpc_txn.transaction.sequence_number
             txn.blockchain_version = rpc_txn.version
             txn.status = TransactionStatus.COMPLETED
-            logger.info(f"Submitted transaction ID:{txn.id} V:{txn.blockchain_version} {txn.amount} {txn.currency}")
+            logger.info(
+                f"Submitted transaction ID:{txn.id} V:{txn.blockchain_version} {txn.amount} {txn.currency}"
+            )
 
     _process_by_status(TransactionStatus.OFF_CHAIN_OUTBOUND, send_command)
     _process_by_status(TransactionStatus.OFF_CHAIN_INBOUND, offchain_action)
