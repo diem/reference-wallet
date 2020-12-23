@@ -133,11 +133,11 @@
         },
         "diem": {
             "hashes": [
-                "sha256:c47ce83c1fc564ccd6c452b8f7f69dde25508681e0774f2b536b5913b12be14a",
-                "sha256:e542f4492688aaece251a9b579bc2a276345ef26f472a5f5454f48f4a3e05c0a"
+                "sha256:a9dde1c0301653825a9c3dcb887924f68bd91a14fae971cf89461b364f4e054f",
+                "sha256:ff2620a4b9a9aa5a10bcbdd0f5f35f9f398229b7c9c501cd8c9d9760d9e48fe1"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==1.0.1"
+            "version": "==1.1.0"
         },
         "diem-vasp-validator": {
             "editable": true,
@@ -164,7 +164,7 @@
                 "sha256:5c5a2720817414a6c41f0a49993908068243ae02c1635a228126519b509c8aed",
                 "sha256:bf792d480abbd5eda85794e4afb09dd538393f7d6e6ffef6e9f03d2014cf9450"
             ],
-            "markers": "python_version < '3.8'",
+            "markers": "python_version < '3.8' and python_version < '3.8'",
             "version": "==3.3.0"
         },
         "iniconfig": {
@@ -176,11 +176,11 @@
         },
         "marshmallow": {
             "hashes": [
-                "sha256:73facc37462dfc0b27f571bdaffbef7709e19f7a616beb3802ea425b07843f4e",
-                "sha256:e26763201474b588d144dae9a32bdd945cd26a06c943bc746a6882e850475378"
+                "sha256:4ab2fdb7f36eb61c3665da67a7ce281c8900db08d72ba6bf0e695828253581f7",
+                "sha256:eca81d53aa4aafbc0e20566973d0d2e50ce8bf0ee15165bb799bec0df1e50177"
             ],
             "markers": "python_version >= '3.5'",
-            "version": "==3.9.1"
+            "version": "==3.10.0"
         },
         "marshmallow-enum": {
             "hashes": [

@@ -20,7 +20,7 @@ setup(
     package_dir={"": "src"},
     packages=["vasp_validator"],
     install_requires=[
-        "diem>=1.0.1,<2.0.0",
+        "diem>=1.1.0,<2.0.0",
         "dataclasses_json",
         "requests",
         "pytest",
