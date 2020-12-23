@@ -422,7 +422,11 @@ def submit_onchain(transaction_id: int) -> None:
                 blockchain_tx_version=jsonrpc_txn.version,
             )
             add_transaction_log(transaction_id, "On Chain Transfer Complete")
-            log_execution("On Chain Transfer Complete")
+            log_execution(
+                "On chain transfer complete "
+                f"txid: {transaction_id} "
+                f"v: {jsonrpc_txn.version} "
+            )
         except Exception:
             logger.exception(f"Error in _async_start_onchain_transfer")
             add_transaction_log(transaction_id, "On Chain Transfer Failed")

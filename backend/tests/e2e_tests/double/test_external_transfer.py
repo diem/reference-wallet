@@ -83,3 +83,4 @@ def transfer(user1: UserClient, user2: UserClient, transfer_amount: int, currenc
     txns2 = user2.get_transactions()
     assert len(txns2) == 1
     assert txns2[0].get("amount") == transfer_amount
+    assert txns2[0].get("status") == "completed"

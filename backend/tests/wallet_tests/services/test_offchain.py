@@ -170,7 +170,7 @@ def test_submit_txn_when_both_ready(monkeypatch):
     db_session.refresh(txn)
     assert txn.status == TransactionStatus.COMPLETED
     assert txn.sequence == 5
-    assert txn.blockchain_tx_version == 3232
+    assert txn.blockchain_version == 3232
 
 
 def jsonrpc_txn_sample(*args):
