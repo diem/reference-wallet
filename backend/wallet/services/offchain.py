@@ -2,12 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 from datetime import datetime
-from typing import Optional, Tuple, Callable
+from typing import Optional, Tuple, Callable, List
 
 import context
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import offchain, identifier
 from diem_utils.types.currencies import DiemCurrency
+from wallet import storage
 from wallet.services import account, kyc
 
 from ..storage import (
@@ -251,10 +252,14 @@ def _hrp() -> str:
     return context.get().config.diem_address_hrp()
 
 
-def get_payment_command(transaction_id: str):
-    transaction = Transaction.query.filter_by(id=transaction_id).one_or_none()
+def get_payment_command_json(transaction_id: int) -> Optional[str]:
+    transaction = storage.get_payment_command_json(transaction_id)
 
     if transaction:
         return transaction.command_json
 
     return None
+
+
+def get_account_payment_commands(account_id: int) -> List[Transaction]:
+    return storage.get_account_payment_commands(account_id)
