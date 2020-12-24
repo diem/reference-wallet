@@ -12,13 +12,14 @@ from .vasp_proxy import VaspProxy, TxStatus, TxState
 
 
 class ValidatorClient(VaspProxy):
-    def __init__(self, wallet):
+    def __init__(self, wallet: ReferenceWalletProxy, logger_name: str):
         self.wallet = wallet
+        self.log = logging.getLogger(logger_name)
 
     @classmethod
-    def create(cls, wallet_url) -> "ValidatorClient":
+    def create(cls, wallet_url, logger_name: str) -> "ValidatorClient":
         wallet = ReferenceWalletProxy(wallet_url)
-        validator = cls(wallet)
+        validator = cls(wallet, logger_name)
 
         username = f"gurki_and_bond@{get_random_string(8)}"
         password = get_random_string(12)
@@ -29,11 +30,11 @@ class ValidatorClient(VaspProxy):
             last_name=get_random_string(8),
             password=password,
         )
-        logging.info(f"Created user {username} (PSW: {password})")
+        validator.log.debug(f"Created user {username} (PSW: {password})")
 
         amount = 5_000_000_000
         validator.add_funds(amount)
-        logging.debug(f"Added {amount} coins to the account")
+        validator.log.debug(f"Added {amount} coins to the account")
 
         return validator
 
@@ -68,7 +69,10 @@ class ValidatorClient(VaspProxy):
                 # offchain_refid=tx.offchain_refid,
             )
 
-        logging.info(f"Successfully sent transaction; ver: {tx.blockchain_tx.version}")
+        self.log.info(
+            f"Successfully sent {amount:,} {currency} to {address}  "
+            f"🟢 https://diemexplorer.com/testnet/version/{tx.blockchain_tx.version}"
+        )
         return TxState(
             onchain_version=tx.blockchain_tx.version,
             # offchain_refid=tx.offchain_refid,

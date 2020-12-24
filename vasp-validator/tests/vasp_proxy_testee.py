@@ -16,7 +16,7 @@ class VaspProxyTestee(VaspProxy):
     """
 
     def __init__(self, url):
-        self.vasp = ValidatorClient.create(url)
+        self.vasp = ValidatorClient.create(url, "pseudo-vasp")
 
     def get_receiving_address(self) -> str:
         return self.vasp.get_receiving_address()

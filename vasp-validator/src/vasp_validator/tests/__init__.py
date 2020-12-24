@@ -22,7 +22,6 @@ def automatic_validation_main():
     args = parse_args()
     pytest.main(
         [
-            "--tb=short",
             "-p",
             "vasp_validator.tests.plugin",
             "--pyargs",

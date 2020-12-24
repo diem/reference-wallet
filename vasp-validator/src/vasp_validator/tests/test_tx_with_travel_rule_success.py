@@ -7,7 +7,6 @@ CURRENCY = "XUS"
 
 
 class TestTxSuccessWithTravelRule:
-
     def test_send(self, validator, vasp_proxy: VaspProxy):
         """
         The VASP successfully sends to the validator a transaction, requiring
@@ -39,7 +38,7 @@ class TestTxSuccessWithTravelRule:
         tx = validator.send_transaction(dest_address, 2_000_000_000, CURRENCY)
 
         assert (
-                tx.status == TxStatus.COMPLETED
+            tx.status == TxStatus.COMPLETED
         ), f"Failed to send transaction: {tx.status_description}"
 
         # assert tx.offchain_refid
@@ -51,8 +50,10 @@ class TestTxSuccessWithTravelRule:
         ), f"Transaction {tx.onchain_version} is not recognized by the VASP"
 
 
-@pytest.mark.skip(reason="This test outlines future functionality. "
-                         "It is not runnable and will be skipped")
+@pytest.mark.skip(
+    reason="This test outlines future functionality. "
+    "It is not runnable and will be skipped"
+)
 def test_validator_kyc_abort(validator, vasp_proxy):
     """
     Send a transaction that fails the KYC check on the receiving side.

@@ -12,4 +12,4 @@ if [ -n "${1}" ] && [ "${1#-}" = "${1}" ]; then
 fi
 
 tests_selector=vasp_validator.tests${subtests:+.}${subtests}
-pipenv run pytest -p vasp_validator.tests.plugin --pyargs ${tests_selector} "$@" ./tests
+pipenv run pytest -r A -p vasp_validator.tests.plugin --pyargs ${tests_selector} "$@" ./tests
