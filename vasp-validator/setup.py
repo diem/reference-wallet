@@ -11,7 +11,7 @@ with open(os.path.join(this_directory, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="diem-vasp-validator",
-    version="1.0.0.dev2",
+    version="1.0.0",
     description="Diem VASP validation library",
     long_description=long_description,
     long_description_content_type="text/markdown",
