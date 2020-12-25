@@ -203,7 +203,7 @@ def get_total_currency_credits():
         )
         .filter(
             and_(
-                Transaction.type == TransactionType.EXTERNAL,
+                Transaction.type != TransactionType.INTERNAL,
                 Transaction.destination_id.isnot(None),
             )
         )
@@ -224,7 +224,7 @@ def get_total_currency_debits():
         )
         .filter(
             and_(
-                Transaction.type == TransactionType.EXTERNAL,
+                Transaction.type != TransactionType.INTERNAL,
                 Transaction.source_id.isnot(None),
             )
         )

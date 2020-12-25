@@ -1,7 +1,7 @@
 import { AppSettings } from "../interfaces/settings";
 
 export const initialState: AppSettings = {
-  network: "testnet",
+  network: "",
   currencies: {
     XUS: {
       name: "XUS",
