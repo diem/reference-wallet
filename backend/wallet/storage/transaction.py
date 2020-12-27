@@ -240,12 +240,14 @@ def get_payment_command_json(transaction_id: int) -> Transaction:
     return Transaction.query.filter_by(id=transaction_id).one_or_none()
 
 
-def get_account_payment_commands(account_id: int) -> List[Transaction]:
+def get_account_payment_commands(account_id: int) -> List[str]:
     transactions = get_account_transactions(account_id)
-    transactions_with_commands = []
+    commands = []
 
     for transaction in transactions:
-        if transaction.command_json:
-            transactions_with_commands.append(transaction)
+        command_json = transaction.command_json
 
-    return transactions_with_commands
+        if command_json:
+            commands.append(command_json)
+
+    return commands

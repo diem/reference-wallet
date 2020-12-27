@@ -175,7 +175,7 @@ def offchain_api_routes():
         methods=["GET"],
     )
     offchain.add_url_rule(
-        rule="/offchain/query/payment_command/",
+        rule="/offchain/query/payment_command",
         view_func=OffchainRoutes.GetAccountPaymentCommands.as_view(
             "get_account_payment_commands"
         ),

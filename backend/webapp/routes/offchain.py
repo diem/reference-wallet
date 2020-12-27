@@ -17,6 +17,7 @@ from webapp.routes.strict_schema_view import (
     response_definition,
     path_string_param,
 )
+from webapp.schemas import PaymentCommands, PaymentCommand
 
 logger = logging.getLogger(__name__)
 offchain = Blueprint("offchain", __name__)
@@ -35,13 +36,15 @@ class OffchainRoutes:
             )
         ]
 
-        responses = {HTTPStatus.OK: response_definition("Payment Command", schema=str)}
+        responses = {
+            HTTPStatus.OK: response_definition("Payment Command", schema=PaymentCommand)
+        }
 
         def get(self, transaction_id: int):
             payment_command = get_payment_command_json(transaction_id)
 
             return (
-                {"transaction_id": transaction_id, "payment_command": payment_command},
+                {"payment_command": payment_command},
                 HTTPStatus.OK,
             )
 
@@ -49,14 +52,16 @@ class OffchainRoutes:
         summary = "Get Account Payment Commands"
 
         responses = {
-            HTTPStatus.OK: response_definition("Account Payment Commands", schema=str)
+            HTTPStatus.OK: response_definition(
+                "Account Payment Commands", schema=PaymentCommands
+            )
         }
 
         def get(self):
             payment_commands = get_account_payment_commands(self.user.account_id)
 
             return (
-                payment_commands,
+                {"payment_commands": payment_commands},
                 HTTPStatus.OK,
             )
 
