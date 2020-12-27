@@ -261,5 +261,5 @@ def get_payment_command_json(transaction_id: int) -> Optional[str]:
     return None
 
 
-def get_account_payment_commands(account_id: int) -> List[Transaction]:
+def get_account_payment_commands(account_id: int) -> List[str]:
     return storage.get_account_payment_commands(account_id)
