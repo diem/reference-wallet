@@ -1,8 +1,9 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
+import json
 import logging
 from datetime import datetime
-from typing import Optional, Tuple, Callable, List
+from typing import Optional, Tuple, Callable, List, Dict
 
 import context
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
@@ -252,14 +253,23 @@ def _hrp() -> str:
     return context.get().config.diem_address_hrp()
 
 
-def get_payment_command_json(transaction_id: int) -> Optional[str]:
-    transaction = storage.get_payment_command_json(transaction_id)
+def get_payment_command_json(transaction_id: int) -> Optional[Dict]:
+    transaction = storage.get_transaction(transaction_id)
 
-    if transaction:
-        return transaction.command_json
+    if transaction and transaction.command_json:
+        return json.loads(transaction.command_json)
 
     return None
 
 
-def get_account_payment_commands(account_id: int) -> List[str]:
-    return storage.get_account_payment_commands(account_id)
+def get_account_payment_commands(account_id: int) -> List[Dict]:
+    transactions = storage.get_account_transactions(account_id)
+    commands = []
+
+    for transaction in transactions:
+        command_json = transaction.command_json
+
+        if command_json:
+            commands.append(json.loads(command_json))
+
+    return commands

@@ -7,11 +7,7 @@ from http import HTTPStatus
 from diem.offchain import X_REQUEST_ID, X_REQUEST_SENDER_ADDRESS
 from flask import Blueprint, request
 from flask.views import MethodView
-from wallet.services.offchain import (
-    process_inbound_command,
-    get_payment_command_json,
-    get_account_payment_commands,
-)
+from wallet.services import offchain as offchain_service
 from webapp.routes.strict_schema_view import (
     StrictSchemaView,
     response_definition,
@@ -41,7 +37,7 @@ class OffchainRoutes:
         }
 
         def get(self, transaction_id: int):
-            payment_command = get_payment_command_json(transaction_id)
+            payment_command = offchain_service.get_payment_command_json(transaction_id)
 
             return (
                 {"payment_command": payment_command},
@@ -58,7 +54,9 @@ class OffchainRoutes:
         }
 
         def get(self):
-            payment_commands = get_account_payment_commands(self.user.account_id)
+            payment_commands = offchain_service.get_account_payment_commands(
+                self.user.account_id
+            )
 
             return (
                 {"payment_commands": payment_commands},
@@ -73,7 +71,9 @@ class OffchainRoutes:
 
             logger.info(f"[{sender_address}:{x_request_id}] offchain v2 income request")
 
-            code, response = process_inbound_command(sender_address, request_body)
+            code, response = offchain_service.process_inbound_command(
+                sender_address, request_body
+            )
 
             logger.info(
                 f"[{sender_address}:{x_request_id}] response: {code}, {response}"

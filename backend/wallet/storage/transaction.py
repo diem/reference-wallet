@@ -234,25 +234,3 @@ def get_total_currency_debits():
         )
         .all()
     )
-
-
-def get_payment_command_json(transaction_id: int) -> Optional[Transaction]:
-    transaction = Transaction.query.filter_by(id=transaction_id).one_or_none()
-
-    if transaction:
-        return transaction
-
-    return None
-
-
-def get_account_payment_commands(account_id: int) -> List[str]:
-    transactions = get_account_transactions(account_id)
-    commands = []
-
-    for transaction in transactions:
-        command_json = transaction.command_json
-
-        if command_json:
-            commands.append(command_json)
-
-    return commands
