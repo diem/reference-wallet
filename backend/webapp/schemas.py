@@ -212,3 +212,11 @@ class TotalUsers(Schema):
 class Chain(Schema):
     chain_id = fields.Int(required=True)
     display_name = fields.Str(required=True)
+
+
+class PaymentCommand(Schema):
+    payment_command = fields.Str(required=False, allow_none=True, missing=None)
+
+
+class PaymentCommands(Schema):
+    payment_commands = fields.List(fields.Nested(PaymentCommand))

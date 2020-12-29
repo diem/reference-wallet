@@ -42,9 +42,7 @@ class AccountRoutes:
 
     class AccountInfo(AccountView):
         summary = "Get an account info"
-        parameters = (
-            []
-        )  # path_string_param(name='account_name', description="account name")
+        parameters = []
         responses = {
             HTTPStatus.OK: response_definition(
                 "Account information", schema=AccountInfoSchema
