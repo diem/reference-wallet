@@ -1,6 +1,16 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
+import json
+import logging
+from datetime import datetime
+from typing import Optional, Tuple, Callable, List, Dict
 
+import context
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from diem import offchain, identifier
+from diem_utils.types.currencies import DiemCurrency
+from wallet import storage
+from wallet.services import account, kyc
 
 from ..storage import (
     lock_for_update,
@@ -13,15 +23,6 @@ from ..types import (
     TransactionType,
     TransactionStatus,
 )
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from datetime import datetime
-from diem import offchain, identifier
-from diem_utils.types.currencies import DiemCurrency
-from typing import Optional, Tuple, Callable
-from wallet.services import account, kyc
-
-import context
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -250,3 +251,25 @@ def _compliance_private_key() -> Ed25519PrivateKey:
 
 def _hrp() -> str:
     return context.get().config.diem_address_hrp()
+
+
+def get_payment_command_json(transaction_id: int) -> Optional[Dict]:
+    transaction = storage.get_transaction(transaction_id)
+
+    if transaction and transaction.command_json:
+        return json.loads(transaction.command_json)
+
+    return None
+
+
+def get_account_payment_commands(account_id: int) -> List[Dict]:
+    transactions = storage.get_account_transactions(account_id)
+    commands = []
+
+    for transaction in transactions:
+        command_json = transaction.command_json
+
+        if command_json:
+            commands.append(json.loads(command_json))
+
+    return commands

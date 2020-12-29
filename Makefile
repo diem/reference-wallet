@@ -49,6 +49,10 @@ alltest: test e2e
 
 e2e: clean-docker build-e2e double-env e2e-test
 
+run-double: clean-docker build-e2e double-env
+	./scripts/wait_for_server_ready.sh 12 # 12 services should have log, 2 gateways has no log
+	cat double.vars
+
 # build e2e test images
 build-e2e:
 	./scripts/lrw.sh build 8080 e2e
