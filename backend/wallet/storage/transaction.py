@@ -4,14 +4,33 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Callable
 
 from sqlalchemy import func, and_, or_
 
 from . import db_session, get_user
-from .models import Transaction, TransactionLog, OffChain
+from .models import Transaction, TransactionLog
 from ..types import TransactionStatus, TransactionType
 from diem_utils.types.currencies import DiemCurrency
+
+
+def lock_for_update(
+    reference_id: str,
+    callback: Callable[[Optional[Transaction]], Transaction],
+) -> Transaction:
+    try:
+        txn = (
+            Transaction.query.filter_by(reference_id=reference_id)
+            .populate_existing()
+            .with_for_update(nowait=True)
+            .one_or_none()
+        )
+        txn = callback(txn)
+        commit_transaction(txn)
+    except Exception:
+        db_session.rollback()
+        raise
+    return txn
 
 
 def add_transaction(
@@ -28,38 +47,27 @@ def add_transaction(
     sequence: Optional[int] = None,
     blockchain_version: Optional[int] = None,
     reference_id: Optional[str] = None,
-    metadata_signature: Optional[str] = None,
+    command_json: Optional[str] = None,
 ) -> Transaction:
-    tx = Transaction(
-        amount=amount,
-        currency=currency,
-        type=payment_type,
-        status=status,
-        created_timestamp=datetime.utcnow(),
-        source_id=source_id,
-        source_address=source_address,
-        source_subaddress=source_subaddress,
-        destination_id=destination_id,
-        destination_address=destination_address,
-        destination_subaddress=destination_subaddress,
-        sequence=sequence,
-        blockchain_version=blockchain_version,
+    return commit_transaction(
+        Transaction(
+            amount=amount,
+            currency=currency,
+            type=payment_type,
+            status=status,
+            created_timestamp=datetime.utcnow(),
+            source_id=source_id,
+            source_address=source_address,
+            source_subaddress=source_subaddress,
+            destination_id=destination_id,
+            destination_address=destination_address,
+            destination_subaddress=destination_subaddress,
+            sequence=sequence,
+            blockchain_version=blockchain_version,
+            reference_id=reference_id,
+            command_json=command_json,
+        )
     )
-
-    if payment_type == TransactionType.OFFCHAIN:
-        if reference_id is None:
-            raise ValueError(
-                f"Reference ID must exist for offchain transaction {tx.id}"
-            )
-        offchain = OffChain(reference_id=reference_id)
-        offchain.metadata_signature = metadata_signature
-        tx.off_chain.append(offchain)
-        db_session.add(offchain)
-
-    db_session.add(tx)
-    db_session.commit()
-
-    return tx
 
 
 def update_transaction(
@@ -75,15 +83,23 @@ def update_transaction(
         tx.blockchain_version = blockchain_version
     if sequence:
         tx.sequence = sequence
+    commit_transaction(tx)
 
-    db_session.add(tx)
+
+def commit_transaction(txn: Transaction) -> Transaction:
+    db_session.add(txn)
     db_session.commit()
+    return txn
 
 
 def delete_transaction_by_id(transaction_id: int) -> None:
     TransactionLog.query.filter_by(tx_id=transaction_id).delete()
     Transaction.query.filter_by(id=transaction_id).delete()
     db_session.commit()
+
+
+def get_transaction_by_reference_id(reference_id: str) -> Transaction:
+    return Transaction.query.filter_by(reference_id=reference_id).first()
 
 
 def get_transaction(transaction_id: int) -> Transaction:
@@ -160,6 +176,10 @@ def get_user_transactions(user_id, currency=None):
     return query.order_by(Transaction.id.desc()).all()
 
 
+def get_transactions_by_status(status: TransactionStatus):
+    return Transaction.query.filter(Transaction.status == status).all()
+
+
 def get_single_transaction(transaction_id: int):
     tx = Transaction.query.get(transaction_id)
     db_session.refresh(tx)
@@ -183,7 +203,7 @@ def get_total_currency_credits():
         )
         .filter(
             and_(
-                Transaction.type == TransactionType.EXTERNAL,
+                Transaction.type != TransactionType.INTERNAL,
                 Transaction.destination_id.isnot(None),
             )
         )
@@ -204,7 +224,7 @@ def get_total_currency_debits():
         )
         .filter(
             and_(
-                Transaction.type == TransactionType.EXTERNAL,
+                Transaction.type != TransactionType.INTERNAL,
                 Transaction.source_id.isnot(None),
             )
         )
@@ -214,42 +234,3 @@ def get_total_currency_debits():
         )
         .all()
     )
-
-
-def get_reference_id_from_transaction_id(transaction_id):
-    off_chain = OffChain.query.filter_by(transaction_id=transaction_id).first()
-    if off_chain is None:
-        return None
-    return off_chain.reference_id
-
-
-def get_transaction_id_from_reference_id(reference_id):
-    off_chain = OffChain.query.filter_by(reference_id=reference_id).first()
-    if off_chain is None:
-        return None
-    return off_chain.transaction_id
-
-
-def add_metadata_signature(
-    reference_id: str,
-    metadata_signature: str,
-) -> None:
-    off_chain_tx = OffChain.query.filter_by(reference_id=reference_id).first()
-    if off_chain_tx is None:
-        raise ValueError(f"Off Chain object with ref id {reference_id} does not exist")
-    off_chain_tx.metadata_signature = metadata_signature
-
-    db_session.add(off_chain_tx)
-    db_session.commit()
-
-
-def get_metadata_signature_from_reference_id(reference_id):
-    off_chain = OffChain.query.filter_by(reference_id=reference_id).first()
-    if off_chain is None:
-        raise ValueError(f"Off Chain object with ref id {reference_id} does not exist")
-    signature = off_chain.metadata_signature
-    if signature is None:
-        raise ValueError(
-            f"Metadata signature for Off Chain object with ref id {reference_id} does not exist"
-        )
-    return signature

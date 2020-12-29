@@ -107,7 +107,6 @@ def test_get_user_kyc() -> None:
     update_user(user_id=user_id, country="US", city="New York")
     kyc_info = get_additional_user_kyc_info(user_id)
     assert kyc_info == {
-        "payload_type": "KYC_DATA",
         "payload_version": 1,
         "type": "individual",
         "given_name": first_name,

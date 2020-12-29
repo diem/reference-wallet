@@ -276,7 +276,7 @@ class AccountRoutes:
 
         blockchain_tx = None
 
-        if transaction.type == TransactionType.EXTERNAL:
+        if transaction.type != TransactionType.INTERNAL:
             blockchain_tx = {
                 "amount": transaction.amount,
                 "source": transaction.source_address,

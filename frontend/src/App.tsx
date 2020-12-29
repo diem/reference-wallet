@@ -40,6 +40,23 @@ const App = () => {
   settingsRef.current = settings;
 
   useEffect(() => {
+    async function chainDisplayName() {
+      const backendClient = new BackendClient();
+
+      const chain = await backendClient.getChain();
+
+      setSettings({
+        ...settings,
+        network: chain.display_name,
+      });
+    }
+
+    if (!settings.network) {
+      chainDisplayName();
+    }
+  }, []);
+
+  useEffect(() => {
     const refreshUser = async () => {
       try {
         if (SessionStorage.getAccessToken()) {

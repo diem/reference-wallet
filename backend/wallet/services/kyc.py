@@ -82,7 +82,6 @@ def xstr(s):
 def get_user_kyc_info(user_id):
     user = get_user(user_id)
     return {
-        "payload_type": "KYC_DATA",
         "payload_version": 1,
         "type": "individual",
         "given_name": xstr(user.first_name),
@@ -102,7 +101,6 @@ def get_user_kyc_info(user_id):
 def get_additional_user_kyc_info(user_id):
     user = get_user(user_id)
     return {
-        "payload_type": "KYC_DATA",
         "payload_version": 1,
         "type": "individual",
         "given_name": xstr(user.first_name),

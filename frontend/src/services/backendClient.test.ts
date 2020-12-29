@@ -459,8 +459,8 @@ describe("Account", () => {
 
 describe("CICO", () => {
   const fiatCurrency: FiatCurrency = "USD";
-  const currency: Currency = "Coin1";
-  const currencyPair = "Coin1_USD";
+  const currency: Currency = "XUS";
+  const currencyPair = "XUS_USD";
   const amount = 123;
   const quoteId = "MAGNA-QUOTUM";
   const paymentMethod = 1;

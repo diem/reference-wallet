@@ -29,16 +29,16 @@ def test_create_order():
         user_id=1,
         direction=Direction.Buy,
         amount=amount,
-        base_currency=DiemCurrency.Coin1,
+        base_currency=DiemCurrency.XUS,
         quote_currency=FiatCurrency.USD,
     )
 
-    assert order.exchange_amount == rates[str(CurrencyPairs.Coin1_USD.value)]
+    assert order.exchange_amount == rates[str(CurrencyPairs.XUS_USD.value)]
 
 
 def test_add_funds(patch_blockchain: None):
     buy_amount = 1000
-    buy_currency = DiemCurrency.Coin1
+    buy_currency = DiemCurrency.XUS
     inventory_id, account_id, order_id = AddFundsSeeder.run(
         db_session,
         buy_amount=buy_amount,
@@ -65,7 +65,7 @@ def test_add_funds(patch_blockchain: None):
 
 def test_add_funds_refund_inventory(patch_blockchain: None):
     buy_amount = 1000
-    buy_currency = DiemCurrency.Coin1
+    buy_currency = DiemCurrency.XUS
     inventory_id, account_id, order_id = InventoryWithoutFundsSeeder.run(
         db_session,
         buy_amount=buy_amount,
@@ -94,9 +94,9 @@ def test_convert_insufficient_user_balance():
     inventory_id, account_id, order = ConvertSeeder.run(
         db_session,
         account_amount=500,
-        account_currency=DiemCurrency.Coin1,
+        account_currency=DiemCurrency.XUS,
         inventory_amount=600,
-        inventory_currency=DiemCurrency.Coin1,
+        inventory_currency=DiemCurrency.XUS,
         convert_from_amount=700,
         convert_to_amount=500,
     )
@@ -108,9 +108,9 @@ def test_convert_insufficient_inventory_balance():
     inventory_id, account_id, order = ConvertSeeder.run(
         db_session,
         account_amount=1000,
-        account_currency=DiemCurrency.Coin1,
+        account_currency=DiemCurrency.XUS,
         inventory_amount=300,
-        inventory_currency=DiemCurrency.Coin1,
+        inventory_currency=DiemCurrency.XUS,
         convert_from_amount=1000,
         convert_to_amount=500,
     )
@@ -125,7 +125,7 @@ def test_withdraw_funds(patch_blockchain: None):
     inventory_id, account_id, order_id = WithdrawFundsSeeder.run(
         db_session,
         account_amount=1000,
-        account_currency=DiemCurrency.Coin1,
+        account_currency=DiemCurrency.XUS,
         withdraw_amount=500,
         withdraw_to_currency=FiatCurrency.USD,
         price=550,
@@ -140,7 +140,7 @@ def test_withdraw_funds(patch_blockchain: None):
 
     withdraw_transaction = storage.get_transaction(order.internal_ledger_tx)
     assert withdraw_transaction
-    assert withdraw_transaction.currency == DiemCurrency.Coin1
+    assert withdraw_transaction.currency == DiemCurrency.XUS
     assert withdraw_transaction.amount == 500
     assert withdraw_transaction.source_id == account_id
     assert withdraw_transaction.destination_id == inventory_id

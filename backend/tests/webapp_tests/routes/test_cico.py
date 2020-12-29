@@ -43,7 +43,7 @@ class TestCreateQuote:
             json=dict(
                 action="buy",
                 amount=10000,
-                currency_pair="Coin1_USD",
+                currency_pair="XUS_USD",
             ),
         )
         assert rv.status_code == 200
@@ -57,7 +57,7 @@ class TestCreateQuote:
             json=dict(
                 action="steal",
                 amount=100,
-                currency_pair="Coin1_USD",
+                currency_pair="XUS_USD",
             ),
         )
         assert rv.status_code == 400
@@ -68,7 +68,7 @@ class TestCreateQuote:
             json=dict(
                 action="buy",
                 amount="what?!",
-                currency_pair="Coin1_USD",
+                currency_pair="XUS_USD",
             ),
         )
         assert rv.status_code == 400
@@ -76,7 +76,7 @@ class TestCreateQuote:
     def test_identical_base_quote_currencies(self, authorized_client: Client) -> None:
         rv: Response = authorized_client.post(
             "/account/quotes",
-            json=dict(action="buy", amount=1_000_000, currency_pair="Coin1_Coin1"),
+            json=dict(action="buy", amount=1_000_000, currency_pair="XUS_XUS"),
         )
         assert rv.status_code == HTTPStatus.BAD_REQUEST
 

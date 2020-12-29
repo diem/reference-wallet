@@ -28,7 +28,7 @@ class LRWPubSubEvent:
         # It breaks on data directly from the blockchain without saying much
         self.metadata = diem_types.Metadata__Undefined()
         try:
-            self.metadata = diem_types.Metadata.lcs_deserialize(metadata)
+            self.metadata = diem_types.Metadata.bcs_deserialize(metadata)
         except:
             pass
 

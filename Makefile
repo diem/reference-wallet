@@ -90,5 +90,7 @@ backend-test: backend-install
 	PIPENV_PIPFILE=backend/Pipfile pipenv run pytest \
 		--ignore=backend/tests/e2e_tests backend/tests -k "$(T)" -W ignore::DeprecationWarning
 
+backend-pip-update:
+	cd backend && pipenv update
 
-.PHONY: pyre check format backend-install backend-test
+.PHONY: pyre check format backend-install backend-test backend-pip-update

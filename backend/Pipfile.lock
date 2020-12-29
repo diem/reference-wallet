@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c79261d8a3d35e488be3c7817d49656f342686534d480769857d2281745c064c"
+            "sha256": "3a58f24adcc77b417de050a74786b9f63f4a5fe34c1e9e213dd747727a582f4d"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -216,11 +216,11 @@
         },
         "diem": {
             "hashes": [
-                "sha256:7281c95d4b3f2eb114da8e89f8be39c8a9c78d9cfea9414f500be1fd3232dcc4",
-                "sha256:e773e264b103ce2bc323c5d6215772becd86e947ff836cc956d8b62c57124667"
+                "sha256:a9dde1c0301653825a9c3dcb887924f68bd91a14fae971cf89461b364f4e054f",
+                "sha256:ff2620a4b9a9aa5a10bcbdd0f5f35f9f398229b7c9c501cd8c9d9760d9e48fe1"
             ],
             "index": "pypi",
-            "version": "==0.6.2020120202"
+            "version": "==1.1.0"
         },
         "diem-sample-wallet": {
             "editable": true,
@@ -443,21 +443,6 @@
             "index": "pypi",
             "version": "==1.4.3"
         },
-        "libra-client-sdk": {
-            "hashes": [
-                "sha256:13f64416d42e24484f69e037abf911699d9cee394b7fadfaed7fbc16767cf731",
-                "sha256:cb16dafdbc8ef62833cb4acb0fa276d1b876874a4959bfc46c6002dec966a491"
-            ],
-            "markers": "python_version >= '3.7'",
-            "version": "==0.6.2020110801"
-        },
-        "libra-offchainreference": {
-            "hashes": [
-                "sha256:837356266540e71e7ff120fd1acf7a7a1159e756ab78bc2f93d38c92b25efa0f"
-            ],
-            "index": "pypi",
-            "version": "==0.0.9.dev1"
-        },
         "markupsafe": {
             "hashes": [
                 "sha256:00bc623926325b26bb9605ae9eae8a215691f33cae5df11ca5424f06f2d1f473",
@@ -499,11 +484,11 @@
         },
         "marshmallow": {
             "hashes": [
-                "sha256:4ab2fdb7f36eb61c3665da67a7ce281c8900db08d72ba6bf0e695828253581f7",
-                "sha256:eca81d53aa4aafbc0e20566973d0d2e50ce8bf0ee15165bb799bec0df1e50177"
+                "sha256:73facc37462dfc0b27f571bdaffbef7709e19f7a616beb3802ea425b07843f4e",
+                "sha256:e26763201474b588d144dae9a32bdd945cd26a06c943bc746a6882e850475378"
             ],
             "index": "pypi",
-            "version": "==3.10.0"
+            "version": "==3.9.1"
         },
         "marshmallow-enum": {
             "hashes": [
@@ -1182,6 +1167,14 @@
                 "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"
             ],
             "version": "==1.4.4"
+        },
+        "appnope": {
+            "hashes": [
+                "sha256:93aa393e9d6c54c5cd570ccadd8edad61ea0c4b9ea7a01409020c9aa019eb442",
+                "sha256:dd83cd4b5b460958838f6eb3000c660b1f9caf2a5b1de4264e941512f603258a"
+            ],
+            "markers": "sys_platform == 'darwin'",
+            "version": "==0.1.2"
         },
         "attrs": {
             "hashes": [

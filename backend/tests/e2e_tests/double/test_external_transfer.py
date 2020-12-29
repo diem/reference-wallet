@@ -34,10 +34,10 @@ def test_create_account() -> None:
 
 def test_external_transfer() -> None:
     """
-    Test an external transfer of Coin1 from VASP1 to VASP2
+    Test an external transfer of XUS from VASP1 to VASP2
     """
 
-    currency = "Coin1"
+    currency = "XUS"
     user1 = UserClient.create(LRW_WEB_1, "transfer_test_user1")
     user2 = UserClient.create(LRW_WEB_2, "transfer_test_user2")
     user1.buy(9_000_000, currency, "USD")
@@ -47,10 +47,10 @@ def test_external_transfer() -> None:
 
 def test_external_transfer_requires_offchain() -> None:
     """
-    Test an external transfer of Coin1 from VASP1 to VASP2
+    Test an external transfer of XUS from VASP1 to VASP2
     """
 
-    currency = "Coin1"
+    currency = "XUS"
     user1 = UserClient.create(LRW_WEB_1, "offchain_test_user1")
     user2 = UserClient.create(LRW_WEB_2, "offchain_test_user2")
 
@@ -83,3 +83,4 @@ def transfer(user1: UserClient, user2: UserClient, transfer_amount: int, currenc
     txns2 = user2.get_transactions()
     assert len(txns2) == 1
     assert txns2[0].get("amount") == transfer_amount
+    assert txns2[0].get("status") == "completed"

@@ -1,12 +1,12 @@
 import { AppSettings } from "../interfaces/settings";
 
 export const initialState: AppSettings = {
-  network: "testnet",
+  network: "",
   currencies: {
-    Coin1: {
-      name: "Coin1",
-      symbol: "Coin1",
-      sign: "≋Coin1",
+    XUS: {
+      name: "XUS",
+      symbol: "XUS",
+      sign: "≋XUS",
       rates: {
         USD: 1,
         EUR: 0.85,

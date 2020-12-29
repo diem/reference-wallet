@@ -13,8 +13,6 @@ GW_PORT_1 = os.getenv("GW_PORT_1")
 GW_PORT_2 = os.getenv("GW_PORT_2")
 VASP_ADDR_1 = os.getenv("VASP_ADDR_1")
 VASP_ADDR_2 = os.getenv("VASP_ADDR_2")
-GW_OFFCHAIN_SERVICE_PORT_1 = os.getenv("GW_OFFCHAIN_SERVICE_PORT_1")
-GW_OFFCHAIN_SERVICE_PORT_2 = os.getenv("GW_OFFCHAIN_SERVICE_PORT_2")
 
 print(LRW_WEB_1)
 print(LRW_WEB_2)
@@ -22,8 +20,6 @@ print(GW_PORT_1)
 print(GW_PORT_2)
 print(VASP_ADDR_1)
 print(VASP_ADDR_2)
-print(GW_OFFCHAIN_SERVICE_PORT_1)
-print(GW_OFFCHAIN_SERVICE_PORT_2)
 
 sherlock_info = {
     "address_1": "221B Baker Street",
@@ -73,7 +69,7 @@ class UserClient:
 
     def buy(self, amount: int, currency: str, by_currency: str):
         err = None
-        for i in range(3):
+        for i in range(8):
             try:
                 self._buy(amount, currency, by_currency)
                 return
@@ -81,7 +77,7 @@ class UserClient:
                 err = e
                 pass
 
-        raise RuntimeError(f"failed after retry, last error: {e}")
+        raise RuntimeError(f"failed after retry, last error: {err}")
 
     def _buy(self, amount: int, currency: str, by_currency: str):
         before_balance = self.get_balance(currency)
@@ -192,7 +188,7 @@ def create_test_payment_method(backend, headers) -> str:
     return str(res.json().get("payment_methods")[0].get("id"))
 
 
-def get_test_quote(backend, headers, amount, buy_sell="buy", pair="Coin1_USD") -> str:
+def get_test_quote(backend, headers, amount, buy_sell="buy", pair="XUS_USD") -> str:
     """Creates a test quote and returns its id"""
     quote_payload = {"action": buy_sell, "amount": amount, "currency_pair": pair}
     quote_res = requests.post(
