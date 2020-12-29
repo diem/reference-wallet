@@ -6,7 +6,7 @@ import { BlockchainTransaction } from "../interfaces/blockchain";
 
 // FIXME: DIEM
 const EXPLORER_URL_FORMAT =
-  process.env.REACT_APP_EXPLORER_URL || "https://librabrowser.io/version/{version}";
+  process.env.REACT_APP_EXPLORER_URL || "https://diemexplorer.com/testnet/version/{version}";
 
 interface ExplorerLinkProps {
   blockchainTx: BlockchainTransaction;
