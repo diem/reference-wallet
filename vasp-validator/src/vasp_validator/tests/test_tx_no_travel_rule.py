@@ -18,9 +18,6 @@ def test_send_tx_no_travel_rule(validator, vasp_proxy: VaspProxy):
         tx.status == TxStatus.COMPLETED
     ), f"Failed to send transaction: {tx.status_description}"
 
-    # The amount is below $1000 so no off-chain interaction is required
-    assert tx.offchain_refid is None
-
     # VASP sent the transaction successfully. Validate that it was received
     # by the validator
     assert validator.knows_transaction(
@@ -40,10 +37,7 @@ def test_receive_tx_no_travel_rule(validator, vasp_proxy: VaspProxy):
         tx.status == TxStatus.COMPLETED
     ), f"Failed to send transaction: {tx.status_description}"
 
-    # The amount is below $1000 so no off-chain interaction is required
-    assert tx.offchain_refid is None
-
-    # VASP sent the transaction successfully. Validate that it was received
+    # Validator sent the transaction successfully. Validate that it was received
     # by the VASP
     assert vasp_proxy.knows_transaction(
         tx.onchain_version

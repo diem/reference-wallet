@@ -20,8 +20,6 @@ class TestTxSuccessWithTravelRule:
             tx.status == TxStatus.COMPLETED
         ), f"Failed to send transaction: {tx.status_description}"
 
-        # assert tx.offchain_refid
-
         # VASP sent the transaction successfully. Validate that it was received
         # by the validator
         assert validator.knows_transaction(
@@ -41,10 +39,8 @@ class TestTxSuccessWithTravelRule:
             tx.status == TxStatus.COMPLETED
         ), f"Failed to send transaction: {tx.status_description}"
 
-        # assert tx.offchain_refid
-
-        # VASP sent the transaction successfully. Validate that it was received
-        # by the validator
+        # Validator sent the transaction successfully. Validate that it was received
+        # by the VASP
         assert vasp_proxy.knows_transaction(
             tx.onchain_version
         ), f"Transaction {tx.onchain_version} is not recognized by the VASP"
@@ -76,7 +72,6 @@ def test_validator_kyc_abort(validator, vasp_proxy):
     vasp_offchain_state = vasp_proxy.get_offchain_state(tx.offchain_refid)
 
     # VASP failed to send the transaction, but did it fail for the right reason?
-    # TBD: KYC abort codes are not defined yet in LRW
     assert (
         validator_offchain_state.payment.receiver.abort_code == "kyc_failure"
         and vasp_offchain_state.payment.receiver.abort_code == "kyc_failure"

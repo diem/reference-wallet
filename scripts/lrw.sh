@@ -284,7 +284,6 @@ configure_vasp_validator() {
     echo "VALIDATOR_URL=${new_validator_url}" > ${env_file}
     echo "TESTEE_URL=${new_vasp_url}" >> ${env_file}
   fi
-  echo 'VASP Validator configuration has been updated'
 }
 
 purge() {
