@@ -183,27 +183,27 @@ def offchain_api_routes():
         methods=["GET"],
     )
     offchain.add_url_rule(
-        rule="/offchain/consents",
-        view_func=OffchainRoutes.GetConsents.as_view("get_consent"),
+        rule="/offchain/funds_pull_pre_approvals",
+        view_func=OffchainRoutes.GetFundsPullPreApprovals.as_view("get_funds_pull_pre_approval"),
         methods=["GET"],
     )
     offchain.add_url_rule(
-        rule="/offchain/consent",
-        view_func=OffchainRoutes.ApproveConsent.as_view("approve_consent"),
+        rule="/offchain/funds_pull_pre_approval",
+        view_func=OffchainRoutes.ApproveFundsPullPreApproval.as_view("approve_funds_pull_pre_approval"),
         methods=["POST"],
     )
     offchain.add_url_rule(
-        rule="/offchain/consent",
-        view_func=OffchainRoutes.EstablishConsent.as_view("establish_consent"),
-        methods=["POST"],
+        rule="/offchain/funds_pull_pre_approval",
+        view_func=OffchainRoutes.EstablishFundsPullPreApproval.as_view("establish_funds_pull_pre_approval"),
+        methods=["PUT"],
     )
 
 
 def validation_tool_routes():
     validation_tool.add_url_rule(
-        rule="/validation/consent",
-        view_func=ValidationToolRoutes.CreateConsentRequest.as_view(
-            "create_consent_request"
+        rule="/validation/funds_pull_pre_approval",
+        view_func=ValidationToolRoutes.CreateFundsPullPreApprovalRequest.as_view(
+            "create_funds_pull_pre_approval_request"
         ),
         methods=["POST"],
     )
