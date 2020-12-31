@@ -181,6 +181,31 @@ def offchain_api_routes():
         ),
         methods=["GET"],
     )
+    offchain.add_url_rule(
+        rule="/offchain/consents",
+        view_func=OffchainRoutes.GetConsents.as_view("get_consent"),
+        methods=["GET"],
+    )
+    offchain.add_url_rule(
+        rule="/offchain/consent",
+        view_func=OffchainRoutes.ApproveConsent.as_view("approve_consent"),
+        methods=["POST"],
+    )
+    offchain.add_url_rule(
+        rule="/offchain/consent",
+        view_func=OffchainRoutes.EstablishConsent.as_view("establish_consent"),
+        methods=["POST"],
+    )
+
+
+def validation_tool_routes():
+    validation_tool.add_url_rule(
+        rule="/validation/consent",
+        view_func=ValidationToolRoutes.CreateConsentRequest.as_view(
+            "create_consent_request"
+        ),
+        methods=["POST"],
+    )
 
 
 account_routes()
@@ -189,3 +214,4 @@ admin_routes()
 user_routes()
 system_routes()
 offchain_api_routes()
+validation_tool_routes()
