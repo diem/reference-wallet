@@ -258,16 +258,39 @@ class PaymentCommands(Schema):
     payment_commands = fields.List(fields.Nested(PaymentCommand))
 
 
+class Currency(Schema):
+    amount = fields.Int(required=True)
+    currency = fiat_currency_code_field(required=True)
+
+
+class ScopedCumulativeAmount(Schema):
+    unit = str = fields.Str(required=True, validate=OneOf(["week", "month", "year"]))
+    value = fields.Int(required=False)
+    max_amount = Currency
+
+
+class Scope(Schema):
+    type = fields.Str(required=True, validate=OneOf(["consent", "save_sub_account"]))
+    expiration_time = fields.Int(required=False)
+    max_cumulative_amount = ScopedCumulativeAmount
+    max_transaction_amount = Currency
+
+
 class FundsPullPreApproval(Schema):
-    ...
+    address = fields.Str(required=True)
+    biller_address = fields.Str(required=True)
+    funds_pre_approval_id = fields.Str(required=True)
+    scope = Scope
+    description = fields.Str(required=True)
+    status = fields.Str(required=True)  # default="pending"
 
 
 class FundsPullPreApprovalList(Schema):
-    funds_pull_pre_approvals = fields.List(fields.Nested(FundsPullPreApproval))
+    funds_pre_approval_list = fields.List(fields.Nested(FundsPullPreApproval))
 
 
 class FundsPullPreApprovalId(Schema):
-    cid: str
+    funds_pre_approval_id = fields.Str(required=True)
 
 
 class FundsTransfer(Schema):
