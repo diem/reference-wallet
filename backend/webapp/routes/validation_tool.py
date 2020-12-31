@@ -3,7 +3,7 @@ from http import HTTPStatus
 from diem_utils.types.currencies import DiemCurrency
 from flask import Blueprint, request
 from wallet.services import validation_tool as validation_tool_service
-from webapp.schemas import ConsentId
+from webapp.schemas import FundsPullPreApprovalId
 
 from .strict_schema_view import StrictSchemaView, response_definition
 
@@ -14,29 +14,29 @@ class ValidationToolRoutes:
     class ValidationToolView(StrictSchemaView):
         tags = ["ValidationTool"]
 
-    class CreateConsentRequest(ValidationToolView):
-        summary = "Create consent request"
+    class CreateFundsPullPreApprovalRequest(ValidationToolView):
+        summary = "Create funds_pull_pre_approval request"
 
         responses = {
-            HTTPStatus.OK: response_definition("New consent cid", schema=ConsentId)
+            HTTPStatus.OK: response_definition("New funds_pull_pre_approval cid", schema=FundsPullPreApprovalId)
         }
 
         def post(self):
             user = self.user
             account_id = user.account_id
 
-            consent_details = request.json
+            request_details = request.json
 
-            address = consent_details["address"]
-            experation_time = consent_details["experation_time"]
-            description = consent_details["description"]
-            max_cumulative_amount = consent_details["max_cumulative_amount"]
+            address = request_details["address"]
+            experation_time = request_details["experation_time"]
+            description = request_details["description"]
+            max_cumulative_amount = request_details["max_cumulative_amount"]
             currency = DiemCurrency.XUS
 
-            if "currency" in consent_details:
-                currency = consent_details["currency"]
+            if "currency" in request_details:
+                currency = request_details["currency"]
 
-            funds_pre_approval_id = validation_tool_service.send_consent_request(
+            funds_pre_approval_id = validation_tool_service.send_funds_pull_pre_approval_request(
                 user_account_id=account_id,
                 address=address,
                 expiration_time=experation_time,

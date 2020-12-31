@@ -19,7 +19,7 @@ from wallet.services.stubs import (
 )
 
 
-def send_consent_request(
+def send_funds_pull_pre_approval_request(
     user_account_id,
     address,
     expiration_time,
