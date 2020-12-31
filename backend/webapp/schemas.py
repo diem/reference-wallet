@@ -220,3 +220,15 @@ class PaymentCommand(Schema):
 
 class PaymentCommands(Schema):
     payment_commands = fields.List(fields.Nested(PaymentCommand))
+
+
+class Consent(Schema):
+    ...
+
+
+class ConsentList(Schema):
+    consents = fields.List(fields.Nested(Consent))
+
+
+class ConsentId(Schema):
+    cid: str
