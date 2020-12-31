@@ -22,7 +22,9 @@ def mock_send_funds_pull_pre_approval_request(monkeypatch):
     ) -> Optional[str]:
         return FUNDS_PRE_APPROVAL_ID
 
-    monkeypatch.setattr(validation_tool_service, "send_funds_pull_pre_approval_request", mock)
+    monkeypatch.setattr(
+        validation_tool_service, "send_funds_pull_pre_approval_request", mock
+    )
 
 
 class TestCreateFundsPullPreApprovalRequest:
