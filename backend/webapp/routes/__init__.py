@@ -6,9 +6,10 @@
 from .account import account, AccountRoutes
 from .admin import admin, AdminRoutes
 from .cico import cico, CicoRoutes
+from .offchain import offchain, OffchainRoutes
 from .system import system, SystemRoutes
 from .user import user, UserRoutes
-from .offchain import offchain, OffchainRoutes
+from .validation_tool import validation_tool, ValidationToolRoutes
 
 
 def account_routes():

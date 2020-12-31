@@ -15,6 +15,7 @@ from webapp.routes.strict_schema_view import (
     path_string_param,
 )
 from webapp.schemas import PaymentCommands, PaymentCommand
+from webapp.schemas import Consent
 
 logger = logging.getLogger(__name__)
 offchain = Blueprint("offchain", __name__)
@@ -126,6 +127,20 @@ class OffchainRoutes:
                 {"payment_commands": payments},
                 HTTPStatus.OK,
             )
+
+    class GetConsents(OffchainView):
+        summary = "Get consent"
+
+        responses = {HTTPStatus.OK: response_definition("Consents", schema=Consent)}
+
+        def get(self, cid: str):
+            pass
+
+    class ApproveConsent(OffchainView):
+        summary = "Approve or reject incoming consent"
+
+    class EstablishConsent(OffchainView):
+        summary = "Establish consent by payer"
 
     class OffchainV2View(MethodView):
         def dispatch_request(self, *args, **kwargs):
