@@ -131,7 +131,11 @@ class OffchainRoutes:
     class GetFundsPullPreApprovals(OffchainView):
         summary = "Get funds pull pre approvals"
 
-        responses = {HTTPStatus.OK: response_definition("Funds pull pre approvals", schema=FundsPullPreApproval)}
+        responses = {
+            HTTPStatus.OK: response_definition(
+                "Funds pull pre approvals", schema=FundsPullPreApproval
+            )
+        }
 
         def get(self, cid: str):
             pass
