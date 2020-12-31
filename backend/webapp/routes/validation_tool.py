@@ -18,7 +18,9 @@ class ValidationToolRoutes:
         summary = "Create funds_pull_pre_approval request"
 
         responses = {
-            HTTPStatus.OK: response_definition("New funds_pull_pre_approval cid", schema=FundsPullPreApprovalId)
+            HTTPStatus.OK: response_definition(
+                "New funds_pull_pre_approval cid", schema=FundsPullPreApprovalId
+            )
         }
 
         def post(self):
@@ -36,13 +38,15 @@ class ValidationToolRoutes:
             if "currency" in request_details:
                 currency = request_details["currency"]
 
-            funds_pre_approval_id = validation_tool_service.send_funds_pull_pre_approval_request(
-                user_account_id=account_id,
-                address=address,
-                expiration_time=experation_time,
-                description=description,
-                max_cumulative_amount=max_cumulative_amount,
-                currency=currency,
+            funds_pre_approval_id = (
+                validation_tool_service.send_funds_pull_pre_approval_request(
+                    user_account_id=account_id,
+                    address=address,
+                    expiration_time=experation_time,
+                    description=description,
+                    max_cumulative_amount=max_cumulative_amount,
+                    currency=currency,
+                )
             )
 
             return (
