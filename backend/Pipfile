@@ -77,7 +77,7 @@ python-dotenv = "*"
 dataclasses-json = "*"
 jwcrypto = "*"
 sqlalchemy-paginator = "*"
-diem = "*"
+diem = "==1.1.1"
 
 [pipenv]
 allow_prereleases = true
