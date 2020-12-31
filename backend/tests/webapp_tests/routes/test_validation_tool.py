@@ -11,7 +11,7 @@ FUNDS_PRE_APPROVAL_ID = str(uuid.uuid4())
 
 
 @pytest.fixture
-def mock_send_consent_request(monkeypatch):
+def mock_send_funds_pull_pre_approval_request(monkeypatch):
     def mock(
         user_account_id,
         address,
@@ -22,20 +22,20 @@ def mock_send_consent_request(monkeypatch):
     ) -> Optional[str]:
         return FUNDS_PRE_APPROVAL_ID
 
-    monkeypatch.setattr(validation_tool_service, "send_consent_request", mock)
+    monkeypatch.setattr(validation_tool_service, "send_funds_pull_pre_approval_request", mock)
 
 
-class TestCreateConsentRequest:
-    def test_send_consent_request(
-        self, authorized_client: Client, mock_send_consent_request
+class TestCreateFundsPullPreApprovalRequest:
+    def test_send_funds_pull_pre_approval_request(
+        self, authorized_client: Client, mock_send_funds_pull_pre_approval_request
     ) -> None:
         # address: "64b9dd1e5e56efb0c67e95b8bbecdfb4", sub_address: "9e8a79160e500d01"
         rv: Response = authorized_client.post(
-            "/validation/consent",
+            "/validation/funds_pull_pre_approval",
             json={
                 "address": "tdm1pvjua68j72mhmp3n7jkuthmxlkj0g57gkpegq6qgkjfxwc",
                 "experation_time": 27345,
-                "description": "Test create consent request",
+                "description": "Test create funds_pull_pre_approval request",
                 "max_cumulative_amount": 10000,
             },
         )

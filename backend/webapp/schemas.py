@@ -222,13 +222,13 @@ class PaymentCommands(Schema):
     payment_commands = fields.List(fields.Nested(PaymentCommand))
 
 
-class Consent(Schema):
+class FundsPullPreApproval(Schema):
     ...
 
 
-class ConsentList(Schema):
-    consents = fields.List(fields.Nested(Consent))
+class FundsPullPreApprovalList(Schema):
+    funds_pull_pre_approvals = fields.List(fields.Nested(FundsPullPreApproval))
 
 
-class ConsentId(Schema):
+class FundsPullPreApprovalId(Schema):
     cid: str
