@@ -19,6 +19,8 @@ def mock_send_funds_pull_pre_approval_request(monkeypatch):
         description,
         max_cumulative_amount,
         currency,
+        cumulative_amount_unit,
+        cumulative_amount_unit_value,
     ) -> Optional[str]:
         return FUNDS_PRE_APPROVAL_ID
 
@@ -39,6 +41,8 @@ class TestCreateFundsPullPreApprovalRequest:
                 "experation_time": 27345,
                 "description": "Test create funds_pull_pre_approval request",
                 "max_cumulative_amount": 10000,
+                "cumulative_amount_unit": "week",
+                "cumulative_amount_unit_value": 1,
             },
         )
 

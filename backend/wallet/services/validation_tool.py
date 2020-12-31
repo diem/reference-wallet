@@ -20,16 +20,18 @@ from wallet.services.stubs import (
 
 
 def send_funds_pull_pre_approval_request(
-    user_account_id,
-    address,
-    expiration_time,
-    description,
-    max_cumulative_amount,
-    currency=DiemCurrency.XUS,
+    user_account_id: int,
+    address: str,
+    expiration_time: int,
+    description: str,
+    max_cumulative_amount: int,
+    currency: DiemCurrency,
+    cumulative_amount_unit: ScopeUnitType,
+    cumulative_amount_unit_value: int,
 ):
     max_cumulative_amount_object = ScopedCumulativeAmountObject(
-        unit=ScopeUnitType.WEEK,
-        value=1,
+        unit=cumulative_amount_unit,
+        value=cumulative_amount_unit_value,
         max_amount=CurrencyObject(amount=max_cumulative_amount, currency=currency),
     )
 
