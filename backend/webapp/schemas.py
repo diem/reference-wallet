@@ -258,6 +258,18 @@ class PaymentCommands(Schema):
     payment_commands = fields.List(fields.Nested(PaymentCommand))
 
 
+class Consent(Schema):
+    ...
+
+
+class ConsentList(Schema):
+    consents = fields.List(fields.Nested(Consent))
+
+
+class ConsentId(Schema):
+    cid: str
+
+
 class FundsTransfer(Schema):
     transaction = fields.Nested(Transaction, required=False, allow_none=True)
     payment_command = fields.Nested(PaymentCommand, required=False, allow_none=True)
