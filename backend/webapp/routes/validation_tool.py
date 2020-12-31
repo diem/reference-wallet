@@ -34,6 +34,10 @@ class ValidationToolRoutes:
             description = request_details["description"]
             max_cumulative_amount = request_details["max_cumulative_amount"]
             currency = DiemCurrency.XUS
+            cumulative_amount_unit = request_details["cumulative_amount_unit"]
+            cumulative_amount_unit_value = request_details[
+                "cumulative_amount_unit_value"
+            ]
 
             if "currency" in request_details:
                 currency = request_details["currency"]
@@ -46,6 +50,8 @@ class ValidationToolRoutes:
                     description=description,
                     max_cumulative_amount=max_cumulative_amount,
                     currency=currency,
+                    cumulative_amount_unit=cumulative_amount_unit,
+                    cumulative_amount_unit_value=cumulative_amount_unit_value,
                 )
             )
 
