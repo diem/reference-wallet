@@ -214,14 +214,13 @@ class AccountRoutes:
             try:
                 tx_params = request.json
 
-                user = self.user
-                account_id = user.account_id
+                account_id = self.user.account_id
 
                 currency = DiemCurrency[tx_params["currency"]]
                 amount = int(tx_params["amount"])
-                recv_address: str = tx_params["receiver_address"]
-                dest_address, dest_subaddress = identifier.decode_account(
-                    recv_address, context.get().config.diem_address_hrp()
+                receiver_address: str = tx_params["receiver_address"]
+                dest_address, dest_sub_address = identifier.decode_account(
+                    receiver_address, context.get().config.diem_address_hrp()
                 )
 
                 tx = transaction_service.send_transaction(
@@ -229,13 +228,15 @@ class AccountRoutes:
                     amount=amount,
                     currency=currency,
                     destination_address=utils.account_address_bytes(dest_address).hex(),
-                    destination_subaddress=dest_subaddress.hex()
-                    if dest_subaddress
+                    destination_subaddress=dest_sub_address.hex()
+                    if dest_sub_address
                     else None,
                 )
+
                 transaction = AccountRoutes.get_transaction_response_object(
-                    user.account_id, tx
+                    account_id, tx
                 )
+
                 return transaction, HTTPStatus.OK
             except transaction_service.RiskCheckError as risk_check_failed_error:
                 return self.respond_with_error(
