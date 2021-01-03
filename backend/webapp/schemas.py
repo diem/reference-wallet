@@ -281,8 +281,8 @@ class FundsPullPreApproval(Schema):
     biller_address = fields.Str(required=True)
     funds_pre_approval_id = fields.Str(required=True)
     scope = Scope
-    description = fields.Str(required=True)
-    status = fields.Str(required=True)  # default="pending"
+    description = fields.Str(required=False)
+    status = fields.Str(required=False)  # default="pending"
 
 
 class FundsPullPreApprovalList(Schema):
