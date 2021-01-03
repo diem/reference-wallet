@@ -273,3 +273,15 @@ def get_account_payment_commands(account_id: int) -> List[Dict]:
             commands.append(json.loads(command_json))
 
     return commands
+
+
+def get_funds_pull_pre_approvals() -> List[str]:
+    return []
+
+
+def approve_funds_pull_pre_approval() -> bool:
+    return True
+
+
+def establish_funds_pull_pre_approval() -> str:
+    return ""
