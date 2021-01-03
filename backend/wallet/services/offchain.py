@@ -406,3 +406,15 @@ def model_to_payment_command(model: PaymentCommandModel) -> offchain.PaymentComm
             description=model.description,
         ),
     )
+
+
+def get_funds_pull_pre_approvals() -> List[str]:
+    return []
+
+
+def approve_funds_pull_pre_approval() -> bool:
+    return True
+
+
+def establish_funds_pull_pre_approval() -> str:
+    return ""

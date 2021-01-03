@@ -260,11 +260,11 @@ class PaymentCommands(Schema):
 
 class Currency(Schema):
     amount = fields.Int(required=True)
-    currency = fiat_currency_code_field(required=True)
+    currency = diem_currency_code_field(required=True)
 
 
 class ScopedCumulativeAmount(Schema):
-    unit = str = fields.Str(required=True, validate=OneOf(["week", "month", "year"]))
+    unit = fields.Str(required=True, validate=OneOf(["week", "month", "year"]))
     value = fields.Int(required=False)
     max_amount = Currency
 
