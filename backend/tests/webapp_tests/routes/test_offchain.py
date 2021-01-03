@@ -1,10 +1,12 @@
 import json
+import uuid
 from typing import Optional, List
 
 import pytest
 from flask import Response
 from flask.testing import Client
 from wallet.services import offchain as offchain_service
+from wallet.storage import FundsPullPreApprovalCommands
 from diem import offchain
 
 CURRENCY = "XUS"
@@ -242,26 +244,42 @@ class TestGetAccountPaymentCommands:
 
 @pytest.fixture
 def mock_get_funds_pull_pre_approvals(monkeypatch):
-    def mock() -> List[dict]:
-        funds_pull_pre_approval_1 = {
-            "address": "",
-            "biller_address": "",
-            "funds_pre_approval_id": "",
-            "scope": {
-                "type": "consent",
-                "expiration_time": 1234,
-                "max_cumulative_amount": {
-                    "unit": "week",
-                    "value": 1,
-                    "max_amount": {"amount": 100, "currency": "XUS"},
-                },
-                "max_transaction_amount": {"amount": 10, "currency": "XUS"},
-            },
-            "description": "bla la la",
-            "status": "pending",
-        }
+    def mock(account_id) -> List[FundsPullPreApprovalCommands]:
+        funds_pull_pre_approval_1 = FundsPullPreApprovalCommands(
+            account_id=1,
+            address="tdm1pwm5m35ayknjr0s67pk9xdf5mwp3nwq6ef67s55gpjwrqf",
+            biller_address="tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
+            funds_pre_approval_id="28992c81-e85a-4771-995a-af1d22bcaf63",
+            scope_type="consent",
+            expiration_timestamp=1234,
+            max_cumulative_unit="week",
+            max_cumulative_unit_value=1,
+            max_cumulative_amount=100,
+            max_cumulative_amount_currency="XUS",
+            max_transaction_amount=10,
+            max_transaction_amount_currency="XUS",
+            description="bla la la",
+            status="pending",
+        )
 
-        return [funds_pull_pre_approval_1]
+        funds_pull_pre_approval_2 = FundsPullPreApprovalCommands(
+            account_id=2,
+            address="tdm1pztdjx2z8wp0q25jakqeklk0nxj2wmk2kg9whu8c3fdm9u",
+            biller_address="tdm1pvjua68j72mhmp3n7jkuthmxlkj0g57gkpegq6qgkjfxwc",
+            funds_pre_approval_id="e1f7f846-f9e6-46f9-b184-c949f8d6b197",
+            scope_type="consent",
+            expiration_timestamp=1234,
+            max_cumulative_unit="week",
+            max_cumulative_unit_value=1,
+            max_cumulative_amount=100,
+            max_cumulative_amount_currency="XUS",
+            max_transaction_amount=10,
+            max_transaction_amount_currency="XUS",
+            description="bla la la",
+            status="pending",
+        )
+
+        return [funds_pull_pre_approval_1, funds_pull_pre_approval_2]
 
     monkeypatch.setattr(offchain_service, "get_funds_pull_pre_approvals", mock)
 
@@ -275,6 +293,14 @@ class TestGetFundsPullPreApprovals:
         )
 
         assert rv.status_code == 200
+        assert rv.get_data() is not None
+        funds_pull_pre_approvals = rv.get_json()['funds_pull_pre_approvals']
+        assert funds_pull_pre_approvals is not None
+        assert len(funds_pull_pre_approvals) == 2
+        assert (
+                funds_pull_pre_approvals[0]["biller_address"]
+                == "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
+        )
 
 
 @pytest.fixture
