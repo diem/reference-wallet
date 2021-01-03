@@ -137,14 +137,34 @@ class OffchainRoutes:
             )
         }
 
-        def get(self, cid: str):
-            pass
+        def get(self):
+            funds_pull_pre_approvals = offchain_service.get_funds_pull_pre_approvals()
+
+            return (
+                {"funds_pull_pre_approvals": funds_pull_pre_approvals},
+                HTTPStatus.OK,
+            )
 
     class ApproveFundsPullPreApproval(OffchainView):
         summary = "Approve or reject incoming funds pull pre approval"
 
+        def post(self):
+            approved = offchain_service.approve_funds_pull_pre_approval()
+
+            return {approved, HTTPStatus.OK}
+
     class EstablishFundsPullPreApproval(OffchainView):
         summary = "Establish funds pull pre approval by payer"
+
+        def post(self):
+            funds_pull_pre_approval = (
+                offchain_service.establish_funds_pull_pre_approval()
+            )
+
+            return (
+                {"funds_pull_pre_approval": funds_pull_pre_approval},
+                HTTPStatus.OK,
+            )
 
     class OffchainV2View(MethodView):
         def dispatch_request(self, *args, **kwargs):

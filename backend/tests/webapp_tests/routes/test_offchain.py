@@ -76,6 +76,24 @@ def mock_get_payment_command_json(monkeypatch):
     monkeypatch.setattr(offchain_service, "get_payment_command", mock)
 
 
+class TestGetPaymentCommand:
+    def test_get_payment_command_json(
+        self, authorized_client: Client, mock_get_payment_command_json
+    ) -> None:
+        rv: Response = authorized_client.get(
+            "/offchain/query/payment_command/22",
+        )
+
+        assert rv.status_code == 200
+        assert rv.get_data() is not None
+        payment_command = rv.get_json()["payment_command"]
+        assert payment_command is not None
+        assert (
+            payment_command["my_actor_address"]
+            == "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
+        )
+
+
 @pytest.fixture
 def mock_get_account_payment_commands(monkeypatch):
     def mock(account_id: int) -> List[str]:
@@ -203,24 +221,6 @@ def mock_get_account_payment_commands(monkeypatch):
     monkeypatch.setattr(offchain_service, "get_account_payment_commands", mock)
 
 
-class TestGetPaymentCommand:
-    def test_get_payment_command_json(
-        self, authorized_client: Client, mock_get_payment_command_json
-    ) -> None:
-        rv: Response = authorized_client.get(
-            "/offchain/query/payment_command/22",
-        )
-
-        assert rv.status_code == 200
-        assert rv.get_data() is not None
-        payment_object = rv.get_json()["payment"]
-        assert payment_object is not None
-        assert (
-            rv.get_json()["my_actor_address"]
-            == "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
-        )
-
-
 class TestGetAccountPaymentCommands:
     def test_get_account_payment_commands(
         self, authorized_client: Client, mock_get_account_payment_commands
@@ -238,3 +238,78 @@ class TestGetAccountPaymentCommands:
             payment_commands[0]["my_actor_address"]
             == "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
         )
+
+
+@pytest.fixture
+def mock_get_funds_pull_pre_approvals(monkeypatch):
+    def mock() -> List[dict]:
+        funds_pull_pre_approval_1 = {
+            "address": "",
+            "biller_address": "",
+            "funds_pre_approval_id": "",
+            "scope": {
+                "type": "consent",
+                "expiration_time": 1234,
+                "max_cumulative_amount": {
+                    "unit": "week",
+                    "value": 1,
+                    "max_amount": {"amount": 100, "currency": "XUS"},
+                },
+                "max_transaction_amount": {"amount": 10, "currency": "XUS"},
+            },
+            "description": "bla la la",
+            "status": "pending",
+        }
+
+        return [funds_pull_pre_approval_1]
+
+    monkeypatch.setattr(offchain_service, "get_funds_pull_pre_approvals", mock)
+
+
+class TestGetFundsPullPreApprovals:
+    def test_get_funds_pull_pre_approvals(
+        self, authorized_client: Client, mock_get_funds_pull_pre_approvals
+    ) -> None:
+        rv: Response = authorized_client.get(
+            "/offchain/funds_pull_pre_approvals",
+        )
+
+        assert rv.status_code == 200
+
+
+@pytest.fixture
+def mock_approve_funds_pull_pre_approval(monkeypatch):
+    def mock() -> bool:
+        return False
+
+    monkeypatch.setattr(offchain_service, "approve_funds_pull_pre_approval", mock)
+
+
+class TestApproveFundsPullPreApproval:
+    def test_get_funds_pull_pre_approvals(
+        self, authorized_client: Client, mock_approve_funds_pull_pre_approval
+    ) -> None:
+        rv: Response = authorized_client.post(
+            "/offchain/funds_pull_pre_approval/approve",
+        )
+
+        assert rv.status_code == 200
+
+
+@pytest.fixture
+def mock_establish_funds_pull_pre_approval(monkeypatch):
+    def mock() -> bool:
+        return False
+
+    monkeypatch.setattr(offchain_service, "establish_funds_pull_pre_approval", mock)
+
+
+class TestEstablishFundsPullPreApproval:
+    def test_establish_funds_pull_pre_approval(
+        self, authorized_client: Client, mock_establish_funds_pull_pre_approval
+    ) -> None:
+        rv: Response = authorized_client.post(
+            "/offchain/funds_pull_pre_approval/establish",
+        )
+
+        assert rv.status_code == 200
