@@ -8,16 +8,44 @@ from diem.offchain import X_REQUEST_ID, X_REQUEST_SENDER_ADDRESS
 from flask import Blueprint, request
 from flask.views import MethodView
 from wallet.services import offchain as offchain_service
+from wallet.storage import FundsPullPreApprovalCommands
 from webapp.routes.strict_schema_view import (
     StrictSchemaView,
     response_definition,
     path_string_param,
 )
-from webapp.schemas import PaymentCommands, PaymentCommand
-from webapp.schemas import FundsPullPreApproval
+from webapp.schemas import PaymentCommands, PaymentCommand, FundsPullPreApproval, FundsPullPreApprovalList
 
 logger = logging.getLogger(__name__)
 offchain = Blueprint("offchain", __name__)
+
+
+class CommandsRoutes:
+    @classmethod
+    def get_command_response_object(cls, approval: FundsPullPreApprovalCommands):
+        return {
+            "address": approval.address,
+            "biller_address": approval.biller_address,
+            "funds_pre_approval_id": approval.funds_pre_approval_id,
+            "scope": {
+                "type": approval.scope_type,
+                "expiration_time": approval.expiration_timestamp,
+                "max_cumulative_amount": {
+                    "unit": approval.max_cumulative_unit,
+                    "value": approval.max_cumulative_unit_value,
+                    "max_amount": {
+                        "amount": approval.max_cumulative_amount,
+                        "currency": approval.max_cumulative_amount_currency,
+                    },
+                },
+                "max_transaction_amount": {
+                    "amount": approval.max_transaction_amount,
+                    "currency": approval.max_transaction_amount_currency,
+                },
+            },
+            "description": approval.description,
+            "status": approval.status,
+        }
 
 
 class OffchainRoutes:
@@ -69,15 +97,25 @@ class OffchainRoutes:
 
         responses = {
             HTTPStatus.OK: response_definition(
-                "Funds pull pre approvals", schema=FundsPullPreApproval
+                "Funds pull pre approvals", schema=FundsPullPreApprovalList
             )
         }
 
         def get(self):
-            funds_pull_pre_approvals = offchain_service.get_funds_pull_pre_approvals()
+            approvals = offchain_service.get_funds_pull_pre_approvals(
+                self.user.account_id
+            )
+
+            response = []
+
+            for approval in approvals:
+                command_reponse_object = CommandsRoutes.get_command_response_object(
+                    approval
+                )
+                response.append(command_reponse_object)
 
             return (
-                {"funds_pull_pre_approvals": funds_pull_pre_approvals},
+                {"funds_pull_pre_approvals": response},
                 HTTPStatus.OK,
             )
 

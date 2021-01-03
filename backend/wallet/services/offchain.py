@@ -11,6 +11,8 @@ from diem import offchain, identifier
 from diem_utils.types.currencies import DiemCurrency
 from wallet import storage
 from wallet.services import account, kyc
+from wallet.storage.funds_pull_pre_approval_commands import get_account_commands
+from wallet.storage.models import FundsPullPreApprovalCommands
 
 from ..storage import (
     lock_for_update,
@@ -275,8 +277,8 @@ def get_account_payment_commands(account_id: int) -> List[Dict]:
     return commands
 
 
-def get_funds_pull_pre_approvals() -> List[str]:
-    return []
+def get_funds_pull_pre_approvals(account_id: int) -> List[FundsPullPreApprovalCommands]:
+    return get_account_commands(account_id)
 
 
 def approve_funds_pull_pre_approval() -> bool:
