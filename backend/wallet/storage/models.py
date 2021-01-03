@@ -206,3 +206,20 @@ class Token(Base):
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid1()))
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     expiration_time = Column(Float, nullable=False)
+
+
+class FundsPullPreApprovalCommands(Base):
+    __tablename__ = "fundspullpreapprovalcommands"
+    address = Column(String, nullable=False)
+    biller_address = Column(String, nullable=False)
+    funds_pre_approval_id = Column(String, primary_key=True, nullable=False)
+    scope_type = Column(String, nullable=False)
+    expiration_timestamp = Column(Integer, nullable=False)
+    max_cumulative_unit = Column(String, nullable=True)
+    max_cumulative_unit_value = Column(Integer, nullable=True)
+    max_cumulative_amount = Column(Integer, nullable=True)
+    max_cumulative_amount_currency = Column(String, nullable=True)
+    max_transaction_amount = Column(Integer, nullable=True)
+    max_transaction_amount_currency = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    status = Column(String, nullable=False)
