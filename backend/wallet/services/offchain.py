@@ -10,7 +10,13 @@ from diem import offchain, identifier
 from diem_utils.types.currencies import DiemCurrency
 from wallet import storage
 from wallet.services import account, kyc
-from wallet.storage.funds_pull_pre_approval_commands import get_account_commands
+
+# noinspection PyUnresolvedReferences
+from wallet.storage.funds_pull_pre_approval_commands import (
+    get_account_commands,
+    update_command,
+    FundsPullPreApprovalCommandNotFound,
+)
 from wallet.storage.models import FundsPullPreApprovalCommands
 from wallet.storage import models
 
@@ -414,8 +420,10 @@ def get_funds_pull_pre_approvals(account_id: int) -> List[FundsPullPreApprovalCo
     return get_account_commands(account_id)
 
 
-def approve_funds_pull_pre_approval() -> bool:
-    return True
+def approve_funds_pull_pre_approval(funds_pre_approval_id: str, status: str) -> None:
+    update_command(funds_pre_approval_id, status)
+
+    # TODO update in offchain client
 
 
 def establish_funds_pull_pre_approval() -> str:

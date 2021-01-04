@@ -296,3 +296,8 @@ class FundsPullPreApprovalId(Schema):
 class FundsTransfer(Schema):
     transaction = fields.Nested(Transaction, required=False, allow_none=True)
     payment_command = fields.Nested(PaymentCommand, required=False, allow_none=True)
+
+
+class ApproveFundsPullPreApproval(Schema):
+    funds_pre_approval_id = fields.Str(required=True)
+    status = fields.Str(required=False)  # verified\rejected
