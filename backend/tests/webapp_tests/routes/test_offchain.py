@@ -189,7 +189,7 @@ class TestApproveFundsPullPreApproval:
         self, authorized_client: Client, mock_successful_approve_funds_pull_pre_approval
     ) -> None:
         rv: Response = authorized_client.put(
-            "/offchain/funds_pull_pre_approval/approve",
+            "/offchain/funds_pull_pre_approvals/approve",
             json={"funds_pre_approval_id": "1234", "status": "bla"},
         )
 
@@ -199,7 +199,7 @@ class TestApproveFundsPullPreApproval:
         self, authorized_client: Client, mock_failed_approve_funds_pull_pre_approval
     ) -> None:
         rv: Response = authorized_client.put(
-            "/offchain/funds_pull_pre_approval/approve",
+            "/offchain/funds_pull_pre_approvals/approve",
             json={"funds_pre_approval_id": "1234", "status": "bla"},
         )
 
@@ -219,7 +219,7 @@ class TestEstablishFundsPullPreApproval:
         self, authorized_client: Client, mock_establish_funds_pull_pre_approval
     ) -> None:
         rv: Response = authorized_client.post(
-            "/offchain/funds_pull_pre_approval/establish",
+            "/offchain/funds_pull_pre_approvals/establish",
         )
 
         assert rv.status_code == 200

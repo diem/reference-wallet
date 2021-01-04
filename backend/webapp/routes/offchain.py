@@ -29,7 +29,7 @@ offchain = Blueprint("offchain", __name__)
 
 class CommandsRoutes:
     @classmethod
-    def get_command_response_object(
+    def create_command_response_object(
         cls, approval: offchain_service.FundsPullPreApprovalCommands
     ):
         return {
@@ -102,7 +102,7 @@ class OffchainRoutes:
             )
 
     class GetFundsPullPreApprovals(OffchainView):
-        summary = "Get funds pull pre approvals"
+        summary = "Get funds pull pre approvals of a user"
 
         responses = {
             HTTPStatus.OK: response_definition(
@@ -115,13 +115,8 @@ class OffchainRoutes:
                 self.user.account_id
             )
 
-            response = []
+            response = [CommandsRoutes.create_command_response_object(approval) for approval in approvals]
 
-            for approval in approvals:
-                command_reponse_object = CommandsRoutes.get_command_response_object(
-                    approval
-                )
-                response.append(command_reponse_object)
 
             return (
                 {"funds_pull_pre_approvals": response},
@@ -129,7 +124,7 @@ class OffchainRoutes:
             )
 
     class ApproveFundsPullPreApproval(OffchainView):
-        summary = "Approve or reject incoming funds pull pre approval"
+        summary = "Approve or reject pending funds pull pre approval"
         parameters = [
             body_parameter(ApproveFundsPullPreApproval),
         ]

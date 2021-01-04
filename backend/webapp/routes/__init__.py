@@ -190,14 +190,14 @@ def offchain_api_routes():
         methods=["GET"],
     )
     offchain.add_url_rule(
-        rule="/offchain/funds_pull_pre_approval/approve",
+        rule="/offchain/funds_pull_pre_approvals/approve",
         view_func=OffchainRoutes.ApproveFundsPullPreApproval.as_view(
             "approve_funds_pull_pre_approval"
         ),
         methods=["PUT"],
     )
     offchain.add_url_rule(
-        rule="/offchain/funds_pull_pre_approval/establish",
+        rule="/offchain/funds_pull_pre_approvals/establish",
         view_func=OffchainRoutes.EstablishFundsPullPreApproval.as_view(
             "establish_funds_pull_pre_approval"
         ),

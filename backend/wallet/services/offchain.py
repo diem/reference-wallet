@@ -11,7 +11,6 @@ from diem import offchain, identifier
 from diem_utils.types.currencies import DiemCurrency
 from wallet import storage
 from wallet.services import account, kyc
-from wallet.services.account import generate_new_subaddress
 
 # noinspection PyUnresolvedReferences
 from wallet.storage.funds_pull_pre_approval_commands import (
@@ -310,7 +309,7 @@ def establish_funds_pull_pre_approval(
     description: str = None,
 ) -> None:
     vasp_address = context.get().config.vasp_address
-    sub_address = generate_new_subaddress(account_id)
+    sub_address = account.generate_new_subaddress(account_id)
     hrp = context.get().config.diem_address_hrp()
     address = identifier.encode_account(vasp_address, sub_address, hrp)
 

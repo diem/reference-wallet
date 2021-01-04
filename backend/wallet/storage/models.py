@@ -158,10 +158,10 @@ class Token(Base):
 
 class FundsPullPreApprovalCommands(Base):
     __tablename__ = "fundspullpreapprovalcommands"
+    funds_pre_approval_id = Column(String, primary_key=True, nullable=False)
     account_id = Column(Integer, ForeignKey("account.id"), nullable=True)
     address = Column(String, nullable=False)
     biller_address = Column(String, nullable=False)
-    funds_pre_approval_id = Column(String, primary_key=True, nullable=False)
     scope_type = Column(String, nullable=False)
     expiration_timestamp = Column(Integer, nullable=False)
     max_cumulative_unit = Column(String, nullable=True)
