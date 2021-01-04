@@ -2,16 +2,27 @@
 # SPDX-License-Identifier: Apache-2.0
 import json
 import logging
+import uuid
 from datetime import datetime
 from typing import Optional, Tuple, Callable, List, Dict
 
 import context
+from build.lib.wallet.services.stubs import CurrencyObject
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import offchain, identifier
+from diem.offchain import CommandType
 from diem_utils.types.currencies import DiemCurrency
 from wallet import storage
 from wallet.services import account, kyc
-
+from wallet.services.stubs import (
+    FundPullPreApprovalCommandObject,
+    FundPullPreApprovalObject,
+    ScopeObject,
+    ScopeType,
+    ScopedCumulativeAmountObject,
+    FundPullPreApprovalStatus,
+    CommandRequestObject,
+)
 # noinspection PyUnresolvedReferences
 from wallet.storage.funds_pull_pre_approval_commands import (
     get_account_commands,
@@ -328,8 +339,47 @@ def establish_funds_pull_pre_approval(
             max_transaction_amount=max_transaction_amount,
             max_transaction_amount_currency=max_transaction_amount_currency,
             description=description,
-            status="verified",
+            status=FundPullPreApprovalStatus.VALID,
         )
+    )
+
+    max_cumulative_amount_object = ScopedCumulativeAmountObject(
+        unit=max_cumulative_unit,
+        value=max_cumulative_unit_value,
+        max_amount=CurrencyObject(
+            amount=max_cumulative_amount, currency=max_cumulative_amount_currency
+        ),
+    )
+
+    scope_object = ScopeObject(
+        type=ScopeType.CONSENT,
+        expiration_time=expiration_timestamp,
+        max_cumulative_amount=max_cumulative_amount_object,
+        max_transaction_amount=CurrencyObject(
+            amount=max_transaction_amount, currency=max_transaction_amount_currency
+        ),
+    )
+
+    fund_pull_pre_approval = FundPullPreApprovalObject(
+        address=address,
+        biller_address=biller_address,
+        funds_pre_approval_id=funds_pre_approval_id,
+        scope=scope_object,
+        description=description,
+        status=FundPullPreApprovalStatus.VALID,
+    )
+
+    command = FundPullPreApprovalCommandObject(
+        _ObjectType=CommandType.FundPullPreApprovalCommand,
+        fund_pull_pre_approval=fund_pull_pre_approval,
+    )
+
+    cid = str(uuid.UUID())
+
+    command_object = CommandRequestObject(
+        cid=cid,
+        command_type=CommandType.FundPullPreApprovalCommand,
+        command=command,
     )
 
     # TODO generate CommandRequestObject and send through offchain client
