@@ -1,5 +1,4 @@
 import json
-import uuid
 from typing import Optional, List
 
 import pytest
@@ -160,32 +159,51 @@ class TestGetFundsPullPreApprovals:
 
         assert rv.status_code == 200
         assert rv.get_data() is not None
-        funds_pull_pre_approvals = rv.get_json()['funds_pull_pre_approvals']
+        funds_pull_pre_approvals = rv.get_json()["funds_pull_pre_approvals"]
         assert funds_pull_pre_approvals is not None
         assert len(funds_pull_pre_approvals) == 2
         assert (
-                funds_pull_pre_approvals[0]["biller_address"]
-                == "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
+            funds_pull_pre_approvals[0]["biller_address"]
+            == "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
         )
 
 
 @pytest.fixture
-def mock_approve_funds_pull_pre_approval(monkeypatch):
-    def mock() -> bool:
-        return False
+def mock_successful_approve_funds_pull_pre_approval(monkeypatch):
+    def mock(funds_pre_approval_id: str, status: str) -> None:
+        return None
+
+    monkeypatch.setattr(offchain_service, "approve_funds_pull_pre_approval", mock)
+
+
+@pytest.fixture
+def mock_failed_approve_funds_pull_pre_approval(monkeypatch):
+    def mock(funds_pre_approval_id: str, status: str) -> None:
+        raise offchain_service.FundsPullPreApprovalCommandNotFound
 
     monkeypatch.setattr(offchain_service, "approve_funds_pull_pre_approval", mock)
 
 
 class TestApproveFundsPullPreApproval:
-    def test_get_funds_pull_pre_approvals(
-        self, authorized_client: Client, mock_approve_funds_pull_pre_approval
+    def test_successful_get_funds_pull_pre_approvals(
+        self, authorized_client: Client, mock_successful_approve_funds_pull_pre_approval
     ) -> None:
-        rv: Response = authorized_client.post(
+        rv: Response = authorized_client.put(
             "/offchain/funds_pull_pre_approval/approve",
+            json={"funds_pre_approval_id": "1234", "status": "bla"},
         )
 
-        assert rv.status_code == 200
+        assert rv.status_code == 204
+
+    def test_failed_get_funds_pull_pre_approvals(
+        self, authorized_client: Client, mock_failed_approve_funds_pull_pre_approval
+    ) -> None:
+        rv: Response = authorized_client.put(
+            "/offchain/funds_pull_pre_approval/approve",
+            json={"funds_pre_approval_id": "1234", "status": "bla"},
+        )
+
+        assert rv.status_code == 404
 
 
 @pytest.fixture

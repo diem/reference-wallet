@@ -8,13 +8,19 @@ from diem.offchain import X_REQUEST_ID, X_REQUEST_SENDER_ADDRESS
 from flask import Blueprint, request
 from flask.views import MethodView
 from wallet.services import offchain as offchain_service
-from wallet.storage import FundsPullPreApprovalCommands
 from webapp.routes.strict_schema_view import (
     StrictSchemaView,
     response_definition,
     path_string_param,
+    body_parameter,
 )
-from webapp.schemas import PaymentCommands, PaymentCommand, FundsPullPreApproval, FundsPullPreApprovalList
+from webapp.schemas import (
+    PaymentCommands,
+    PaymentCommand,
+    FundsPullPreApprovalList,
+    ApproveFundsPullPreApproval,
+    Error,
+)
 
 logger = logging.getLogger(__name__)
 offchain = Blueprint("offchain", __name__)
@@ -22,7 +28,9 @@ offchain = Blueprint("offchain", __name__)
 
 class CommandsRoutes:
     @classmethod
-    def get_command_response_object(cls, approval: FundsPullPreApprovalCommands):
+    def get_command_response_object(
+        cls, approval: offchain_service.FundsPullPreApprovalCommands
+    ):
         return {
             "address": approval.address,
             "biller_address": approval.biller_address,
@@ -121,11 +129,35 @@ class OffchainRoutes:
 
     class ApproveFundsPullPreApproval(OffchainView):
         summary = "Approve or reject incoming funds pull pre approval"
+        parameters = [
+            body_parameter(ApproveFundsPullPreApproval),
+        ]
+        responses = {
+            HTTPStatus.NO_CONTENT: response_definition(
+                "Request accepted. You should poll for command updates."
+            ),
+            HTTPStatus.NOT_FOUND: response_definition(
+                "Command not found", schema=Error
+            ),
+        }
 
-        def post(self):
-            approved = offchain_service.approve_funds_pull_pre_approval()
+        def put(self):
+            params = request.json
 
-            return {approved, HTTPStatus.OK}
+            funds_pre_approval_id: str = params["funds_pre_approval_id"]
+            status: str = params["status"]
+
+            try:
+                offchain_service.approve_funds_pull_pre_approval(
+                    funds_pre_approval_id, status
+                )
+            except offchain_service.FundsPullPreApprovalCommandNotFound:
+                return self.respond_with_error(
+                    HTTPStatus.NOT_FOUND,
+                    f"Funds pre approval id {funds_pre_approval_id} was not found.",
+                )
+
+            return "OK", HTTPStatus.NO_CONTENT
 
     class EstablishFundsPullPreApproval(OffchainView):
         summary = "Establish funds pull pre approval by payer"

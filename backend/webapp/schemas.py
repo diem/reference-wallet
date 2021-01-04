@@ -255,3 +255,8 @@ class FundsPullPreApprovalList(Schema):
 
 class FundsPullPreApprovalId(Schema):
     funds_pre_approval_id = fields.Str(required=True)
+
+
+class ApproveFundsPullPreApproval(Schema):
+    funds_pre_approval_id = fields.Str(required=True)
+    status = fields.Str(required=False)  # verified\rejected
