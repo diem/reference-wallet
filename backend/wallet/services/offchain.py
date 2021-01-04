@@ -2,21 +2,34 @@
 # SPDX-License-Identifier: Apache-2.0
 import json
 import logging
+import uuid
 from datetime import datetime
 from typing import Optional, Tuple, Callable, List, Dict
 
 import context
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import offchain, identifier
+from diem.offchain import CommandType
 from diem_utils.types.currencies import DiemCurrency
 from wallet import storage
 from wallet.services import account, kyc
+from wallet.services.stubs import (
+    FundPullPreApprovalCommandObject,
+    FundPullPreApprovalObject,
+    ScopeObject,
+    ScopeType,
+    ScopedCumulativeAmountObject,
+    FundPullPreApprovalStatus,
+    CommandRequestObject,
+    CurrencyObject,
+)
 
 # noinspection PyUnresolvedReferences
 from wallet.storage.funds_pull_pre_approval_commands import (
     get_account_commands,
     update_command,
     FundsPullPreApprovalCommandNotFound,
+    commit_command,
 )
 from wallet.storage.models import FundsPullPreApprovalCommands
 
@@ -293,5 +306,82 @@ def approve_funds_pull_pre_approval(funds_pre_approval_id: str, status: str) -> 
     # TODO update in offchain client
 
 
-def establish_funds_pull_pre_approval() -> str:
-    return ""
+def establish_funds_pull_pre_approval(
+    account_id: int,
+    biller_address: str,
+    funds_pre_approval_id: str,
+    scope_type: str,
+    expiration_timestamp: int,
+    max_cumulative_unit: str = None,
+    max_cumulative_unit_value: int = None,
+    max_cumulative_amount: int = None,
+    max_cumulative_amount_currency: str = None,
+    max_transaction_amount: int = None,
+    max_transaction_amount_currency: str = None,
+    description: str = None,
+) -> None:
+    """ Establish funds pull pre approval by payer """
+    vasp_address = context.get().config.vasp_address
+    sub_address = account.generate_new_subaddress(account_id)
+    hrp = context.get().config.diem_address_hrp()
+    address = identifier.encode_account(vasp_address, sub_address, hrp)
+
+    commit_command(
+        FundsPullPreApprovalCommands(
+            account_id=account_id,
+            address=address,
+            biller_address=biller_address,
+            funds_pre_approval_id=funds_pre_approval_id,
+            scope_type=scope_type,
+            expiration_timestamp=expiration_timestamp,
+            max_cumulative_unit=max_cumulative_unit,
+            max_cumulative_unit_value=max_cumulative_unit_value,
+            max_cumulative_amount=max_cumulative_amount,
+            max_cumulative_amount_currency=max_cumulative_amount_currency,
+            max_transaction_amount=max_transaction_amount,
+            max_transaction_amount_currency=max_transaction_amount_currency,
+            description=description,
+            status=FundPullPreApprovalStatus.VALID,
+        )
+    )
+
+    max_cumulative_amount_object = ScopedCumulativeAmountObject(
+        unit=max_cumulative_unit,
+        value=max_cumulative_unit_value,
+        max_amount=CurrencyObject(
+            amount=max_cumulative_amount, currency=max_cumulative_amount_currency
+        ),
+    )
+
+    scope_object = ScopeObject(
+        type=ScopeType.CONSENT,
+        expiration_time=expiration_timestamp,
+        max_cumulative_amount=max_cumulative_amount_object,
+        max_transaction_amount=CurrencyObject(
+            amount=max_transaction_amount, currency=max_transaction_amount_currency
+        ),
+    )
+
+    fund_pull_pre_approval = FundPullPreApprovalObject(
+        address=address,
+        biller_address=biller_address,
+        funds_pre_approval_id=funds_pre_approval_id,
+        scope=scope_object,
+        description=description,
+        status=FundPullPreApprovalStatus.VALID,
+    )
+
+    command = FundPullPreApprovalCommandObject(
+        _ObjectType=CommandType.FundPullPreApprovalCommand,
+        fund_pull_pre_approval=fund_pull_pre_approval,
+    )
+
+    cid = str(uuid.UUID())
+
+    command_object = CommandRequestObject(
+        cid=cid,
+        command_type=CommandType.FundPullPreApprovalCommand,
+        command=command,
+    )
+
+    # TODO generate CommandRequestObject and send through offchain client
