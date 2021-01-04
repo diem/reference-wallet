@@ -21,8 +21,9 @@ from wallet.services.stubs import (
     ScopedCumulativeAmountObject,
     FundPullPreApprovalStatus,
     CommandRequestObject,
-    CurrencyObject
+    CurrencyObject,
 )
+
 # noinspection PyUnresolvedReferences
 from wallet.storage.funds_pull_pre_approval_commands import (
     get_account_commands,

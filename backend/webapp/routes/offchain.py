@@ -129,7 +129,12 @@ class OffchainRoutes:
         summary = "Approve or reject pending funds pull pre approval"
         parameters = [
             body_parameter(ApproveFundsPullPreApproval),
+            path_string_param(
+                name="funds_pull_pre_approval_id",
+                description="funds pull pre approval id",
+            ),
         ]
+
         responses = {
             HTTPStatus.NO_CONTENT: response_definition(
                 "Request accepted. You should poll for command updates."
@@ -139,20 +144,19 @@ class OffchainRoutes:
             ),
         }
 
-        def put(self):
+        def put(self, funds_pull_pre_approval_id: str):
             params = request.json
 
-            funds_pre_approval_id: str = params["funds_pre_approval_id"]
             status: str = params["status"]
 
             try:
                 offchain_service.approve_funds_pull_pre_approval(
-                    funds_pre_approval_id, status
+                    funds_pull_pre_approval_id, status
                 )
             except offchain_service.FundsPullPreApprovalCommandNotFound:
                 return self.respond_with_error(
                     HTTPStatus.NOT_FOUND,
-                    f"Funds pre approval id {funds_pre_approval_id} was not found.",
+                    f"Funds pre approval id {funds_pull_pre_approval_id} was not found.",
                 )
 
             return "OK", HTTPStatus.NO_CONTENT

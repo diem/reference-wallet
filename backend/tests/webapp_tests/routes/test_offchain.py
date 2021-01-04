@@ -186,7 +186,7 @@ class TestApproveFundsPullPreApproval:
         self, authorized_client: Client, mock_successful_approve_funds_pull_pre_approval
     ) -> None:
         rv: Response = authorized_client.put(
-            "/offchain/funds_pull_pre_approvals/approve",
+            f"/offchain/funds_pull_pre_approvals/{FUNDS_PRE_APPROVAL_ID}",
             json={"funds_pre_approval_id": "1234", "status": "bla"},
         )
 
@@ -196,7 +196,7 @@ class TestApproveFundsPullPreApproval:
         self, authorized_client: Client, mock_failed_approve_funds_pull_pre_approval
     ) -> None:
         rv: Response = authorized_client.put(
-            "/offchain/funds_pull_pre_approvals/approve",
+            f"/offchain/funds_pull_pre_approvals/{FUNDS_PRE_APPROVAL_ID}",
             json={"funds_pre_approval_id": "1234", "status": "bla"},
         )
 
@@ -229,7 +229,7 @@ class TestEstablishFundsPullPreApproval:
         self, authorized_client: Client, mock_establish_funds_pull_pre_approval
     ) -> None:
         rv: Response = authorized_client.post(
-            "/offchain/funds_pull_pre_approvals/establish",
+            "/offchain/funds_pull_pre_approvals",
             json={
                 "account_id": 1,
                 "biller_address": BILLER_ADDRESS,
