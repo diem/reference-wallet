@@ -7,7 +7,6 @@ from datetime import datetime
 from typing import Optional, Tuple, Callable, List, Dict
 
 import context
-from build.lib.wallet.services.stubs import CurrencyObject
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import offchain, identifier
 from diem.offchain import CommandType
@@ -22,6 +21,7 @@ from wallet.services.stubs import (
     ScopedCumulativeAmountObject,
     FundPullPreApprovalStatus,
     CommandRequestObject,
+    CurrencyObject
 )
 # noinspection PyUnresolvedReferences
 from wallet.storage.funds_pull_pre_approval_commands import (
