@@ -11,12 +11,14 @@ from diem import offchain, identifier
 from diem_utils.types.currencies import DiemCurrency
 from wallet import storage
 from wallet.services import account, kyc
+from wallet.services.account import generate_new_subaddress
 
 # noinspection PyUnresolvedReferences
 from wallet.storage.funds_pull_pre_approval_commands import (
     get_account_commands,
     update_command,
     FundsPullPreApprovalCommandNotFound,
+    commit_command,
 )
 from wallet.storage.models import FundsPullPreApprovalCommands
 
@@ -293,5 +295,42 @@ def approve_funds_pull_pre_approval(funds_pre_approval_id: str, status: str) -> 
     # TODO update in offchain client
 
 
-def establish_funds_pull_pre_approval() -> str:
-    return ""
+def establish_funds_pull_pre_approval(
+    account_id: int,
+    biller_address: str,
+    funds_pre_approval_id: str,
+    scope_type: str,
+    expiration_timestamp: int,
+    max_cumulative_unit: str = None,
+    max_cumulative_unit_value: int = None,
+    max_cumulative_amount: int = None,
+    max_cumulative_amount_currency: str = None,
+    max_transaction_amount: int = None,
+    max_transaction_amount_currency: str = None,
+    description: str = None,
+) -> None:
+    vasp_address = context.get().config.vasp_address
+    sub_address = generate_new_subaddress(account_id)
+    hrp = context.get().config.diem_address_hrp()
+    address = identifier.encode_account(vasp_address, sub_address, hrp)
+
+    commit_command(
+        FundsPullPreApprovalCommands(
+            account_id=account_id,
+            address=address,
+            biller_address=biller_address,
+            funds_pre_approval_id=funds_pre_approval_id,
+            scope_type=scope_type,
+            expiration_timestamp=expiration_timestamp,
+            max_cumulative_unit=max_cumulative_unit,
+            max_cumulative_unit_value=max_cumulative_unit_value,
+            max_cumulative_amount=max_cumulative_amount,
+            max_cumulative_amount_currency=max_cumulative_amount_currency,
+            max_transaction_amount=max_transaction_amount,
+            max_transaction_amount_currency=max_cumulative_amount_currency,
+            description=description,
+            status="verified",
+        )
+    )
+
+    # TODO generate CommandRequestObject and send through offchain client

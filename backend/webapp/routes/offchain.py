@@ -20,6 +20,7 @@ from webapp.schemas import (
     FundsPullPreApprovalList,
     ApproveFundsPullPreApproval,
     Error,
+    EstablishFundsPullPreApproval,
 )
 
 logger = logging.getLogger(__name__)
@@ -161,10 +162,51 @@ class OffchainRoutes:
 
     class EstablishFundsPullPreApproval(OffchainView):
         summary = "Establish funds pull pre approval by payer"
+        parameters = [
+            body_parameter(EstablishFundsPullPreApproval),
+        ]
+        responses = {
+            HTTPStatus.OK: response_definition(
+                "Funds pull pre approvals request successfully sent"
+            ),
+        }
 
         def post(self):
+            params = request.json
+
+            account_id: int = self.user.account_id
+            biller_address: str = params["biller_address"]
+            funds_pre_approval_id: str = params["funds_pre_approval_id"]
+            scope: dict = params["scope"]
+            scope_type: str = scope["type"]
+            expiration_timestamp: int = scope["expiration_timestamp"]
+            max_cumulative_amount: dict = params["max_cumulative_amount"]
+            max_cumulative_unit: str = max_cumulative_amount["unit"]
+            max_cumulative_unit_value: int = max_cumulative_amount["value"]
+            max_cumulative_max_amount: dict = max_cumulative_amount["max_amount"]
+            max_cumulative_amount: int = max_cumulative_max_amount["amount"]
+            max_cumulative_amount_currency: str = max_cumulative_max_amount["currency"]
+            max_transaction_amount: int = params["max_transaction_amount"]["amount"]
+            max_transaction_amount_currency: str = params["max_transaction_amount"][
+                "currency"
+            ]
+            description: str = params["description"]
+
             funds_pull_pre_approval = (
-                offchain_service.establish_funds_pull_pre_approval()
+                offchain_service.establish_funds_pull_pre_approval(
+                    account_id=account_id,
+                    biller_address=biller_address,
+                    funds_pre_approval_id=funds_pre_approval_id,
+                    scope_type=scope_type,
+                    expiration_timestamp=expiration_timestamp,
+                    max_cumulative_unit=max_cumulative_unit,
+                    max_cumulative_unit_value=max_cumulative_unit_value,
+                    max_cumulative_amount=max_cumulative_amount,
+                    max_cumulative_amount_currency=max_cumulative_amount_currency,
+                    max_transaction_amount=max_transaction_amount,
+                    max_transaction_amount_currency=max_transaction_amount_currency,
+                    description=description,
+                )
             )
 
             return (
