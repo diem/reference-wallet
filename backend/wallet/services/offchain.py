@@ -320,6 +320,7 @@ def establish_funds_pull_pre_approval(
     max_transaction_amount_currency: str = None,
     description: str = None,
 ) -> None:
+    """ Establish funds pull pre approval by payer """
     vasp_address = context.get().config.vasp_address
     sub_address = account.generate_new_subaddress(account_id)
     hrp = context.get().config.diem_address_hrp()
