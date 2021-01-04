@@ -44,3 +44,19 @@ def get_commands_by_status(
     return FundsPullPreApprovalCommands.query.filter_by(
         account_id=account_id, status=status
     ).all()
+
+
+class FundsPullPreApprovalCommandNotFound(Exception):
+    ...
+
+
+def update_command(funds_pre_approval_id: str, status: str) -> None:
+    command = FundsPullPreApprovalCommands.query.get(funds_pre_approval_id)
+
+    if command:
+        command.status = status
+        commit_command(command)
+    else:
+        raise FundsPullPreApprovalCommandNotFound(
+            f"Command not found for funds pre approval id {funds_pre_approval_id}"
+        )

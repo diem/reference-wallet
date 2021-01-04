@@ -194,7 +194,7 @@ def offchain_api_routes():
         view_func=OffchainRoutes.ApproveFundsPullPreApproval.as_view(
             "approve_funds_pull_pre_approval"
         ),
-        methods=["POST"],
+        methods=["PUT"],
     )
     offchain.add_url_rule(
         rule="/offchain/funds_pull_pre_approval/establish",
