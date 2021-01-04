@@ -35,7 +35,7 @@ class TestCreateFundsPullPreApprovalRequest:
     ) -> None:
         # address: "64b9dd1e5e56efb0c67e95b8bbecdfb4", sub_address: "9e8a79160e500d01"
         rv: Response = authorized_client.post(
-            "/validation/funds_pull_pre_approval",
+            "/validation/funds_pull_pre_approvals",
             json={
                 "address": "tdm1pvjua68j72mhmp3n7jkuthmxlkj0g57gkpegq6qgkjfxwc",
                 "experation_time": 27345,

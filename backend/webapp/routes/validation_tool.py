@@ -43,7 +43,7 @@ class ValidationToolRoutes:
                 currency = request_details["currency"]
 
             funds_pre_approval_id = (
-                validation_tool_service.send_funds_pull_pre_approval_request(
+                validation_tool_service.create_funds_pull_pre_approval_request(
                     user_account_id=account_id,
                     address=address,
                     expiration_time=experation_time,
