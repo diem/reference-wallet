@@ -7,6 +7,12 @@ from flask.testing import Client
 from wallet.services import offchain as offchain_service
 from wallet.storage import FundsPullPreApprovalCommands
 
+FUNDS_PRE_APPROVAL_ID = "28992c81-e85a-4771-995a-af1d22bcaf63"
+FUNDS_PRE_APPROVAL_ID_2 = "e1f7f846-f9e6-46f9-b184-c949f8d6b197"
+BILLER_ADDRESS = "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
+BILLER_ADDRESS_2 = "tdm1pvjua68j72mhmp3n7jkuthmxlkj0g57gkpegq6qgkjfxwc"
+ADDRESS = "tdm1pwm5m35ayknjr0s67pk9xdf5mwp3nwq6ef67s55gpjwrqf"
+ADDRESS_2 = "tdm1pztdjx2z8wp0q25jakqeklk0nxj2wmk2kg9whu8c3fdm9u"
 CURRENCY = "XUS"
 
 
@@ -43,10 +49,7 @@ class TestGetPaymentCommand:
         assert rv.get_data() is not None
         payment_command = rv.get_json()["payment_command"]
         assert payment_command is not None
-        assert (
-            payment_command["my_actor_address"]
-            == "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
-        )
+        assert payment_command["my_actor_address"] == BILLER_ADDRESS
 
 
 @pytest.fixture
@@ -101,10 +104,7 @@ class TestGetAccountPaymentCommands:
         payment_commands = rv.get_json()["payment_commands"]
         assert payment_commands is not None
         assert len(payment_commands) == 2
-        assert (
-            payment_commands[0]["my_actor_address"]
-            == "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
-        )
+        assert payment_commands[0]["my_actor_address"] == BILLER_ADDRESS
 
 
 @pytest.fixture
@@ -112,34 +112,34 @@ def mock_get_funds_pull_pre_approvals(monkeypatch):
     def mock(account_id) -> List[FundsPullPreApprovalCommands]:
         funds_pull_pre_approval_1 = FundsPullPreApprovalCommands(
             account_id=1,
-            address="tdm1pwm5m35ayknjr0s67pk9xdf5mwp3nwq6ef67s55gpjwrqf",
-            biller_address="tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
-            funds_pre_approval_id="28992c81-e85a-4771-995a-af1d22bcaf63",
+            address=ADDRESS,
+            biller_address=BILLER_ADDRESS,
+            funds_pre_approval_id=FUNDS_PRE_APPROVAL_ID,
             scope_type="consent",
             expiration_timestamp=1234,
             max_cumulative_unit="week",
             max_cumulative_unit_value=1,
             max_cumulative_amount=100,
-            max_cumulative_amount_currency="XUS",
+            max_cumulative_amount_currency=CURRENCY,
             max_transaction_amount=10,
-            max_transaction_amount_currency="XUS",
+            max_transaction_amount_currency=CURRENCY,
             description="bla la la",
             status="pending",
         )
 
         funds_pull_pre_approval_2 = FundsPullPreApprovalCommands(
             account_id=2,
-            address="tdm1pztdjx2z8wp0q25jakqeklk0nxj2wmk2kg9whu8c3fdm9u",
-            biller_address="tdm1pvjua68j72mhmp3n7jkuthmxlkj0g57gkpegq6qgkjfxwc",
-            funds_pre_approval_id="e1f7f846-f9e6-46f9-b184-c949f8d6b197",
+            address=ADDRESS_2,
+            biller_address=BILLER_ADDRESS_2,
+            funds_pre_approval_id=FUNDS_PRE_APPROVAL_ID_2,
             scope_type="consent",
             expiration_timestamp=1234,
             max_cumulative_unit="week",
             max_cumulative_unit_value=1,
             max_cumulative_amount=100,
-            max_cumulative_amount_currency="XUS",
+            max_cumulative_amount_currency=CURRENCY,
             max_transaction_amount=10,
-            max_transaction_amount_currency="XUS",
+            max_transaction_amount_currency=CURRENCY,
             description="bla la la",
             status="pending",
         )
@@ -162,15 +162,12 @@ class TestGetFundsPullPreApprovals:
         funds_pull_pre_approvals = rv.get_json()["funds_pull_pre_approvals"]
         assert funds_pull_pre_approvals is not None
         assert len(funds_pull_pre_approvals) == 2
-        assert (
-            funds_pull_pre_approvals[0]["biller_address"]
-            == "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
-        )
+        assert funds_pull_pre_approvals[0]["biller_address"] == BILLER_ADDRESS
 
 
 @pytest.fixture
 def mock_successful_approve_funds_pull_pre_approval(monkeypatch):
-    def mock(funds_pre_approval_id: str, status: str) -> None:
+    def mock(funds_pre_approval_id, status) -> None:
         return None
 
     monkeypatch.setattr(offchain_service, "approve_funds_pull_pre_approval", mock)
@@ -178,7 +175,7 @@ def mock_successful_approve_funds_pull_pre_approval(monkeypatch):
 
 @pytest.fixture
 def mock_failed_approve_funds_pull_pre_approval(monkeypatch):
-    def mock(funds_pre_approval_id: str, status: str) -> None:
+    def mock(funds_pre_approval_id, status) -> None:
         raise offchain_service.FundsPullPreApprovalCommandNotFound
 
     monkeypatch.setattr(offchain_service, "approve_funds_pull_pre_approval", mock)
@@ -208,8 +205,21 @@ class TestApproveFundsPullPreApproval:
 
 @pytest.fixture
 def mock_establish_funds_pull_pre_approval(monkeypatch):
-    def mock() -> bool:
-        return False
+    def mock(
+        account_id,
+        biller_address,
+        funds_pre_approval_id,
+        scope_type,
+        expiration_timestamp,
+        max_cumulative_unit,
+        max_cumulative_unit_value,
+        max_cumulative_amount,
+        max_cumulative_amount_currency,
+        max_transaction_amount,
+        max_transaction_amount_currency,
+        description,
+    ) -> None:
+        return None
 
     monkeypatch.setattr(offchain_service, "establish_funds_pull_pre_approval", mock)
 
@@ -220,6 +230,28 @@ class TestEstablishFundsPullPreApproval:
     ) -> None:
         rv: Response = authorized_client.post(
             "/offchain/funds_pull_pre_approvals/establish",
+            json={
+                "account_id": 1,
+                "biller_address": BILLER_ADDRESS,
+                "funds_pre_approval_id": FUNDS_PRE_APPROVAL_ID,
+                "scope": {
+                    "type": "consent",
+                    "expiration_timestamp": 1234,
+                    "max_cumulative_amount": {
+                        "unit": "week",
+                        "value": 1,
+                        "max_amount": {
+                            "amount": 100,
+                            "currency": CURRENCY,
+                        },
+                    },
+                    "max_transaction_amount": {
+                        "amount": 10,
+                        "currency": CURRENCY,
+                    },
+                },
+                "description": "bla la la",
+            },
         )
 
         assert rv.status_code == 200

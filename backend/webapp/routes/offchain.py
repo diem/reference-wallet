@@ -115,8 +115,10 @@ class OffchainRoutes:
                 self.user.account_id
             )
 
-            response = [CommandsRoutes.create_command_response_object(approval) for approval in approvals]
-
+            response = [
+                CommandsRoutes.create_command_response_object(approval)
+                for approval in approvals
+            ]
 
             return (
                 {"funds_pull_pre_approvals": response},
@@ -175,39 +177,35 @@ class OffchainRoutes:
             scope: dict = params["scope"]
             scope_type: str = scope["type"]
             expiration_timestamp: int = scope["expiration_timestamp"]
-            max_cumulative_amount: dict = params["max_cumulative_amount"]
+            max_cumulative_amount: dict = scope["max_cumulative_amount"]
             max_cumulative_unit: str = max_cumulative_amount["unit"]
             max_cumulative_unit_value: int = max_cumulative_amount["value"]
             max_cumulative_max_amount: dict = max_cumulative_amount["max_amount"]
             max_cumulative_amount: int = max_cumulative_max_amount["amount"]
             max_cumulative_amount_currency: str = max_cumulative_max_amount["currency"]
-            max_transaction_amount: int = params["max_transaction_amount"]["amount"]
-            max_transaction_amount_currency: str = params["max_transaction_amount"][
+            max_transaction_amount_object: dict = scope["max_transaction_amount"]
+            max_transaction_amount: int = max_transaction_amount_object["amount"]
+            max_transaction_amount_currency: str = max_transaction_amount_object[
                 "currency"
             ]
             description: str = params["description"]
 
-            funds_pull_pre_approval = (
-                offchain_service.establish_funds_pull_pre_approval(
-                    account_id=account_id,
-                    biller_address=biller_address,
-                    funds_pre_approval_id=funds_pre_approval_id,
-                    scope_type=scope_type,
-                    expiration_timestamp=expiration_timestamp,
-                    max_cumulative_unit=max_cumulative_unit,
-                    max_cumulative_unit_value=max_cumulative_unit_value,
-                    max_cumulative_amount=max_cumulative_amount,
-                    max_cumulative_amount_currency=max_cumulative_amount_currency,
-                    max_transaction_amount=max_transaction_amount,
-                    max_transaction_amount_currency=max_transaction_amount_currency,
-                    description=description,
-                )
+            offchain_service.establish_funds_pull_pre_approval(
+                account_id=account_id,
+                biller_address=biller_address,
+                funds_pre_approval_id=funds_pre_approval_id,
+                scope_type=scope_type,
+                expiration_timestamp=expiration_timestamp,
+                max_cumulative_unit=max_cumulative_unit,
+                max_cumulative_unit_value=max_cumulative_unit_value,
+                max_cumulative_amount=max_cumulative_amount,
+                max_cumulative_amount_currency=max_cumulative_amount_currency,
+                max_transaction_amount=max_transaction_amount,
+                max_transaction_amount_currency=max_transaction_amount_currency,
+                description=description,
             )
 
-            return (
-                {"funds_pull_pre_approval": funds_pull_pre_approval},
-                HTTPStatus.OK,
-            )
+            return "OK", HTTPStatus.OK
 
     class OffchainV2View(MethodView):
         def dispatch_request(self, *args, **kwargs):

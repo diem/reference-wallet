@@ -326,7 +326,7 @@ def establish_funds_pull_pre_approval(
             max_cumulative_amount=max_cumulative_amount,
             max_cumulative_amount_currency=max_cumulative_amount_currency,
             max_transaction_amount=max_transaction_amount,
-            max_transaction_amount_currency=max_cumulative_amount_currency,
+            max_transaction_amount_currency=max_transaction_amount_currency,
             description=description,
             status="verified",
         )
