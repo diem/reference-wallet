@@ -21,6 +21,7 @@ from webapp.schemas import (
     FundsPullPreApprovalList,
     ApproveFundsPullPreApproval,
     Error,
+    EstablishFundsPullPreApproval,
 )
 
 logger = logging.getLogger(__name__)
@@ -29,7 +30,7 @@ offchain = Blueprint("offchain", __name__)
 
 class CommandsRoutes:
     @classmethod
-    def get_command_response_object(
+    def create_command_response_object(
         cls, approval: offchain_service.FundsPullPreApprovalCommands
     ):
         return {
@@ -165,7 +166,7 @@ class OffchainRoutes:
             )
 
     class GetFundsPullPreApprovals(OffchainView):
-        summary = "Get funds pull pre approvals"
+        summary = "Get funds pull pre approvals of a user"
 
         responses = {
             HTTPStatus.OK: response_definition(
@@ -178,13 +179,10 @@ class OffchainRoutes:
                 self.user.account_id
             )
 
-            response = []
-
-            for approval in approvals:
-                command_reponse_object = CommandsRoutes.get_command_response_object(
-                    approval
-                )
-                response.append(command_reponse_object)
+            response = [
+                CommandsRoutes.create_command_response_object(approval)
+                for approval in approvals
+            ]
 
             return (
                 {"funds_pull_pre_approvals": response},
@@ -192,10 +190,15 @@ class OffchainRoutes:
             )
 
     class ApproveFundsPullPreApproval(OffchainView):
-        summary = "Approve or reject incoming funds pull pre approval"
+        summary = "Approve or reject pending funds pull pre approval"
         parameters = [
             body_parameter(ApproveFundsPullPreApproval),
+            path_string_param(
+                name="funds_pull_pre_approval_id",
+                description="funds pull pre approval id",
+            ),
         ]
+
         responses = {
             HTTPStatus.NO_CONTENT: response_definition(
                 "Request accepted. You should poll for command updates."
@@ -205,36 +208,72 @@ class OffchainRoutes:
             ),
         }
 
-        def put(self):
+        def put(self, funds_pull_pre_approval_id: str):
             params = request.json
 
-            funds_pre_approval_id: str = params["funds_pre_approval_id"]
             status: str = params["status"]
 
             try:
                 offchain_service.approve_funds_pull_pre_approval(
-                    funds_pre_approval_id, status
+                    funds_pull_pre_approval_id, status
                 )
             except offchain_service.FundsPullPreApprovalCommandNotFound:
                 return self.respond_with_error(
                     HTTPStatus.NOT_FOUND,
-                    f"Funds pre approval id {funds_pre_approval_id} was not found.",
+                    f"Funds pre approval id {funds_pull_pre_approval_id} was not found.",
                 )
 
             return "OK", HTTPStatus.NO_CONTENT
 
     class EstablishFundsPullPreApproval(OffchainView):
         summary = "Establish funds pull pre approval by payer"
+        parameters = [
+            body_parameter(EstablishFundsPullPreApproval),
+        ]
+        responses = {
+            HTTPStatus.OK: response_definition(
+                "Funds pull pre approvals request successfully sent"
+            ),
+        }
 
         def post(self):
-            funds_pull_pre_approval = (
-                offchain_service.establish_funds_pull_pre_approval()
+            params = request.json
+
+            account_id: int = self.user.account_id
+            biller_address: str = params["biller_address"]
+            funds_pre_approval_id: str = params["funds_pre_approval_id"]
+            scope: dict = params["scope"]
+            scope_type: str = scope["type"]
+            expiration_timestamp: int = scope["expiration_timestamp"]
+            max_cumulative_amount: dict = scope["max_cumulative_amount"]
+            max_cumulative_unit: str = max_cumulative_amount["unit"]
+            max_cumulative_unit_value: int = max_cumulative_amount["value"]
+            max_cumulative_max_amount: dict = max_cumulative_amount["max_amount"]
+            max_cumulative_amount: int = max_cumulative_max_amount["amount"]
+            max_cumulative_amount_currency: str = max_cumulative_max_amount["currency"]
+            max_transaction_amount_object: dict = scope["max_transaction_amount"]
+            max_transaction_amount: int = max_transaction_amount_object["amount"]
+            max_transaction_amount_currency: str = max_transaction_amount_object[
+                "currency"
+            ]
+            description: str = params["description"]
+
+            offchain_service.establish_funds_pull_pre_approval(
+                account_id=account_id,
+                biller_address=biller_address,
+                funds_pre_approval_id=funds_pre_approval_id,
+                scope_type=scope_type,
+                expiration_timestamp=expiration_timestamp,
+                max_cumulative_unit=max_cumulative_unit,
+                max_cumulative_unit_value=max_cumulative_unit_value,
+                max_cumulative_amount=max_cumulative_amount,
+                max_cumulative_amount_currency=max_cumulative_amount_currency,
+                max_transaction_amount=max_transaction_amount,
+                max_transaction_amount_currency=max_transaction_amount_currency,
+                description=description,
             )
 
-            return (
-                {"funds_pull_pre_approval": funds_pull_pre_approval},
-                HTTPStatus.OK,
-            )
+            return "OK", HTTPStatus.OK
 
     class OffchainV2View(MethodView):
         def dispatch_request(self, *args, **kwargs):

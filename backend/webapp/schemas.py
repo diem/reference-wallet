@@ -271,7 +271,7 @@ class ScopedCumulativeAmount(Schema):
 
 class Scope(Schema):
     type = fields.Str(required=True, validate=OneOf(["consent", "save_sub_account"]))
-    expiration_time = fields.Int(required=False)
+    expiration_time = fields.Int(required=True)
     max_cumulative_amount = ScopedCumulativeAmount
     max_transaction_amount = Currency
 
@@ -299,5 +299,11 @@ class FundsTransfer(Schema):
 
 
 class ApproveFundsPullPreApproval(Schema):
-    funds_pre_approval_id = fields.Str(required=True)
     status = fields.Str(required=False)  # verified\rejected
+
+
+class EstablishFundsPullPreApproval(Schema):
+    biller_address = fields.Str(required=True)
+    funds_pre_approval_id = fields.Str(required=True)
+    scope = Scope
+    description = fields.Str(required=False)

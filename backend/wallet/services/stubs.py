@@ -47,6 +47,13 @@ class ScopeObject:
     max_transaction_amount: typing.Optional[CurrencyObject] = datafield(default=None)
 
 
+class FundPullPreApprovalStatus(str, Enum):
+    PENDING = "pending"
+    VALID = "valid"
+    REJECTED = "rejected"
+    CLOSED = "closed"
+
+
 @dataclass(frozen=True)
 class FundPullPreApprovalObject:
     address: str
@@ -56,7 +63,7 @@ class FundPullPreApprovalObject:
     description: str
     status: str = datafield(
         default="pending",
-        metadata={"valid-values": ["pending", "valid", "rejected", "closed"]},
+        metadata={"valid-values": typing.Union[FundPullPreApprovalStatus]},
     )
 
 
