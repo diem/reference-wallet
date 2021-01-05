@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Optional, Tuple, Callable, List
 
 import context
+import typing
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import offchain, identifier
 from diem.offchain import (
@@ -18,6 +19,7 @@ from diem.offchain import (
     FundPullPreApprovalObject,
     FundPullPreApprovalCommandObject,
     CommandRequestObject,
+    Command,
 )
 from diem_utils.types.currencies import DiemCurrency
 from wallet import storage
@@ -79,15 +81,83 @@ def process_inbound_command(
 ) -> (int, bytes):
     command = None
     try:
-        command = _offchain_client().process_inbound_request(
+        command: Command = _offchain_client().process_inbound_request(
             request_sender_address, request_body_bytes
         )
-        logger.info(f"process inbound command: {offchain.to_json(command)}")
-        _lock_and_save_inbound_command(command)
-        return _jws(command.cid)
+
+        if command.command_type() == CommandType.PaymentCommand:
+            payment_command = typing.cast(offchain.PaymentCommand, command)
+            _lock_and_save_inbound_command(payment_command)
+        elif command.command_type() == CommandType.FundPullPreApprovalCommand:
+            _command = typing.cast(offchain.FundsPullPreApprovalCommand, command)
+            approval = _command.funds_pull_pre_approval
+            address = approval.address
+            _, sub_address = identifier.decode_account(
+                address, context.get().config.diem_address_hrp()
+            )
+            account_id = get_account_id_from_subaddr(subaddr=sub_address.hex())
+
+            biller_address = approval.biller_address
+            funds_pull_pre_approval_type = approval.scope.type
+            expiration_timestamp = approval.scope.expiration_timestamp
+            # TODO verify or reject request
+            status = "verified"
+            unit = approval.scope.max_cumulative_amount.unit
+            unit_value = approval.scope.max_cumulative_amount.value
+            max_cumulative_amount = (
+                approval.scope.max_cumulative_amount.max_amount.amount
+            )
+            max_cumulative_amount_currency = (
+                approval.scope.max_cumulative_amount.max_amount.currency
+            )
+            max_transaction_amount = approval.scope.max_transaction_amount.amount
+            max_transaction_amount_currency = (
+                approval.scope.max_transaction_amount.currency
+            )
+            description = approval.description
+            commit_command(
+                FundsPullPreApprovalCommands(
+                    account_id=account_id,
+                    funds_pre_approval_id=approval.funds_pre_approval_id,
+                    address=address,
+                    biller_address=biller_address,
+                    scope_type=funds_pull_pre_approval_type,
+                    expiration_timestamp=expiration_timestamp,
+                    max_cumulative_unit=unit,
+                    max_cumulative_unit_value=unit_value,
+                    max_cumulative_amount=max_cumulative_amount,
+                    max_cumulative_amount_currency=max_cumulative_amount_currency,
+                    max_transaction_amount=max_transaction_amount,
+                    max_transaction_amount_currency=max_transaction_amount_currency,
+                    description=description,
+                    status=status,
+                )
+            )
+
+            # cmd = offchain.FundsPullPreApprovalCommand.init(
+            #     address=address,
+            #     biller_address=biller_address,
+            #     funds_pull_pre_approval_type=funds_pull_pre_approval_type,
+            #     expiration_timestamp=expiration_timestamp,
+            #     status=status,
+            #     max_cumulative_unit=unit,
+            #     max_cumulative_unit_value=unit_value,
+            #     max_cumulative_amount=max_cumulative_amount,
+            #     max_cumulative_amount_currency=max_cumulative_amount_currency,
+            #     max_transaction_amount=max_transaction_amount,
+            #     max_transaction_amount_currency=max_transaction_amount_currency,
+            #     description=description,
+            # )
+            #
+            # _offchain_client().send_command(cmd, _compliance_private_key().sign)
+        else:
+            # TODO log?
+            ...
+
+        return _jws(command.id())
     except offchain.Error as e:
         logger.exception(e)
-        return _jws(command.cid if command else None, e.obj)
+        return _jws(command.id() if command else None, e.obj)
 
 
 def _jws(cid: Optional[str], err: Optional[offchain.OffChainErrorObject] = None):
