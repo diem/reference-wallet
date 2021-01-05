@@ -11,7 +11,7 @@ FUNDS_PRE_APPROVAL_ID = str(uuid.uuid4())
 
 
 @pytest.fixture
-def mock_send_funds_pull_pre_approval_request(monkeypatch):
+def mock_create_funds_pull_pre_approval_request(monkeypatch):
     def mock(
         user_account_id,
         address,
@@ -25,13 +25,13 @@ def mock_send_funds_pull_pre_approval_request(monkeypatch):
         return FUNDS_PRE_APPROVAL_ID
 
     monkeypatch.setattr(
-        validation_tool_service, "send_funds_pull_pre_approval_request", mock
+        validation_tool_service, "create_funds_pull_pre_approval_request", mock
     )
 
 
 class TestCreateFundsPullPreApprovalRequest:
-    def test_send_funds_pull_pre_approval_request(
-        self, authorized_client: Client, mock_send_funds_pull_pre_approval_request
+    def test_create_funds_pull_pre_approval_request(
+        self, authorized_client: Client, mock_create_funds_pull_pre_approval_request
     ) -> None:
         # address: "64b9dd1e5e56efb0c67e95b8bbecdfb4", sub_address: "9e8a79160e500d01"
         rv: Response = authorized_client.post(
