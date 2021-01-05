@@ -49,7 +49,7 @@ def test_save_outbound_payment_command(monkeypatch):
         assert model.status == TransactionStatus.OFF_CHAIN_WAIT
 
 
-def test_process_inbound_command(monkeypatch):
+def test_process_inbound_payment_command(monkeypatch):
     hrp = context.get().config.diem_address_hrp()
     user = OneUser.run(
         db_session, account_amount=100_000_000_000, account_currency=currency
@@ -96,6 +96,76 @@ def test_process_inbound_command(monkeypatch):
 
         db_session.refresh(model)
         assert model.status == TransactionStatus.OFF_CHAIN_OUTBOUND
+
+
+def test_process_inbound_funds_pull_pre_approval_command(monkeypatch):
+    hrp = context.get().config.diem_address_hrp()
+    user = OneUser.run(
+        db_session, account_amount=100_000_000_000, account_currency=currency
+    )
+    amount = 10_000_000_000
+    sender = LocalAccount.generate()
+    sender_subaddress = identifier.gen_subaddress()
+    address = identifier.encode_account(
+        sender.account_address,
+        sender_subaddress,
+        hrp,
+    )
+    biller = LocalAccount.generate()
+    biller_sub_address = generate_new_subaddress(user.account_id)
+    biller_address = identifier.encode_account(
+        biller.account_address,
+        biller_sub_address,
+        hrp,
+    )
+
+    cmd = offchain.FundsPullPreApprovalCommand.init(
+        address=address,
+        biller_address=biller_address,
+        funds_pull_pre_approval_type="consent",
+        expiration_timestamp=1234,
+        status="pending",
+        max_cumulative_unit="week",
+        max_cumulative_unit_value=1,
+        max_cumulative_amount=10_000_000_000_000,
+        max_cumulative_amount_currency=currency,
+        max_transaction_amount=10_000_000,
+        max_transaction_amount_currency=currency,
+        description="test",
+    )
+
+    with monkeypatch.context() as m:
+        client = context.get().offchain_client
+        m.setattr(
+            client,
+            "process_inbound_request",
+            lambda _, cmd: client.create_inbound_funds_pull_pre_approval_command(
+                cmd.cid, cmd.funds_pull_pre_approval
+            ),
+        )
+        code, resp = process_inbound_command(
+            cmd.funds_pull_pre_approval.biller_address, cmd
+        )
+        assert code == 200
+        assert resp
+
+    # txn = get_transaction_by_reference_id(cmd.reference_id())
+    # assert txn
+    # assert txn.status == TransactionStatus.OFF_CHAIN_INBOUND
+    #
+    # cmd = _txn_payment_command(txn)
+    # assert cmd.is_inbound(), str(cmd)
+    #
+    # with monkeypatch.context() as m:
+    #     m.setattr(
+    #         context.get().offchain_client,
+    #         "send_command",
+    #         lambda cmd, _: offchain.reply_request(cmd.cid),
+    #     )
+    #     process_offchain_tasks()
+    #
+    #     db_session.refresh(txn)
+    #     assert txn.status == TransactionStatus.OFF_CHAIN_OUTBOUND
 
 
 def test_submit_txn_when_both_ready(monkeypatch):
