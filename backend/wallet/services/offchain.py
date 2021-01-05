@@ -9,20 +9,20 @@ from typing import Optional, Tuple, Callable, List, Dict
 import context
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import offchain, identifier
-from diem.offchain import CommandType
+from diem.offchain import (
+    CommandType,
+    FundPullPreApprovalStatus,
+    ScopedCumulativeAmountObject,
+    CurrencyObject,
+    FundPullPreApprovalScopeObject,
+    FundPullPreApprovalType,
+    FundPullPreApprovalObject,
+    FundPullPreApprovalCommandObject,
+    CommandRequestObject,
+)
 from diem_utils.types.currencies import DiemCurrency
 from wallet import storage
 from wallet.services import account, kyc
-from wallet.services.stubs import (
-    FundPullPreApprovalCommandObject,
-    FundPullPreApprovalObject,
-    ScopeObject,
-    ScopeType,
-    ScopedCumulativeAmountObject,
-    FundPullPreApprovalStatus,
-    CommandRequestObject,
-    CurrencyObject,
-)
 
 # noinspection PyUnresolvedReferences
 from wallet.storage.funds_pull_pre_approval_commands import (
@@ -341,7 +341,7 @@ def establish_funds_pull_pre_approval(
             max_transaction_amount=max_transaction_amount,
             max_transaction_amount_currency=max_transaction_amount_currency,
             description=description,
-            status=FundPullPreApprovalStatus.VALID,
+            status=FundPullPreApprovalStatus.valid,
         )
     )
 
@@ -353,9 +353,9 @@ def establish_funds_pull_pre_approval(
         ),
     )
 
-    scope_object = ScopeObject(
-        type=ScopeType.CONSENT,
-        expiration_time=expiration_timestamp,
+    scope_object = FundPullPreApprovalScopeObject(
+        type=FundPullPreApprovalType.consent,
+        expiration_timestamp=expiration_timestamp,
         max_cumulative_amount=max_cumulative_amount_object,
         max_transaction_amount=CurrencyObject(
             amount=max_transaction_amount, currency=max_transaction_amount_currency
@@ -368,7 +368,7 @@ def establish_funds_pull_pre_approval(
         funds_pre_approval_id=funds_pre_approval_id,
         scope=scope_object,
         description=description,
-        status=FundPullPreApprovalStatus.VALID,
+        status=FundPullPreApprovalStatus.valid,
     )
 
     command = FundPullPreApprovalCommandObject(
