@@ -214,7 +214,7 @@ class FundsPullPreApprovalCommands(Base):
     account_id = Column(Integer, ForeignKey("account.id"), nullable=True)
     address = Column(String, nullable=False)
     biller_address = Column(String, nullable=False)
-    scope_type = Column(String, nullable=False)
+    funds_pull_pre_approval_type = Column(String, nullable=False)
     expiration_timestamp = Column(Integer, nullable=False)
     max_cumulative_unit = Column(String, nullable=True)
     max_cumulative_unit_value = Column(Integer, nullable=True)

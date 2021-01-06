@@ -38,7 +38,7 @@ class CommandsRoutes:
             "biller_address": approval.biller_address,
             "funds_pre_approval_id": approval.funds_pre_approval_id,
             "scope": {
-                "type": approval.scope_type,
+                "type": approval.funds_pull_pre_approval_type,
                 "expiration_time": approval.expiration_timestamp,
                 "max_cumulative_amount": {
                     "unit": approval.max_cumulative_unit,
@@ -243,7 +243,7 @@ class OffchainRoutes:
             biller_address: str = params["biller_address"]
             funds_pre_approval_id: str = params["funds_pre_approval_id"]
             scope: dict = params["scope"]
-            scope_type: str = scope["type"]
+            funds_pull_pre_approval_type: str = scope["type"]
             expiration_timestamp: int = scope["expiration_timestamp"]
             max_cumulative_amount: dict = scope["max_cumulative_amount"]
             max_cumulative_unit: str = max_cumulative_amount["unit"]
@@ -262,7 +262,7 @@ class OffchainRoutes:
                 account_id=account_id,
                 biller_address=biller_address,
                 funds_pre_approval_id=funds_pre_approval_id,
-                scope_type=scope_type,
+                funds_pull_pre_approval_type=funds_pull_pre_approval_type,
                 expiration_timestamp=expiration_timestamp,
                 max_cumulative_unit=max_cumulative_unit,
                 max_cumulative_unit_value=max_cumulative_unit_value,
