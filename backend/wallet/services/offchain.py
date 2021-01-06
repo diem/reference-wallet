@@ -567,43 +567,19 @@ def establish_funds_pull_pre_approval(
         )
     )
 
-    max_cumulative_amount_object = ScopedCumulativeAmountObject(
-        unit=max_cumulative_unit,
-        value=max_cumulative_unit_value,
-        max_amount=CurrencyObject(
-            amount=max_cumulative_amount, currency=max_cumulative_amount_currency
-        ),
-    )
-
-    scope_object = FundPullPreApprovalScopeObject(
-        type=FundPullPreApprovalType.consent,
-        expiration_timestamp=expiration_timestamp,
-        max_cumulative_amount=max_cumulative_amount_object,
-        max_transaction_amount=CurrencyObject(
-            amount=max_transaction_amount, currency=max_transaction_amount_currency
-        ),
-    )
-
-    fund_pull_pre_approval = FundPullPreApprovalObject(
+    cmd = FundsPullPreApprovalCommand.init(
         address=address,
         biller_address=biller_address,
-        funds_pre_approval_id=funds_pre_approval_id,
-        scope=scope_object,
-        description=description,
+        funds_pull_pre_approval_type=funds_pull_pre_approval_type,
+        expiration_timestamp=expiration_timestamp,
         status=FundPullPreApprovalStatus.valid,
+        max_cumulative_unit=max_cumulative_unit,
+        max_cumulative_unit_value=max_cumulative_unit_value,
+        max_cumulative_amount=max_cumulative_amount,
+        max_cumulative_amount_currency=max_cumulative_amount_currency,
+        max_transaction_amount=max_transaction_amount,
+        max_transaction_amount_currency=max_transaction_amount_currency,
+        description=description,
     )
 
-    command = FundPullPreApprovalCommandObject(
-        _ObjectType=CommandType.FundPullPreApprovalCommand,
-        fund_pull_pre_approval=fund_pull_pre_approval,
-    )
-
-    cid = str(uuid.UUID())
-
-    command_object = CommandRequestObject(
-        cid=cid,
-        command_type=CommandType.FundPullPreApprovalCommand,
-        command=command,
-    )
-
-    # TODO generate CommandRequestObject and send through offchain client
+    _offchain_client().send_command(cmd, _compliance_private_key().sign)
