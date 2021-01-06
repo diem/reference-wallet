@@ -103,7 +103,6 @@ def test_process_inbound_funds_pull_pre_approval_command(monkeypatch):
     user = OneUser.run(
         db_session, account_amount=100_000_000_000, account_currency=currency
     )
-    amount = 10_000_000_000
     sender = LocalAccount.generate()
     sender_subaddress = identifier.gen_subaddress()
     address = identifier.encode_account(
