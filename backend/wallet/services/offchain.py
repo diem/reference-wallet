@@ -74,7 +74,7 @@ def process_inbound_command(
 ) -> (int, bytes):
     command = None
     try:
-        command: Command = _offchain_client().process_inbound_request(
+        command = _offchain_client().process_inbound_request(
             request_sender_address, request_body_bytes
         )
 
@@ -82,19 +82,18 @@ def process_inbound_command(
             payment_command = typing.cast(offchain.PaymentCommand, command)
             _lock_and_save_inbound_command(payment_command)
         elif command.command_type() == CommandType.FundPullPreApprovalCommand:
-            _command = typing.cast(offchain.FundsPullPreApprovalCommand, command)
-            approval = _command.funds_pull_pre_approval
-            address = approval.address
-            _, sub_address = identifier.decode_account(
-                address, context.get().config.diem_address_hrp()
+            funds_pull_pre_approval_command = typing.cast(
+                offchain.FundsPullPreApprovalCommand, command
             )
-            account_id = get_account_id_from_subaddr(subaddr=sub_address.hex())
+            approval = funds_pull_pre_approval_command.funds_pull_pre_approval
+
+            account_id = get_account_id(approval)
 
             biller_address = approval.biller_address
             funds_pull_pre_approval_type = approval.scope.type
             expiration_timestamp = approval.scope.expiration_timestamp
-            # TODO verify or reject request
-            status = "verified"
+            # TODO validate status is "pending"
+            status = "pending"
             unit = approval.scope.max_cumulative_amount.unit
             unit_value = approval.scope.max_cumulative_amount.value
             max_cumulative_amount = (
@@ -112,7 +111,7 @@ def process_inbound_command(
                 models.FundsPullPreApprovalCommands(
                     account_id=account_id,
                     funds_pre_approval_id=approval.funds_pre_approval_id,
-                    address=address,
+                    address=approval.address,
                     biller_address=biller_address,
                     funds_pull_pre_approval_type=funds_pull_pre_approval_type,
                     expiration_timestamp=expiration_timestamp,
@@ -151,6 +150,15 @@ def process_inbound_command(
     except offchain.Error as e:
         logger.exception(e)
         return _jws(command.id() if command else None, e.obj)
+
+
+def get_account_id(approval):
+    address = approval.address
+    _, sub_address = identifier.decode_account(
+        address, context.get().config.diem_address_hrp()
+    )
+
+    return get_account_id_from_subaddr(subaddr=sub_address.hex())
 
 
 def _jws(cid: Optional[str], err: Optional[offchain.OffChainErrorObject] = None):
