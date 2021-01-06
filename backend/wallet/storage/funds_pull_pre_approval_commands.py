@@ -50,12 +50,16 @@ class FundsPullPreApprovalCommandNotFound(Exception):
     ...
 
 
-def update_command(funds_pre_approval_id: str, status: str) -> None:
+def update_command(
+    funds_pre_approval_id: str, status: str
+) -> FundsPullPreApprovalCommands:
     command = FundsPullPreApprovalCommands.query.get(funds_pre_approval_id)
 
     if command:
         command.status = status
         commit_command(command)
+
+        return command
     else:
         raise FundsPullPreApprovalCommandNotFound(
             f"Command not found for funds pre approval id {funds_pre_approval_id}"
