@@ -252,7 +252,7 @@ def mock_get_funds_pull_pre_approvals(monkeypatch):
             address=ADDRESS,
             biller_address=BILLER_ADDRESS,
             funds_pre_approval_id=FUNDS_PRE_APPROVAL_ID,
-            scope_type="consent",
+            funds_pull_pre_approval_type="consent",
             expiration_timestamp=1234,
             max_cumulative_unit="week",
             max_cumulative_unit_value=1,
@@ -269,7 +269,7 @@ def mock_get_funds_pull_pre_approvals(monkeypatch):
             address=ADDRESS_2,
             biller_address=BILLER_ADDRESS_2,
             funds_pre_approval_id=FUNDS_PRE_APPROVAL_ID_2,
-            scope_type="consent",
+            funds_pull_pre_approval_type="consent",
             expiration_timestamp=1234,
             max_cumulative_unit="week",
             max_cumulative_unit_value=1,
@@ -304,7 +304,7 @@ class TestGetFundsPullPreApprovals:
 
 @pytest.fixture
 def mock_successful_approve_funds_pull_pre_approval(monkeypatch):
-    def mock(funds_pre_approval_id, status) -> None:
+    def mock(_funds_pre_approval_id, _status) -> None:
         return None
 
     monkeypatch.setattr(offchain_service, "approve_funds_pull_pre_approval", mock)
@@ -312,7 +312,7 @@ def mock_successful_approve_funds_pull_pre_approval(monkeypatch):
 
 @pytest.fixture
 def mock_failed_approve_funds_pull_pre_approval(monkeypatch):
-    def mock(funds_pre_approval_id, status) -> None:
+    def mock(_funds_pre_approval_id, _status) -> None:
         raise offchain_service.FundsPullPreApprovalCommandNotFound
 
     monkeypatch.setattr(offchain_service, "approve_funds_pull_pre_approval", mock)
@@ -343,18 +343,18 @@ class TestApproveFundsPullPreApproval:
 @pytest.fixture
 def mock_establish_funds_pull_pre_approval(monkeypatch):
     def mock(
-        account_id,
-        biller_address,
-        funds_pre_approval_id,
-        scope_type,
-        expiration_timestamp,
-        max_cumulative_unit,
-        max_cumulative_unit_value,
-        max_cumulative_amount,
-        max_cumulative_amount_currency,
-        max_transaction_amount,
-        max_transaction_amount_currency,
-        description,
+        _account_id,
+        _biller_address,
+        _funds_pre_approval_id,
+        _scope_type,
+        _expiration_timestamp,
+        _max_cumulative_unit,
+        _max_cumulative_unit_value,
+        _max_cumulative_amount,
+        _max_cumulative_amount_currency,
+        _max_transaction_amount,
+        _max_transaction_amount_currency,
+        _description,
     ) -> None:
         return None
 
