@@ -1,10 +1,7 @@
 import json
-import uuid
 from typing import Optional, List
 
-import context
 import pytest
-from diem import offchain
 from flask import Response
 from flask.testing import Client
 from wallet.services import offchain as offchain_service
@@ -258,3 +255,28 @@ class TestEstablishFundsPullPreApproval:
         )
 
         assert rv.status_code == 200
+
+
+class TestOffchainV2View:
+    def test_process_inbound_command(
+        self, authorized_client: Client, monkeypatch
+    ) -> None:
+        x_request_id = "f7ed63c3-eab9-4bd5-8094-497ba626e564"
+        response_data = b"bond"
+
+        def mock(_sender_address, _request_body):
+            assert _sender_address == ADDRESS
+            assert _request_body == b'{"dog": "gurki"}'
+
+            return 200, response_data
+
+        monkeypatch.setattr(offchain_service, "process_inbound_command", mock)
+
+        rv: Response = authorized_client.post(
+            "/offchain/v2/command",
+            json={"dog": "gurki"},
+            headers={"X-REQUEST-ID": x_request_id, "X-REQUEST-SENDER-ADDRESS": ADDRESS},
+        )
+
+        assert rv.status_code == 200
+        assert rv.data == response_data
