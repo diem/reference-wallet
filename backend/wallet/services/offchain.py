@@ -1,29 +1,22 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 import logging
-import uuid
+import typing
 from datetime import datetime
 from typing import Optional, Tuple, Callable, List
 
 import context
-import typing
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import offchain, identifier
 from diem.offchain import (
     CommandType,
     FundPullPreApprovalStatus,
-    ScopedCumulativeAmountObject,
-    CurrencyObject,
-    FundPullPreApprovalScopeObject,
-    FundPullPreApprovalType,
-    FundPullPreApprovalObject,
-    FundPullPreApprovalCommandObject,
-    CommandRequestObject,
-    Command,
+    FundsPullPreApprovalCommand,
 )
 from diem_utils.types.currencies import DiemCurrency
 from wallet import storage
 from wallet.services import account, kyc
+from wallet.storage import models
 
 # noinspection PyUnresolvedReferences
 from wallet.storage.funds_pull_pre_approval_commands import (
@@ -116,7 +109,7 @@ def process_inbound_command(
             )
             description = approval.description
             commit_command(
-                FundsPullPreApprovalCommands(
+                models.FundsPullPreApprovalCommands(
                     account_id=account_id,
                     funds_pre_approval_id=approval.funds_pre_approval_id,
                     address=address,
@@ -530,7 +523,7 @@ def establish_funds_pull_pre_approval(
     address = identifier.encode_account(vasp_address, sub_address, hrp)
 
     commit_command(
-        FundsPullPreApprovalCommands(
+        models.FundsPullPreApprovalCommands(
             account_id=account_id,
             address=address,
             biller_address=biller_address,
