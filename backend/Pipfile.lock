@@ -217,7 +217,7 @@
         "diem": {
             "editable": true,
             "git": "ssh://git@github.com/firstdag/client-sdk-python.git",
-            "ref": "baf77ba764bc14984814b8327947d4b742e77f45"
+            "ref": "dce09d79c300a9120b01f59f2250cba2dc900807"
         },
         "diem-sample-wallet": {
             "editable": true,

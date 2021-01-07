@@ -206,18 +206,18 @@ class TestApproveFundsPullPreApproval:
 @pytest.fixture
 def mock_establish_funds_pull_pre_approval(monkeypatch):
     def mock(
-        _account_id,
-        _biller_address,
-        _funds_pre_approval_id,
-        _scope_type,
-        _expiration_timestamp,
-        _max_cumulative_unit,
-        _max_cumulative_unit_value,
-        _max_cumulative_amount,
-        _max_cumulative_amount_currency,
-        _max_transaction_amount,
-        _max_transaction_amount_currency,
-        _description,
+        account_id: int,
+        biller_address: str,
+        funds_pre_approval_id: str,
+        funds_pull_pre_approval_type: str,
+        expiration_timestamp: int,
+        max_cumulative_unit: str = None,
+        max_cumulative_unit_value: int = None,
+        max_cumulative_amount: int = None,
+        max_cumulative_amount_currency: str = None,
+        max_transaction_amount: int = None,
+        max_transaction_amount_currency: str = None,
+        description: str = None,
     ) -> None:
         return None
 
@@ -231,7 +231,6 @@ class TestEstablishFundsPullPreApproval:
         rv: Response = authorized_client.post(
             "/offchain/funds_pull_pre_approvals",
             json={
-                "account_id": 1,
                 "biller_address": BILLER_ADDRESS,
                 "funds_pre_approval_id": FUNDS_PRE_APPROVAL_ID,
                 "scope": {
