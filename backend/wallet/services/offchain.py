@@ -82,66 +82,16 @@ def process_inbound_command(
             payment_command = typing.cast(offchain.PaymentCommand, command)
             _lock_and_save_inbound_command(payment_command)
         elif command.command_type() == CommandType.FundPullPreApprovalCommand:
-            funds_pull_pre_approval_command = typing.cast(
+            preapproval_command = typing.cast(
                 offchain.FundsPullPreApprovalCommand, command
             )
-            approval = funds_pull_pre_approval_command.funds_pull_pre_approval
-
-            account_id = get_account_id(approval)
-
-            biller_address = approval.biller_address
-            funds_pull_pre_approval_type = approval.scope.type
-            expiration_timestamp = approval.scope.expiration_timestamp
-            # TODO validate status is "pending"
-            status = "pending"
-            unit = approval.scope.max_cumulative_amount.unit
-            unit_value = approval.scope.max_cumulative_amount.value
-            max_cumulative_amount = (
-                approval.scope.max_cumulative_amount.max_amount.amount
-            )
-            max_cumulative_amount_currency = (
-                approval.scope.max_cumulative_amount.max_amount.currency
-            )
-            max_transaction_amount = approval.scope.max_transaction_amount.amount
-            max_transaction_amount_currency = (
-                approval.scope.max_transaction_amount.currency
-            )
-            description = approval.description
+            bech32_address = preapproval_command.funds_pull_pre_approval.address
             commit_command(
-                models.FundsPullPreApprovalCommands(
-                    account_id=account_id,
-                    funds_pre_approval_id=approval.funds_pre_approval_id,
-                    address=approval.address,
-                    biller_address=biller_address,
-                    funds_pull_pre_approval_type=funds_pull_pre_approval_type,
-                    expiration_timestamp=expiration_timestamp,
-                    max_cumulative_unit=unit,
-                    max_cumulative_unit_value=unit_value,
-                    max_cumulative_amount=max_cumulative_amount,
-                    max_cumulative_amount_currency=max_cumulative_amount_currency,
-                    max_transaction_amount=max_transaction_amount,
-                    max_transaction_amount_currency=max_transaction_amount_currency,
-                    description=description,
-                    status=status,
+                preapproval_command_to_model(
+                    account_id=account.get_account_id_from_bech32(bech32_address),
+                    command=preapproval_command,
                 )
             )
-
-            # cmd = offchain.FundsPullPreApprovalCommand.init(
-            #     address=address,
-            #     biller_address=biller_address,
-            #     funds_pull_pre_approval_type=funds_pull_pre_approval_type,
-            #     expiration_timestamp=expiration_timestamp,
-            #     status=status,
-            #     max_cumulative_unit=unit,
-            #     max_cumulative_unit_value=unit_value,
-            #     max_cumulative_amount=max_cumulative_amount,
-            #     max_cumulative_amount_currency=max_cumulative_amount_currency,
-            #     max_transaction_amount=max_transaction_amount,
-            #     max_transaction_amount_currency=max_transaction_amount_currency,
-            #     description=description,
-            # )
-            #
-            # _offchain_client().send_command(cmd, _compliance_private_key().sign)
         else:
             # TODO log?
             ...
@@ -450,3 +400,28 @@ def establish_funds_pull_pre_approval(
     )
 
     _offchain_client().send_command(cmd, _compliance_private_key().sign)
+
+
+def preapproval_command_to_model(
+    account_id, command: offchain.FundsPullPreApprovalCommand
+) -> models.FundsPullPreApprovalCommands:
+    preapproval_object = command.funds_pull_pre_approval
+    max_cumulative_amount = preapproval_object.scope.max_cumulative_amount
+    max_transaction_amount = preapproval_object.scope.max_transaction_amount
+
+    return models.FundsPullPreApprovalCommands(
+        account_id=account_id,
+        funds_pre_approval_id=preapproval_object.funds_pre_approval_id,
+        address=preapproval_object.address,
+        biller_address=preapproval_object.biller_address,
+        funds_pull_pre_approval_type=preapproval_object.scope.type,
+        expiration_timestamp=preapproval_object.scope.expiration_timestamp,
+        max_cumulative_unit=max_cumulative_amount.unit,
+        max_cumulative_unit_value=max_cumulative_amount.value,
+        max_cumulative_amount=max_cumulative_amount.max_amount.amount,
+        max_cumulative_amount_currency=max_cumulative_amount.max_amount.currency,
+        max_transaction_amount=max_transaction_amount.amount,
+        max_transaction_amount_currency=max_transaction_amount.currency,
+        description=preapproval_object.description,
+        status=preapproval_object.status,
+    )
