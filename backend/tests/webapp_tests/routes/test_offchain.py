@@ -8,6 +8,7 @@ from diem import offchain
 from flask import Response
 from flask.testing import Client
 from wallet.services import offchain as offchain_service
+from wallet.storage import models
 from wallet.storage.models import FundsPullPreApprovalCommands
 from diem import offchain
 
@@ -246,8 +247,8 @@ class TestGetAccountPaymentCommands:
 
 @pytest.fixture
 def mock_get_funds_pull_pre_approvals(monkeypatch):
-    def mock(account_id) -> List[FundsPullPreApprovalCommands]:
-        funds_pull_pre_approval_1 = FundsPullPreApprovalCommands(
+    def mock(account_id) -> List[models.FundsPullPreApprovalCommand]:
+        funds_pull_pre_approval_1 = models.FundsPullPreApprovalCommand(
             account_id=1,
             address=ADDRESS,
             biller_address=BILLER_ADDRESS,
@@ -264,7 +265,7 @@ def mock_get_funds_pull_pre_approvals(monkeypatch):
             status="pending",
         )
 
-        funds_pull_pre_approval_2 = FundsPullPreApprovalCommands(
+        funds_pull_pre_approval_2 = models.FundsPullPreApprovalCommand(
             account_id=2,
             address=ADDRESS_2,
             biller_address=BILLER_ADDRESS_2,
