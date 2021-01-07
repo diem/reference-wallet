@@ -31,7 +31,7 @@ offchain = Blueprint("offchain", __name__)
 class CommandsRoutes:
     @classmethod
     def create_command_response_object(
-        cls, approval: offchain_service.models.FundsPullPreApprovalCommands
+        cls, approval: offchain_service.models.FundsPullPreApprovalCommand
     ):
         return {
             "address": approval.address,

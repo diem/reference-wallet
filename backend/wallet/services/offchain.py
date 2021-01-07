@@ -452,7 +452,7 @@ def model_to_payment_command(model: PaymentCommandModel) -> offchain.PaymentComm
 
 def get_funds_pull_pre_approvals(
     account_id: int,
-) -> List[models.FundsPullPreApprovalCommands]:
+) -> List[models.FundsPullPreApprovalCommand]:
     return get_account_commands(account_id)
 
 
@@ -499,7 +499,7 @@ def establish_funds_pull_pre_approval(
     address = identifier.encode_account(vasp_address, sub_address, hrp)
 
     commit_command(
-        models.FundsPullPreApprovalCommands(
+        models.FundsPullPreApprovalCommand(
             account_id=account_id,
             address=address,
             biller_address=biller_address,
@@ -537,12 +537,12 @@ def establish_funds_pull_pre_approval(
 
 def preapproval_command_to_model(
     account_id, command: offchain.FundsPullPreApprovalCommand
-) -> models.FundsPullPreApprovalCommands:
+) -> models.FundsPullPreApprovalCommand:
     preapproval_object = command.funds_pull_pre_approval
     max_cumulative_amount = preapproval_object.scope.max_cumulative_amount
     max_transaction_amount = preapproval_object.scope.max_transaction_amount
 
-    return models.FundsPullPreApprovalCommands(
+    return models.FundsPullPreApprovalCommand(
         account_id=account_id,
         funds_pre_approval_id=preapproval_object.funds_pre_approval_id,
         address=preapproval_object.address,

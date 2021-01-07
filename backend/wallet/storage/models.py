@@ -208,7 +208,7 @@ class Token(Base):
     expiration_time = Column(Float, nullable=False)
 
 
-class FundsPullPreApprovalCommands(Base):
+class FundsPullPreApprovalCommand(Base):
     __tablename__ = "fundspullpreapprovalcommands"
     funds_pre_approval_id = Column(String, primary_key=True, nullable=False)
     account_id = Column(Integer, ForeignKey("account.id"), nullable=True)
