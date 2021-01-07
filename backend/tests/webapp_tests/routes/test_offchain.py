@@ -1,7 +1,10 @@
 import json
+import uuid
 from typing import Optional, List
 
+import context
 import pytest
+from diem import offchain
 from flask import Response
 from flask.testing import Client
 from wallet.services import offchain as offchain_service
@@ -316,9 +319,9 @@ def mock_failed_approve_funds_pull_pre_approval(monkeypatch):
 
 
 class TestApproveFundsPullPreApproval:
-    def test_successful_get_funds_pull_pre_approvals(
+    def test_success(
         self, authorized_client: Client, mock_successful_approve_funds_pull_pre_approval
-    ) -> None:
+    ):
         rv: Response = authorized_client.put(
             f"/offchain/funds_pull_pre_approvals/{FUNDS_PRE_APPROVAL_ID}",
             json={"funds_pre_approval_id": "1234", "status": "bla"},
@@ -326,9 +329,9 @@ class TestApproveFundsPullPreApproval:
 
         assert rv.status_code == 204
 
-    def test_failed_get_funds_pull_pre_approvals(
+    def test_failure(
         self, authorized_client: Client, mock_failed_approve_funds_pull_pre_approval
-    ) -> None:
+    ):
         rv: Response = authorized_client.put(
             f"/offchain/funds_pull_pre_approvals/{FUNDS_PRE_APPROVAL_ID}",
             json={"funds_pre_approval_id": "1234", "status": "bla"},
@@ -338,68 +341,104 @@ class TestApproveFundsPullPreApproval:
 
 
 @pytest.fixture
-def mock_establish_funds_pull_pre_approval(monkeypatch):
-    def mock(
-        account_id: int,
-        biller_address: str,
-        funds_pre_approval_id: str,
-        funds_pull_pre_approval_type: str,
-        expiration_timestamp: int,
-        max_cumulative_unit: str = None,
-        max_cumulative_unit_value: int = None,
-        max_cumulative_amount: int = None,
-        max_cumulative_amount_currency: str = None,
-        max_transaction_amount: int = None,
-        max_transaction_amount_currency: str = None,
-        description: str = None,
-    ) -> None:
-        return None
+def mock_offchain_service(monkeypatch):
+    def factory(method_name: str, will_return=None):
+        calls = []
 
-    monkeypatch.setattr(offchain_service, "establish_funds_pull_pre_approval", mock)
+        def mock(**argv):
+            calls.append(argv)
+            return will_return
+
+        monkeypatch.setattr(offchain_service, method_name, mock)
+        return calls
+
+    return factory
 
 
 class TestEstablishFundsPullPreApproval:
-    def test_establish_funds_pull_pre_approval(
-        self, authorized_client: Client, mock_establish_funds_pull_pre_approval
-    ) -> None:
-        rv: Response = authorized_client.post(
-            "/offchain/funds_pull_pre_approvals",
-            json={
-                "biller_address": BILLER_ADDRESS,
-                "funds_pre_approval_id": FUNDS_PRE_APPROVAL_ID,
-                "scope": {
-                    "type": "consent",
-                    "expiration_timestamp": 1234,
-                    "max_cumulative_amount": {
-                        "unit": "week",
-                        "value": 1,
-                        "max_amount": {
-                            "amount": 100,
-                            "currency": CURRENCY,
-                        },
-                    },
-                    "max_transaction_amount": {
-                        "amount": 10,
+    def test_success(self, authorized_client: Client, mock_offchain_service):
+        request_body = {
+            "biller_address": BILLER_ADDRESS,
+            "funds_pre_approval_id": FUNDS_PRE_APPROVAL_ID,
+            "scope": {
+                "type": "consent",
+                "expiration_timestamp": 1234,
+                "max_cumulative_amount": {
+                    "unit": "week",
+                    "value": 1,
+                    "max_amount": {
+                        "amount": 100,
                         "currency": CURRENCY,
                     },
                 },
-                "description": "bla la la",
+                "max_transaction_amount": {
+                    "amount": 10,
+                    "currency": CURRENCY,
+                },
             },
+            "description": "bla la la",
+        }
+
+        calls_to_establish = mock_offchain_service("establish_funds_pull_pre_approval")
+
+        rv: Response = authorized_client.post(
+            "/offchain/funds_pull_pre_approvals",
+            json=request_body,
         )
 
         assert rv.status_code == 200
 
+        assert len(calls_to_establish) == 1
+
+        call = calls_to_establish[0]
+        assert call.pop("account_id") == 1
+        assert call.pop("biller_address") == request_body["biller_address"]
+        assert (
+            call.pop("funds_pre_approval_id") == request_body["funds_pre_approval_id"]
+        )
+        assert call.pop("funds_pull_pre_approval_type") == request_body["scope"]["type"]
+        assert (
+            call.pop("expiration_timestamp")
+            == request_body["scope"]["expiration_timestamp"]
+        )
+        assert (
+            call.pop("max_cumulative_unit")
+            == request_body["scope"]["max_cumulative_amount"]["unit"]
+        )
+        assert (
+            call.pop("max_cumulative_unit_value")
+            == request_body["scope"]["max_cumulative_amount"]["value"]
+        )
+        assert (
+            call.pop("max_cumulative_amount")
+            == request_body["scope"]["max_cumulative_amount"]["max_amount"]["amount"]
+        )
+        assert (
+            call.pop("max_cumulative_amount_currency")
+            == request_body["scope"]["max_cumulative_amount"]["max_amount"]["currency"]
+        )
+        assert (
+            call.pop("max_transaction_amount")
+            == request_body["scope"]["max_transaction_amount"]["amount"]
+        )
+        assert (
+            call.pop("max_transaction_amount_currency")
+            == request_body["scope"]["max_transaction_amount"]["currency"]
+        )
+        assert call.pop("description") == request_body["description"]
+
+        # Are there unexpected arguments?
+        assert len(call) == 0
+
 
 class TestOffchainV2View:
-    def test_process_inbound_command(
-        self, authorized_client: Client, monkeypatch
-    ) -> None:
+    def test_success(self, authorized_client: Client, monkeypatch):
         x_request_id = "f7ed63c3-eab9-4bd5-8094-497ba626e564"
         response_data = b"bond"
 
-        def mock(_sender_address, _request_body):
-            assert _sender_address == ADDRESS
-            assert _request_body == b'{"dog": "gurki"}'
+        def mock(sender_address, request_body):
+            assert sender_address == ADDRESS
+            assert request_body == b'{"dog": "gurki"}'
 
             return 200, response_data
 
