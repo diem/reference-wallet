@@ -12,7 +12,11 @@ from wallet.services import offchain as offchain_service
 from wallet.services.account import (
     generate_new_subaddress,
 )
+from wallet.services.offchain import (
+    process_inbound_command,
+)
 from wallet.storage import db_session
+from wallet.storage.funds_pull_pre_approval_commands import get_command as get_funds_pull_pre_approval_command
 from wallet.types import TransactionStatus
 
 currency = DiemCurrency.XUS
@@ -148,23 +152,13 @@ def test_process_inbound_funds_pull_pre_approval_command(monkeypatch):
         assert code == 200
         assert resp
 
-    # txn = get_transaction_by_reference_id(cmd.reference_id())
-    # assert txn
-    # assert txn.status == TransactionStatus.OFF_CHAIN_INBOUND
-    #
-    # cmd = _txn_payment_command(txn)
-    # assert cmd.is_inbound(), str(cmd)
-    #
-    # with monkeypatch.context() as m:
-    #     m.setattr(
-    #         context.get().offchain_client,
-    #         "send_command",
-    #         lambda cmd, _: offchain.reply_request(cmd.cid),
-    #     )
-    #     process_offchain_tasks()
-    #
-    #     db_session.refresh(txn)
-    #     assert txn.status == TransactionStatus.OFF_CHAIN_OUTBOUND
+    stored_cmd = get_funds_pull_pre_approval_command(
+        cmd.funds_pull_pre_approval.funds_pre_approval_id
+    )
+    assert stored_cmd
+    assert stored_cmd.biller_address == cmd.funds_pull_pre_approval.biller_address
+    assert stored_cmd.address == cmd.funds_pull_pre_approval.address
+    assert stored_cmd.status == cmd.funds_pull_pre_approval.status
 
 
 def test_submit_txn_when_both_ready(monkeypatch):
