@@ -9,7 +9,6 @@ from diem.offchain import X_REQUEST_ID, X_REQUEST_SENDER_ADDRESS
 from flask import Blueprint, request
 from flask.views import MethodView
 from wallet.services import offchain as offchain_service
-from wallet.storage import FundsPullPreApprovalCommands
 from webapp.routes.strict_schema_view import (
     StrictSchemaView,
     response_definition,
@@ -31,7 +30,9 @@ offchain = Blueprint("offchain", __name__)
 
 class CommandsRoutes:
     @classmethod
-    def create_command_response_object(cls, approval: FundsPullPreApprovalCommands):
+    def create_command_response_object(
+        cls, approval: offchain_service.models.FundsPullPreApprovalCommands
+    ):
         return {
             "address": approval.address,
             "biller_address": approval.biller_address,
