@@ -24,6 +24,7 @@ from wallet.storage.funds_pull_pre_approval_command import (
     update_command,
     FundsPullPreApprovalCommandNotFound,
     commit_command,
+    get_commands_by_send_status,
 )
 from wallet.storage.models import FundsPullPreApprovalCommands
 from wallet.storage import models
@@ -108,6 +109,15 @@ def _jws(cid: Optional[str], err: Optional[offchain.OffChainErrorObject] = None)
     return code, offchain.jws.serialize(resp, _compliance_private_key().sign)
 
 
+def _process_funds_pull_pre_approvals_requests():
+    commands = get_commands_by_send_status(False)
+
+    for command in commands:
+        cmd = preapproval_model_to_command(command)
+
+        _offchain_client().send_command(cmd, _compliance_private_key().sign)
+
+
 def process_offchain_tasks() -> None:
     def send_command(model) -> None:
         assert not model.inbound
@@ -158,12 +168,13 @@ def process_offchain_tasks() -> None:
             storage.commit_transaction(transaction)
             model.status = TransactionStatus.COMPLETED
 
-    _process_by_status(TransactionStatus.OFF_CHAIN_OUTBOUND, send_command)
-    _process_by_status(TransactionStatus.OFF_CHAIN_INBOUND, offchain_action)
-    _process_by_status(TransactionStatus.OFF_CHAIN_READY, submit_txn)
+    _process_payment_by_status(TransactionStatus.OFF_CHAIN_OUTBOUND, send_command)
+    _process_payment_by_status(TransactionStatus.OFF_CHAIN_INBOUND, offchain_action)
+    _process_payment_by_status(TransactionStatus.OFF_CHAIN_READY, submit_txn)
+    _process_funds_pull_pre_approvals_requests()
 
 
-def _process_by_status(
+def _process_payment_by_status(
     status: TransactionStatus,
     callback: Callable[[PaymentCommandModel], Optional[PaymentCommandModel]],
 ) -> None:
@@ -449,24 +460,7 @@ def get_funds_pull_pre_approvals(
 
 # TODO verify
 def approve_funds_pull_pre_approval(funds_pre_approval_id: str, status: str) -> None:
-    command = update_command(funds_pre_approval_id, status)
-
-    cmd = FundsPullPreApprovalCommand.init(
-        address=command.address,
-        biller_address=command.biller_address,
-        funds_pull_pre_approval_type=command.funds_pull_pre_approval_type,
-        expiration_timestamp=command.expiration_timestamp,
-        status=command.status,
-        max_cumulative_unit=command.max_cumulative_unit,
-        max_cumulative_unit_value=command.max_cumulative_unit_value,
-        max_cumulative_amount=command.max_cumulative_amount,
-        max_cumulative_amount_currency=command.max_cumulative_amount_currency,
-        max_transaction_amount=command.max_transaction_amount,
-        max_transaction_amount_currency=command.max_transaction_amount_currency,
-        description=command.description,
-    )
-
-    _offchain_client().send_command(cmd, _compliance_private_key().sign)
+    update_command(funds_pre_approval_id, status)
 
 
 def establish_funds_pull_pre_approval(
@@ -508,22 +502,22 @@ def establish_funds_pull_pre_approval(
         )
     )
 
-    cmd = FundsPullPreApprovalCommand.init(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_type=funds_pull_pre_approval_type,
-        expiration_timestamp=expiration_timestamp,
-        status=FundPullPreApprovalStatus.valid,
-        max_cumulative_unit=max_cumulative_unit,
-        max_cumulative_unit_value=max_cumulative_unit_value,
-        max_cumulative_amount=max_cumulative_amount,
-        max_cumulative_amount_currency=max_cumulative_amount_currency,
-        max_transaction_amount=max_transaction_amount,
-        max_transaction_amount_currency=max_transaction_amount_currency,
-        description=description,
-    )
 
-    _offchain_client().send_command(cmd, _compliance_private_key().sign)
+def preapproval_model_to_command(command: models.FundsPullPreApprovalCommand):
+    return FundsPullPreApprovalCommand.init(
+        address=command.address,
+        biller_address=command.biller_address,
+        funds_pull_pre_approval_type=command.funds_pull_pre_approval_type,
+        expiration_timestamp=command.expiration_timestamp,
+        status=command.status,
+        max_cumulative_unit=command.max_cumulative_unit,
+        max_cumulative_unit_value=command.max_cumulative_unit_value,
+        max_cumulative_amount=command.max_cumulative_amount,
+        max_cumulative_amount_currency=command.max_cumulative_amount_currency,
+        max_transaction_amount=command.max_transaction_amount,
+        max_transaction_amount_currency=command.max_transaction_amount_currency,
+        description=command.description,
+    )
 
 
 def preapproval_command_to_model(
