@@ -41,12 +41,13 @@ class FundsPullPreApprovalCommandNotFound(Exception):
 
 
 def update_command(
-    funds_pre_approval_id: str, status: str
+    funds_pre_approval_id: str, status: str, role: str
 ) -> models.FundsPullPreApprovalCommand:
     command = models.FundsPullPreApprovalCommand.query.get(funds_pre_approval_id)
 
     if command:
         command.status = status
+        command.role = role
         commit_command(command)
 
         return command
