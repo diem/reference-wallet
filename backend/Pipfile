@@ -77,7 +77,7 @@ python-dotenv = "*"
 dataclasses-json = "*"
 jwcrypto = "*"
 sqlalchemy-paginator = "*"
-diem = {editable = true, git = "git@github.com:firstdag/client-sdk-python.git", ref = "dip-8"}
+diem = {editable = true, git = "https://github.com/diem/client-sdk-python.git", ref = "dip-8"}
 
 [pipenv]
 allow_prereleases = true
