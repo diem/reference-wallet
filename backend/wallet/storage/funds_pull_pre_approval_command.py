@@ -52,3 +52,13 @@ def update_command(
         raise FundsPullPreApprovalCommandNotFound(
             f"Command not found for funds pre approval id {funds_pre_approval_id}"
         )
+
+
+def get_commands_by_role(role: str):
+    return models.FundsPullPreApprovalCommand.query.filter_by(role=role).all()
+
+
+def get_commands_by_send_status(offchain_send: bool):
+    return models.FundsPullPreApprovalCommand.query.filter_by(
+        offchain_send=offchain_send
+    ).all()
