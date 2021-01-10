@@ -172,3 +172,5 @@ class FundsPullPreApprovalCommand(Base):
     max_transaction_amount_currency = Column(String, nullable=True)
     description = Column(String, nullable=True)
     status = Column(String, nullable=False)
+    role = Column(String, nullable=False)
+    offchain_send = Column(Boolean, default=False)
