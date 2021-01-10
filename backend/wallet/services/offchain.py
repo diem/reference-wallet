@@ -111,8 +111,8 @@ def get_role(preapproval_command):
     if preapproval_command.funds_pull_pre_approval.status == "pending":
         return "payer"
     elif (
-            preapproval_command.funds_pull_pre_approval.status
-            in typing.Union["valid", "rejected"]
+        preapproval_command.funds_pull_pre_approval.status
+        in typing.Union["valid", "rejected"]
     ):
         return "payee"
 
