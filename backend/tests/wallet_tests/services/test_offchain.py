@@ -1,5 +1,6 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
+import time
 
 import dataclasses
 
@@ -128,7 +129,7 @@ def test_process_inbound_funds_pull_pre_approval_command(monkeypatch):
         address=address,
         biller_address=biller_address,
         funds_pull_pre_approval_type="consent",
-        expiration_timestamp=1234,
+        expiration_timestamp=int(time.time()) + 30,
         status="pending",
         max_cumulative_unit="week",
         max_cumulative_unit_value=1,
