@@ -87,10 +87,14 @@ def process_inbound_command(
                 offchain.FundsPullPreApprovalCommand, command
             )
             bech32_address = preapproval_command.funds_pull_pre_approval.address
+
+            role = get_role(preapproval_command)
+
             commit_command(
                 preapproval_command_to_model(
                     account_id=account.get_account_id_from_bech32(bech32_address),
                     command=preapproval_command,
+                    role=role,
                 )
             )
         else:
@@ -101,6 +105,16 @@ def process_inbound_command(
     except offchain.Error as e:
         logger.exception(e)
         return _jws(command.id() if command else None, e.obj)
+
+
+def get_role(preapproval_command):
+    if preapproval_command.funds_pull_pre_approval.status == "pending":
+        return "payer"
+    elif (
+            preapproval_command.funds_pull_pre_approval.status
+            in typing.Union["valid", "rejected"]
+    ):
+        return "payee"
 
 
 def _jws(cid: Optional[str], err: Optional[offchain.OffChainErrorObject] = None):
@@ -116,6 +130,8 @@ def _process_funds_pull_pre_approvals_requests():
         cmd = preapproval_model_to_command(command)
 
         _offchain_client().send_command(cmd, _compliance_private_key().sign)
+
+        update_command(command.funds_pre_approval_id, True, command.role)
 
 
 def process_offchain_tasks() -> None:
@@ -327,7 +343,7 @@ def get_funds_pull_pre_approvals(
 
 # TODO verify
 def approve_funds_pull_pre_approval(funds_pre_approval_id: str, status: str) -> None:
-    update_command(funds_pre_approval_id, status)
+    update_command(funds_pre_approval_id, status, "payer")
 
 
 def establish_funds_pull_pre_approval(
@@ -366,6 +382,7 @@ def establish_funds_pull_pre_approval(
             max_transaction_amount_currency=max_transaction_amount_currency,
             description=description,
             status=FundPullPreApprovalStatus.valid,
+            role="payer",
         )
     )
 
@@ -388,7 +405,7 @@ def preapproval_model_to_command(command: models.FundsPullPreApprovalCommand):
 
 
 def preapproval_command_to_model(
-    account_id, command: offchain.FundsPullPreApprovalCommand
+    account_id, command: offchain.FundsPullPreApprovalCommand, role: str
 ) -> models.FundsPullPreApprovalCommand:
     preapproval_object = command.funds_pull_pre_approval
     max_cumulative_amount = preapproval_object.scope.max_cumulative_amount
@@ -409,4 +426,5 @@ def preapproval_command_to_model(
         max_transaction_amount_currency=max_transaction_amount.currency,
         description=preapproval_object.description,
         status=preapproval_object.status,
+        role=role,
     )
