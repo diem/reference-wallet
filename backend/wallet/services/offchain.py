@@ -20,7 +20,7 @@ from wallet.services import account, kyc
 from wallet.storage import models
 
 # noinspection PyUnresolvedReferences
-from wallet.storage.funds_pull_pre_approval_commands import (
+from wallet.storage.funds_pull_pre_approval_command import (
     get_account_commands,
     update_command,
     FundsPullPreApprovalCommandNotFound,

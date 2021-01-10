@@ -23,7 +23,7 @@ from wallet.storage import (
     get_account_transaction_ids,
     db_session,
 )
-from wallet.storage.funds_pull_pre_approval_commands import (
+from wallet.storage.funds_pull_pre_approval_command import (
     get_command as get_funds_pull_pre_approval_command,
 )
 from wallet.types import TransactionStatus
