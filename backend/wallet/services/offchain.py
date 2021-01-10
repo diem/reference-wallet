@@ -102,15 +102,6 @@ def process_inbound_command(
         return _jws(command.id() if command else None, e.obj)
 
 
-def get_account_id(approval):
-    address = approval.address
-    _, sub_address = identifier.decode_account(
-        address, context.get().config.diem_address_hrp()
-    )
-
-    return get_account_id_from_subaddr(subaddr=sub_address.hex())
-
-
 def _jws(cid: Optional[str], err: Optional[offchain.OffChainErrorObject] = None):
     code = 400 if err else 200
     resp = offchain.reply_request(cid)
