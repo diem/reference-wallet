@@ -41,7 +41,7 @@ def create_funds_pull_pre_approval_request(
 
     biller_address = get_biller_address(user_account_id)
 
-    funds_pull_pre_approval_id = str(uuid.UUID())
+    funds_pull_pre_approval_id = str(uuid.uuid4())
 
     funds_pull_pre_approval = FundPullPreApprovalObject(
         address=address,
