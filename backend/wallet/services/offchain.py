@@ -131,7 +131,7 @@ def _process_funds_pull_pre_approvals_requests():
 
         _offchain_client().send_command(cmd, _compliance_private_key().sign)
 
-        update_command(command.funds_pre_approval_id, True, command.role)
+        update_command(command.funds_pull_pre_approval_id, command, command.role, True)
 
 
 def process_offchain_tasks() -> None:
@@ -341,15 +341,17 @@ def get_funds_pull_pre_approvals(
     return get_account_commands(account_id)
 
 
-# TODO verify
-def approve_funds_pull_pre_approval(funds_pre_approval_id: str, status: str) -> None:
-    update_command(funds_pre_approval_id, status, "payer")
+def approve_funds_pull_pre_approval(
+    funds_pull_pre_approval_id: str, status: str
+) -> None:
+    """ update command in db with new given status and role PAYER"""
+    update_command(funds_pull_pre_approval_id, status, Role.PAYER)
 
 
 def establish_funds_pull_pre_approval(
     account_id: int,
     biller_address: str,
-    funds_pre_approval_id: str,
+    funds_pull_pre_approval_id: str,
     funds_pull_pre_approval_type: str,
     expiration_timestamp: int,
     max_cumulative_unit: str = None,
@@ -371,7 +373,7 @@ def establish_funds_pull_pre_approval(
             account_id=account_id,
             address=address,
             biller_address=biller_address,
-            funds_pre_approval_id=funds_pre_approval_id,
+            funds_pull_pre_approval_id=funds_pull_pre_approval_id,
             funds_pull_pre_approval_type=funds_pull_pre_approval_type,
             expiration_timestamp=expiration_timestamp,
             max_cumulative_unit=max_cumulative_unit,
@@ -413,7 +415,7 @@ def preapproval_command_to_model(
 
     return models.FundsPullPreApprovalCommand(
         account_id=account_id,
-        funds_pre_approval_id=preapproval_object.funds_pre_approval_id,
+        funds_pull_pre_approval_id=preapproval_object.funds_pull_pre_approval_id,
         address=preapproval_object.address,
         biller_address=preapproval_object.biller_address,
         funds_pull_pre_approval_type=preapproval_object.scope.type,

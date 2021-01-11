@@ -243,18 +243,18 @@ class Scope(Schema):
 class FundsPullPreApproval(Schema):
     address = fields.Str(required=True)
     biller_address = fields.Str(required=True)
-    funds_pre_approval_id = fields.Str(required=True)
+    funds_pull_pre_approval_id = fields.Str(required=True)
     scope = Scope
     description = fields.Str(required=False)
     status = fields.Str(required=False)  # default="pending"
 
 
 class FundsPullPreApprovalList(Schema):
-    funds_pre_approval_list = fields.List(fields.Nested(FundsPullPreApproval))
+    funds_pull_pre_approval_list = fields.List(fields.Nested(FundsPullPreApproval))
 
 
 class FundsPullPreApprovalId(Schema):
-    funds_pre_approval_id = fields.Str(required=True)
+    funds_pull_pre_approval_id = fields.Str(required=True)
 
 
 class ApproveFundsPullPreApproval(Schema):
@@ -263,6 +263,6 @@ class ApproveFundsPullPreApproval(Schema):
 
 class EstablishFundsPullPreApproval(Schema):
     biller_address = fields.Str(required=True)
-    funds_pre_approval_id = fields.Str(required=True)
+    funds_pull_pre_approval_id = fields.Str(required=True)
     scope = Scope
     description = fields.Str(required=False)

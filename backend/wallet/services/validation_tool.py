@@ -41,19 +41,19 @@ def create_funds_pull_pre_approval_request(
 
     biller_address = get_biller_address(user_account_id)
 
-    funds_pre_approval_id = str(uuid.UUID())
+    funds_pull_pre_approval_id = str(uuid.UUID())
 
-    fund_pull_pre_approval = FundPullPreApprovalObject(
+    funds_pull_pre_approval = FundPullPreApprovalObject(
         address=address,
         biller_address=biller_address,
-        funds_pre_approval_id=funds_pre_approval_id,
+        funds_pull_pre_approval_id=funds_pull_pre_approval_id,
         scope=scope,
         description=description,
     )
 
     command = FundPullPreApprovalCommandObject(
         _ObjectType=CommandType.FundPullPreApprovalCommand,
-        fund_pull_pre_approval=fund_pull_pre_approval,
+        fund_pull_pre_approval=funds_pull_pre_approval,
     )
 
     cid = str(uuid.UUID())
@@ -66,7 +66,7 @@ def create_funds_pull_pre_approval_request(
 
     # TODO send to offchain client
 
-    return funds_pre_approval_id
+    return funds_pull_pre_approval_id
 
 
 def get_biller_address(user_account_id):
