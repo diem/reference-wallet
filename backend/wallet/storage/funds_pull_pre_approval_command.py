@@ -48,6 +48,7 @@ def update_command(
     if command:
         command.status = status
         command.role = role
+        command.offchain_send = offchain_send
         commit_command(command)
 
         return command
