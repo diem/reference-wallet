@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import json
 import logging
+import time
 import typing
 from datetime import datetime
 from enum import Enum
@@ -27,6 +28,7 @@ from wallet.storage.funds_pull_pre_approval_command import (
     FundsPullPreApprovalCommandNotFound,
     commit_command,
     get_commands_by_send_status,
+    get_funds_pull_pre_approval_command,
 )
 
 from ..storage import (
@@ -359,7 +361,7 @@ def approve_funds_pull_pre_approval(
     if status not in ["valid", "rejected"]:
         raise ValueError(f"Status must be 'valid' or 'rejected' and not '{status}'")
 
-    command = get_command(funds_pull_pre_approval_id)
+    command = get_funds_pull_pre_approval_command(funds_pull_pre_approval_id)
 
     if command:
         if command.status != "pending":
@@ -386,6 +388,15 @@ def establish_funds_pull_pre_approval(
     description: str = None,
 ) -> None:
     """ Establish funds pull pre approval by payer """
+    validate_expiration_timestamp(expiration_timestamp)
+
+    command = get_funds_pull_pre_approval_command(funds_pull_pre_approval_id)
+
+    if command is not None:
+        raise RuntimeError(
+            f"Command with id {funds_pull_pre_approval_id} already exist in db"
+        )
+
     vasp_address = context.get().config.vasp_address
     sub_address = account.generate_new_subaddress(account_id)
     hrp = context.get().config.diem_address_hrp()
@@ -481,3 +492,8 @@ def preapproval_command_to_model(
         status=preapproval_object.status,
         role=role,
     )
+
+
+def validate_expiration_timestamp(expiration_timestamp):
+    if expiration_timestamp < time.time():
+        raise ValueError("expiration timestamp must be in the future")

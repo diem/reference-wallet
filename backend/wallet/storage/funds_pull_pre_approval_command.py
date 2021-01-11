@@ -14,7 +14,9 @@ def get_account_commands(account_id: int) -> List[models.FundsPullPreApprovalCom
     ).all()
 
 
-def get_command(funds_pull_pre_approval_id: str) -> models.FundsPullPreApprovalCommand:
+def get_funds_pull_pre_approval_command(
+    funds_pull_pre_approval_id: str,
+) -> models.FundsPullPreApprovalCommand:
     return models.FundsPullPreApprovalCommand.query.filter_by(
         funds_pull_pre_approval_id=funds_pull_pre_approval_id
     ).first()
