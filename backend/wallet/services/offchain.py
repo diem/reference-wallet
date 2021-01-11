@@ -4,6 +4,7 @@ import json
 import logging
 import typing
 from datetime import datetime
+from enum import Enum
 from typing import Optional, Tuple, Callable, List, Dict
 
 import context
@@ -41,6 +42,11 @@ from ..types import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+class Role(str, Enum):
+    PAYEE = "payee"
+    PAYER = "payer"
 
 
 def save_outbound_transaction(
@@ -88,7 +94,7 @@ def process_inbound_command(
             )
             bech32_address = preapproval_command.funds_pull_pre_approval.address
 
-            role = get_role(preapproval_command)
+            role = get_role_by_fppa_command_status(preapproval_command)
 
             commit_command(
                 preapproval_command_to_model(
@@ -107,14 +113,14 @@ def process_inbound_command(
         return _jws(command.id() if command else None, e.obj)
 
 
-def get_role(preapproval_command):
+def get_role_by_fppa_command_status(preapproval_command):
     if preapproval_command.funds_pull_pre_approval.status == "pending":
-        return "payer"
+        return Role.PAYER
     elif (
         preapproval_command.funds_pull_pre_approval.status
         in typing.Union["valid", "rejected"]
     ):
-        return "payee"
+        return Role.PAYEE
 
 
 def _jws(cid: Optional[str], err: Optional[offchain.OffChainErrorObject] = None):
@@ -127,7 +133,12 @@ def _process_funds_pull_pre_approvals_requests():
     commands = get_commands_by_send_status(False)
 
     for command in commands:
-        cmd = preapproval_model_to_command(command)
+        if command.role == Role.PAYER:
+            my_address = command.address
+        else:
+            my_address = command.biller_address
+
+        cmd = preapproval_model_to_command(my_address=my_address, command=command)
 
         _offchain_client().send_command(cmd, _compliance_private_key().sign)
 
@@ -384,7 +395,7 @@ def establish_funds_pull_pre_approval(
             max_transaction_amount_currency=max_transaction_amount_currency,
             description=description,
             status=FundPullPreApprovalStatus.valid,
-            role="payer",
+            role=Role.PAYER,
         )
     )
 
