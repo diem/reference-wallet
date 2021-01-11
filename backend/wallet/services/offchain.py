@@ -489,7 +489,19 @@ def approve_funds_pull_pre_approval(
     funds_pull_pre_approval_id: str, status: str
 ) -> None:
     """ update command in db with new given status and role PAYER"""
-    update_command(funds_pull_pre_approval_id, status, Role.PAYER)
+    if status not in ["valid", "rejected"]:
+        raise ValueError(f"Status must be 'valid' or 'rejected' and not '{status}'")
+
+    command = get_command(funds_pull_pre_approval_id)
+
+    if command:
+        if command.status != "pending":
+            raise RuntimeError(
+                f"Could not approve command with status {command.status}"
+            )
+        update_command(funds_pull_pre_approval_id, status, Role.PAYER)
+    else:
+        raise RuntimeError(f"Could not find command {funds_pull_pre_approval_id}")
 
 
 def establish_funds_pull_pre_approval(

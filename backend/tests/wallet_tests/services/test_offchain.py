@@ -1,13 +1,17 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
+import dataclasses
 import time
 import uuid
 
-import dataclasses
-
 import context
+import pytest
 from diem import identifier, LocalAccount, offchain, jsonrpc
+from diem.offchain import FundPullPreApprovalStatus
 from diem_utils.types.currencies import DiemCurrency
+from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import (
+    OneFundsPullPreApproval,
+)
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet import storage
 from wallet.services import offchain as offchain_service
@@ -16,6 +20,7 @@ from wallet.services.account import (
 )
 from wallet.services.offchain import (
     process_inbound_command,
+    approve_funds_pull_pre_approval,
 )
 from wallet.storage import db_session
 from wallet.storage.funds_pull_pre_approval_command import (
@@ -242,3 +247,53 @@ def jsonrpc_txn_sample(*args):
         transaction=jsonrpc.TransactionData(sequence_number=5),
         hash="3232-hash",
     )
+
+
+def test_approve_funds_pull_pre_approval_no_command_in_db():
+    with pytest.raises(RuntimeError, match=r"Could not find command .*"):
+        approve_funds_pull_pre_approval(
+            str(uuid.uuid4()), FundPullPreApprovalStatus.valid
+        )
+
+
+FUNDS_PULL_PRE_APPROVAL_ID = "5fc49fa0-5f2a-4faa-b391-ac1652c57e4d"
+
+
+def test_approve_funds_pull_pre_approval():
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.pending,
+    )
+
+    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+
+    assert command.status == FundPullPreApprovalStatus.pending
+
+    approve_funds_pull_pre_approval(FUNDS_PULL_PRE_APPROVAL_ID, FundPullPreApprovalStatus.valid)
+
+    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+
+    assert command.status == FundPullPreApprovalStatus.valid
+
+
+def test_approve_funds_pull_pre_approval_command_with_wrong_status_in_db():
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.closed,
+    )
+
+    with pytest.raises(RuntimeError, match=r"Could not approve command with status .*"):
+        approve_funds_pull_pre_approval(
+            FUNDS_PULL_PRE_APPROVAL_ID, FundPullPreApprovalStatus.valid
+        )
+
+
+def test_approve_funds_pull_pre_approval_invalid_status():
+    with pytest.raises(
+        ValueError, match=r"Status must be 'valid' or 'rejected' and not '.*'"
+    ):
+        approve_funds_pull_pre_approval(
+            FUNDS_PULL_PRE_APPROVAL_ID, FundPullPreApprovalStatus.closed
+        )
