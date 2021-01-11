@@ -395,7 +395,8 @@ class TestEstablishFundsPullPreApproval:
         assert call.pop("account_id") == 1
         assert call.pop("biller_address") == request_body["biller_address"]
         assert (
-            call.pop("funds_pull_pre_approval_id") == request_body["funds_pull_pre_approval_id"]
+            call.pop("funds_pull_pre_approval_id")
+            == request_body["funds_pull_pre_approval_id"]
         )
         assert call.pop("funds_pull_pre_approval_type") == request_body["scope"]["type"]
         assert (
