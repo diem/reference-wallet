@@ -400,20 +400,36 @@ def establish_funds_pull_pre_approval(
     )
 
 
-def preapproval_model_to_command(command: models.FundsPullPreApprovalCommand):
-    return FundsPullPreApprovalCommand.init(
+def preapproval_model_to_command(
+    command: models.FundsPullPreApprovalCommand, my_address: str
+):
+    funds_pull_pre_approval = offchain.FundPullPreApprovalObject(
+        funds_pull_pre_approval_id=command.funds_pull_pre_approval_id,
         address=command.address,
         biller_address=command.biller_address,
-        funds_pull_pre_approval_type=command.funds_pull_pre_approval_type,
-        expiration_timestamp=command.expiration_timestamp,
+        scope=offchain.FundPullPreApprovalScopeObject(
+            type=offchain.FundPullPreApprovalType.consent,
+            expiration_timestamp=command.expiration_timestamp,
+            max_cumulative_amount=offchain.ScopedCumulativeAmountObject(
+                unit=command.max_cumulative_unit,
+                value=command.max_cumulative_unit_value,
+                max_amount=offchain.CurrencyObject(
+                    amount=command.max_cumulative_amount,
+                    currency=command.max_cumulative_amount_currency,
+                ),
+            ),
+            max_transaction_amount=offchain.CurrencyObject(
+                amount=command.max_transaction_amount,
+                currency=command.max_transaction_amount_currency,
+            ),
+        ),
         status=command.status,
-        max_cumulative_unit=command.max_cumulative_unit,
-        max_cumulative_unit_value=command.max_cumulative_unit_value,
-        max_cumulative_amount=command.max_cumulative_amount,
-        max_cumulative_amount_currency=command.max_cumulative_amount_currency,
-        max_transaction_amount=command.max_transaction_amount,
-        max_transaction_amount_currency=command.max_transaction_amount_currency,
         description=command.description,
+    )
+
+    return offchain.FundsPullPreApprovalCommand(
+        my_actor_address=my_address,
+        funds_pull_pre_approval=funds_pull_pre_approval,
     )
 
 
@@ -431,12 +447,24 @@ def preapproval_command_to_model(
         biller_address=preapproval_object.biller_address,
         funds_pull_pre_approval_type=preapproval_object.scope.type,
         expiration_timestamp=preapproval_object.scope.expiration_timestamp,
-        max_cumulative_unit=max_cumulative_amount.unit,
-        max_cumulative_unit_value=max_cumulative_amount.value,
-        max_cumulative_amount=max_cumulative_amount.max_amount.amount,
-        max_cumulative_amount_currency=max_cumulative_amount.max_amount.currency,
-        max_transaction_amount=max_transaction_amount.amount,
-        max_transaction_amount_currency=max_transaction_amount.currency,
+        max_cumulative_unit=max_cumulative_amount.unit
+        if max_cumulative_amount
+        else None,
+        max_cumulative_unit_value=max_cumulative_amount.value
+        if max_cumulative_amount
+        else None,
+        max_cumulative_amount=max_cumulative_amount.max_amount.amount
+        if max_cumulative_amount
+        else None,
+        max_cumulative_amount_currency=max_cumulative_amount.max_amount.currency
+        if max_cumulative_amount
+        else None,
+        max_transaction_amount=max_transaction_amount.amount
+        if max_transaction_amount
+        else None,
+        max_transaction_amount_currency=max_transaction_amount.currency
+        if max_transaction_amount
+        else None,
         description=preapproval_object.description,
         status=preapproval_object.status,
         role=role,
