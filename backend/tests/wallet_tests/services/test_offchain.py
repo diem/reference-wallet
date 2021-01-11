@@ -1,6 +1,7 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 import time
+import uuid
 
 import dataclasses
 
@@ -125,19 +126,27 @@ def test_process_inbound_funds_pull_pre_approval_command(monkeypatch):
         hrp,
     )
 
-    cmd = offchain.FundsPullPreApprovalCommand.init(
+    funds_pull_pre_approval = offchain.FundPullPreApprovalObject(
+        funds_pull_pre_approval_id=str(uuid.uuid4()),
         address=address,
         biller_address=biller_address,
-        funds_pull_pre_approval_type="consent",
-        expiration_timestamp=int(time.time()) + 30,
+        scope=offchain.FundPullPreApprovalScopeObject(
+            type=offchain.FundPullPreApprovalType.consent,
+            expiration_timestamp=int(time.time()) + 30,
+            max_cumulative_amount=offchain.ScopedCumulativeAmountObject(
+                unit="week",
+                value=1,
+                max_amount=offchain.CurrencyObject(
+                    amount=10_000_000_000_000, currency=currency
+                ),
+            ),
+        ),
         status="pending",
-        max_cumulative_unit="week",
-        max_cumulative_unit_value=1,
-        max_cumulative_amount=10_000_000_000_000,
-        max_cumulative_amount_currency=currency,
-        max_transaction_amount=10_000_000,
-        max_transaction_amount_currency=currency,
         description="test",
+    )
+
+    cmd = offchain.FundsPullPreApprovalCommand(
+        my_actor_address=address, funds_pull_pre_approval=funds_pull_pre_approval
     )
 
     with monkeypatch.context() as m:
