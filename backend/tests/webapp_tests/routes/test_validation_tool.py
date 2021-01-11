@@ -7,7 +7,7 @@ from flask import Response
 from flask.testing import Client
 from wallet.services import validation_tool as validation_tool_service
 
-FUNDS_PRE_APPROVAL_ID = str(uuid.uuid4())
+FUNDS_PULL_PRE_APPROVAL_ID = str(uuid.uuid4())
 
 
 @pytest.fixture
@@ -22,7 +22,7 @@ def mock_create_funds_pull_pre_approval_request(monkeypatch):
         cumulative_amount_unit,
         cumulative_amount_unit_value,
     ) -> Optional[str]:
-        return FUNDS_PRE_APPROVAL_ID
+        return FUNDS_PULL_PRE_APPROVAL_ID
 
     monkeypatch.setattr(
         validation_tool_service, "create_funds_pull_pre_approval_request", mock
@@ -48,5 +48,5 @@ class TestCreateFundsPullPreApprovalRequest:
 
         assert rv.status_code == 200
         assert rv.get_data() is not None
-        funds_pre_approval_id = rv.get_json()["funds_pre_approval_id"]
-        assert funds_pre_approval_id == FUNDS_PRE_APPROVAL_ID
+        funds_pull_pre_approval_id = rv.get_json()["funds_pull_pre_approval_id"]
+        assert funds_pull_pre_approval_id == FUNDS_PULL_PRE_APPROVAL_ID

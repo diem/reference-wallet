@@ -14,9 +14,9 @@ def get_account_commands(account_id: int) -> List[models.FundsPullPreApprovalCom
     ).all()
 
 
-def get_command(funds_pre_approval_id: str) -> models.FundsPullPreApprovalCommand:
+def get_command(funds_pull_pre_approval_id: str) -> models.FundsPullPreApprovalCommand:
     return models.FundsPullPreApprovalCommand.query.filter_by(
-        funds_pre_approval_id=funds_pre_approval_id
+        funds_pull_pre_approval_id=funds_pull_pre_approval_id
     ).first()
 
 
@@ -41,9 +41,9 @@ class FundsPullPreApprovalCommandNotFound(Exception):
 
 
 def update_command(
-    funds_pre_approval_id: str, status: str, role: str
+    funds_pull_pre_approval_id: str, status: str, role: str, offchain_send: bool = False
 ) -> models.FundsPullPreApprovalCommand:
-    command = models.FundsPullPreApprovalCommand.query.get(funds_pre_approval_id)
+    command = models.FundsPullPreApprovalCommand.query.get(funds_pull_pre_approval_id)
 
     if command:
         command.status = status
@@ -53,7 +53,7 @@ def update_command(
         return command
     else:
         raise FundsPullPreApprovalCommandNotFound(
-            f"Command not found for funds pre approval id {funds_pre_approval_id}"
+            f"Command not found for funds pre approval id {funds_pull_pre_approval_id}"
         )
 
 

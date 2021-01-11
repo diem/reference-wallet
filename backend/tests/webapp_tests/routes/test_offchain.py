@@ -12,8 +12,8 @@ from wallet.storage import models
 from wallet.storage.models import FundsPullPreApprovalCommands
 from diem import offchain
 
-FUNDS_PRE_APPROVAL_ID = "28992c81-e85a-4771-995a-af1d22bcaf63"
-FUNDS_PRE_APPROVAL_ID_2 = "e1f7f846-f9e6-46f9-b184-c949f8d6b197"
+FUNDS_PULL_PRE_APPROVAL_ID = "28992c81-e85a-4771-995a-af1d22bcaf63"
+FUNDS_PULL_PRE_APPROVAL_ID_2 = "e1f7f846-f9e6-46f9-b184-c949f8d6b197"
 BILLER_ADDRESS = "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
 BILLER_ADDRESS_2 = "tdm1pvjua68j72mhmp3n7jkuthmxlkj0g57gkpegq6qgkjfxwc"
 ADDRESS = "tdm1pwm5m35ayknjr0s67pk9xdf5mwp3nwq6ef67s55gpjwrqf"
@@ -252,7 +252,7 @@ def mock_get_funds_pull_pre_approvals(monkeypatch):
             account_id=1,
             address=ADDRESS,
             biller_address=BILLER_ADDRESS,
-            funds_pre_approval_id=FUNDS_PRE_APPROVAL_ID,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
             funds_pull_pre_approval_type="consent",
             expiration_timestamp=1234,
             max_cumulative_unit="week",
@@ -269,7 +269,7 @@ def mock_get_funds_pull_pre_approvals(monkeypatch):
             account_id=2,
             address=ADDRESS_2,
             biller_address=BILLER_ADDRESS_2,
-            funds_pre_approval_id=FUNDS_PRE_APPROVAL_ID_2,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID_2,
             funds_pull_pre_approval_type="consent",
             expiration_timestamp=1234,
             max_cumulative_unit="week",
@@ -305,7 +305,7 @@ class TestGetFundsPullPreApprovals:
 
 @pytest.fixture
 def mock_successful_approve_funds_pull_pre_approval(monkeypatch):
-    def mock(_funds_pre_approval_id, _status) -> None:
+    def mock(_funds_pull_pre_approval_id, _status) -> None:
         return None
 
     monkeypatch.setattr(offchain_service, "approve_funds_pull_pre_approval", mock)
@@ -313,7 +313,7 @@ def mock_successful_approve_funds_pull_pre_approval(monkeypatch):
 
 @pytest.fixture
 def mock_failed_approve_funds_pull_pre_approval(monkeypatch):
-    def mock(_funds_pre_approval_id, _status) -> None:
+    def mock(_funds_pull_pre_approval_id, _status) -> None:
         raise offchain_service.FundsPullPreApprovalCommandNotFound
 
     monkeypatch.setattr(offchain_service, "approve_funds_pull_pre_approval", mock)
@@ -324,8 +324,8 @@ class TestApproveFundsPullPreApproval:
         self, authorized_client: Client, mock_successful_approve_funds_pull_pre_approval
     ):
         rv: Response = authorized_client.put(
-            f"/offchain/funds_pull_pre_approvals/{FUNDS_PRE_APPROVAL_ID}",
-            json={"funds_pre_approval_id": "1234", "status": "bla"},
+            f"/offchain/funds_pull_pre_approvals/{FUNDS_PULL_PRE_APPROVAL_ID}",
+            json={"funds_pull_pre_approval_id": "1234", "status": "bla"},
         )
 
         assert rv.status_code == 204
@@ -334,8 +334,8 @@ class TestApproveFundsPullPreApproval:
         self, authorized_client: Client, mock_failed_approve_funds_pull_pre_approval
     ):
         rv: Response = authorized_client.put(
-            f"/offchain/funds_pull_pre_approvals/{FUNDS_PRE_APPROVAL_ID}",
-            json={"funds_pre_approval_id": "1234", "status": "bla"},
+            f"/offchain/funds_pull_pre_approvals/{FUNDS_PULL_PRE_APPROVAL_ID}",
+            json={"funds_pull_pre_approval_id": "1234", "status": "bla"},
         )
 
         assert rv.status_code == 404
@@ -360,7 +360,7 @@ class TestEstablishFundsPullPreApproval:
     def test_success(self, authorized_client: Client, mock_offchain_service):
         request_body = {
             "biller_address": BILLER_ADDRESS,
-            "funds_pre_approval_id": FUNDS_PRE_APPROVAL_ID,
+            "funds_pull_pre_approval_id": FUNDS_PULL_PRE_APPROVAL_ID,
             "scope": {
                 "type": "consent",
                 "expiration_timestamp": 1234,
@@ -395,7 +395,7 @@ class TestEstablishFundsPullPreApproval:
         assert call.pop("account_id") == 1
         assert call.pop("biller_address") == request_body["biller_address"]
         assert (
-            call.pop("funds_pre_approval_id") == request_body["funds_pre_approval_id"]
+            call.pop("funds_pull_pre_approval_id") == request_body["funds_pull_pre_approval_id"]
         )
         assert call.pop("funds_pull_pre_approval_type") == request_body["scope"]["type"]
         assert (

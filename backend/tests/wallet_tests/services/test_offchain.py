@@ -156,7 +156,7 @@ def test_process_inbound_funds_pull_pre_approval_command(monkeypatch):
         assert resp
 
     stored_cmd = get_funds_pull_pre_approval_command(
-        cmd.funds_pull_pre_approval.funds_pre_approval_id
+        cmd.funds_pull_pre_approval.funds_pull_pre_approval_id
     )
     assert stored_cmd
     assert stored_cmd.biller_address == cmd.funds_pull_pre_approval.biller_address

@@ -42,7 +42,7 @@ class ValidationToolRoutes:
             if "currency" in request_details:
                 currency = request_details["currency"]
 
-            funds_pre_approval_id = (
+            funds_pull_pre_approval_id = (
                 validation_tool_service.create_funds_pull_pre_approval_request(
                     user_account_id=account_id,
                     address=address,
@@ -56,6 +56,6 @@ class ValidationToolRoutes:
             )
 
             return (
-                {"funds_pre_approval_id": funds_pre_approval_id},
+                {"funds_pull_pre_approval_id": funds_pull_pre_approval_id},
                 HTTPStatus.OK,
             )

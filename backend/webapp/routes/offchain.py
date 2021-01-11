@@ -36,7 +36,7 @@ class CommandsRoutes:
         return {
             "address": approval.address,
             "biller_address": approval.biller_address,
-            "funds_pre_approval_id": approval.funds_pre_approval_id,
+            "funds_pull_pre_approval_id": approval.funds_pull_pre_approval_id,
             "scope": {
                 "type": approval.funds_pull_pre_approval_type,
                 "expiration_time": approval.expiration_timestamp,
@@ -241,7 +241,7 @@ class OffchainRoutes:
 
             account_id: int = self.user.account_id
             biller_address: str = params["biller_address"]
-            funds_pre_approval_id: str = params["funds_pre_approval_id"]
+            funds_pull_pre_approval_id: str = params["funds_pull_pre_approval_id"]
             scope: dict = params["scope"]
             funds_pull_pre_approval_type: str = scope["type"]
             expiration_timestamp: int = scope["expiration_timestamp"]
@@ -261,7 +261,7 @@ class OffchainRoutes:
             offchain_service.establish_funds_pull_pre_approval(
                 account_id=account_id,
                 biller_address=biller_address,
-                funds_pre_approval_id=funds_pre_approval_id,
+                funds_pull_pre_approval_id=funds_pull_pre_approval_id,
                 funds_pull_pre_approval_type=funds_pull_pre_approval_type,
                 expiration_timestamp=expiration_timestamp,
                 max_cumulative_unit=max_cumulative_unit,
