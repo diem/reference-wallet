@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "df5221bdb6e9106c4e6477fcacb3e5bfcd0514ac3bd8e1386fcaca76487e82da"
+            "sha256": "1f23ccfb00cc2ec097dd3032e44c38f0b285eb34c801a1965afb3220e7639cae"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -216,8 +216,8 @@
         },
         "diem": {
             "editable": true,
-            "git": "ssh://git@github.com/firstdag/client-sdk-python.git",
-            "ref": "38e99020755522a807012f5da6b5f398d8da267f"
+            "git": "https://github.com/firstdag/client-sdk-python.git",
+            "ref": "00880b0a01edd764ebdc93fdf16af2901949f152"
         },
         "diem-sample-wallet": {
             "editable": true,
@@ -361,11 +361,11 @@
         },
         "importlib-metadata": {
             "hashes": [
-                "sha256:5c5a2720817414a6c41f0a49993908068243ae02c1635a228126519b509c8aed",
-                "sha256:bf792d480abbd5eda85794e4afb09dd538393f7d6e6ffef6e9f03d2014cf9450"
+                "sha256:ace61d5fc652dc280e7b6b4ff732a9c2d40db2c0f92bc6cb74e07b73d53a1771",
+                "sha256:fa5daa4477a7414ae34e95942e4dd07f62adf589143c875c133c1e53c4eff38d"
             ],
             "index": "pypi",
-            "version": "==3.3.0"
+            "version": "==3.4.0"
         },
         "iniconfig": {
             "hashes": [
@@ -1233,11 +1233,11 @@
         },
         "importlib-metadata": {
             "hashes": [
-                "sha256:5c5a2720817414a6c41f0a49993908068243ae02c1635a228126519b509c8aed",
-                "sha256:bf792d480abbd5eda85794e4afb09dd538393f7d6e6ffef6e9f03d2014cf9450"
+                "sha256:ace61d5fc652dc280e7b6b4ff732a9c2d40db2c0f92bc6cb74e07b73d53a1771",
+                "sha256:fa5daa4477a7414ae34e95942e4dd07f62adf589143c875c133c1e53c4eff38d"
             ],
             "index": "pypi",
-            "version": "==3.3.0"
+            "version": "==3.4.0"
         },
         "iniconfig": {
             "hashes": [
