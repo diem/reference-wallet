@@ -6,6 +6,9 @@ from diem_utils.types.currencies import DiemCurrency
 from wallet.services.offchain import Role
 from wallet.storage.models import FundsPullPreApprovalCommand
 
+ADDRESS = "257e50b131150fdb56aeab4ebe4ec2b9"
+BILLER_ADDRESS = "176b73399b04d9231769614cf22fb5df"
+
 
 class OneFundsPullPreApproval:
     @staticmethod
@@ -16,8 +19,8 @@ class OneFundsPullPreApproval:
     ) -> FundsPullPreApprovalCommand:
         command = FundsPullPreApprovalCommand(
             account_id=1,
-            address="257e50b131150fdb56aeab4ebe4ec2b9",
-            biller_address="176b73399b04d9231769614cf22fb5df",
+            address=ADDRESS,
+            biller_address=BILLER_ADDRESS,
             funds_pull_pre_approval_id=funds_pull_pre_approval_id,
             funds_pull_pre_approval_type="consent",
             expiration_timestamp=int(time.time() + 30),
