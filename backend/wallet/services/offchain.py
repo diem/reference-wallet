@@ -1,10 +1,8 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 import logging
-import time
 import typing
 from datetime import datetime
-from enum import Enum
 from typing import Optional, Tuple, Callable, List
 
 import context
@@ -13,12 +11,16 @@ from diem import offchain, identifier
 from diem.offchain import (
     CommandType,
     FundPullPreApprovalStatus,
-    FundsPullPreApprovalCommand,
 )
 from diem_utils.types.currencies import DiemCurrency
 from wallet import storage
 from wallet.services import account, kyc
-from wallet.storage import models
+from wallet.services.fund_pull_pre_approval import (
+    preapproval_command_to_model,
+    validate_expiration_timestamp,
+    process_funds_pull_pre_approvals_requests,
+    Role,
+)
 
 # noinspection PyUnresolvedReferences
 from wallet.storage.funds_pull_pre_approval_command import (
@@ -47,11 +49,6 @@ from ..types import (
 logger = logging.getLogger(__name__)
 
 PaymentCommandModel = models.PaymentCommand
-
-
-class Role(str, Enum):
-    PAYEE = "payee"
-    PAYER = "payer"
 
 
 def save_outbound_payment_command(
@@ -170,22 +167,6 @@ def _jws(cid: Optional[str], err: Optional[offchain.OffChainErrorObject] = None)
     return code, offchain.jws.serialize(resp, _compliance_private_key().sign)
 
 
-def _process_funds_pull_pre_approvals_requests():
-    commands = get_commands_by_send_status(False)
-
-    for command in commands:
-        if command.role == Role.PAYER:
-            my_address = command.address
-        else:
-            my_address = command.biller_address
-
-        cmd = preapproval_model_to_command(my_address=my_address, command=command)
-
-        _offchain_client().send_command(cmd, _compliance_private_key().sign)
-
-        update_command(command.funds_pull_pre_approval_id, command, command.role, True)
-
-
 def process_offchain_tasks() -> None:
     def send_command(model) -> None:
         assert not model.inbound
@@ -239,7 +220,7 @@ def process_offchain_tasks() -> None:
     _process_payment_by_status(TransactionStatus.OFF_CHAIN_OUTBOUND, send_command)
     _process_payment_by_status(TransactionStatus.OFF_CHAIN_INBOUND, offchain_action)
     _process_payment_by_status(TransactionStatus.OFF_CHAIN_READY, submit_txn)
-    _process_funds_pull_pre_approvals_requests()
+    process_funds_pull_pre_approvals_requests()
 
 
 def _process_payment_by_status(
