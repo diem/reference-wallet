@@ -178,7 +178,7 @@ def test_create_and_approve_while_command_already_exist_in_db():
         )
 
 
-def test_process_inbound_funds_pull_pre_approval_command(monkeypatch):
+def test_process_inbound_command(monkeypatch):
     user = OneUser.run(
         db_session, account_amount=100_000_000_000, account_currency=currency
     )
@@ -210,7 +210,7 @@ def test_process_inbound_funds_pull_pre_approval_command(monkeypatch):
     assert stored_cmd.status == cmd.funds_pull_pre_approval.status
 
 
-def test_process_inbound_funds_pull_pre_approval_command_happy_flow(
+def test_process_command_happy_flow(
     monkeypatch,
 ):
     with monkeypatch.context() as m:
@@ -243,7 +243,7 @@ def test_process_inbound_funds_pull_pre_approval_command_happy_flow(
     assert command_in_db.role == Role.PAYER
 
 
-def test_process_inbound_funds_pull_pre_approval_command_update_immutable_value(
+def test_process_inbound_command_update_immutable_value(
     monkeypatch,
 ):
     address = get_address()
