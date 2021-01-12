@@ -498,6 +498,45 @@ def test_process_inbound_funds_pull_pre_approval_command_update(monkeypatch):
     assert command_in_db.max_cumulative_unit_value == 1
 
 
+def test_process_inbound_funds_pull_pre_approval_command_invalid_update(monkeypatch):
+    address = get_address()
+    biller_address = get_biller_address()
+
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        address=address,
+        biller_address=biller_address,
+    )
+
+    with monkeypatch.context() as m:
+        client = context.get().offchain_client
+
+        def mock(_request_sender_address: str, _request_body_bytes: bytes):
+            return generate_funds_pull_pre_approval_command(
+                address=address,
+                biller_address=biller_address,
+                funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            )
+
+        m.setattr(
+            client,
+            "process_inbound_request",
+            mock,
+        )
+        with pytest.raises(
+                RuntimeError, match="Can't update existing command"
+        ):
+            cmd = generate_funds_pull_pre_approval_command(
+                address, biller_address, FUNDS_PULL_PRE_APPROVAL_ID
+            )
+            process_inbound_command(address, cmd)
+
+    command_in_db = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    # verify the original status not changed
+    assert command_in_db.status == FundPullPreApprovalStatus.valid
+
+
 def get_biller_address(user=None):
     biller = LocalAccount.generate()
     biller_sub_address = generate_sub_address()
@@ -564,7 +603,7 @@ def generate_fund_pull_pre_approval_object(
                 ),
             ),
         ),
-        status="pending",
+        status=FundPullPreApprovalStatus.pending,
         description="test",
     )
     return funds_pull_pre_approval
