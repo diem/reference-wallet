@@ -229,22 +229,22 @@ class Currency(Schema):
 
 class ScopedCumulativeAmount(Schema):
     unit = fields.Str(required=True, validate=OneOf(["week", "month", "year"]))
-    value = fields.Int(required=False)
-    max_amount = Currency
+    value = fields.Int(required=True)
+    max_amount = fields.Nested(Currency)
 
 
 class Scope(Schema):
     type = fields.Str(required=True, validate=OneOf(["consent", "save_sub_account"]))
-    expiration_time = fields.Int(required=True)
-    max_cumulative_amount = ScopedCumulativeAmount
-    max_transaction_amount = Currency
+    expiration_timestamp = fields.Int(required=True)
+    max_cumulative_amount = fields.Nested(ScopedCumulativeAmount, required=False)
+    max_transaction_amount = fields.Nested(Currency, required=False)
 
 
 class FundsPullPreApproval(Schema):
     address = fields.Str(required=True)
     biller_address = fields.Str(required=True)
     funds_pull_pre_approval_id = fields.Str(required=True)
-    scope = Scope
+    scope = fields.Nested(Scope)
     description = fields.Str(required=False)
     status = fields.Str(required=False)  # default="pending"
 
@@ -264,5 +264,11 @@ class ApproveFundsPullPreApproval(Schema):
 class CreateAndApproveFundPullPreApproval(Schema):
     biller_address = fields.Str(required=True)
     funds_pull_pre_approval_id = fields.Str(required=True)
-    scope = Scope
+    scope = fields.Nested(Scope)
+    description = fields.Str(required=False)
+
+
+class FundsPullPreApprovalRequest(Schema):
+    payer_address = fields.Str(required=True)
+    scope = fields.Nested(Scope)
     description = fields.Str(required=False)

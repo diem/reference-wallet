@@ -207,7 +207,7 @@ def validation_tool_routes():
     validation_tool.add_url_rule(
         rule="/validation/funds_pull_pre_approvals",
         view_func=ValidationToolRoutes.CreateFundsPullPreApprovalRequest.as_view(
-            "create_funds_pull_pre_approval_request"
+            "request_funds_pull_pre_approval_from_another"
         ),
         methods=["POST"],
     )
