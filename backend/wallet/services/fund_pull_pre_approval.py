@@ -20,6 +20,107 @@ from wallet.storage.funds_pull_pre_approval_command import (
 )
 
 
+class Role(str, Enum):
+    PAYEE = "payee"
+    PAYER = "payer"
+
+
+def create_and_approve(
+    account_id: int,
+    biller_address: str,
+    funds_pull_pre_approval_id: str,
+    funds_pull_pre_approval_type: str,
+    expiration_timestamp: int,
+    max_cumulative_unit: str = None,
+    max_cumulative_unit_value: int = None,
+    max_cumulative_amount: int = None,
+    max_cumulative_amount_currency: str = None,
+    max_transaction_amount: int = None,
+    max_transaction_amount_currency: str = None,
+    description: str = None,
+) -> None:
+    """ Create and approve fund pull pre approval by payer """
+    validate_expiration_timestamp(expiration_timestamp)
+
+    command = get_funds_pull_pre_approval_command(funds_pull_pre_approval_id)
+
+    if command is not None:
+        raise RuntimeError(
+            f"Command with id {funds_pull_pre_approval_id} already exist in db"
+        )
+
+    vasp_address = context.get().config.vasp_address
+    sub_address = account.generate_new_subaddress(account_id)
+    hrp = context.get().config.diem_address_hrp()
+    address = identifier.encode_account(vasp_address, sub_address, hrp)
+
+    commit_command(
+        models.FundsPullPreApprovalCommand(
+            account_id=account_id,
+            address=address,
+            biller_address=biller_address,
+            funds_pull_pre_approval_id=funds_pull_pre_approval_id,
+            funds_pull_pre_approval_type=funds_pull_pre_approval_type,
+            expiration_timestamp=expiration_timestamp,
+            max_cumulative_unit=max_cumulative_unit,
+            max_cumulative_unit_value=max_cumulative_unit_value,
+            max_cumulative_amount=max_cumulative_amount,
+            max_cumulative_amount_currency=max_cumulative_amount_currency,
+            max_transaction_amount=max_transaction_amount,
+            max_transaction_amount_currency=max_transaction_amount_currency,
+            description=description,
+            status=FundPullPreApprovalStatus.valid,
+            role=Role.PAYER,
+        )
+    )
+
+
+def approve(funds_pull_pre_approval_id: str, status: str) -> None:
+    """ update command in db with new given status and role PAYER"""
+    if status not in ["valid", "rejected"]:
+        raise ValueError(f"Status must be 'valid' or 'rejected' and not '{status}'")
+
+    command = get_funds_pull_pre_approval_command(funds_pull_pre_approval_id)
+
+    if command:
+        if command.status != "pending":
+            raise RuntimeError(
+                f"Could not approve command with status {command.status}"
+            )
+        update_command(funds_pull_pre_approval_id, status, Role.PAYER)
+    else:
+        raise RuntimeError(f"Could not find command {funds_pull_pre_approval_id}")
+
+
+def get_funds_pull_pre_approvals(
+    account_id: int,
+) -> List[models.FundsPullPreApprovalCommand]:
+    return get_account_commands(account_id)
+
+
+def validate_expiration_timestamp(expiration_timestamp):
+    if expiration_timestamp < time.time():
+        raise ValueError("expiration timestamp must be in the future")
+
+
+def process_funds_pull_pre_approvals_requests():
+    commands = get_commands_by_send_status(False)
+
+    for command in commands:
+        if command.role == Role.PAYER:
+            my_address = command.address
+        else:
+            my_address = command.biller_address
+
+        cmd = preapproval_model_to_command(my_address=my_address, command=command)
+
+        context.get().offchain_client.send_command(
+            cmd, context.get().config.compliance_private_key().sign
+        )
+
+        update_command(command.funds_pull_pre_approval_id, command, command.role, True)
+
+
 def preapproval_command_to_model(
     account_id, command: offchain.FundsPullPreApprovalCommand, role: str
 ) -> models.FundsPullPreApprovalCommand:
@@ -89,106 +190,3 @@ def preapproval_model_to_command(
         my_actor_address=my_address,
         funds_pull_pre_approval=funds_pull_pre_approval,
     )
-
-
-def establish_funds_pull_pre_approval(
-    account_id: int,
-    biller_address: str,
-    funds_pull_pre_approval_id: str,
-    funds_pull_pre_approval_type: str,
-    expiration_timestamp: int,
-    max_cumulative_unit: str = None,
-    max_cumulative_unit_value: int = None,
-    max_cumulative_amount: int = None,
-    max_cumulative_amount_currency: str = None,
-    max_transaction_amount: int = None,
-    max_transaction_amount_currency: str = None,
-    description: str = None,
-) -> None:
-    """ Establish funds pull pre approval by payer """
-    validate_expiration_timestamp(expiration_timestamp)
-
-    command = get_funds_pull_pre_approval_command(funds_pull_pre_approval_id)
-
-    if command is not None:
-        raise RuntimeError(
-            f"Command with id {funds_pull_pre_approval_id} already exist in db"
-        )
-
-    vasp_address = context.get().config.vasp_address
-    sub_address = account.generate_new_subaddress(account_id)
-    hrp = context.get().config.diem_address_hrp()
-    address = identifier.encode_account(vasp_address, sub_address, hrp)
-
-    commit_command(
-        models.FundsPullPreApprovalCommand(
-            account_id=account_id,
-            address=address,
-            biller_address=biller_address,
-            funds_pull_pre_approval_id=funds_pull_pre_approval_id,
-            funds_pull_pre_approval_type=funds_pull_pre_approval_type,
-            expiration_timestamp=expiration_timestamp,
-            max_cumulative_unit=max_cumulative_unit,
-            max_cumulative_unit_value=max_cumulative_unit_value,
-            max_cumulative_amount=max_cumulative_amount,
-            max_cumulative_amount_currency=max_cumulative_amount_currency,
-            max_transaction_amount=max_transaction_amount,
-            max_transaction_amount_currency=max_transaction_amount_currency,
-            description=description,
-            status=FundPullPreApprovalStatus.valid,
-            role=Role.PAYER,
-        )
-    )
-
-
-def approve_funds_pull_pre_approval(
-    funds_pull_pre_approval_id: str, status: str
-) -> None:
-    """ update command in db with new given status and role PAYER"""
-    if status not in ["valid", "rejected"]:
-        raise ValueError(f"Status must be 'valid' or 'rejected' and not '{status}'")
-
-    command = get_funds_pull_pre_approval_command(funds_pull_pre_approval_id)
-
-    if command:
-        if command.status != "pending":
-            raise RuntimeError(
-                f"Could not approve command with status {command.status}"
-            )
-        update_command(funds_pull_pre_approval_id, status, Role.PAYER)
-    else:
-        raise RuntimeError(f"Could not find command {funds_pull_pre_approval_id}")
-
-
-def get_funds_pull_pre_approvals(
-    account_id: int,
-) -> List[models.FundsPullPreApprovalCommand]:
-    return get_account_commands(account_id)
-
-
-def validate_expiration_timestamp(expiration_timestamp):
-    if expiration_timestamp < time.time():
-        raise ValueError("expiration timestamp must be in the future")
-
-
-def process_funds_pull_pre_approvals_requests():
-    commands = get_commands_by_send_status(False)
-
-    for command in commands:
-        if command.role == Role.PAYER:
-            my_address = command.address
-        else:
-            my_address = command.biller_address
-
-        cmd = preapproval_model_to_command(my_address=my_address, command=command)
-
-        context.get().offchain_client.send_command(
-            cmd, context.get().config.compliance_private_key().sign
-        )
-
-        update_command(command.funds_pull_pre_approval_id, command, command.role, True)
-
-
-class Role(str, Enum):
-    PAYEE = "payee"
-    PAYER = "payer"

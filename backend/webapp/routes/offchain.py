@@ -22,7 +22,7 @@ from webapp.schemas import (
     FundsPullPreApprovalList,
     ApproveFundsPullPreApproval,
     Error,
-    EstablishFundsPullPreApproval,
+    CreateAndApproveFundPullPreApproval,
 )
 
 logger = logging.getLogger(__name__)
@@ -150,9 +150,7 @@ class OffchainRoutes:
             status: str = params["status"]
 
             try:
-                fppa_service.approve_funds_pull_pre_approval(
-                    funds_pull_pre_approval_id, status
-                )
+                fppa_service.approve(funds_pull_pre_approval_id, status)
             except fppa_service.FundsPullPreApprovalCommandNotFound:
                 return self.respond_with_error(
                     HTTPStatus.NOT_FOUND,
@@ -161,10 +159,10 @@ class OffchainRoutes:
 
             return "OK", HTTPStatus.NO_CONTENT
 
-    class EstablishFundsPullPreApproval(OffchainView):
-        summary = "Establish funds pull pre approval by payer"
+    class CreateAndApprove(OffchainView):
+        summary = "Create and approve fund pull pre approval by payer"
         parameters = [
-            body_parameter(EstablishFundsPullPreApproval),
+            body_parameter(CreateAndApproveFundPullPreApproval),
         ]
         responses = {
             HTTPStatus.OK: response_definition(
@@ -194,7 +192,7 @@ class OffchainRoutes:
             ]
             description: str = params["description"]
 
-            fppa_service.establish_funds_pull_pre_approval(
+            fppa_service.create_and_approve(
                 account_id=account_id,
                 biller_address=biller_address,
                 funds_pull_pre_approval_id=funds_pull_pre_approval_id,

@@ -261,7 +261,7 @@ class ApproveFundsPullPreApproval(Schema):
     status = fields.Str(required=False)  # verified\rejected
 
 
-class EstablishFundsPullPreApproval(Schema):
+class CreateAndApproveFundPullPreApproval(Schema):
     biller_address = fields.Str(required=True)
     funds_pull_pre_approval_id = fields.Str(required=True)
     scope = Scope
