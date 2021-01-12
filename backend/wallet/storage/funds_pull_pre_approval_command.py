@@ -42,7 +42,6 @@ class FundsPullPreApprovalCommandNotFound(Exception):
     ...
 
 
-# TODO check if there is any scenario which in we update command but not need to resend it afterward?
 def update_command(
     funds_pull_pre_approval_id: str,
     status: str = None,
