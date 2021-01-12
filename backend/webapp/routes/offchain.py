@@ -4,9 +4,11 @@
 import logging
 from http import HTTPStatus
 
+import wallet.services.fund_pull_pre_approval
 from diem.offchain import X_REQUEST_ID, X_REQUEST_SENDER_ADDRESS
 from flask import Blueprint, request
 from flask.views import MethodView
+from wallet.services import fund_pull_pre_approval as fppa_service
 from wallet.services import offchain as offchain_service
 from webapp.routes.strict_schema_view import (
     StrictSchemaView,
@@ -30,7 +32,7 @@ offchain = Blueprint("offchain", __name__)
 class CommandsRoutes:
     @classmethod
     def create_command_response_object(
-        cls, approval: offchain_service.models.FundsPullPreApprovalCommand
+        cls, approval: fppa_service.models.FundsPullPreApprovalCommand
     ):
         return {
             "address": approval.address,
@@ -111,9 +113,7 @@ class OffchainRoutes:
         }
 
         def get(self):
-            approvals = offchain_service.get_funds_pull_pre_approvals(
-                self.user.account_id
-            )
+            approvals = fppa_service.get_funds_pull_pre_approvals(self.user.account_id)
 
             response = [
                 CommandsRoutes.create_command_response_object(approval)
@@ -150,10 +150,10 @@ class OffchainRoutes:
             status: str = params["status"]
 
             try:
-                offchain_service.approve_funds_pull_pre_approval(
+                fppa_service.approve_funds_pull_pre_approval(
                     funds_pull_pre_approval_id, status
                 )
-            except offchain_service.FundsPullPreApprovalCommandNotFound:
+            except fppa_service.FundsPullPreApprovalCommandNotFound:
                 return self.respond_with_error(
                     HTTPStatus.NOT_FOUND,
                     f"Funds pre approval id {funds_pull_pre_approval_id} was not found.",
@@ -194,7 +194,7 @@ class OffchainRoutes:
             ]
             description: str = params["description"]
 
-            offchain_service.establish_funds_pull_pre_approval(
+            fppa_service.establish_funds_pull_pre_approval(
                 account_id=account_id,
                 biller_address=biller_address,
                 funds_pull_pre_approval_id=funds_pull_pre_approval_id,

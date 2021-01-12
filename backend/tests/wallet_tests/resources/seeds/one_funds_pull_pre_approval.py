@@ -3,7 +3,7 @@ import uuid
 
 from diem.offchain import FundPullPreApprovalStatus
 from diem_utils.types.currencies import DiemCurrency
-from wallet.services.offchain import Role
+from wallet.services.fund_pull_pre_approval import Role
 from wallet.storage.models import FundsPullPreApprovalCommand
 
 ADDRESS = "tdm1pwm5m35ayknjr0s67pk9xdf5mwp3nwq6ef67s55gpjwrqf"

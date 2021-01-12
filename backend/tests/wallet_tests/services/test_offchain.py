@@ -25,8 +25,10 @@ from wallet.services.offchain import (
     process_inbound_command,
     _txn_payment_command,
     _user_kyc_data,
-    approve_funds_pull_pre_approval,
+)
+from wallet.services.fund_pull_pre_approval import (
     establish_funds_pull_pre_approval,
+    approve_funds_pull_pre_approval,
     Role,
 )
 from wallet.services.transaction import (
@@ -522,9 +524,7 @@ def test_process_inbound_funds_pull_pre_approval_command_invalid_update(monkeypa
             "process_inbound_request",
             mock,
         )
-        with pytest.raises(
-                RuntimeError, match="Can't update existing command"
-        ):
+        with pytest.raises(RuntimeError, match="Can't update existing command"):
             cmd = generate_funds_pull_pre_approval_command(
                 address, biller_address, FUNDS_PULL_PRE_APPROVAL_ID
             )
