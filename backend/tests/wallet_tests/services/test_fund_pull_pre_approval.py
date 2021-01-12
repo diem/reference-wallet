@@ -21,6 +21,7 @@ from wallet.services.fund_pull_pre_approval import (
     create_and_approve,
     approve,
     Role,
+    FundsPullPreApprovalError,
 )
 from wallet.services.offchain import (
     process_inbound_command,
@@ -39,7 +40,7 @@ currency = DiemCurrency.XUS
 
 
 def test_approve_funds_pull_pre_approval_no_command_in_db():
-    with pytest.raises(RuntimeError, match=r"Could not find command .*"):
+    with pytest.raises(FundsPullPreApprovalError, match=r"Could not find command .*"):
         approve(FUNDS_PULL_PRE_APPROVAL_ID, FundPullPreApprovalStatus.valid)
 
 
@@ -68,7 +69,9 @@ def test_approve_funds_pull_pre_approval_command_with_wrong_status_in_db():
         status=FundPullPreApprovalStatus.closed,
     )
 
-    with pytest.raises(RuntimeError, match=r"Could not approve command with status .*"):
+    with pytest.raises(
+        FundsPullPreApprovalError, match=r"Could not approve command with status .*"
+    ):
         approve(FUNDS_PULL_PRE_APPROVAL_ID, FundPullPreApprovalStatus.valid)
 
 
@@ -156,7 +159,7 @@ def test_create_and_approve_command_already_exist_in_db():
     )
 
     with pytest.raises(
-        RuntimeError,
+        FundsPullPreApprovalError,
         match=f"Command with id {FUNDS_PULL_PRE_APPROVAL_ID} already exist in db",
     ):
         create_and_approve(
@@ -356,7 +359,9 @@ def test_process_inbound_funds_pull_pre_approval_command_invalid_update(monkeypa
             "process_inbound_request",
             mock,
         )
-        with pytest.raises(RuntimeError, match="Can't update existing command"):
+        with pytest.raises(
+            FundsPullPreApprovalError, match="Can't update existing command"
+        ):
             cmd = generate_funds_pull_pre_approval_command(
                 address, biller_address, FUNDS_PULL_PRE_APPROVAL_ID
             )
