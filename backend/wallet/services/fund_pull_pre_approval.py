@@ -25,6 +25,10 @@ class Role(str, Enum):
     PAYER = "payer"
 
 
+class FundsPullPreApprovalError(Exception):
+    ...
+
+
 def create_and_approve(
     account_id: int,
     biller_address: str,
@@ -45,7 +49,7 @@ def create_and_approve(
     command = get_funds_pull_pre_approval_command(funds_pull_pre_approval_id)
 
     if command is not None:
-        raise RuntimeError(
+        raise FundsPullPreApprovalError(
             f"Command with id {funds_pull_pre_approval_id} already exist in db"
         )
 
@@ -87,12 +91,14 @@ def approve(funds_pull_pre_approval_id: str, status: str) -> None:
 
     if command:
         if command.status != FundPullPreApprovalStatus.pending:
-            raise RuntimeError(
+            raise FundsPullPreApprovalError(
                 f"Could not approve command with status {command.status}"
             )
         update_command(funds_pull_pre_approval_id, status, Role.PAYER)
     else:
-        raise RuntimeError(f"Could not find command {funds_pull_pre_approval_id}")
+        raise FundsPullPreApprovalError(
+            f"Could not find command {funds_pull_pre_approval_id}"
+        )
 
 
 def get_funds_pull_pre_approvals(

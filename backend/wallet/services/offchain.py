@@ -21,6 +21,7 @@ from wallet.services.fund_pull_pre_approval import (
     validate_expiration_timestamp,
     process_funds_pull_pre_approvals_requests,
     Role,
+    FundsPullPreApprovalError,
 )
 
 # noinspection PyUnresolvedReferences
@@ -126,7 +127,7 @@ def process_inbound_command(
                     )
                 else:
                     # TODO
-                    raise RuntimeError("Can't update existing command")
+                    raise FundsPullPreApprovalError("Can't update existing command")
             else:
                 # TODO if not exist - commit_command
                 commit_command(
