@@ -1,6 +1,7 @@
 from typing import List
 
 import pytest
+from diem.offchain import FundPullPreApprovalStatus
 from flask import Response
 from flask.testing import Client
 from wallet.services import fund_pull_pre_approval as fppa_service
@@ -34,7 +35,7 @@ def mock_get_funds_pull_pre_approvals(monkeypatch):
             max_transaction_amount=10,
             max_transaction_amount_currency=CURRENCY,
             description="bla la la",
-            status="pending",
+            status=FundPullPreApprovalStatus.pending,
         )
 
         funds_pull_pre_approval_2 = models.FundsPullPreApprovalCommand(
@@ -51,7 +52,7 @@ def mock_get_funds_pull_pre_approvals(monkeypatch):
             max_transaction_amount=10,
             max_transaction_amount_currency=CURRENCY,
             description="bla la la",
-            status="pending",
+            status=FundPullPreApprovalStatus.pending,
         )
 
         return [funds_pull_pre_approval_1, funds_pull_pre_approval_2]

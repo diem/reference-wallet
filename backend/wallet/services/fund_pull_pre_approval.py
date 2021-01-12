@@ -77,13 +77,16 @@ def create_and_approve(
 
 def approve(funds_pull_pre_approval_id: str, status: str) -> None:
     """ update command in db with new given status and role PAYER"""
-    if status not in ["valid", "rejected"]:
+    if status not in [
+        FundPullPreApprovalStatus.valid,
+        FundPullPreApprovalStatus.rejected,
+    ]:
         raise ValueError(f"Status must be 'valid' or 'rejected' and not '{status}'")
 
     command = get_funds_pull_pre_approval_command(funds_pull_pre_approval_id)
 
     if command:
-        if command.status != "pending":
+        if command.status != FundPullPreApprovalStatus.pending:
             raise RuntimeError(
                 f"Could not approve command with status {command.status}"
             )
