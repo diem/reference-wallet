@@ -39,12 +39,12 @@ FUNDS_PULL_PRE_APPROVAL_ID = "5fc49fa0-5f2a-4faa-b391-ac1652c57e4d"
 currency = DiemCurrency.XUS
 
 
-def test_approve_funds_pull_pre_approval_no_command_in_db():
+def test_approve_but_no_command_in_db():
     with pytest.raises(FundsPullPreApprovalError, match=r"Could not find command .*"):
         approve(FUNDS_PULL_PRE_APPROVAL_ID, FundPullPreApprovalStatus.valid)
 
 
-def test_approve_funds_pull_pre_approval():
+def test_approve_happy_flow():
     OneFundsPullPreApproval.run(
         db_session=db_session,
         funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
@@ -62,7 +62,7 @@ def test_approve_funds_pull_pre_approval():
     assert command.status == FundPullPreApprovalStatus.valid
 
 
-def test_approve_funds_pull_pre_approval_command_with_wrong_status_in_db():
+def test_approve_while_command_with_wrong_status_in_db():
     OneFundsPullPreApproval.run(
         db_session=db_session,
         funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
@@ -75,14 +75,14 @@ def test_approve_funds_pull_pre_approval_command_with_wrong_status_in_db():
         approve(FUNDS_PULL_PRE_APPROVAL_ID, FundPullPreApprovalStatus.valid)
 
 
-def test_approve_funds_pull_pre_approval_invalid_status():
+def test_approve_while_invalid_status():
     with pytest.raises(
         ValueError, match=r"Status must be 'valid' or 'rejected' and not '.*'"
     ):
         approve(FUNDS_PULL_PRE_APPROVAL_ID, FundPullPreApprovalStatus.closed)
 
 
-def test_create_and_approve():
+def test_create_and_approve_happy_flow():
     command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
 
     assert command is None
@@ -126,7 +126,7 @@ def generate_mock_user():
     return user
 
 
-def test_create_and_approve_expired_expiration_timestamp():
+def test_create_and_approve_with_expired_expiration_timestamp():
     command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
 
     assert command is None
@@ -151,7 +151,7 @@ def test_create_and_approve_expired_expiration_timestamp():
         )
 
 
-def test_create_and_approve_command_already_exist_in_db():
+def test_create_and_approve_while_command_already_exist_in_db():
     OneFundsPullPreApproval.run(
         db_session=db_session,
         funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
@@ -210,7 +210,7 @@ def test_process_inbound_funds_pull_pre_approval_command(monkeypatch):
     assert stored_cmd.status == cmd.funds_pull_pre_approval.status
 
 
-def test_process_inbound_funds_pull_pre_approval_command_basic_flow(
+def test_process_inbound_funds_pull_pre_approval_command_happy_flow(
     monkeypatch,
 ):
     with monkeypatch.context() as m:
