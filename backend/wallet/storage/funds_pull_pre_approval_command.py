@@ -65,6 +65,20 @@ def update_command(
         )
 
 
+def update_command_2(command: models.FundsPullPreApprovalCommand):
+    command_in_db = models.FundsPullPreApprovalCommand.query.get(
+        command.funds_pull_pre_approval_id
+    )
+
+    if command_in_db:
+        command_in_db.update(command)
+        db_session.commit()
+    else:
+        raise FundsPullPreApprovalCommandNotFound(
+            f"Command not found for funds pre approval id {command.funds_pull_pre_approval_id}"
+        )
+
+
 def get_commands_by_role(role: str):
     return models.FundsPullPreApprovalCommand.query.filter_by(role=role).all()
 
