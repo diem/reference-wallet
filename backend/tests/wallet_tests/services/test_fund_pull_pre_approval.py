@@ -332,7 +332,8 @@ def test_process_inbound_command_invalid_update(monkeypatch):
             mock,
         )
         with pytest.raises(
-            FundsPullPreApprovalError, match="Can't update existing command"
+            FundsPullPreApprovalError,
+            match="Can't update existing command unless the status is 'pending'",
         ):
             cmd = generate_funds_pull_pre_approval_command(
                 address, biller_address, FUNDS_PULL_PRE_APPROVAL_ID

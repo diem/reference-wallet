@@ -95,25 +95,18 @@ def process_inbound_command(
             )
             approval = preapproval_command.funds_pull_pre_approval
 
-            # TODO add timestamp validation
             validate_expiration_timestamp(approval.scope.expiration_timestamp)
 
-            bech32_address = approval.address
+            role = get_role_by_command_status(approval)
 
-            role = get_role_by_fppa_command_status(preapproval_command)
-            # TODO check if command already in db
             command_in_db = get_funds_pull_pre_approval_command(
-                preapproval_command.reference_id()
+                approval.funds_pull_pre_approval_id
             )
 
             if command_in_db:
-                # TODO verify that address and biiler_address are equal
-                if (
-                    approval.address != command_in_db.address
-                    or approval.biller_address != command_in_db.biller_address
-                ):
-                    raise ValueError("address and biller_addres values are immutable")
-                # TODO update command only if incoming status and exist status are 'pending'
+                validate_addresses(approval, command_in_db)
+                # update existing command only if incoming status and existing status are 'pending',
+                # otherwise - raise error
                 if (
                     approval.status == FundPullPreApprovalStatus.pending
                     and command_in_db.status == FundPullPreApprovalStatus.pending
@@ -126,15 +119,16 @@ def process_inbound_command(
                         )
                     )
                 else:
-                    # TODO
-                    raise FundsPullPreApprovalError("Can't update existing command")
+                    raise FundsPullPreApprovalError(
+                        "Can't update existing command unless the status is 'pending'"
+                    )
             else:
-                # TODO if not exist and incoming status is pending - commit_command
+                # if incoming request not exist in DB and the incoming status is pending - save in DB
                 if approval.status == FundPullPreApprovalStatus.pending:
                     commit_command(
                         preapproval_command_to_model(
                             account_id=account.get_account_id_from_bech32(
-                                bech32_address
+                                approval.address
                             ),
                             command=preapproval_command,
                             role=role,
@@ -145,25 +139,24 @@ def process_inbound_command(
                         "New incoming request must have 'pending' status"
                     )
 
-            # TODO each scenario is a test case
-        else:
-            # TODO log?
-            ...
-
         return _jws(command.id())
     except offchain.Error as e:
         logger.exception(e)
         return _jws(command.id() if command else None, e.obj)
 
 
-def get_role_by_fppa_command_status(preapproval_command):
+def validate_addresses(approval, command_in_db):
     if (
-        preapproval_command.funds_pull_pre_approval.status is None
-        or preapproval_command.funds_pull_pre_approval.status
-        == FundPullPreApprovalStatus.pending
+        approval.address != command_in_db.address
+        or approval.biller_address != command_in_db.biller_address
     ):
+        raise ValueError("address and biller_addres values are immutable")
+
+
+def get_role_by_command_status(approval):
+    if approval.status is None or approval.status == FundPullPreApprovalStatus.pending:
         return Role.PAYER
-    elif preapproval_command.funds_pull_pre_approval.status in [
+    elif approval.status in [
         FundPullPreApprovalStatus.valid,
         FundPullPreApprovalStatus.rejected,
     ]:
