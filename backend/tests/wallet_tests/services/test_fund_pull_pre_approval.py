@@ -178,38 +178,6 @@ def test_create_and_approve_while_command_already_exist_in_db():
         )
 
 
-def test_process_inbound_command(monkeypatch):
-    user = OneUser.run(
-        db_session, account_amount=100_000_000_000, account_currency=currency
-    )
-    address = get_address()
-    biller_address = get_biller_address(user)
-
-    with monkeypatch.context() as m:
-        client = context.get().offchain_client
-        m.setattr(
-            client,
-            "process_inbound_request",
-            lambda _, cmd: client.create_inbound_funds_pull_pre_approval_command(
-                cmd.cid, cmd.funds_pull_pre_approval
-            ),
-        )
-        cmd = generate_funds_pull_pre_approval_command(address, biller_address)
-        code, resp = process_inbound_command(
-            cmd.funds_pull_pre_approval.biller_address, cmd
-        )
-        assert code == 200
-        assert resp
-
-    stored_cmd = get_funds_pull_pre_approval_command(
-        cmd.funds_pull_pre_approval.funds_pull_pre_approval_id
-    )
-    assert stored_cmd
-    assert stored_cmd.biller_address == cmd.funds_pull_pre_approval.biller_address
-    assert stored_cmd.address == cmd.funds_pull_pre_approval.address
-    assert stored_cmd.status == cmd.funds_pull_pre_approval.status
-
-
 def test_process_command_happy_flow(
     monkeypatch,
 ):
@@ -285,7 +253,7 @@ def test_process_inbound_command_update_immutable_value(
     assert command_in_db.address == address
 
 
-def test_process_inbound_funds_pull_pre_approval_command_update(monkeypatch):
+def test_process_inbound_command_update(monkeypatch):
     address = get_address()
     biller_address = get_biller_address()
 
@@ -333,7 +301,7 @@ def test_process_inbound_funds_pull_pre_approval_command_update(monkeypatch):
     assert command_in_db.max_cumulative_unit_value == 1
 
 
-def test_process_inbound_funds_pull_pre_approval_command_invalid_update(monkeypatch):
+def test_process_inbound_command_invalid_update(monkeypatch):
     address = get_address()
     biller_address = get_biller_address()
 
