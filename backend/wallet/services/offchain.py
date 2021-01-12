@@ -151,12 +151,15 @@ def process_inbound_command(
 def get_role_by_fppa_command_status(preapproval_command):
     if (
         preapproval_command.funds_pull_pre_approval.status is None
-        or preapproval_command.funds_pull_pre_approval.status == "pending"
+        or preapproval_command.funds_pull_pre_approval.status
+        == FundPullPreApprovalStatus.pending
     ):
         return Role.PAYER
     elif (
         preapproval_command.funds_pull_pre_approval.status
-        in typing.Union["valid", "rejected"]
+        in typing.Union[
+            FundPullPreApprovalStatus.valid, FundPullPreApprovalStatus.rejected
+        ]
     ):
         return Role.PAYEE
 
