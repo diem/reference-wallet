@@ -1,12 +1,10 @@
 import json
-import uuid
 from typing import Optional, List
 
-import context
 import pytest
-from diem import offchain
 from flask import Response
 from flask.testing import Client
+from wallet.services import fund_pull_pre_approval as fppa_service
 from wallet.services import offchain as offchain_service
 from wallet.storage import models
 from wallet.storage.models import FundsPullPreApprovalCommands
@@ -284,7 +282,7 @@ def mock_get_funds_pull_pre_approvals(monkeypatch):
 
         return [funds_pull_pre_approval_1, funds_pull_pre_approval_2]
 
-    monkeypatch.setattr(offchain_service, "get_funds_pull_pre_approvals", mock)
+    monkeypatch.setattr(fppa_service, "get_funds_pull_pre_approvals", mock)
 
 
 class TestGetFundsPullPreApprovals:
@@ -308,15 +306,15 @@ def mock_successful_approve_funds_pull_pre_approval(monkeypatch):
     def mock(_funds_pull_pre_approval_id, _status) -> None:
         return None
 
-    monkeypatch.setattr(offchain_service, "approve_funds_pull_pre_approval", mock)
+    monkeypatch.setattr(fppa_service, "approve_funds_pull_pre_approval", mock)
 
 
 @pytest.fixture
 def mock_failed_approve_funds_pull_pre_approval(monkeypatch):
     def mock(_funds_pull_pre_approval_id, _status) -> None:
-        raise offchain_service.FundsPullPreApprovalCommandNotFound
+        raise fppa_service.FundsPullPreApprovalCommandNotFound
 
-    monkeypatch.setattr(offchain_service, "approve_funds_pull_pre_approval", mock)
+    monkeypatch.setattr(fppa_service, "approve_funds_pull_pre_approval", mock)
 
 
 class TestApproveFundsPullPreApproval:
@@ -350,7 +348,7 @@ def mock_offchain_service(monkeypatch):
             calls.append(argv)
             return will_return
 
-        monkeypatch.setattr(offchain_service, method_name, mock)
+        monkeypatch.setattr(fppa_service, method_name, mock)
         return calls
 
     return factory
