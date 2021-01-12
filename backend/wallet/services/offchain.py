@@ -115,14 +115,21 @@ def process_inbound_command(
                     or approval.biller_address != command_in_db.biller_address
                 ):
                     raise ValueError("address and biller_addres values are immutable")
-                # TODO if exist - verify the incoming status make since - update_command
-                update_command_2(
-                    preapproval_command_to_model(
-                        account_id=command_in_db.account_id,
-                        command=preapproval_command,
-                        role=role,
+                # TODO update command only if incoming status and exist status are 'pending'
+                if (
+                    approval.status == FundPullPreApprovalStatus.pending
+                    and command_in_db.status == FundPullPreApprovalStatus.pending
+                ):
+                    update_command_2(
+                        preapproval_command_to_model(
+                            account_id=command_in_db.account_id,
+                            command=preapproval_command,
+                            role=role,
+                        )
                     )
-                )
+                else:
+                    # TODO
+                    raise RuntimeError("Can't update existing command")
             else:
                 # TODO if not exist - commit_command
                 commit_command(
