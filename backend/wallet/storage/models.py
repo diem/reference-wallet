@@ -174,3 +174,21 @@ class FundsPullPreApprovalCommand(Base):
     status = Column(String, nullable=False)
     role = Column(String, nullable=False)
     offchain_send = Column(Boolean, default=False)
+
+    def update(self, updated_command):
+        new_command_attributes = [
+            a for a in dir(updated_command) if not a.startswith("_")
+        ]
+        for key in new_command_attributes:
+            try:
+                if (
+                    getattr(self, key) != getattr(updated_command, key)
+                    and key != "funds_pull_pre_approval_id"
+                    and key != "account_id"
+                    and key != "address"
+                    and key != "biller_address"
+                ):
+                    setattr(self, key, getattr(updated_command, key))
+            except AttributeError:
+                # TODO
+                ...

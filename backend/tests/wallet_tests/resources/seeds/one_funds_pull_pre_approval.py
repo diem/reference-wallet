@@ -6,26 +6,32 @@ from diem_utils.types.currencies import DiemCurrency
 from wallet.services.offchain import Role
 from wallet.storage.models import FundsPullPreApprovalCommand
 
-ADDRESS = "257e50b131150fdb56aeab4ebe4ec2b9"
-BILLER_ADDRESS = "176b73399b04d9231769614cf22fb5df"
+ADDRESS = "tdm1pwm5m35ayknjr0s67pk9xdf5mwp3nwq6ef67s55gpjwrqf"
+ADDRESS_2 = "tdm1pztdjx2z8wp0q25jakqeklk0nxj2wmk2kg9whu8c3fdm9u"
+
+BILLER_ADDRESS = "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
 
 
 class OneFundsPullPreApproval:
     @staticmethod
     def run(
         db_session,
+        biller_address=BILLER_ADDRESS,
+        address=ADDRESS,
         funds_pull_pre_approval_id=str(uuid.uuid4()),
         status=FundPullPreApprovalStatus.valid,
+        max_cumulative_unit="week",
+        max_cumulative_unit_value=1,
     ) -> FundsPullPreApprovalCommand:
         command = FundsPullPreApprovalCommand(
             account_id=1,
-            address=ADDRESS,
-            biller_address=BILLER_ADDRESS,
+            address=address,
+            biller_address=biller_address,
             funds_pull_pre_approval_id=funds_pull_pre_approval_id,
             funds_pull_pre_approval_type="consent",
             expiration_timestamp=int(time.time() + 30),
-            max_cumulative_unit="week",
-            max_cumulative_unit_value=1,
+            max_cumulative_unit=max_cumulative_unit,
+            max_cumulative_unit_value=max_cumulative_unit_value,
             max_cumulative_amount=10_000_000_000,
             max_cumulative_amount_currency=DiemCurrency.XUS,
             max_transaction_amount=10_000_000,
