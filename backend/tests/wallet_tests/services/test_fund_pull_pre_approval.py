@@ -178,9 +178,13 @@ def test_create_and_approve_while_command_already_exist_in_db():
         )
 
 
-def test_process_command_happy_flow(
+def test_process_inbound_command_basic_flow(
     monkeypatch,
 ):
+    """
+    Demonstrates the handling of incoming request with 'pending' status and no existing record exist in DB.
+    Therefore, the incoming request is a new request which received from the payee
+    """
     with monkeypatch.context() as m:
         client = context.get().offchain_client
         address = get_address()
@@ -253,7 +257,7 @@ def test_process_inbound_command_update_immutable_value(
     assert command_in_db.address == address
 
 
-def test_process_inbound_command_update(monkeypatch):
+def test_process_inbound_command_valid_update(monkeypatch):
     address = get_address()
     biller_address = get_biller_address()
 
@@ -340,6 +344,39 @@ def test_process_inbound_command_invalid_update(monkeypatch):
     assert command_in_db.status == FundPullPreApprovalStatus.valid
 
 
+def test_process_inbound_command_invalid_status(monkeypatch):
+    address = get_address()
+    biller_address = get_biller_address()
+
+    with monkeypatch.context() as m:
+        client = context.get().offchain_client
+
+        def mock(_request_sender_address: str, _request_body_bytes: bytes):
+            return generate_funds_pull_pre_approval_command(
+                address=address,
+                biller_address=biller_address,
+                funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+                status=FundPullPreApprovalStatus.valid,
+            )
+
+        m.setattr(
+            client,
+            "process_inbound_request",
+            mock,
+        )
+        with pytest.raises(
+            FundsPullPreApprovalError,
+            match="New incoming request must have 'pending' status",
+        ):
+            cmd = generate_funds_pull_pre_approval_command(
+                address, biller_address, FUNDS_PULL_PRE_APPROVAL_ID
+            )
+            process_inbound_command(address, cmd)
+
+    command_in_db = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    assert command_in_db is None
+
+
 def get_biller_address(user=None):
     biller = LocalAccount.generate()
     biller_sub_address = generate_sub_address()
@@ -370,6 +407,7 @@ def generate_funds_pull_pre_approval_command(
     funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
     max_cumulative_unit="week",
     max_cumulative_unit_value=1,
+    status=FundPullPreApprovalStatus.pending,
 ):
     funds_pull_pre_approval = generate_fund_pull_pre_approval_object(
         address=address,
@@ -377,6 +415,7 @@ def generate_funds_pull_pre_approval_command(
         funds_pull_pre_approval_id=funds_pull_pre_approval_id,
         max_cumulative_unit=max_cumulative_unit,
         max_cumulative_unit_value=max_cumulative_unit_value,
+        status=status,
     )
 
     return offchain.FundsPullPreApprovalCommand(
@@ -390,6 +429,7 @@ def generate_fund_pull_pre_approval_object(
     funds_pull_pre_approval_id,
     max_cumulative_unit="week",
     max_cumulative_unit_value=1,
+    status=FundPullPreApprovalStatus.pending,
 ):
     funds_pull_pre_approval = offchain.FundPullPreApprovalObject(
         funds_pull_pre_approval_id=funds_pull_pre_approval_id,
@@ -406,7 +446,7 @@ def generate_fund_pull_pre_approval_object(
                 ),
             ),
         ),
-        status=FundPullPreApprovalStatus.pending,
+        status=status,
         description="test",
     )
     return funds_pull_pre_approval
