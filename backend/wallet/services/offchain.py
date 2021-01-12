@@ -129,14 +129,21 @@ def process_inbound_command(
                     # TODO
                     raise FundsPullPreApprovalError("Can't update existing command")
             else:
-                # TODO if not exist - commit_command
-                commit_command(
-                    preapproval_command_to_model(
-                        account_id=account.get_account_id_from_bech32(bech32_address),
-                        command=preapproval_command,
-                        role=role,
+                # TODO if not exist and incoming status is pending - commit_command
+                if approval.status == FundPullPreApprovalStatus.pending:
+                    commit_command(
+                        preapproval_command_to_model(
+                            account_id=account.get_account_id_from_bech32(
+                                bech32_address
+                            ),
+                            command=preapproval_command,
+                            role=role,
+                        )
                     )
-                )
+                else:
+                    raise FundsPullPreApprovalError(
+                        "New incoming request must have 'pending' status"
+                    )
 
             # TODO each scenario is a test case
         else:
@@ -156,12 +163,10 @@ def get_role_by_fppa_command_status(preapproval_command):
         == FundPullPreApprovalStatus.pending
     ):
         return Role.PAYER
-    elif (
-        preapproval_command.funds_pull_pre_approval.status
-        in typing.Union[
-            FundPullPreApprovalStatus.valid, FundPullPreApprovalStatus.rejected
-        ]
-    ):
+    elif preapproval_command.funds_pull_pre_approval.status in [
+        FundPullPreApprovalStatus.valid,
+        FundPullPreApprovalStatus.rejected,
+    ]:
         return Role.PAYEE
 
 
