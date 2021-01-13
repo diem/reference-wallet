@@ -76,57 +76,74 @@ class TestGetFundsPullPreApprovals:
         assert funds_pull_pre_approvals[0]["biller_address"] == BILLER_ADDRESS
 
 
-@pytest.fixture
-def mock_successful_approve(monkeypatch):
-    def mock(_funds_pull_pre_approval_id, _status) -> None:
-        return None
+class TestUpdateFundPullPreApprovalStatus:
+    def test_approve(self, authorized_client: Client, mock_method):
+        calls = mock_method(fppa_service, "approve", will_return=None)
 
-    monkeypatch.setattr(fppa_service, "approve", mock)
-
-
-@pytest.fixture
-def mock_failed_approve(monkeypatch):
-    def mock(_funds_pull_pre_approval_id, _status) -> None:
-        raise fppa_service.FundsPullPreApprovalCommandNotFound
-
-    monkeypatch.setattr(fppa_service, "approve", mock)
-
-
-class TestApproveFundsPullPreApproval:
-    def test_success(self, authorized_client: Client, mock_successful_approve):
         rv: Response = authorized_client.put(
             f"/offchain/funds_pull_pre_approvals/{FUNDS_PULL_PRE_APPROVAL_ID}",
-            json={"funds_pull_pre_approval_id": "1234", "status": "bla"},
+            json={
+                "funds_pull_pre_approval_id": "1234",
+                "status": FundPullPreApprovalStatus.valid,
+            },
         )
 
         assert rv.status_code == 204
+        assert len(calls) == 1
+        assert calls[0][0] == FUNDS_PULL_PRE_APPROVAL_ID
 
-    def test_failure(self, authorized_client: Client, mock_failed_approve):
+    def test_reject(self, authorized_client: Client, mock_method):
+        calls = mock_method(fppa_service, "reject", will_return=None)
+
         rv: Response = authorized_client.put(
             f"/offchain/funds_pull_pre_approvals/{FUNDS_PULL_PRE_APPROVAL_ID}",
-            json={"funds_pull_pre_approval_id": "1234", "status": "bla"},
+            json={
+                "funds_pull_pre_approval_id": "1234",
+                "status": FundPullPreApprovalStatus.rejected,
+            },
+        )
+
+        assert rv.status_code == 204
+        assert len(calls) == 1
+        assert calls[0][0] == FUNDS_PULL_PRE_APPROVAL_ID
+
+    def test_close(self, authorized_client: Client, mock_method):
+        calls = mock_method(fppa_service, "close", will_return=None)
+
+        rv: Response = authorized_client.put(
+            f"/offchain/funds_pull_pre_approvals/{FUNDS_PULL_PRE_APPROVAL_ID}",
+            json={
+                "funds_pull_pre_approval_id": "1234",
+                "status": FundPullPreApprovalStatus.closed,
+            },
+        )
+
+        assert rv.status_code == 204
+        assert len(calls) == 1
+        assert calls[0][0] == FUNDS_PULL_PRE_APPROVAL_ID
+
+    def test_failure(self, authorized_client: Client, mock_method):
+        calls = mock_method(
+            fppa_service,
+            "approve",
+            will_raise=fppa_service.FundsPullPreApprovalCommandNotFound,
+        )
+
+        rv: Response = authorized_client.put(
+            f"/offchain/funds_pull_pre_approvals/{FUNDS_PULL_PRE_APPROVAL_ID}",
+            json={
+                "funds_pull_pre_approval_id": "1234",
+                "status": FundPullPreApprovalStatus.valid,
+            },
         )
 
         assert rv.status_code == 404
-
-
-@pytest.fixture
-def mock_offchain_service(monkeypatch):
-    def factory(method_name: str, will_return=None):
-        calls = []
-
-        def mock(**argv):
-            calls.append(argv)
-            return will_return
-
-        monkeypatch.setattr(fppa_service, method_name, mock)
-        return calls
-
-    return factory
+        assert len(calls) == 1
+        assert calls[0][0] == FUNDS_PULL_PRE_APPROVAL_ID
 
 
 class TestCreateAndApprove:
-    def test_success(self, authorized_client: Client, mock_offchain_service):
+    def test_success(self, authorized_client: Client, mock_method):
         request_body = {
             "biller_address": BILLER_ADDRESS,
             "funds_pull_pre_approval_id": FUNDS_PULL_PRE_APPROVAL_ID,
@@ -149,7 +166,7 @@ class TestCreateAndApprove:
             "description": "bla la la",
         }
 
-        calls_to_create_and_approve = mock_offchain_service("create_and_approve")
+        calls_to_create_and_approve = mock_method(fppa_service, "create_and_approve")
 
         rv: Response = authorized_client.post(
             "/offchain/funds_pull_pre_approvals",
