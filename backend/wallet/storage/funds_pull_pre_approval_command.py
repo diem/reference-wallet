@@ -46,7 +46,7 @@ def update_command(
     funds_pull_pre_approval_id: str,
     status: str = None,
     role: str = None,
-    offchain_send: bool = False,
+    offchain_sent: bool = False,
 ) -> models.FundsPullPreApprovalCommand:
     command = models.FundsPullPreApprovalCommand.query.get(funds_pull_pre_approval_id)
 
@@ -55,7 +55,7 @@ def update_command(
             command.status = status
         if role:
             command.role = role
-        command.offchain_send = offchain_send
+        command.offchain_sent = offchain_sent
         commit_command(command)
 
         return command
@@ -83,7 +83,7 @@ def get_commands_by_role(role: str):
     return models.FundsPullPreApprovalCommand.query.filter_by(role=role).all()
 
 
-def get_commands_by_send_status(offchain_send: bool):
+def get_commands_by_send_status(offchain_sent: bool):
     return models.FundsPullPreApprovalCommand.query.filter_by(
-        offchain_send=offchain_send
+        offchain_sent=offchain_sent
     ).all()
