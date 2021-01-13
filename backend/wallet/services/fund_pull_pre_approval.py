@@ -46,7 +46,7 @@ def create_and_approve(
     """ Create and approve fund pull pre approval by payer """
     validate_expiration_timestamp(expiration_timestamp)
 
-    command = get_funds_pull_pre_approval_command(funds_pull_pre_approval_id)
+    command = get_command_from_db(funds_pull_pre_approval_id, False)
 
     if command is not None:
         raise FundsPullPreApprovalError(
@@ -80,29 +80,56 @@ def create_and_approve(
 
 
 def approve(funds_pull_pre_approval_id: str) -> None:
-    _update_status(funds_pull_pre_approval_id, FundPullPreApprovalStatus.valid)
+    command = get_command_from_db(funds_pull_pre_approval_id)
+
+    if command.status == FundPullPreApprovalStatus.pending:
+        update_command(
+            funds_pull_pre_approval_id, status=FundPullPreApprovalStatus.valid
+        )
+    else:
+        raise FundsPullPreApprovalError(
+            f"Could not approve command with status {command.status}"
+        )
 
 
 def reject(funds_pull_pre_approval_id):
-    _update_status(funds_pull_pre_approval_id, FundPullPreApprovalStatus.rejected)
+    command = get_command_from_db(funds_pull_pre_approval_id)
+
+    if command.status == FundPullPreApprovalStatus.pending:
+        update_command(
+            funds_pull_pre_approval_id, status=FundPullPreApprovalStatus.rejected
+        )
+    else:
+        raise FundsPullPreApprovalError(
+            f"Could not reject command with status {command.status}"
+        )
 
 
 def close(funds_pull_pre_approval_id):
-    _update_status(funds_pull_pre_approval_id, FundPullPreApprovalStatus.closed)
+    command = get_command_from_db(funds_pull_pre_approval_id)
 
-
-def _update_status(funds_pull_pre_approval_id, status):
-    command = get_funds_pull_pre_approval_command(funds_pull_pre_approval_id)
-    if command:
-        if command.status != FundPullPreApprovalStatus.pending:
-            raise FundsPullPreApprovalError(
-                f"Could not approve command with status {command.status}"
-            )
-        update_command(funds_pull_pre_approval_id, status, Role.PAYER)
+    if command.status in [
+        FundPullPreApprovalStatus.pending,
+        FundPullPreApprovalStatus.valid,
+    ]:
+        update_command(
+            funds_pull_pre_approval_id, status=FundPullPreApprovalStatus.closed
+        )
     else:
+        raise FundsPullPreApprovalError(
+            f"Could not close command with status {command.status}"
+        )
+
+
+def get_command_from_db(funds_pull_pre_approval_id, raise_if_not_exist: bool = True):
+    command = get_funds_pull_pre_approval_command(funds_pull_pre_approval_id)
+
+    if raise_if_not_exist and command is None:
         raise FundsPullPreApprovalError(
             f"Could not find command {funds_pull_pre_approval_id}"
         )
+
+    return command
 
 
 def get_funds_pull_pre_approvals(

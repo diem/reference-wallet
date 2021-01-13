@@ -12,7 +12,6 @@ from diem_utils.types.currencies import FiatCurrency, DiemCurrency
 from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import (
     OneFundsPullPreApproval,
 )
-from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet.services.account import (
     generate_new_subaddress,
     generate_sub_address,
@@ -22,6 +21,8 @@ from wallet.services.fund_pull_pre_approval import (
     approve,
     Role,
     FundsPullPreApprovalError,
+    close,
+    reject,
 )
 from wallet.services.offchain import (
     process_inbound_command,
@@ -44,6 +45,16 @@ def test_approve_but_no_command_in_db():
         approve(FUNDS_PULL_PRE_APPROVAL_ID)
 
 
+def test_close_but_no_command_in_db():
+    with pytest.raises(FundsPullPreApprovalError, match=r"Could not find command .*"):
+        close(FUNDS_PULL_PRE_APPROVAL_ID)
+
+
+def test_reject_but_no_command_in_db():
+    with pytest.raises(FundsPullPreApprovalError, match=r"Could not find command .*"):
+        reject(FUNDS_PULL_PRE_APPROVAL_ID)
+
+
 def test_approve_happy_flow():
     OneFundsPullPreApproval.run(
         db_session=db_session,
@@ -62,7 +73,131 @@ def test_approve_happy_flow():
     assert command.status == FundPullPreApprovalStatus.valid
 
 
-def test_approve_while_command_with_wrong_status_in_db():
+def test_close_happy_flow():
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.pending,
+    )
+
+    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+
+    assert command.status == FundPullPreApprovalStatus.pending
+
+    close(FUNDS_PULL_PRE_APPROVAL_ID)
+
+    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+
+    assert command.status == FundPullPreApprovalStatus.closed
+
+
+def test_reject_happy_flow():
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.pending,
+    )
+
+    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+
+    assert command.status == FundPullPreApprovalStatus.pending
+
+    reject(FUNDS_PULL_PRE_APPROVAL_ID)
+
+    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+
+    assert command.status == FundPullPreApprovalStatus.rejected
+
+
+def test_approve_while_command_with_pending_status_in_db():
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.pending,
+    )
+
+    approve(FUNDS_PULL_PRE_APPROVAL_ID)
+
+    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+
+    assert command.status == FundPullPreApprovalStatus.valid
+
+
+def test_close_while_command_with_pending_status_in_db():
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.pending,
+    )
+
+    # with pytest.raises(
+    #     FundsPullPreApprovalError, match=r"Could not close command with status .*"
+    # ):
+    close(FUNDS_PULL_PRE_APPROVAL_ID)
+
+    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+
+    assert command.status == FundPullPreApprovalStatus.closed
+
+
+def test_reject_while_command_with_pending_status_in_db():
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.pending,
+    )
+
+    # with pytest.raises(
+    #     FundsPullPreApprovalError, match=r"Could not approve command with status .*"
+    # ):
+    reject(FUNDS_PULL_PRE_APPROVAL_ID)
+
+    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+
+    assert command.status == FundPullPreApprovalStatus.rejected
+
+
+def test_approve_while_command_with_valid_status_in_db():
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.valid,
+    )
+
+    with pytest.raises(
+        FundsPullPreApprovalError, match=r"Could not approve command with status .*"
+    ):
+        approve(FUNDS_PULL_PRE_APPROVAL_ID)
+
+
+def test_close_while_command_with_valid_status_in_db():
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.valid,
+    )
+
+    close(FUNDS_PULL_PRE_APPROVAL_ID)
+
+    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+
+    assert command.status == FundPullPreApprovalStatus.closed
+
+
+def test_reject_while_command_with_valid_status_in_db():
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.valid,
+    )
+
+    with pytest.raises(
+        FundsPullPreApprovalError, match=r"Could not reject command with status .*"
+    ):
+        reject(FUNDS_PULL_PRE_APPROVAL_ID)
+
+
+def test_approve_while_command_with_closed_status_in_db():
     OneFundsPullPreApproval.run(
         db_session=db_session,
         funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
@@ -75,11 +210,69 @@ def test_approve_while_command_with_wrong_status_in_db():
         approve(FUNDS_PULL_PRE_APPROVAL_ID)
 
 
-def test_approve_while_invalid_status():
+def test_close_while_command_with_closed_status_in_db():
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.closed,
+    )
+
     with pytest.raises(
-        ValueError, match=r"Status must be 'valid' or 'rejected' and not '.*'"
+        FundsPullPreApprovalError, match=r"Could not close command with status .*"
+    ):
+        close(FUNDS_PULL_PRE_APPROVAL_ID)
+
+
+def test_reject_while_command_with_closed_status_in_db():
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.closed,
+    )
+
+    with pytest.raises(
+        FundsPullPreApprovalError, match=r"Could not reject command with status .*"
+    ):
+        reject(FUNDS_PULL_PRE_APPROVAL_ID)
+
+
+def test_approve_while_command_with_rejected_status_in_db():
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.rejected,
+    )
+
+    with pytest.raises(
+        FundsPullPreApprovalError, match=r"Could not approve command with status .*"
     ):
         approve(FUNDS_PULL_PRE_APPROVAL_ID)
+
+
+def test_close_while_command_with_rejected_status_in_db():
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.rejected,
+    )
+
+    with pytest.raises(
+        FundsPullPreApprovalError, match=r"Could not close command with status .*"
+    ):
+        close(FUNDS_PULL_PRE_APPROVAL_ID)
+
+
+def test_reject_while_command_with_rejected_status_in_db():
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.rejected,
+    )
+
+    with pytest.raises(
+        FundsPullPreApprovalError, match=r"Could not reject command with status .*"
+    ):
+        reject(FUNDS_PULL_PRE_APPROVAL_ID)
 
 
 def test_create_and_approve_happy_flow():
