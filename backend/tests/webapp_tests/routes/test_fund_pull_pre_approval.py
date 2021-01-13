@@ -20,7 +20,7 @@ CURRENCY = "XUS"
 
 @pytest.fixture
 def mock_get_funds_pull_pre_approvals(monkeypatch):
-    def mock(account_id) -> List[models.FundsPullPreApprovalCommand]:
+    def mock(account_id):
         funds_pull_pre_approval_1 = models.FundsPullPreApprovalCommand(
             account_id=1,
             address=ADDRESS,
