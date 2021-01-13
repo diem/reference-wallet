@@ -191,7 +191,7 @@ def offchain_api_routes():
     )
     offchain.add_url_rule(
         rule="/offchain/funds_pull_pre_approvals/<funds_pull_pre_approval_id>",
-        view_func=OffchainRoutes.ApproveFundsPullPreApproval.as_view(
+        view_func=OffchainRoutes.UpdateFundPullPreApprovalStatus.as_view(
             "approve_funds_pull_pre_approval"
         ),
         methods=["PUT"],
