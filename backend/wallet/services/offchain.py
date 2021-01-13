@@ -28,8 +28,8 @@ from wallet.storage.funds_pull_pre_approval_command import (
     get_account_commands,
     FundsPullPreApprovalCommandNotFound,
     commit_command,
-    get_commands_by_send_status,
-    get_funds_pull_pre_approval_command,
+    get_commands_by_sent_status,
+    get_command_by_id,
     update_command,
 )
 from wallet.storage.models import FundsPullPreApprovalCommands
@@ -96,9 +96,7 @@ def process_inbound_command(
 
             validate_expiration_timestamp(approval.scope.expiration_timestamp)
 
-            command_in_db = get_funds_pull_pre_approval_command(
-                approval.funds_pull_pre_approval_id
-            )
+            command_in_db = get_command_by_id(approval.funds_pull_pre_approval_id)
 
             if command_in_db:
                 validate_addresses(approval, command_in_db)

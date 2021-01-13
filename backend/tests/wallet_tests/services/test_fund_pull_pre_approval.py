@@ -31,7 +31,7 @@ from wallet.storage import (
     db_session,
     User,
     Account,
-    get_funds_pull_pre_approval_command,
+    get_command_by_id,
 )
 from wallet.types import RegistrationStatus
 
@@ -62,13 +62,13 @@ def test_approve_happy_flow():
         status=FundPullPreApprovalStatus.pending,
     )
 
-    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
 
     assert command.status == FundPullPreApprovalStatus.pending
 
     approve(FUNDS_PULL_PRE_APPROVAL_ID)
 
-    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
 
     assert command.status == FundPullPreApprovalStatus.valid
 
@@ -80,13 +80,13 @@ def test_close_happy_flow():
         status=FundPullPreApprovalStatus.pending,
     )
 
-    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
 
     assert command.status == FundPullPreApprovalStatus.pending
 
     close(FUNDS_PULL_PRE_APPROVAL_ID)
 
-    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
 
     assert command.status == FundPullPreApprovalStatus.closed
 
@@ -98,13 +98,13 @@ def test_reject_happy_flow():
         status=FundPullPreApprovalStatus.pending,
     )
 
-    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
 
     assert command.status == FundPullPreApprovalStatus.pending
 
     reject(FUNDS_PULL_PRE_APPROVAL_ID)
 
-    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
 
     assert command.status == FundPullPreApprovalStatus.rejected
 
@@ -118,7 +118,7 @@ def test_approve_while_command_with_pending_status_in_db():
 
     approve(FUNDS_PULL_PRE_APPROVAL_ID)
 
-    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
 
     assert command.status == FundPullPreApprovalStatus.valid
 
@@ -135,7 +135,7 @@ def test_close_while_command_with_pending_status_in_db():
     # ):
     close(FUNDS_PULL_PRE_APPROVAL_ID)
 
-    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
 
     assert command.status == FundPullPreApprovalStatus.closed
 
@@ -152,7 +152,7 @@ def test_reject_while_command_with_pending_status_in_db():
     # ):
     reject(FUNDS_PULL_PRE_APPROVAL_ID)
 
-    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
 
     assert command.status == FundPullPreApprovalStatus.rejected
 
@@ -179,7 +179,7 @@ def test_close_while_command_with_valid_status_in_db():
 
     close(FUNDS_PULL_PRE_APPROVAL_ID)
 
-    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
 
     assert command.status == FundPullPreApprovalStatus.closed
 
@@ -276,7 +276,7 @@ def test_reject_while_command_with_rejected_status_in_db():
 
 
 def test_create_and_approve_happy_flow():
-    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
 
     assert command is None
 
@@ -297,7 +297,7 @@ def test_create_and_approve_happy_flow():
         description="test_establish_funds_pull_pre_approval_command_already_exist_in_db",
     )
 
-    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
 
     assert command.status == FundPullPreApprovalStatus.valid
     assert command.role == Role.PAYER
@@ -320,7 +320,7 @@ def generate_mock_user():
 
 
 def test_create_and_approve_with_expired_expiration_timestamp():
-    command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
 
     assert command is None
 
@@ -400,7 +400,7 @@ def test_process_inbound_command_basic_flow(
         assert code == 200
         assert resp
 
-    command_in_db = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
     assert command_in_db
     assert command_in_db.biller_address == cmd.funds_pull_pre_approval.biller_address
     assert command_in_db.address == cmd.funds_pull_pre_approval.address
@@ -445,7 +445,7 @@ def test_process_inbound_command_update_immutable_value(
             )
             process_inbound_command(address, cmd)
 
-    command_in_db = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
     # verify the original address not changed
     assert command_in_db.address == address
 
@@ -488,7 +488,7 @@ def test_process_inbound_command_valid_update(monkeypatch):
         assert code == 200
         assert resp
 
-    command_in_db = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
     assert command_in_db
     assert command_in_db.biller_address == cmd.funds_pull_pre_approval.biller_address
     assert command_in_db.address == cmd.funds_pull_pre_approval.address
@@ -533,7 +533,7 @@ def test_process_inbound_command_invalid_update(monkeypatch):
             )
             process_inbound_command(address, cmd)
 
-    command_in_db = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
     # verify the original status not changed
     assert command_in_db.status == FundPullPreApprovalStatus.valid
 
@@ -567,7 +567,7 @@ def test_process_inbound_command_invalid_status(monkeypatch):
             )
             process_inbound_command(address, cmd)
 
-    command_in_db = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
+    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
     assert command_in_db is None
 
 

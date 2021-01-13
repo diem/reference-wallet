@@ -13,8 +13,8 @@ from wallet.storage.funds_pull_pre_approval_command import (
     get_account_commands,
     FundsPullPreApprovalCommandNotFound,
     commit_command,
-    get_commands_by_send_status,
-    get_funds_pull_pre_approval_command,
+    get_commands_by_sent_status,
+    get_command_by_id,
     update_command,
 )
 
@@ -45,7 +45,7 @@ def create_and_approve(
     """ Create and approve fund pull pre approval by payer """
     validate_expiration_timestamp(expiration_timestamp)
 
-    command = get_funds_pull_pre_approval_command(funds_pull_pre_approval_id)
+    command = get_command_by_id(funds_pull_pre_approval_id)
 
     if command is not None:
         raise FundsPullPreApprovalError(
@@ -115,7 +115,7 @@ def close(funds_pull_pre_approval_id):
 def update_status(
     funds_pull_pre_approval_id, valid_statuses, new_status, operation_name
 ):
-    command = get_funds_pull_pre_approval_command(funds_pull_pre_approval_id)
+    command = get_command_by_id(funds_pull_pre_approval_id)
 
     if command:
         if command.status in valid_statuses:
@@ -144,7 +144,7 @@ def validate_expiration_timestamp(expiration_timestamp):
 
 
 def process_funds_pull_pre_approvals_requests():
-    commands = get_commands_by_send_status(False)
+    commands = get_commands_by_sent_status(False)
 
     for command in commands:
         if command.role == Role.PAYER:

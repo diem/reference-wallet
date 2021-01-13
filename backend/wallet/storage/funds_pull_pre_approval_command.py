@@ -14,28 +14,12 @@ def get_account_commands(account_id: int) -> List[models.FundsPullPreApprovalCom
     ).all()
 
 
-def get_funds_pull_pre_approval_command(
+def get_command_by_id(
     funds_pull_pre_approval_id: str,
 ) -> models.FundsPullPreApprovalCommand:
     return models.FundsPullPreApprovalCommand.query.filter_by(
         funds_pull_pre_approval_id=funds_pull_pre_approval_id
     ).first()
-
-
-def get_commands_by_type(
-    account_id: int, type: str
-) -> List[models.FundsPullPreApprovalCommand]:
-    return models.FundsPullPreApprovalCommand.query.filter_by(
-        account_id=account_id, type=type
-    ).all()
-
-
-def get_commands_by_status(
-    account_id: int, status: str
-) -> List[models.FundsPullPreApprovalCommand]:
-    return models.FundsPullPreApprovalCommand.query.filter_by(
-        account_id=account_id, status=status
-    ).all()
 
 
 class FundsPullPreApprovalCommandNotFound(Exception):
@@ -54,11 +38,7 @@ def update_command(command: models.FundsPullPreApprovalCommand):
         )
 
 
-def get_commands_by_role(role: str):
-    return models.FundsPullPreApprovalCommand.query.filter_by(role=role).all()
-
-
-def get_commands_by_send_status(offchain_sent: bool):
+def get_commands_by_sent_status(offchain_sent: bool):
     return models.FundsPullPreApprovalCommand.query.filter_by(
         offchain_sent=offchain_sent
     ).all()
