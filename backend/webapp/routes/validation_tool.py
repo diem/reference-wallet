@@ -1,11 +1,12 @@
 from http import HTTPStatus
 
+from diem import offchain
 from diem_utils.types.currencies import DiemCurrency
 from flask import Blueprint, request
 from wallet.services import validation_tool as validation_tool_service
-from webapp.schemas import FundsPullPreApprovalId
+from webapp.schemas import FundsPullPreApprovalId, FundsPullPreApprovalRequest
 
-from .strict_schema_view import StrictSchemaView, response_definition
+from .strict_schema_view import StrictSchemaView, response_definition, body_parameter
 
 validation_tool = Blueprint("validation_tool", __name__)
 
@@ -15,43 +16,59 @@ class ValidationToolRoutes:
         tags = ["ValidationTool"]
 
     class CreateFundsPullPreApprovalRequest(ValidationToolView):
-        summary = "Create funds_pull_pre_approval request"
-
+        summary = "Send funds pull pre-approval request to another VASP"
+        parameters = [
+            body_parameter(FundsPullPreApprovalRequest),
+        ]
         responses = {
             HTTPStatus.OK: response_definition(
-                "New funds_pull_pre_approval cid", schema=FundsPullPreApprovalId
+                "ID of the new funds_pull_pre_approval object",
+                schema=FundsPullPreApprovalId,
             )
         }
 
         def post(self):
             user = self.user
-            account_id = user.account_id
-
             request_details = request.json
 
-            address = request_details["address"]
-            experation_time = request_details["experation_time"]
-            description = request_details["description"]
-            max_cumulative_amount = request_details["max_cumulative_amount"]
-            currency = DiemCurrency.XUS
-            cumulative_amount_unit = request_details["cumulative_amount_unit"]
-            cumulative_amount_unit_value = request_details[
-                "cumulative_amount_unit_value"
-            ]
+            payer_address = request_details["payer_address"]
+            description = request_details.get("description")
 
-            if "currency" in request_details:
-                currency = request_details["currency"]
+            max_cumulative_amount = (
+                offchain.ScopedCumulativeAmountObject(
+                    unit=request_details["scope"]["max_cumulative_amount"]["unit"],
+                    value=request_details["scope"]["max_cumulative_amount"]["value"],
+                    max_amount=offchain.CurrencyObject(
+                        **request_details["scope"]["max_cumulative_amount"][
+                            "max_amount"
+                        ]
+                    ),
+                )
+                if "max_cumulative_amount" in request_details["scope"]
+                else None
+            )
+
+            max_transaction_amount = (
+                offchain.CurrencyObject(
+                    **request_details["scope"]["max_transaction_amount"]
+                )
+                if "max_transaction_amount" in request_details["scope"]
+                else None
+            )
+
+            scope = offchain.FundPullPreApprovalScopeObject(
+                type=request_details["scope"]["type"],
+                expiration_timestamp=request_details["scope"]["expiration_timestamp"],
+                max_cumulative_amount=max_cumulative_amount,
+                max_transaction_amount=max_transaction_amount,
+            )
 
             funds_pull_pre_approval_id = (
-                validation_tool_service.create_funds_pull_pre_approval_request(
-                    user_account_id=account_id,
-                    address=address,
-                    expiration_time=experation_time,
+                validation_tool_service.request_funds_pull_pre_approval_from_another(
+                    account_id=user.account_id,
+                    payer_address=payer_address,
+                    scope=scope,
                     description=description,
-                    max_cumulative_amount=max_cumulative_amount,
-                    currency=currency,
-                    cumulative_amount_unit=cumulative_amount_unit,
-                    cumulative_amount_unit_value=cumulative_amount_unit_value,
                 )
             )
 

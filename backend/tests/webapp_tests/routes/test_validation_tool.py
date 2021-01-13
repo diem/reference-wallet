@@ -1,52 +1,184 @@
 import json
 import uuid
-from typing import Optional
 
 import pytest
+from diem import offchain
 from flask import Response
 from flask.testing import Client
 from wallet.services import validation_tool as validation_tool_service
 
 FUNDS_PULL_PRE_APPROVAL_ID = str(uuid.uuid4())
+CURRENCY = "XUS"
 
 
 @pytest.fixture
-def mock_create_funds_pull_pre_approval_request(monkeypatch):
-    def mock(
-        user_account_id,
-        address,
-        expiration_time,
-        description,
-        max_cumulative_amount,
-        currency,
-        cumulative_amount_unit,
-        cumulative_amount_unit_value,
-    ) -> Optional[str]:
-        return FUNDS_PULL_PRE_APPROVAL_ID
+def mock_validation_tool_service(monkeypatch):
+    def factory(method_name: str, will_return=None):
+        calls = []
 
-    monkeypatch.setattr(
-        validation_tool_service, "create_funds_pull_pre_approval_request", mock
-    )
+        def mock(**argv):
+            calls.append(argv)
+            return will_return
+
+        monkeypatch.setattr(validation_tool_service, method_name, mock)
+        return calls
+
+    return factory
 
 
-class TestCreateFundsPullPreApprovalRequest:
-    def test_create_funds_pull_pre_approval_request(
-        self, authorized_client: Client, mock_create_funds_pull_pre_approval_request
-    ) -> None:
-        # address: "64b9dd1e5e56efb0c67e95b8bbecdfb4", sub_address: "9e8a79160e500d01"
+class TestRequestFundsPullPreApprovalFromAnother:
+    def test_all_request_fields(
+        self, authorized_client: Client, mock_validation_tool_service
+    ):
+        """
+        Sends the request with all the fields specified.
+        """
+
+        expected_max_cumulative_amount = {
+            "unit": "week",
+            "value": 1,
+            "max_amount": {
+                "amount": 100,
+                "currency": CURRENCY,
+            },
+        }
+        expected_max_transaction_amount = {
+            "amount": 10,
+            "currency": CURRENCY,
+        }
+        expected_scope = {
+            "type": "consent",
+            "expiration_timestamp": 1234,
+            "max_cumulative_amount": expected_max_cumulative_amount,
+            "max_transaction_amount": expected_max_transaction_amount,
+        }
+        request_body = {
+            "payer_address": "tdm1pvjua68j72mhmp3n7jkuthmxlkj0g57gkpegq6qgkjfxwc",
+            "description": "Test create funds_pull_pre_approval request",
+            "scope": expected_scope,
+        }
+
+        calls = mock_validation_tool_service(
+            "request_funds_pull_pre_approval_from_another",
+            will_return=FUNDS_PULL_PRE_APPROVAL_ID,
+        )
+
         rv: Response = authorized_client.post(
             "/validation/funds_pull_pre_approvals",
-            json={
-                "address": "tdm1pvjua68j72mhmp3n7jkuthmxlkj0g57gkpegq6qgkjfxwc",
-                "experation_time": 27345,
-                "description": "Test create funds_pull_pre_approval request",
-                "max_cumulative_amount": 10000,
-                "cumulative_amount_unit": "week",
-                "cumulative_amount_unit_value": 1,
-            },
+            json=request_body,
         )
 
         assert rv.status_code == 200
         assert rv.get_data() is not None
         funds_pull_pre_approval_id = rv.get_json()["funds_pull_pre_approval_id"]
         assert funds_pull_pre_approval_id == FUNDS_PULL_PRE_APPROVAL_ID
+
+        assert len(calls) == 1
+        call = calls[0]
+
+        assert call["account_id"] == 1
+        assert call["payer_address"] == request_body["payer_address"]
+        assert call["description"] == request_body["description"]
+
+        scope: offchain.FundPullPreApprovalScopeObject = call["scope"]
+        assert scope.type == expected_scope["type"]
+        assert scope.expiration_timestamp == expected_scope["expiration_timestamp"]
+
+        assert scope.max_cumulative_amount is not None
+        assert (
+            scope.max_cumulative_amount.unit == expected_max_cumulative_amount["unit"]
+        )
+        assert (
+            scope.max_cumulative_amount.value == expected_max_cumulative_amount["value"]
+        )
+        assert (
+            scope.max_cumulative_amount.max_amount.amount
+            == expected_max_cumulative_amount["max_amount"]["amount"]
+        )
+        assert (
+            scope.max_cumulative_amount.max_amount.currency
+            == expected_max_cumulative_amount["max_amount"]["currency"]
+        )
+
+        assert scope.max_transaction_amount is not None
+        assert (
+            scope.max_transaction_amount.amount
+            == expected_max_transaction_amount["amount"]
+        )
+        assert (
+            scope.max_transaction_amount.currency
+            == expected_max_transaction_amount["currency"]
+        )
+
+    def test_request_nonoptional_fields_only(
+        self, authorized_client: Client, mock_validation_tool_service
+    ):
+        """
+        Sends the request with only the non-optional fields specified.
+        """
+
+        expected_scope = {
+            "type": "consent",
+            "expiration_timestamp": 1234,
+        }
+        request_body = {
+            "payer_address": "tdm1pvjua68j72mhmp3n7jkuthmxlkj0g57gkpegq6qgkjfxwc",
+            "scope": expected_scope,
+        }
+
+        calls = mock_validation_tool_service(
+            "request_funds_pull_pre_approval_from_another",
+            will_return=FUNDS_PULL_PRE_APPROVAL_ID,
+        )
+
+        rv: Response = authorized_client.post(
+            "/validation/funds_pull_pre_approvals",
+            json=request_body,
+        )
+
+        assert rv.status_code == 200
+        assert rv.get_data() is not None
+        funds_pull_pre_approval_id = rv.get_json()["funds_pull_pre_approval_id"]
+        assert funds_pull_pre_approval_id == FUNDS_PULL_PRE_APPROVAL_ID
+
+        assert len(calls) == 1
+        call = calls[0]
+
+        assert call["account_id"] == 1
+        assert call["payer_address"] == request_body["payer_address"]
+        assert call["description"] is None
+
+        scope: offchain.FundPullPreApprovalScopeObject = call["scope"]
+        assert scope.type == expected_scope["type"]
+        assert scope.expiration_timestamp == expected_scope["expiration_timestamp"]
+        assert scope.max_cumulative_amount is None
+        assert scope.max_transaction_amount is None
+
+    def test_wrong_timestamp_type(
+        self, authorized_client: Client, mock_validation_tool_service
+    ):
+        """
+        Sends request with wrong timestamp to make sure schema validation
+        actually works.
+        """
+        expected_scope = {
+            "type": "consent",
+            "expiration_timestamp": "should be integer",
+        }
+        request_body = {
+            "payer_address": "tdm1pvjua68j72mhmp3n7jkuthmxlkj0g57gkpegq6qgkjfxwc",
+            "scope": expected_scope,
+        }
+
+        calls = mock_validation_tool_service(
+            "request_funds_pull_pre_approval_from_another",
+            will_return=FUNDS_PULL_PRE_APPROVAL_ID,
+        )
+
+        rv: Response = authorized_client.post(
+            "/validation/funds_pull_pre_approvals",
+            json=request_body,
+        )
+
+        assert rv.status_code == 400
+        assert "expiration_timestamp" in rv.get_data(as_text=True)
