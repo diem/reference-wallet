@@ -211,7 +211,9 @@ class Token(Base):
 class FundsPullPreApprovalCommand(Base):
     __tablename__ = "fundspullpreapprovalcommands"
     funds_pull_pre_approval_id = Column(String, primary_key=True, nullable=False)
-    account_id = Column(Integer, ForeignKey("account.id"), nullable=True)
+    account_id = Column(
+        Integer, ForeignKey("account.id"), primary_key=True, nullable=True
+    )
     address = Column(String, nullable=False)
     biller_address = Column(String, nullable=False)
     funds_pull_pre_approval_type = Column(String, nullable=False)
