@@ -103,8 +103,9 @@ def approve(funds_pull_pre_approval_id: str, status: str) -> None:
 
 def get_funds_pull_pre_approvals(
     account_id: int,
-) -> List[models.FundsPullPreApprovalCommand]:
-    return get_account_commands(account_id)
+):
+    commands = get_account_commands(account_id)
+    return [preapproval_model_to_command(commands) for commands in commands]
 
 
 def validate_expiration_timestamp(expiration_timestamp):
