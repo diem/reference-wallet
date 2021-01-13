@@ -41,7 +41,7 @@ currency = DiemCurrency.XUS
 
 def test_approve_but_no_command_in_db():
     with pytest.raises(FundsPullPreApprovalError, match=r"Could not find command .*"):
-        approve(FUNDS_PULL_PRE_APPROVAL_ID, FundPullPreApprovalStatus.valid)
+        approve(FUNDS_PULL_PRE_APPROVAL_ID)
 
 
 def test_approve_happy_flow():
@@ -55,7 +55,7 @@ def test_approve_happy_flow():
 
     assert command.status == FundPullPreApprovalStatus.pending
 
-    approve(FUNDS_PULL_PRE_APPROVAL_ID, FundPullPreApprovalStatus.valid)
+    approve(FUNDS_PULL_PRE_APPROVAL_ID)
 
     command = get_funds_pull_pre_approval_command(FUNDS_PULL_PRE_APPROVAL_ID)
 
@@ -72,14 +72,14 @@ def test_approve_while_command_with_wrong_status_in_db():
     with pytest.raises(
         FundsPullPreApprovalError, match=r"Could not approve command with status .*"
     ):
-        approve(FUNDS_PULL_PRE_APPROVAL_ID, FundPullPreApprovalStatus.valid)
+        approve(FUNDS_PULL_PRE_APPROVAL_ID)
 
 
 def test_approve_while_invalid_status():
     with pytest.raises(
         ValueError, match=r"Status must be 'valid' or 'rejected' and not '.*'"
     ):
-        approve(FUNDS_PULL_PRE_APPROVAL_ID, FundPullPreApprovalStatus.closed)
+        approve(FUNDS_PULL_PRE_APPROVAL_ID)
 
 
 def test_create_and_approve_happy_flow():
