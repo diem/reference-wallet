@@ -233,14 +233,9 @@ class FundsPullPreApprovalCommand(Base):
         ]
         for key in new_command_attributes:
             try:
-                if (
-                    getattr(self, key) != getattr(updated_command, key)
-                    and key != "funds_pull_pre_approval_id"
-                    and key != "account_id"
-                    and key != "address"
-                    and key != "biller_address"
-                ):
+                if getattr(self, key) != getattr(updated_command, key):
                     setattr(self, key, getattr(updated_command, key))
             except AttributeError:
-                # TODO
+                # An attribute in updated_command does not exist in 'self'
+                # We assume this has nothing to do with us and continue to next attribute
                 ...
