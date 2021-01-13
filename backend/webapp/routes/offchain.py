@@ -189,7 +189,7 @@ class OffchainRoutes:
                 HTTPStatus.OK,
             )
 
-    class ApproveFundsPullPreApproval(OffchainView):
+    class UpdateFundPullPreApprovalStatus(OffchainView):
         summary = "Approve or reject pending funds pull pre approval"
         parameters = [
             body_parameter(ApproveFundsPullPreApproval),
