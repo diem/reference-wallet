@@ -42,30 +42,7 @@ class FundsPullPreApprovalCommandNotFound(Exception):
     ...
 
 
-def update_command(
-    funds_pull_pre_approval_id: str,
-    status: str = None,
-    role: str = None,
-    offchain_sent: bool = False,
-) -> models.FundsPullPreApprovalCommand:
-    command = models.FundsPullPreApprovalCommand.query.get(funds_pull_pre_approval_id)
-
-    if command:
-        if status:
-            command.status = status
-        if role:
-            command.role = role
-        command.offchain_sent = offchain_sent
-        commit_command(command)
-
-        return command
-    else:
-        raise FundsPullPreApprovalCommandNotFound(
-            f"Command not found for funds pre approval id {funds_pull_pre_approval_id}"
-        )
-
-
-def update_command_2(command: models.FundsPullPreApprovalCommand):
+def update_command(command: models.FundsPullPreApprovalCommand):
     command_in_db = models.FundsPullPreApprovalCommand.query.get(
         command.funds_pull_pre_approval_id
     )

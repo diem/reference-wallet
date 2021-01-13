@@ -11,12 +11,11 @@ from wallet.services import account
 from wallet.storage.funds_pull_pre_approval_command import (
     models,
     get_account_commands,
-    update_command,
     FundsPullPreApprovalCommandNotFound,
     commit_command,
     get_commands_by_send_status,
     get_funds_pull_pre_approval_command,
-    update_command_2,
+    update_command,
 )
 
 
@@ -120,7 +119,8 @@ def update_status(
 
     if command:
         if command.status in valid_statuses:
-            update_command(funds_pull_pre_approval_id, status=new_status)
+            command.status = new_status
+            update_command(command)
         else:
             raise FundsPullPreApprovalError(
                 f"Could not {operation_name} command with status {command.status}"
@@ -158,7 +158,9 @@ def process_funds_pull_pre_approvals_requests():
             cmd, context.get().config.compliance_private_key().sign
         )
 
-        update_command(command.funds_pull_pre_approval_id, command, command.role, True)
+        command.offchain_sent = True
+
+        update_command(command)
 
 
 def preapproval_command_to_model(
