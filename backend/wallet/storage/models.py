@@ -225,7 +225,7 @@ class FundsPullPreApprovalCommand(Base):
     description = Column(String, nullable=True)
     status = Column(String, nullable=False)
     role = Column(String, nullable=False)
-    offchain_send = Column(Boolean, default=False)
+    offchain_sent = Column(Boolean, default=False)
 
     def update(self, updated_command):
         new_command_attributes = [
