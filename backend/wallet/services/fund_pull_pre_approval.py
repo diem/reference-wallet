@@ -79,16 +79,20 @@ def create_and_approve(
     )
 
 
-def approve(funds_pull_pre_approval_id: str, status: str) -> None:
-    """ update command in db with new given status and role PAYER"""
-    if status not in [
-        FundPullPreApprovalStatus.valid,
-        FundPullPreApprovalStatus.rejected,
-    ]:
-        raise ValueError(f"Status must be 'valid' or 'rejected' and not '{status}'")
+def approve(funds_pull_pre_approval_id: str) -> None:
+    _update_status(funds_pull_pre_approval_id, FundPullPreApprovalStatus.valid)
 
+
+def reject(funds_pull_pre_approval_id):
+    _update_status(funds_pull_pre_approval_id, FundPullPreApprovalStatus.rejected)
+
+
+def close(funds_pull_pre_approval_id):
+    _update_status(funds_pull_pre_approval_id, FundPullPreApprovalStatus.closed)
+
+
+def _update_status(funds_pull_pre_approval_id, status):
     command = get_funds_pull_pre_approval_command(funds_pull_pre_approval_id)
-
     if command:
         if command.status != FundPullPreApprovalStatus.pending:
             raise FundsPullPreApprovalError(

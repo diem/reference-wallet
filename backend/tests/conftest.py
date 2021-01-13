@@ -164,3 +164,23 @@ class LpClientMock:
 def mock_lp_client(monkeypatch):
     for name, func in inspect.getmembers(LpClientMock, predicate=inspect.isfunction):
         setattr(LpClient, name, func)
+
+
+@pytest.fixture
+def mock_method(monkeypatch):
+    def factory(obj, method_name: str, will_return=None, will_raise=None):
+        calls = []
+
+        def mock(*args, **argv):
+            for i, value in enumerate(args):
+                argv[i] = value
+
+            calls.append(argv)
+            if will_raise:
+                raise will_raise
+            return will_return
+
+        monkeypatch.setattr(obj, method_name, mock)
+        return calls
+
+    return factory

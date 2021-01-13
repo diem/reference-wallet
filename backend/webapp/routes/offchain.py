@@ -4,8 +4,11 @@
 import logging
 from http import HTTPStatus
 
-import wallet.services.fund_pull_pre_approval
-from diem.offchain import X_REQUEST_ID, X_REQUEST_SENDER_ADDRESS
+from diem.offchain import (
+    X_REQUEST_ID,
+    X_REQUEST_SENDER_ADDRESS,
+    FundPullPreApprovalStatus,
+)
 from flask import Blueprint, request
 from flask.views import MethodView
 from wallet.services import fund_pull_pre_approval as fppa_service
@@ -126,7 +129,7 @@ class OffchainRoutes:
             )
 
     class UpdateFundPullPreApprovalStatus(OffchainView):
-        summary = "Approve or reject pending funds pull pre approval"
+        summary = "update funds pull pre approval status"
         parameters = [
             body_parameter(ApproveFundsPullPreApproval),
             path_string_param(
@@ -150,7 +153,12 @@ class OffchainRoutes:
             status: str = params["status"]
 
             try:
-                fppa_service.approve(funds_pull_pre_approval_id, status)
+                if status == FundPullPreApprovalStatus.valid:
+                    fppa_service.approve(funds_pull_pre_approval_id)
+                if status == FundPullPreApprovalStatus.rejected:
+                    fppa_service.reject(funds_pull_pre_approval_id)
+                if status == FundPullPreApprovalStatus.closed:
+                    fppa_service.close(funds_pull_pre_approval_id)
             except fppa_service.FundsPullPreApprovalCommandNotFound:
                 return self.respond_with_error(
                     HTTPStatus.NOT_FOUND,
