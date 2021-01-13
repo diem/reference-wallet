@@ -26,12 +26,11 @@ from wallet.services.fund_pull_pre_approval import (
 # noinspection PyUnresolvedReferences
 from wallet.storage.funds_pull_pre_approval_command import (
     get_account_commands,
-    update_command,
     FundsPullPreApprovalCommandNotFound,
     commit_command,
     get_commands_by_send_status,
     get_funds_pull_pre_approval_command,
-    update_command_2,
+    update_command,
 )
 from wallet.storage.models import FundsPullPreApprovalCommands
 from wallet.storage import models
@@ -97,8 +96,6 @@ def process_inbound_command(
 
             validate_expiration_timestamp(approval.scope.expiration_timestamp)
 
-            role = get_role_by_command_status(approval)
-
             command_in_db = get_funds_pull_pre_approval_command(
                 approval.funds_pull_pre_approval_id
             )
@@ -111,11 +108,11 @@ def process_inbound_command(
                     approval.status == FundPullPreApprovalStatus.pending
                     and command_in_db.status == FundPullPreApprovalStatus.pending
                 ):
-                    update_command_2(
+                    update_command(
                         preapproval_command_to_model(
                             account_id=command_in_db.account_id,
                             command=preapproval_command,
-                            role=role,
+                            role=command_in_db.role,
                         )
                     )
                 else:
@@ -123,6 +120,7 @@ def process_inbound_command(
                         "Can't update existing command unless the status is 'pending'"
                     )
             else:
+                role = get_role_by_command_status(approval)
                 # if incoming request not exist in DB and the incoming status is pending - save in DB
                 if approval.status == FundPullPreApprovalStatus.pending:
                     commit_command(
