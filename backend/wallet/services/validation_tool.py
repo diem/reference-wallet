@@ -17,6 +17,22 @@ def request_funds_pull_pre_approval_from_another(
     biller_address = get_biller_address(account_id)
     funds_pull_pre_approval_id = generate_funds_pull_pre_approval_id(biller_address)
 
+    max_cumulative_amount = {}
+    if scope.max_cumulative_amount is not None:
+        max_cumulative_amount = dict(
+            max_cumulative_unit=scope.max_cumulative_amount.unit,
+            max_cumulative_unit_value=scope.max_cumulative_amount.value,
+            max_cumulative_amount=scope.max_cumulative_amount.max_amount.amount,
+            max_cumulative_amount_currency=scope.max_cumulative_amount.max_amount.currency,
+        )
+
+    max_transaction_amount = {}
+    if scope.max_transaction_amount is not None:
+        max_transaction_amount = dict(
+            max_transaction_amount=scope.max_transaction_amount.amount,
+            max_transaction_amount_currency=scope.max_transaction_amount.currency,
+        )
+
     fppa_storage.commit_command(
         fppa_storage.models.FundsPullPreApprovalCommand(
             account_id=account_id,
@@ -25,15 +41,11 @@ def request_funds_pull_pre_approval_from_another(
             funds_pull_pre_approval_id=funds_pull_pre_approval_id,
             funds_pull_pre_approval_type=scope.type,
             expiration_timestamp=scope.expiration_timestamp,
-            max_cumulative_unit=scope.max_cumulative_amount.unit,
-            max_cumulative_unit_value=scope.max_cumulative_amount.value,
-            max_cumulative_amount=scope.max_cumulative_amount.max_amount.amount,
-            max_cumulative_amount_currency=scope.max_cumulative_amount.max_amount.currency,
-            max_transaction_amount=scope.max_transaction_amount.amount,
-            max_transaction_amount_currency=scope.max_transaction_amount.currency,
             description=description,
             status=offchain.FundPullPreApprovalStatus.valid,
-            role=Role.PAYER,
+            role=Role.PAYEE,
+            **max_cumulative_amount,
+            **max_transaction_amount,
         )
     )
 
