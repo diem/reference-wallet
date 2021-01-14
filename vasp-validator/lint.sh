@@ -6,9 +6,8 @@
 #
 
 echo "> Running Black"
-pipenv run black .
+pipenv run black src tests
 echo
 
 echo "> Running flake8"
-pipenv run flake8 . 
-
+pipenv run flake8 src tests
