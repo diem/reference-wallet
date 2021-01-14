@@ -111,6 +111,7 @@ def process_inbound_command(
 
             if command_in_db:
                 validate_addresses(approval, command_in_db)
+                validate_status(approval, command_in_db)
 
             if is_payer and is_payee:
                 # if both actors are accounts in same instance a DB record must be exist,
@@ -168,19 +169,13 @@ def process_inbound_command(
                     raise FundsPullPreApprovalInvalidStatus()
                 if approval.status == FundPullPreApprovalStatus.closed:
                     if command_in_db:
-                        if command_in_db.status in [
-                            FundPullPreApprovalStatus.pending,
-                            FundPullPreApprovalStatus.valid,
-                        ]:
-                            update_command(
-                                preapproval_command_to_model(
-                                    account_id=command_in_db.account_id,
-                                    command=preapproval_command,
-                                    role=command_in_db.role,
-                                )
+                        update_command(
+                            preapproval_command_to_model(
+                                account_id=command_in_db.account_id,
+                                command=preapproval_command,
+                                role=command_in_db.role,
                             )
-                        else:
-                            raise FundsPullPreApprovalInvalidStatus()
+                        )
                     else:
                         raise FundsPullPreApprovalCommandNotFound()
             elif is_payee:
@@ -200,24 +195,18 @@ def process_inbound_command(
                                 )
                             )
                         else:
-                            raise FundsPullPreApprovalInvalidStatus
+                            raise FundsPullPreApprovalInvalidStatus()
                     else:
                         raise FundsPullPreApprovalCommandNotFound()
                 if approval.status == FundPullPreApprovalStatus.closed:
                     if command_in_db:
-                        if command_in_db.status in [
-                            FundPullPreApprovalStatus.pending,
-                            FundPullPreApprovalStatus.valid,
-                        ]:
-                            update_command(
-                                preapproval_command_to_model(
-                                    account_id=command_in_db.account_id,
-                                    command=preapproval_command,
-                                    role=command_in_db.role,
-                                )
+                        update_command(
+                            preapproval_command_to_model(
+                                account_id=command_in_db.account_id,
+                                command=preapproval_command,
+                                role=command_in_db.role,
                             )
-                        else:
-                            raise FundsPullPreApprovalInvalidStatus()
+                        )
                     else:
                         raise FundsPullPreApprovalCommandNotFound()
                 if approval.status == FundPullPreApprovalStatus.pending:
@@ -227,6 +216,16 @@ def process_inbound_command(
     except offchain.Error as e:
         logger.exception(e)
         return _jws(command.id() if command else None, e.obj)
+
+
+def validate_status(approval, command_in_db):
+    if command_in_db.status in [
+        FundPullPreApprovalStatus.rejected,
+        FundPullPreApprovalStatus.closed,
+    ]:
+        raise FundsPullPreApprovalInvalidStatus
+    if command_in_db.status == approval.status and command_in_db.status != FundPullPreApprovalStatus.pending:
+        raise FundsPullPreApprovalInvalidStatus
 
 
 def validate_addresses(approval, command_in_db):
