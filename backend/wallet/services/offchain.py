@@ -168,13 +168,19 @@ def process_inbound_command(
                     raise FundsPullPreApprovalInvalidStatus()
                 if approval.status == FundPullPreApprovalStatus.closed:
                     if command_in_db:
-                        update_command(
-                            preapproval_command_to_model(
-                                account_id=command_in_db.account_id,
-                                command=preapproval_command,
-                                role=command_in_db.role,
+                        if command_in_db.status in [
+                            FundPullPreApprovalStatus.pending,
+                            FundPullPreApprovalStatus.valid,
+                        ]:
+                            update_command(
+                                preapproval_command_to_model(
+                                    account_id=command_in_db.account_id,
+                                    command=preapproval_command,
+                                    role=command_in_db.role,
+                                )
                             )
-                        )
+                        else:
+                            raise FundsPullPreApprovalInvalidStatus()
                     else:
                         raise FundsPullPreApprovalCommandNotFound()
             elif is_payee:
@@ -183,26 +189,35 @@ def process_inbound_command(
                     FundPullPreApprovalStatus.rejected,
                 ]:
                     if command_in_db:
-                        update_command(
-                            preapproval_command_to_model(
-                                account_id=get_account_id_from_subaddr(
-                                    biller_sub_address.hex()
-                                ),
-                                command=preapproval_command,
-                                role=command_in_db.role,
+                        if command_in_db.status == FundPullPreApprovalStatus.pending:
+                            update_command(
+                                preapproval_command_to_model(
+                                    account_id=get_account_id_from_subaddr(
+                                        biller_sub_address.hex()
+                                    ),
+                                    command=preapproval_command,
+                                    role=command_in_db.role,
+                                )
                             )
-                        )
+                        else:
+                            raise FundsPullPreApprovalInvalidStatus
                     else:
                         raise FundsPullPreApprovalCommandNotFound()
                 if approval.status == FundPullPreApprovalStatus.closed:
                     if command_in_db:
-                        update_command(
-                            preapproval_command_to_model(
-                                account_id=command_in_db.account_id,
-                                command=preapproval_command,
-                                role=command_in_db.role,
+                        if command_in_db.status in [
+                            FundPullPreApprovalStatus.pending,
+                            FundPullPreApprovalStatus.valid,
+                        ]:
+                            update_command(
+                                preapproval_command_to_model(
+                                    account_id=command_in_db.account_id,
+                                    command=preapproval_command,
+                                    role=command_in_db.role,
+                                )
                             )
-                        )
+                        else:
+                            raise FundsPullPreApprovalInvalidStatus()
                     else:
                         raise FundsPullPreApprovalCommandNotFound()
                 if approval.status == FundPullPreApprovalStatus.pending:
