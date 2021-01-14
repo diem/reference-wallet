@@ -21,6 +21,7 @@ from wallet.services.fund_pull_pre_approval import (
     process_funds_pull_pre_approvals_requests,
     Role,
     FundsPullPreApprovalError,
+    FundsPullPreApprovalInvalidStatus,
 )
 
 # noinspection PyUnresolvedReferences
@@ -95,6 +96,16 @@ def process_inbound_command(
             incoming = preapproval_command.funds_pull_pre_approval
 
             validate_expiration_timestamp(incoming.scope.expiration_timestamp)
+
+            address, sub_address = identifier.decode_account(approval.address, _hrp())
+            biller_address, biller_sub_address = identifier.decode_account(
+                approval.biller_address, _hrp()
+            )
+
+            my_address = context.get().config.vasp_address
+
+            is_payer = my_address == address.to_hex()
+            is_payee = my_address == biller_address.to_hex()
 
             command_in_db = get_command_by_id(incoming.funds_pull_pre_approval_id)
 

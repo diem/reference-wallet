@@ -31,6 +31,10 @@ class FundsPullPreApprovalError(Exception):
     ...
 
 
+class FundsPullPreApprovalInvalidStatus(FundsPullPreApprovalError):
+    ...
+
+
 def create_and_approve(
     account_id: int,
     biller_address: str,
