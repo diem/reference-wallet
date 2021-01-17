@@ -14,11 +14,25 @@ def get_account_commands(account_id: int) -> List[models.FundsPullPreApprovalCom
     ).all()
 
 
+def get_account_command_by_id(account_id: int, funds_pull_pre_approval_id: str):
+    return models.FundsPullPreApprovalCommand.query.filter_by(
+        account_id=account_id, funds_pull_pre_approval_id=funds_pull_pre_approval_id
+    ).first()
+
+
 def get_command_by_id(
     funds_pull_pre_approval_id: str,
 ) -> models.FundsPullPreApprovalCommand:
     return models.FundsPullPreApprovalCommand.query.filter_by(
         funds_pull_pre_approval_id=funds_pull_pre_approval_id
+    ).first()
+
+
+def get_command_by_id_and_role(
+    funds_pull_pre_approval_id: str, role: str
+) -> models.FundsPullPreApprovalCommand:
+    return models.FundsPullPreApprovalCommand.query.filter_by(
+        funds_pull_pre_approval_id=funds_pull_pre_approval_id, role=role
     ).first()
 
 
