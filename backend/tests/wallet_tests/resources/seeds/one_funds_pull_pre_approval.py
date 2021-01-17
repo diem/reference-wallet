@@ -22,9 +22,11 @@ class OneFundsPullPreApproval:
         status=FundPullPreApprovalStatus.valid,
         max_cumulative_unit="week",
         max_cumulative_unit_value=1,
+        account_id=1,
+        role=Role.PAYER,
     ) -> FundsPullPreApprovalCommand:
         command = FundsPullPreApprovalCommand(
-            account_id=1,
+            account_id=account_id,
             address=address,
             biller_address=biller_address,
             funds_pull_pre_approval_id=funds_pull_pre_approval_id,
@@ -38,7 +40,7 @@ class OneFundsPullPreApproval:
             max_transaction_amount_currency=DiemCurrency.XUS,
             description="OneFundsPullPreApprovalRun",
             status=status,
-            role=Role.PAYER,
+            role=role,
         )
 
         db_session.add(command)

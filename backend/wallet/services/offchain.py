@@ -23,7 +23,8 @@ from wallet.services.fund_pull_pre_approval import (
     FundsPullPreApprovalError,
     FundsPullPreApprovalInvalidStatus,
 )
-
+from wallet.storage import funds_pull_pre_approval_command as fppa_storage
+from wallet.storage import models
 # noinspection PyUnresolvedReferences
 from wallet.storage.funds_pull_pre_approval_command import (
     get_account_commands,
@@ -32,9 +33,8 @@ from wallet.storage.funds_pull_pre_approval_command import (
     get_commands_by_sent_status,
     get_command_by_id,
     update_command,
+    get_account_command_by_id,
 )
-from wallet.storage.models import FundsPullPreApprovalCommands
-from wallet.storage import models
 
 from ..storage import (
     lock_for_update,
@@ -93,129 +93,136 @@ def process_inbound_command(
             preapproval_command = typing.cast(
                 offchain.FundsPullPreApprovalCommand, command
             )
-            approval = preapproval_command.funds_pull_pre_approval
-
-            validate_expiration_timestamp(approval.scope.expiration_timestamp)
-
-            address, sub_address = identifier.decode_account(approval.address, _hrp())
-            biller_address, biller_sub_address = identifier.decode_account(
-                approval.biller_address, _hrp()
-            )
-
-            my_address = context.get().config.vasp_address
-
-            is_payer = my_address == address.to_hex()
-            is_payee = my_address == biller_address.to_hex()
-
-            command_in_db = get_command_by_id(approval.funds_pull_pre_approval_id)
-
-            if command_in_db:
-                validate_addresses(approval, command_in_db)
-                validate_status(approval, command_in_db)
-
-            if is_payer and is_payee:
-                # if both actors are accounts in same instance a DB record must be exist,
-                # since each command are saved before sending
-                if command_in_db is None:
-                    raise FundsPullPreApprovalCommandNotFound()
-                # incoming status and DB status must be equals
-                if command_in_db.status != approval.status:
-                    raise FundsPullPreApprovalError()
-                payer_account_id = get_account_id_from_subaddr(sub_address)
-                payee_account_id = get_account_id_from_subaddr(biller_sub_address)
-                if command_in_db.account_id == payer_account_id:
-                    # save incoming command with payee_account_id
-                    commit_command(
-                        preapproval_command_to_model(
-                            account_id=payee_account_id,
-                            command=preapproval_command,
-                            role=Role.PAYEE,
-                        )
-                    )
-                elif command_in_db.account_id == payee_account_id:
-                    # save incoming command with payee_account_id
-                    commit_command(
-                        preapproval_command_to_model(
-                            account_id=payer_account_id,
-                            command=preapproval_command,
-                            role=Role.PAYER,
-                        )
-                    )
-                raise FundsPullPreApprovalError()
-            elif is_payer:
-                if approval.status == FundPullPreApprovalStatus.pending:
-                    if command_in_db:
-                        update_command(
-                            preapproval_command_to_model(
-                                account_id=command_in_db.account_id,
-                                command=preapproval_command,
-                                role=command_in_db.role,
-                            )
-                        )
-                    else:
-                        commit_command(
-                            preapproval_command_to_model(
-                                account_id=get_account_id_from_subaddr(
-                                    sub_address.hex()
-                                ),
-                                command=preapproval_command,
-                                role=Role.PAYER,
-                            )
-                        )
-                if approval.status in [
-                    FundPullPreApprovalStatus.valid,
-                    FundPullPreApprovalStatus.rejected,
-                ]:
-                    raise FundsPullPreApprovalInvalidStatus()
-                if approval.status == FundPullPreApprovalStatus.closed:
-                    if command_in_db:
-                        update_command(
-                            preapproval_command_to_model(
-                                account_id=command_in_db.account_id,
-                                command=preapproval_command,
-                                role=command_in_db.role,
-                            )
-                        )
-                    else:
-                        raise FundsPullPreApprovalCommandNotFound()
-            elif is_payee:
-                if approval.status in [
-                    FundPullPreApprovalStatus.valid,
-                    FundPullPreApprovalStatus.rejected,
-                ]:
-                    if command_in_db:
-                        if command_in_db.status == FundPullPreApprovalStatus.pending:
-                            update_command(
-                                preapproval_command_to_model(
-                                    account_id=get_account_id_from_subaddr(
-                                        biller_sub_address.hex()
-                                    ),
-                                    command=preapproval_command,
-                                    role=command_in_db.role,
-                                )
-                            )
-                        else:
-                            raise FundsPullPreApprovalInvalidStatus()
-                    else:
-                        raise FundsPullPreApprovalCommandNotFound()
-                if approval.status == FundPullPreApprovalStatus.closed:
-                    if command_in_db:
-                        update_command(
-                            preapproval_command_to_model(
-                                account_id=command_in_db.account_id,
-                                command=preapproval_command,
-                                role=command_in_db.role,
-                            )
-                        )
-                    else:
-                        raise FundsPullPreApprovalCommandNotFound()
-                if approval.status == FundPullPreApprovalStatus.pending:
-                    raise FundsPullPreApprovalInvalidStatus()
+            handle_fund_pull_pre_approval_command(preapproval_command)
 
         return _jws(command.id())
     except offchain.Error as e:
         logger.exception(e)
         return _jws(command.id() if command else None, e.obj)
+
+
+def handle_fund_pull_pre_approval_command(command):
+    approval = command.funds_pull_pre_approval
+    validate_expiration_timestamp(approval.scope.expiration_timestamp)
+    role = get_role(approval)
+    command_in_db = fppa_storage.get_command_by_id_and_role(
+        approval.funds_pull_pre_approval_id, role
+    )
+    if command_in_db:
+        validate_addresses(approval, command_in_db)
+        validate_status(approval, command_in_db)
+    if role == Role.PAYER:
+        if approval.status == FundPullPreApprovalStatus.pending:
+            if command_in_db:
+                update_command(
+                    preapproval_command_to_model(
+                        account_id=command_in_db.account_id,
+                        command=command,
+                        role=command_in_db.role,
+                    )
+                )
+            else:
+                address, sub_address = identifier.decode_account(
+                    approval.address, _hrp()
+                )
+
+                commit_command(
+                    preapproval_command_to_model(
+                        account_id=get_account_id_from_subaddr(sub_address.hex()),
+                        command=command,
+                        role=Role.PAYER,
+                    )
+                )
+        if approval.status in [
+            FundPullPreApprovalStatus.valid,
+            FundPullPreApprovalStatus.rejected,
+        ]:
+            raise FundsPullPreApprovalInvalidStatus()
+        if approval.status == FundPullPreApprovalStatus.closed:
+            if command_in_db:
+                update_command(
+                    preapproval_command_to_model(
+                        account_id=command_in_db.account_id,
+                        command=command,
+                        role=command_in_db.role,
+                    )
+                )
+            else:
+                raise FundsPullPreApprovalCommandNotFound()
+    elif role == Role.PAYEE:
+        if approval.status in [
+            FundPullPreApprovalStatus.valid,
+            FundPullPreApprovalStatus.rejected,
+        ]:
+            if command_in_db:
+                if command_in_db.status == FundPullPreApprovalStatus.pending:
+                    (
+                        biller_address,
+                        biller_sub_address,
+                    ) = identifier.decode_account(approval.biller_address, _hrp())
+
+                    update_command(
+                        preapproval_command_to_model(
+                            account_id=get_account_id_from_subaddr(
+                                biller_sub_address.hex()
+                            ),
+                            command=command,
+                            role=command_in_db.role,
+                        )
+                    )
+                else:
+                    raise FundsPullPreApprovalInvalidStatus()
+            else:
+                raise FundsPullPreApprovalCommandNotFound()
+        if approval.status == FundPullPreApprovalStatus.closed:
+            if command_in_db:
+                update_command(
+                    preapproval_command_to_model(
+                        account_id=command_in_db.account_id,
+                        command=command,
+                        role=command_in_db.role,
+                    )
+                )
+            else:
+                raise FundsPullPreApprovalCommandNotFound()
+        if approval.status == FundPullPreApprovalStatus.pending:
+            raise FundsPullPreApprovalInvalidStatus()
+
+
+def get_role(approval):
+    payer_account_id = account.get_account_id_from_bech32(approval.address)
+    payee_account_id = account.get_account_id_from_bech32(approval.biller_address)
+
+    payer_command = fppa_storage.get_account_command_by_id(
+        payer_account_id, approval.funds_pull_pre_approval_id
+    )
+    payee_command = fppa_storage.get_account_command_by_id(
+        payee_account_id, approval.funds_pull_pre_approval_id
+    )
+
+    # If no record was found in DB then the incoming command is completely new
+    # and therefore we can assume that we received it as PAYER
+    address, _ = identifier.decode_account(approval.address, _hrp())
+    if payer_command is None and payee_command is None:
+        if address.to_hex() == context.get().config.vasp_address:
+            return Role.PAYER
+        else:
+            raise FundsPullPreApprovalError()
+
+    if payer_command and payee_command is None:
+        return Role.PAYER
+    if payer_command is None and payee_command:
+        return Role.PAYEE
+    if payer_command and payee_command:
+        # the side who sending the command is saving his update before he send it,
+        # therefore we can assume that the side which is not have the updated status is the active role
+        # TODO if approval.status == 'pending' compare all values to decide ?
+        if payer_command.status == approval.status:
+            return Role.PAYEE
+        if payee_command.status == approval.status:
+            return Role.PAYER
+
+        raise FundsPullPreApprovalError()
 
 
 def validate_status(approval, command_in_db):
@@ -224,7 +231,10 @@ def validate_status(approval, command_in_db):
         FundPullPreApprovalStatus.closed,
     ]:
         raise FundsPullPreApprovalInvalidStatus
-    if command_in_db.status == approval.status and command_in_db.status != FundPullPreApprovalStatus.pending:
+    if (
+        command_in_db.status == approval.status
+        and command_in_db.status != FundPullPreApprovalStatus.pending
+    ):
         raise FundsPullPreApprovalInvalidStatus
 
 
@@ -234,18 +244,6 @@ def validate_addresses(approval, command_in_db):
         or approval.biller_address != command_in_db.biller_address
     ):
         raise ValueError("address and biller_addres values are immutable")
-
-
-def get_role_by_command_status(status):
-    if status is None or status == FundPullPreApprovalStatus.pending:
-        return Role.PAYER
-    elif status in [
-        FundPullPreApprovalStatus.valid,
-        FundPullPreApprovalStatus.rejected,
-    ]:
-        return Role.PAYEE
-    else:
-        raise FundsPullPreApprovalError(f"Wrong status {status} for incoming request")
 
 
 def _jws(cid: Optional[str], err: Optional[offchain.OffChainErrorObject] = None):
