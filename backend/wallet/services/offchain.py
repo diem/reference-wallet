@@ -22,6 +22,7 @@ from wallet.services.fund_pull_pre_approval import (
     Role,
     FundsPullPreApprovalError,
     FundsPullPreApprovalInvalidStatus,
+    get_command_from_bech32,
 )
 from wallet.storage import funds_pull_pre_approval_command as fppa_storage
 from wallet.storage import models
@@ -189,40 +190,50 @@ def handle_fund_pull_pre_approval_command(command):
             raise FundsPullPreApprovalInvalidStatus()
 
 
+# If no record was found in DB then the incoming command is completely new
+# and therefore we can assume that we received it as PAYER
+#     # the side who sending the command is saving his update before he send it,
+#     # therefore we can assume that the side which is not have the updated status is the active role
+# TODO if approval.status == 'pending' compare all values to decide ?
 def get_role(approval):
-    payer_account_id = account.get_account_id_from_bech32(approval.address)
-    payee_account_id = account.get_account_id_from_bech32(approval.biller_address)
-
-    payer_command = fppa_storage.get_account_command_by_id(
-        payer_account_id, approval.funds_pull_pre_approval_id
+    """
+    return PAYER if:
+    1. no commands was found in DB and incoming address is 'mine'
+    2. if command in DB belongs to PAYER (and no command found for PAYEE in DB)
+    3. if 2 commands was found (one for each role) and PAYER command's status in DB equals to incoming status
+    return PAYEE if:
+    1. if command in DB belongs to PAYEE (and no command found for PAYER in DB)
+    2. if 2 commands was found (one for each role) and PAYEE command's status in DB equals to incoming status
+    """
+    payer_command = get_command_from_bech32(
+        approval.address, approval.funds_pull_pre_approval_id
     )
-    payee_command = fppa_storage.get_account_command_by_id(
-        payee_account_id, approval.funds_pull_pre_approval_id
+
+    payee_command = get_command_from_bech32(
+        approval.biller_address, approval.funds_pull_pre_approval_id
     )
 
-    # If no record was found in DB then the incoming command is completely new
-    # and therefore we can assume that we received it as PAYER
-    address, _ = identifier.decode_account(approval.address, _hrp())
-    if payer_command is None and payee_command is None:
-        if is_my_address(address):
-            return Role.PAYER
-        else:
-            raise FundsPullPreApprovalError()
-
-    if payer_command and payee_command is None:
+    if is_payer(payer_command, payee_command, approval):
         return Role.PAYER
-    if payer_command is None and payee_command:
+    if is_payee(payer_command, payee_command, approval):
         return Role.PAYEE
-    if payer_command and payee_command:
-        # the side who sending the command is saving his update before he send it,
-        # therefore we can assume that the side which is not have the updated status is the active role
-        # TODO if approval.status == 'pending' compare all values to decide ?
-        if payer_command.status == approval.status:
-            return Role.PAYEE
-        if payee_command.status == approval.status:
-            return Role.PAYER
+    raise FundsPullPreApprovalError()
 
-        raise FundsPullPreApprovalError()
+
+def is_payer(payer_command, payee_command, approval):
+    address, _ = identifier.decode_account(approval.address, _hrp())
+
+    return (
+        (payer_command is None and payee_command is None and is_my_address(address))
+        or (payer_command and payee_command is None)
+        or (payer_command and payee_command and payer_command.status == approval.status)
+    )
+
+
+def is_payee(payer_command, payee_command, approval):
+    return (payer_command is None and payee_command) or (
+        payer_command and payee_command and payee_command.status == approval.status
+    )
 
 
 def is_my_address(address):
