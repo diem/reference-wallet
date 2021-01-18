@@ -9,14 +9,15 @@ from diem.offchain import FundPullPreApprovalStatus
 from wallet.services import account
 
 # noinspection PyUnresolvedReferences
+from wallet.storage import get_account_id_from_subaddr
 from wallet.storage.funds_pull_pre_approval_command import (
     models,
     get_account_commands,
-    FundsPullPreApprovalCommandNotFound,
     commit_command,
     get_commands_by_sent_status,
     get_command_by_id,
     update_command,
+    get_account_command_by_id,
 )
 
 logger = logging.getLogger(__name__)
@@ -274,3 +275,18 @@ def preapproval_model_to_command(
         my_actor_address=my_address,
         funds_pull_pre_approval=funds_pull_pre_approval,
     )
+
+
+def get_command_from_bech32(
+    address_bech32: str, funds_pull_pre_approval_id: str
+) -> Optional[models.FundsPullPreApprovalCommand]:
+    address, sub_address = identifier.decode_account(
+        address_bech32, context.get().config.diem_address_hrp()
+    )
+    if address.to_hex() == context.get().config.vasp_address:
+        account_id = get_account_id_from_subaddr(sub_address.hex())
+        command = get_account_command_by_id(account_id, funds_pull_pre_approval_id)
+        if command:
+            return preapproval_model_to_command(command, address_bech32)
+
+    return None
