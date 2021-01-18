@@ -208,7 +208,7 @@ def get_role(approval):
     # and therefore we can assume that we received it as PAYER
     address, _ = identifier.decode_account(approval.address, _hrp())
     if payer_command is None and payee_command is None:
-        if address.to_hex() == context.get().config.vasp_address:
+        if is_my_address(address):
             return Role.PAYER
         else:
             raise FundsPullPreApprovalError()
@@ -227,6 +227,10 @@ def get_role(approval):
             return Role.PAYER
 
         raise FundsPullPreApprovalError()
+
+
+def is_my_address(address):
+    return address.to_hex() == _vasp_address()
 
 
 def validate_status(approval, command_in_db):
@@ -433,6 +437,10 @@ def _compliance_private_key() -> Ed25519PrivateKey:
 
 def _hrp() -> str:
     return context.get().config.diem_address_hrp()
+
+
+def _vasp_address():
+    return context.get().config.vasp_address
 
 
 def get_payment_command_json(transaction_id: int) -> Optional[Dict]:
