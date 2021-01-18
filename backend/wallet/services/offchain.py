@@ -3,6 +3,7 @@
 import json
 import logging
 import typing
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Tuple, Callable, List, Dict
 
@@ -192,6 +193,215 @@ def handle_fund_pull_pre_approval_command(command):
                 raise FundsPullPreApprovalCommandNotFound()
         if approval.status == FundPullPreApprovalStatus.pending:
             raise FundsPullPreApprovalInvalidStatus()
+
+
+def all_combinations():
+    statuses = [
+        FundPullPreApprovalStatus.pending,
+        FundPullPreApprovalStatus.valid,
+        FundPullPreApprovalStatus.rejected,
+        FundPullPreApprovalStatus.closed,
+    ]
+
+    for incoming_status in statuses:
+        for is_payee_address_mine in [True, False]:
+            for is_payer_address_mine in [True, False]:
+                for existing_status_as_payee in statuses + [None]:
+                    for existing_status_as_payer in statuses + [None]:
+                        yield Combination(
+                            incoming_status,
+                            is_payee_address_mine,
+                            is_payer_address_mine,
+                            existing_status_as_payee,
+                            existing_status_as_payer,
+                        )
+
+
+def payee_and_payer_not_mine():
+    print("payee_and_payer_not_mine:")
+    list_ = [
+        combination
+        for combination in all_combinations()
+        if not combination.is_payee_address_mine
+        and not combination.is_payer_address_mine
+    ]
+    # for comb in list_:
+    # print(comb)
+    return list_
+
+
+def invalid_states():
+    print("invalid_states")
+    list_ = [
+        combination
+        for combination in all_combinations()
+        if (
+            not combination.is_payee_address_mine
+            and combination.existing_status_as_payee is not None
+        )
+        or (
+            not combination.is_payer_address_mine
+            and combination.existing_status_as_payer is not None
+        )
+    ]
+    # for comb in list_:
+    # print(comb)
+    return list_
+
+
+def incoming_status_not_pending_and_no_records():
+    print("incoming_status_not_pending_and_no_records")
+    list_ = [
+        combination
+        for combination in all_combinations()
+        if combination.incoming_status is not FundPullPreApprovalStatus.pending
+        and combination.existing_status_as_payer is None
+        and combination.existing_status_as_payee is None
+    ]
+    # for comb in list_:
+    # print(comb)
+    return list_
+
+
+def incoming_pending_for_payee():
+    # if incoming status is 'pending', the payer address is not mine
+    # and the payee address is mine all combinations are invalid
+    print("incoming_pending_for_payee")
+    list_ = [
+        combination
+        for combination in all_combinations()
+        if not combination.is_payer_address_mine
+        and combination.is_payee_address_mine
+        and combination.incoming_status is FundPullPreApprovalStatus.pending
+    ]
+    # for comb in list_:
+    # print(comb)
+    return list_
+
+
+def valid_incoming_payee_not_pending():
+    print("valid_incoming_payee_not_pending")
+    list_ = [
+        combination
+        for combination in all_combinations()
+        if combination.incoming_status is FundPullPreApprovalStatus.valid
+        and combination.existing_status_as_payee
+        is not FundPullPreApprovalStatus.pending
+    ]
+    # for comb in list_:
+    # print(comb)
+    return list_
+
+
+def rejected_incoming_payee_not_pending():
+    print("rejected_incoming_payee_not_pending")
+    list_ = [
+        combination
+        for combination in all_combinations()
+        if combination.incoming_status is FundPullPreApprovalStatus.rejected
+        and combination.existing_status_as_payee
+        is not FundPullPreApprovalStatus.pending
+    ]
+    # for comb in list_:
+    # print(comb)
+    return list_
+
+
+def make_error_combinations(combinations) -> dict:
+    return {combination: None for combination in combinations}
+
+
+@dataclass(frozen=True)
+class Combination:
+    incoming_status: str  # 4
+    is_payee_address_mine: bool  # 2
+    is_payer_address_mine: bool  # 2
+    existing_status_as_payee: Optional[str]  # 5
+    existing_status_as_payer: Optional[str]  # 5
+
+
+def get_role_2():
+    Incoming = FundPullPreApprovalStatus
+    Existing = FundPullPreApprovalStatus
+    explicit_combinations = {
+        Combination(Incoming.pending, False, True, None, None): Role.PAYER,
+        Combination(Incoming.pending, False, True, None, Existing.pending): Role.PAYER,
+        Combination(Incoming.closed, False, True, None, Existing.pending): Role.PAYER,
+        Combination(Incoming.closed, False, True, None, Existing.valid): Role.PAYER,
+        # Combination(
+        #     Incoming.pending, False, True, None, None
+        # ): Role.PAYER,  # new request to payer
+        # Combination(Incoming.pending, True, False, None, None): None,
+        # Combination(Incoming.pending, True, True, None, None): None,
+        # Combination(Incoming.valid, False, False, None, None): None,
+        # Combination(Incoming.valid, False, True, None, None): None,
+        # Combination(
+        #     Incoming.valid, True, False, None, None
+        # ): None,  # when creating QR we save in DB
+        # Combination(Incoming.valid, True, True, None, None): None,
+        # Combination(Incoming.rejected, False, False, None, None): None,
+        # Combination(Incoming.rejected, False, True, None, None): None,
+        # Combination(Incoming.rejected, True, False, None, None): None,
+        # Combination(Incoming.rejected, True, True, None, None): None,
+        # Combination(Incoming.closed, False, False, None, None): None,
+        # Combination(Incoming.closed, False, True, None, None): None,
+        # Combination(Incoming.closed, True, False, None, None): None,
+        # Combination(Incoming.closed, True, True, None, None): None,
+        # ##################################################################
+        # Combination(Incoming.pending, False, False, Existing.pending, None): None,
+        # Combination(Incoming.pending, False, True, Existing.pending, None): None,
+        # Combination(
+        #     Incoming.pending, True, False, Existing.pending, None
+        # ): None,  # payee can't receive update for request
+        # Combination(Incoming.pending, True, True, Existing.pending, None): None,
+        # Combination(Incoming.valid, False, False, Existing.pending, None): None,
+        # Combination(Incoming.valid, False, True, Existing.pending, None): None,
+        # Combination(Incoming.valid, True, False, Existing.pending, None): Role.PAYEE,
+        # Combination(Incoming.valid, True, True, Existing.pending, None): None,
+        # Combination(Incoming.rejected, False, False, Existing.pending, None): None,
+        # Combination(Incoming.rejected, False, True, Existing.pending, None): None,
+        # Combination(Incoming.rejected, True, False, Existing.pending, None): Role.PAYEE,
+        # Combination(Incoming.rejected, True, True, Existing.pending, None): None,
+        # Combination(Incoming.closed, False, False, Existing.pending, None): None,
+        # Combination(Incoming.closed, False, True, Existing.pending, None): None,
+        # Combination(Incoming.closed, True, False, Existing.pending, None): Role.PAYEE,
+        # Combination(Incoming.closed, True, True, Existing.pending, None): None,
+        # ##################################################################
+        # Combination(Incoming.pending, False, False, Existing.valid, None): None,
+        # Combination(Incoming.pending, False, True, Existing.valid, None): 0,
+        # Combination(Incoming.pending, True, False, Existing.valid, None): 0,
+        # Combination(Incoming.pending, True, True, Existing.valid, None): 0,
+        # Combination(Incoming.valid, False, False, Existing.valid, None): None,
+        # Combination(Incoming.valid, False, True, Existing.valid, None): 0,
+        # Combination(Incoming.valid, True, False, Existing.valid, None): 0,
+        # Combination(Incoming.valid, True, True, Existing.valid, None): 0,
+        # Combination(Incoming.rejected, False, False, Existing.valid, None): None,
+        # Combination(Incoming.rejected, False, True, Existing.valid, None): 0,
+        # Combination(Incoming.rejected, True, False, Existing.valid, None): 0,
+        # Combination(Incoming.rejected, True, True, Existing.valid, None): 0,
+        # Combination(Incoming.closed, False, False, Existing.valid, None): None,
+        # Combination(Incoming.closed, False, True, Existing.valid, None): 0,
+        # Combination(Incoming.closed, True, False, Existing.valid, None): 0,
+        # Combination(Incoming.closed, True, True, Existing.valid, None): 0,
+    }
+
+    # total combinations - 400
+    explicit_combinations.update(make_error_combinations(payee_and_payer_not_mine()))
+    # 300
+    explicit_combinations.update(make_error_combinations(invalid_states()))
+    # 140
+    explicit_combinations.update(
+        make_error_combinations(incoming_status_not_pending_and_no_records())
+    )
+    # 131
+    explicit_combinations.update(make_error_combinations(incoming_pending_for_payee()))
+    # 126
+    explicit_combinations.update(make_error_combinations(valid_incoming_payee_not_pending()))
+    # 100
+    explicit_combinations.update(make_error_combinations(rejected_incoming_payee_not_pending()))
+    # 74
+
+    return explicit_combinations
 
 
 # If no record was found in DB then the incoming command is completely new

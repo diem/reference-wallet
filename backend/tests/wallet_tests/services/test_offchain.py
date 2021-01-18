@@ -15,6 +15,8 @@ from wallet.services.offchain import (
     process_inbound_command,
     _txn_payment_command,
     _user_kyc_data,
+    get_role_2,
+    all_combinations,
 )
 from wallet.services.transaction import (
     get_transaction_by_reference_id,
@@ -173,3 +175,13 @@ def jsonrpc_txn_sample(*args):
         transaction=jsonrpc.TransactionData(sequence_number=5),
         hash="3232-hash",
     )
+
+
+def test_role_calculation():
+    actual_combinations = get_role_2()
+    expected_combinations = set(all_combinations())
+
+    for com in actual_combinations:
+        expected_combinations.remove(com)
+
+    assert len(expected_combinations) == 0, expected_combinations
