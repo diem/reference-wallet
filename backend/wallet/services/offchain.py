@@ -38,6 +38,8 @@ from wallet.storage.funds_pull_pre_approval_command import (
     get_account_command_by_id,
 )
 
+from wallet.storage import funds_pull_pre_approval_command as fppa_storage
+
 from ..storage import (
     lock_for_update,
     get_account_id_from_subaddr,
@@ -214,21 +216,13 @@ def all_combinations():
 
 
 def payee_and_payer_not_mine():
-    print("payee_and_payer_not_mine:")
-    list_ = [
-        combination
-        for combination in all_combinations()
-        if not combination.is_payee_address_mine
-        and not combination.is_payer_address_mine
+    return [
+        combination for combination in all_combinations() if both_not_mine(combination)
     ]
-    # for comb in list_:
-    # print(comb)
-    return list_
 
 
 def invalid_states():
-    print("invalid_states")
-    list_ = [
+    return [
         combination
         for combination in all_combinations()
         if (
@@ -240,67 +234,118 @@ def invalid_states():
             and combination.existing_status_as_payer is not None
         )
     ]
-    # for comb in list_:
-    # print(comb)
-    return list_
 
 
 def incoming_status_not_pending_and_no_records():
-    print("incoming_status_not_pending_and_no_records")
-    list_ = [
+    return [
         combination
         for combination in all_combinations()
-        if combination.incoming_status is not FundPullPreApprovalStatus.pending
-        and combination.existing_status_as_payer is None
-        and combination.existing_status_as_payee is None
+        if incoming_status_is_not_pending(combination) and both_not_mine(combination)
     ]
-    # for comb in list_:
-    # print(comb)
-    return list_
+
+
+def both_not_mine(combination):
+    return (
+        combination.existing_status_as_payer is None
+        and combination.existing_status_as_payee is None
+    )
+
+
+def incoming_status_is_not_pending(combination):
+    return combination.incoming_status is not FundPullPreApprovalStatus.pending
 
 
 def incoming_pending_for_payee():
     # if incoming status is 'pending', the payer address is not mine
     # and the payee address is mine all combinations are invalid
-    print("incoming_pending_for_payee")
-    list_ = [
+    return [
         combination
         for combination in all_combinations()
         if not combination.is_payer_address_mine
         and combination.is_payee_address_mine
-        and combination.incoming_status is FundPullPreApprovalStatus.pending
+        and incoming_status_is_pending(combination)
     ]
-    # for comb in list_:
-    # print(comb)
-    return list_
 
 
-def valid_incoming_payee_not_pending():
-    print("valid_incoming_payee_not_pending")
-    list_ = [
+def incoming_valid_or_rejected_but_payee_not_pending():
+    return [
         combination
         for combination in all_combinations()
-        if combination.incoming_status is FundPullPreApprovalStatus.valid
-        and combination.existing_status_as_payee
-        is not FundPullPreApprovalStatus.pending
+        if incoming_status_is_valid_or_rejected(combination)
+        and payee_status_is_not_pending(combination)
     ]
-    # for comb in list_:
-    # print(comb)
-    return list_
 
 
-def rejected_incoming_payee_not_pending():
-    print("rejected_incoming_payee_not_pending")
-    list_ = [
+# both role are mine, incoming status is 'valid' or 'rejected',
+# payee must be 'pending' and payer must be equals to incoming status
+def incoming_valid_or_rejected_my_payee_not_pending_and_my_payer_not_equal_to_incoming():
+    return [
         combination
         for combination in all_combinations()
-        if combination.incoming_status is FundPullPreApprovalStatus.rejected
-        and combination.existing_status_as_payee
-        is not FundPullPreApprovalStatus.pending
+        if both_mine(combination)
+        and incoming_status_is_valid_or_rejected(combination)
+        and payee_status_is_pending(combination)
+        and payer_status_equal_incoming_status(combination)
     ]
-    # for comb in list_:
-    # print(comb)
-    return list_
+
+
+def payer_status_equal_incoming_status(combination):
+    return combination.existing_status_as_payer != combination.incoming_status
+
+
+def incoming_status_is_valid_or_rejected(combination):
+    return combination.incoming_status in [
+        FundPullPreApprovalStatus.valid,
+        FundPullPreApprovalStatus.rejected,
+    ]
+
+
+# if both mine and incoming is pending payee must be pending and payer must be pending or None
+# conditions:
+# 1. both mine
+# 2. incoming status is 'pending'
+# 3. payee status is NOT 'pending' or it is 'pending' but payer is not
+def incoming_pending_my_payee_not_pending_my_payer_pending_or_none():
+    return [
+        combination
+        for combination in all_combinations()
+        if both_mine(combination)
+        and incoming_status_is_pending(combination)
+        and (
+            payee_status_is_not_pending(combination)
+            or (
+                payee_status_is_pending(combination)
+                and (
+                    payer_status_is_not_pending(combination)
+                    or payer_status_is_not_none(combination)
+                )
+            )
+        )
+    ]
+
+
+def payer_status_is_not_none(combination):
+    return combination.existing_status_as_payer is not None
+
+
+def payer_status_is_not_pending(combination):
+    return combination.existing_status_as_payer is not FundPullPreApprovalStatus.pending
+
+
+def payee_status_is_not_pending(combination):
+    return combination.existing_status_as_payee is not FundPullPreApprovalStatus.pending
+
+
+def payee_status_is_pending(combination):
+    return combination.existing_status_as_payee is FundPullPreApprovalStatus.pending
+
+
+def incoming_status_is_pending(combination):
+    return combination.incoming_status is FundPullPreApprovalStatus.pending
+
+
+def both_mine(combination):
+    return combination.is_payer_address_mine and combination.is_payee_address_mine
 
 
 def make_error_combinations(combinations) -> dict:
@@ -320,65 +365,77 @@ def get_role_2():
     Incoming = FundPullPreApprovalStatus
     Existing = FundPullPreApprovalStatus
     explicit_combinations = {
-        Combination(Incoming.pending, False, True, None, None): Role.PAYER,
-        Combination(Incoming.pending, False, True, None, Existing.pending): Role.PAYER,
-        Combination(Incoming.closed, False, True, None, Existing.pending): Role.PAYER,
-        Combination(Incoming.closed, False, True, None, Existing.valid): Role.PAYER,
-        # Combination(
-        #     Incoming.pending, False, True, None, None
-        # ): Role.PAYER,  # new request to payer
-        # Combination(Incoming.pending, True, False, None, None): None,
-        # Combination(Incoming.pending, True, True, None, None): None,
-        # Combination(Incoming.valid, False, False, None, None): None,
-        # Combination(Incoming.valid, False, True, None, None): None,
-        # Combination(
-        #     Incoming.valid, True, False, None, None
-        # ): None,  # when creating QR we save in DB
-        # Combination(Incoming.valid, True, True, None, None): None,
-        # Combination(Incoming.rejected, False, False, None, None): None,
-        # Combination(Incoming.rejected, False, True, None, None): None,
-        # Combination(Incoming.rejected, True, False, None, None): None,
-        # Combination(Incoming.rejected, True, True, None, None): None,
-        # Combination(Incoming.closed, False, False, None, None): None,
-        # Combination(Incoming.closed, False, True, None, None): None,
-        # Combination(Incoming.closed, True, False, None, None): None,
-        # Combination(Incoming.closed, True, True, None, None): None,
-        # ##################################################################
-        # Combination(Incoming.pending, False, False, Existing.pending, None): None,
-        # Combination(Incoming.pending, False, True, Existing.pending, None): None,
-        # Combination(
-        #     Incoming.pending, True, False, Existing.pending, None
-        # ): None,  # payee can't receive update for request
-        # Combination(Incoming.pending, True, True, Existing.pending, None): None,
-        # Combination(Incoming.valid, False, False, Existing.pending, None): None,
-        # Combination(Incoming.valid, False, True, Existing.pending, None): None,
-        # Combination(Incoming.valid, True, False, Existing.pending, None): Role.PAYEE,
-        # Combination(Incoming.valid, True, True, Existing.pending, None): None,
-        # Combination(Incoming.rejected, False, False, Existing.pending, None): None,
-        # Combination(Incoming.rejected, False, True, Existing.pending, None): None,
-        # Combination(Incoming.rejected, True, False, Existing.pending, None): Role.PAYEE,
-        # Combination(Incoming.rejected, True, True, Existing.pending, None): None,
-        # Combination(Incoming.closed, False, False, Existing.pending, None): None,
-        # Combination(Incoming.closed, False, True, Existing.pending, None): None,
-        # Combination(Incoming.closed, True, False, Existing.pending, None): Role.PAYEE,
-        # Combination(Incoming.closed, True, True, Existing.pending, None): None,
-        # ##################################################################
-        # Combination(Incoming.pending, False, False, Existing.valid, None): None,
-        # Combination(Incoming.pending, False, True, Existing.valid, None): 0,
-        # Combination(Incoming.pending, True, False, Existing.valid, None): 0,
-        # Combination(Incoming.pending, True, True, Existing.valid, None): 0,
-        # Combination(Incoming.valid, False, False, Existing.valid, None): None,
-        # Combination(Incoming.valid, False, True, Existing.valid, None): 0,
-        # Combination(Incoming.valid, True, False, Existing.valid, None): 0,
-        # Combination(Incoming.valid, True, True, Existing.valid, None): 0,
-        # Combination(Incoming.rejected, False, False, Existing.valid, None): None,
-        # Combination(Incoming.rejected, False, True, Existing.valid, None): 0,
-        # Combination(Incoming.rejected, True, False, Existing.valid, None): 0,
-        # Combination(Incoming.rejected, True, True, Existing.valid, None): 0,
-        # Combination(Incoming.closed, False, False, Existing.valid, None): None,
-        # Combination(Incoming.closed, False, True, Existing.valid, None): 0,
-        # Combination(Incoming.closed, True, False, Existing.valid, None): 0,
+        # Combination(Incoming.pending, False, True, None, None): Role.PAYER,  # new request from unknown payee
+        # ###############################################################################
+        #
+        # ###############################################################################
+        # Combination(Incoming.pending, False, True, None, Existing.pending): Role.PAYER,  # update request from unknown payee
+        # ###############################################################################
+        #
+        # ###############################################################################
+        # Combination(Incoming.closed, False, True, None, Existing.pending): Role.PAYER,  # close 'pending' request by unknown payee
+        # ###############################################################################
+        # Combination(Incoming.closed, True, True, None, Existing.pending): None,  # if payee known he must have record
+        # Combination(Incoming.closed, True, True, Existing.closed, Existing.pending): Role.PAYER,  # close request by payee
+        # Combination(Incoming.closed, True, True, Existing.pending, Existing.closed): Role.PAYEE,  # close request by payer
+        # Combination(Incoming.closed, True, True, Existing.closed, Existing.valid): Role.PAYER,  # close request by payee
+        # Combination(Incoming.closed, True, True, Existing.valid, Existing.closed): Role.PAYEE,  # close request by payer
+        # Combination(Incoming.closed, True, True, Existing.closed, Existing.rejected): None,  # can't close rejected request
+        # Combination(Incoming.closed, True, True, Existing.rejected, Existing.closed): None,  # can't close rejected request
+        # ###############################################################################
+        # Combination(Incoming.closed, False, True, None, Existing.valid): Role.PAYER,  # close 'valid' request by unknown payee
+        # ###############################################################################
+        # Combination(Incoming.valid, True, False, Existing.pending, None): Role.PAYEE,  # approve request by unknown payer
+        # Combination(Incoming.rejected, True, False, Existing.pending, None): Role.PAYEE,  # reject request by unknown payer
+        # ###############################################################################
+        # # 57
+        # ###############################################################################
+        # Combination(Incoming.valid, True, True, Existing.pending, Existing.valid): Role.PAYEE,
+        # Combination(Incoming.rejected, True, True, Existing.pending, Existing.rejected): Role.PAYEE,
+        # # ###############################################################################
+        # # # 47
+        # # ###############################################################################
+        Combination(
+            Incoming.pending, True, True, Existing.pending, None
+        ): Role.PAYER,  # new request from known payee
+        Combination(
+            Incoming.pending, True, True, Existing.pending, Existing.pending
+        ): Role.PAYER,
+        # update request from known payee
+        # Combination(Incoming.pending, False, True, None, Existing.valid): 0,
+        # Combination(Incoming.pending, False, True, None, Existing.closed): 0,
+        # Combination(Incoming.pending, False, True, None, Existing.rejected): 0,
+        #
+        #
+        # Combination(Incoming.closed, True, True, None, Existing.rejected): 0,
+        # Combination(Incoming.closed, True, True, None, Existing.valid): 0,
+        # Combination(Incoming.closed, True, True, None, Existing.closed): 0,
+        #
+        # Combination(Incoming.closed, True, True, Existing.pending, Existing.rejected): 0,
+        # Combination(Incoming.closed, True, True, Existing.pending, Existing.pending): 0,
+        # Combination(Incoming.closed, True, True, Existing.pending, None): 0,
+        # Combination(Incoming.closed, True, True, Existing.pending, Existing.valid): 0,
+        #
+        # Combination(Incoming.closed, True, True, Existing.valid, Existing.valid): 0,
+        # Combination(Incoming.closed, True, True, Existing.valid, Existing.pending): 0,
         # Combination(Incoming.closed, True, True, Existing.valid, None): 0,
+        # Combination(Incoming.closed, True, True, Existing.valid, Existing.rejected): 0,
+        #
+        # Combination(Incoming.closed, True, True, Existing.rejected, Existing.valid): 0,
+        # Combination(Incoming.closed, True, True, Existing.rejected, None): 0,
+        # Combination(Incoming.closed, True, True, Existing.rejected, Existing.rejected): 0,
+        # Combination(Incoming.closed, True, True, Existing.rejected, Existing.pending): 0,
+        #
+        # Combination(Incoming.closed, True, True, Existing.closed, Existing.closed): 0,
+        # Combination(Incoming.closed, True, True, Existing.closed, None): 0,
+        #
+        # Combination(Incoming.closed, True, False, Existing.closed, None): 0,
+        # Combination(Incoming.closed, True, False, Existing.rejected, None): 0,
+        # Combination(Incoming.closed, True, False, Existing.pending, None): 0,
+        # Combination(Incoming.closed, True, False, Existing.valid, None): 0,
+        #
+        # Combination(Incoming.closed, False, True, None, Existing.rejected): 0,
+        # Combination(Incoming.closed, False, True, None, Existing.closed): 0,
     }
 
     # total combinations - 400
@@ -392,11 +449,20 @@ def get_role_2():
     # 131
     explicit_combinations.update(make_error_combinations(incoming_pending_for_payee()))
     # 126
-    explicit_combinations.update(make_error_combinations(valid_incoming_payee_not_pending()))
+    explicit_combinations.update(
+        make_error_combinations(incoming_valid_or_rejected_but_payee_not_pending())
+    )
     # 100
-    explicit_combinations.update(make_error_combinations(rejected_incoming_payee_not_pending()))
-    # 74
-
+    explicit_combinations.update(
+        make_error_combinations(
+            incoming_valid_or_rejected_my_payee_not_pending_and_my_payer_not_equal_to_incoming()
+        )
+    )
+    explicit_combinations.update(
+        make_error_combinations(
+            incoming_pending_my_payee_not_pending_my_payer_pending_or_none()
+        )
+    )
     return explicit_combinations
 
 
