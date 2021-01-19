@@ -139,7 +139,10 @@ class ReferenceWalletProxyFPPA:
     def get_all_preapprovals(self) -> List[FundsPullPreApproval]:
         r = self._request_authorized("GET", f"offchain/funds_pull_pre_approvals")
         preapprovals = r.json()
-        return [FundsPullPreApproval.from_dict(x) for x in preapprovals["funds_pull_pre_approvals"]]
+        return [
+            FundsPullPreApproval.from_dict(x)
+            for x in preapprovals["funds_pull_pre_approvals"]
+        ]
 
     def request_preapproval_from_another(
         self,

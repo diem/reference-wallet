@@ -3,9 +3,27 @@
 import time
 
 from ..vasp_proxy import VaspProxy
-from ..models_fppa import FundPullPreApprovalScope, FundPullPreApprovalType, FundPullPreApprovalStatus
+from ..models_fppa import (
+    FundsPullPreApproval,
+    FundPullPreApprovalScope,
+    FundPullPreApprovalType,
+    FundPullPreApprovalStatus,
+)
 
 ONE_YEAR_SECONDS = 356 * 24 * 60 * 60
+
+
+def get_and_assert_one_preapproval(
+    vasp: VaspProxy, fppa_id: str, status: FundPullPreApprovalStatus
+) -> FundsPullPreApproval:
+    preapprovals = vasp.get_all_funds_pull_preapprovals()
+    assert len(preapprovals) == 1
+
+    preapproval = preapprovals[0]
+    assert preapproval.funds_pull_pre_approval_id == fppa_id
+    assert preapproval.status == status
+
+    return preapproval
 
 
 def test_receive_request_and_approve(validator, vasp_proxy: VaspProxy):
@@ -21,14 +39,10 @@ def test_receive_request_and_approve(validator, vasp_proxy: VaspProxy):
         ),
     )
 
-    validator_preapprovals = validator.get_all_funds_pull_preapprovals()
-    assert len(validator_preapprovals) == 1
-    assert validator_preapprovals[0].funds_pull_pre_approval_id == actual_preapproval_id
-    assert validator_preapprovals[0].status == FundPullPreApprovalStatus.pending
-
-    time.sleep(2)
-
-    vasp_preapprovals = vasp_proxy.get_all_funds_pull_preapprovals()
-    assert len(vasp_preapprovals) == 1
-    assert vasp_preapprovals[0] == validator_preapprovals[0]
-
+    validator_preapproval = get_and_assert_one_preapproval(
+        validator, actual_preapproval_id, FundPullPreApprovalStatus.pending
+    )
+    vasp_preapproval = get_and_assert_one_preapproval(
+        vasp_proxy, actual_preapproval_id, FundPullPreApprovalStatus.pending
+    )
+    assert vasp_preapproval == validator_preapproval
