@@ -217,9 +217,7 @@ def all_combinations():
 
 def payee_and_payer_not_mine():
     return [
-        combination
-        for combination in all_combinations()
-        if both_not_mine(combination)
+        combination for combination in all_combinations() if both_not_mine(combination)
     ]
 
 
@@ -323,7 +321,9 @@ def incoming_closed_both_mine_one_must_be_closed_already():
 
 
 def both_not_mine(combination):
-    return not combination.is_payee_address_mine and not combination.is_payer_address_mine
+    return (
+        not combination.is_payee_address_mine and not combination.is_payer_address_mine
+    )
 
 
 def both_no_records(combination):
