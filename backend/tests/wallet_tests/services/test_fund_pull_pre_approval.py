@@ -22,7 +22,9 @@ from wallet.services.fund_pull_pre_approval import (
     FundsPullPreApprovalError,
     close,
     reject,
-    FundsPullPreApprovalInvalidStatus, get_role_2, all_combinations,
+    get_combinations,
+    all_combinations,
+    get_command_from_bech32,
 )
 from wallet.services.offchain import (
     process_inbound_command,
@@ -32,7 +34,6 @@ from wallet.storage import (
     User,
     Account,
     get_command_by_id,
-    FundsPullPreApprovalCommandNotFound,
 )
 from wallet.types import RegistrationStatus
 
@@ -1246,82 +1247,56 @@ def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_e
         process_inbound_command(address, cmd)
 
 
-# def test_process_inbound_command_as_both_pending_by_payee_approved_by_payer(
-#     mock_method,
-# ):
-#     address_bech32 = generate_my_address()
-#     biller_address_bech32 = generate_my_address()
-#
-#     # flow start with payee - payee generate new command with 'pending' status, save it to the DB and send
-#     OneFundsPullPreApproval.run(
-#         db_session=db_session,
-#         address=address_bech32,
-#         biller_address=biller_address_bech32,
-#         funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-#         status=FundPullPreApprovalStatus.pending,
-#     )
-#     cmd = generate_funds_pull_pre_approval_command(
-#         address=address_bech32,
-#         biller_address=biller_address_bech32,
-#         funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-#         status=FundPullPreApprovalStatus.pending,
-#     )
-#     # first call - payee send new request to payer
-#     mock_method(
-#         context.get().offchain_client,
-#         "process_inbound_request",
-#         will_return=cmd,
-#     )
-#
-#     commands = get_commands_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
-#
-#     assert len(commands) == 2
-#
-#     address, sub_address = identifier.decode_account(
-#         address_bech32, context.get().config.diem_address_hrp()
-#     )
-#     biller_address, biller_sub_address = identifier.decode_account(
-#         biller_address_bech32, context.get().config.diem_address_hrp()
-#     )
-#     payer_account_id = get_account_id_from_subaddr(sub_address.hex())
-#     payee_account_id = get_account_id_from_subaddr(biller_sub_address.hex())
-#
-#     payee_command_in_db = get_account_command_by_id(
-#         payee_account_id, FUNDS_PULL_PRE_APPROVAL_ID
-#     )
-#     payer_command_in_db = get_account_command_by_id(
-#         payer_account_id, FUNDS_PULL_PRE_APPROVAL_ID
-#     )
-#
-#     assert payee_command_in_db
-#     assert payee_command_in_db.status == FundPullPreApprovalStatus.pending
-#     assert payer_command_in_db
-#     assert payer_command_in_db.status == FundPullPreApprovalStatus.pending
-#
-#     # second call - payer send approved request to payee
-#     cmd2 = generate_funds_pull_pre_approval_command(
-#         address=address_bech32,
-#         biller_address=biller_address_bech32,
-#         funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-#         status=FundPullPreApprovalStatus.valid,
-#     )
-#     mock_method(
-#         context.get().offchain_client,
-#         "process_inbound_request",
-#         will_return=cmd2,
-#     )
+def test_process_inbound_command_as_both__new_request(mock_method):
+    payer_user = generate_mock_user(user_name="payer_user")
+    payer_bech32 = generate_my_address(payer_user)
+    payee_user = generate_mock_user(user_name="payee_user")
+    payee_bech32 = generate_my_address(payee_user)
+
+    # payee generate command in DB before sending
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        address=payer_bech32,
+        biller_address=payee_bech32,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.pending,
+        account_id=payee_user.account_id,
+        role=Role.PAYEE
+    )
+    cmd = generate_funds_pull_pre_approval_command(
+        address=payer_bech32,
+        biller_address=payee_bech32,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.pending,
+    )
+    mock_method(
+        context.get().offchain_client,
+        "process_inbound_request",
+        will_return=cmd,
+    )
+    code, resp = process_inbound_command(payee_bech32, cmd)
+    assert code == 200
+    assert resp
+    payer_command_in_db = get_command_from_bech32(
+        payer_bech32, FUNDS_PULL_PRE_APPROVAL_ID
+    )
+    assert payer_command_in_db
+    # command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
+    # assert command_in_db.address == payer_bech32
+    # assert command_in_db.biller_address == payee_bech32
+    # assert command_in_db.status == FundPullPreApprovalStatus.closed
 
 
-def generate_mock_user():
+def generate_mock_user(user_name="test_user"):
     user = User(
-        username="test_user",
+        username=user_name,
         registration_status=RegistrationStatus.Approved,
         selected_fiat_currency=FiatCurrency.USD,
         selected_language="en",
         password_salt="123",
         password_hash="deadbeef",
     )
-    user.account = Account(name="test_user")
+    user.account = Account(name=user_name)
     db_session.add(user)
     db_session.commit()
 
@@ -1398,10 +1373,15 @@ def generate_fund_pull_pre_approval_object(
 
 
 def test_role_calculation():
-    actual_combinations = get_role_2()
+    actual_combinations = get_combinations()
     expected_combinations = set(all_combinations())
 
     for com in actual_combinations:
         expected_combinations.remove(com)
 
-    assert len(expected_combinations) == 0, expected_combinations
+    assert len(expected_combinations) == 0, print_expected_combinations(expected_combinations)
+
+
+def print_expected_combinations(expected_combinations):
+    for comb in expected_combinations:
+        print(comb)

@@ -19,6 +19,7 @@ from wallet.services.fund_pull_pre_approval import (
     process_funds_pull_pre_approvals_requests,
     handle_fund_pull_pre_approval_command,
 )
+
 # noinspection PyUnresolvedReferences
 from wallet.storage.funds_pull_pre_approval_command import (
     get_account_commands,
