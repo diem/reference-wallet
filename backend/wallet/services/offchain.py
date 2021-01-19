@@ -220,7 +220,7 @@ def payee_and_payer_not_mine():
     return [
         combination
         for combination in all_combinations()
-        if both_no_records(combination)
+        if both_not_mine(combination)
     ]
 
 
@@ -321,6 +321,10 @@ def incoming_closed_both_mine_one_must_be_closed_already():
         and payer_status_is_not_closed(combination)
         and payee_status_is_not_closed(combination)
     ]
+
+
+def both_not_mine(combination):
+    return not combination.is_payee_address_mine and not combination.is_payer_address_mine
 
 
 def both_no_records(combination):
@@ -458,21 +462,15 @@ def get_role_2():
         Combination(Incoming.closed, False, True, None, Existing.closed): None,
     }
 
-    # total combinations - 400
     explicit_combinations.update(make_error_combinations(payee_and_payer_not_mine()))
-    # 300
     explicit_combinations.update(make_error_combinations(invalid_states()))
-    # 140
     explicit_combinations.update(
         make_error_combinations(incoming_status_not_pending_and_no_records())
     )
-    # 131
     explicit_combinations.update(make_error_combinations(incoming_pending_for_payee()))
-    # 126
     explicit_combinations.update(
         make_error_combinations(incoming_valid_or_rejected_but_payee_not_pending())
     )
-    # 100
     explicit_combinations.update(
         make_error_combinations(
             incoming_valid_or_rejected_my_payee_not_pending_and_my_payer_not_equal_to_incoming()
