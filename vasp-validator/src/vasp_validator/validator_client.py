@@ -147,6 +147,13 @@ class ValidatorClient(VaspProxy):
         )
 
     def get_all_funds_pull_preapprovals(self) -> List[FundsPullPreApproval]:
+        for i in range(RETRIES_COUNT):
+            preapprovals = self.wallet.funds_pull_preapproval.get_all_preapprovals()
+            if preapprovals:
+                return preapprovals
+
+            time.sleep(SECONDS_BETWEEN_RETRIES)
+
         return self.wallet.funds_pull_preapproval.get_all_preapprovals()
 
     def _create_approved_user(self, username, first_name, last_name, password):
