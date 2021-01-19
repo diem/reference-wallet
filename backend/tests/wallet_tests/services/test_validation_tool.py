@@ -53,7 +53,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
         assert db_fppa.account_id == user.account_id
         assert db_fppa.address == SOME_ADDRESS_BECH32
         assert db_fppa.description == SOME_DESCRIPTION
-        assert db_fppa.status == offchain.FundPullPreApprovalStatus.valid
+        assert db_fppa.status == offchain.FundPullPreApprovalStatus.pending
 
         assert db_fppa.funds_pull_pre_approval_type == expected_scope.type
         assert db_fppa.expiration_timestamp == expected_scope.expiration_timestamp
@@ -107,7 +107,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
         assert db_fppa.account_id == user.account_id
         assert db_fppa.address == SOME_ADDRESS_BECH32
         assert db_fppa.description is None
-        assert db_fppa.status == offchain.FundPullPreApprovalStatus.valid
+        assert db_fppa.status == offchain.FundPullPreApprovalStatus.pending
 
         assert db_fppa.funds_pull_pre_approval_type == expected_scope.type
         assert db_fppa.expiration_timestamp == expected_scope.expiration_timestamp
