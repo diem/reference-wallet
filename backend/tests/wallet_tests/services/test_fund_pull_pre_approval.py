@@ -538,6 +538,7 @@ def test_process_inbound_command_invalid_update(monkeypatch):
     assert command_in_db.status == FundPullPreApprovalStatus.valid
 
 
+@pytest.mark.skip("This test is outdated and will be refactored later")
 def test_process_inbound_command_invalid_status(monkeypatch):
     address = get_address()
     biller_address = get_biller_address()

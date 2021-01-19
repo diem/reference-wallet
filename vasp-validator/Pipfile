@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 diem-vasp-validator = {editable = true, path = "."}
+diem = {editable = true, git = "https://github.com/firstdag/client-sdk-python.git", ref = "dip-8"}
 flake8 = "*"
 black = "*"
 

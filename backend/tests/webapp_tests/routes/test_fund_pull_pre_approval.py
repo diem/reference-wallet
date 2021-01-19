@@ -1,6 +1,7 @@
 from typing import List
 
 import pytest
+from diem import offchain
 from diem.offchain import FundPullPreApprovalStatus
 from flask import Response
 from flask.testing import Client
@@ -18,62 +19,65 @@ ADDRESS_2 = "tdm1pztdjx2z8wp0q25jakqeklk0nxj2wmk2kg9whu8c3fdm9u"
 CURRENCY = "XUS"
 
 
-@pytest.fixture
-def mock_get_funds_pull_pre_approvals(monkeypatch):
-    def mock(account_id):
-        funds_pull_pre_approval_1 = models.FundsPullPreApprovalCommand(
-            account_id=1,
+def invent_preapproval(description):
+    return offchain.FundsPullPreApprovalCommand(
+        my_actor_address=ADDRESS,
+        funds_pull_pre_approval=offchain.FundPullPreApprovalObject(
+            funds_pull_pre_approval_id=f"{BILLER_ADDRESS}_123",
             address=ADDRESS,
             biller_address=BILLER_ADDRESS,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            funds_pull_pre_approval_type="consent",
-            expiration_timestamp=1234,
-            max_cumulative_unit="week",
-            max_cumulative_unit_value=1,
-            max_cumulative_amount=100,
-            max_cumulative_amount_currency=CURRENCY,
-            max_transaction_amount=10,
-            max_transaction_amount_currency=CURRENCY,
-            description="bla la la",
-            status=FundPullPreApprovalStatus.pending,
-        )
-
-        funds_pull_pre_approval_2 = models.FundsPullPreApprovalCommand(
-            account_id=2,
-            address=ADDRESS_2,
-            biller_address=BILLER_ADDRESS_2,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID_2,
-            funds_pull_pre_approval_type="consent",
-            expiration_timestamp=1234,
-            max_cumulative_unit="week",
-            max_cumulative_unit_value=1,
-            max_cumulative_amount=100,
-            max_cumulative_amount_currency=CURRENCY,
-            max_transaction_amount=10,
-            max_transaction_amount_currency=CURRENCY,
-            description="bla la la",
-            status=FundPullPreApprovalStatus.pending,
-        )
-
-        return [funds_pull_pre_approval_1, funds_pull_pre_approval_2]
-
-    monkeypatch.setattr(fppa_service, "get_funds_pull_pre_approvals", mock)
+            scope=offchain.FundPullPreApprovalScopeObject(
+                type=offchain.FundPullPreApprovalType.consent,
+                expiration_timestamp=123,
+                max_cumulative_amount=offchain.ScopedCumulativeAmountObject(
+                    unit=offchain.TimeUnit.month,
+                    value=1,
+                    max_amount=offchain.CurrencyObject(
+                        amount=111222333,
+                        currency="XUS",
+                    ),
+                ),
+                max_transaction_amount=offchain.CurrencyObject(
+                    amount=111222333,
+                    currency="XUS",
+                ),
+            ),
+            status=offchain.FundPullPreApprovalStatus.pending,
+            description=description,
+        ),
+    )
 
 
 class TestGetFundsPullPreApprovals:
     def test_get_funds_pull_pre_approvals(
-        self, authorized_client: Client, mock_get_funds_pull_pre_approvals
+        self, authorized_client: Client, mock_method
     ) -> None:
+        expected_len = 3
+        expected_preapprovals = [
+            invent_preapproval(str(i)) for i in range(expected_len)
+        ]
+        print(expected_preapprovals)
+        calls = mock_method(
+            fppa_service, "get_funds_pull_pre_approvals", expected_preapprovals
+        )
+
         rv: Response = authorized_client.get(
             "/offchain/funds_pull_pre_approvals",
         )
 
         assert rv.status_code == 200
         assert rv.get_data() is not None
+
+        assert len(calls) == 1
+        assert calls[0][0] == 1  # account_id
+
         funds_pull_pre_approvals = rv.get_json()["funds_pull_pre_approvals"]
         assert funds_pull_pre_approvals is not None
-        assert len(funds_pull_pre_approvals) == 2
-        assert funds_pull_pre_approvals[0]["biller_address"] == BILLER_ADDRESS
+        assert len(funds_pull_pre_approvals) == expected_len
+
+        for i in range(expected_len):
+            print(rv.get_json(), funds_pull_pre_approvals)
+            assert funds_pull_pre_approvals[i]["description"] == str(i)
 
 
 class TestUpdateFundPullPreApprovalStatus:
