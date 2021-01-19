@@ -302,7 +302,7 @@ class Combination:
     existing_status_as_payer: Optional[str]  # 5
 
 
-def get_role_2():
+def get_combinations():
     Incoming = FundPullPreApprovalStatus
     Existing = FundPullPreApprovalStatus
     explicit_combinations = {
@@ -386,7 +386,7 @@ def get_role(approval):
         else None,
     )
 
-    combinations = get_role_2()
+    combinations = get_combinations()
 
     role = combinations.get(combination)
 
@@ -488,35 +488,38 @@ def incoming_status_is_valid_or_rejected(combination):
     ]
 
 
-# if both mine and incoming is pending payee must be pending and payer must be pending or None
-# conditions:
-# 1. both mine
-# 2. incoming status is 'pending'
-# 3. payee status is NOT 'pending' or it is 'pending' but payer is not
+# if payer none or pending --> payee must be pending
+# if payee pending --> payer must be none or pending
 def incoming_pending_my_payee_not_pending_my_payer_pending_or_none():
+    """
+    'pending' commands only payee can send, therefore when both 'mine' and incoming status is 'pending' the payee
+    must had been save his command in the DB before sending. only 2 scenarios are valid in the payer side:
+    1. receiving completely new command and therefore no record in DB.
+    2. receiving update to existing command and therefore record with status 'pending' exist in DB
+    following this a number of states are define as invalid for incoming 'pending' status:
+    1. payee don't have record or record exist with status not 'pending'
+    2. payer have record with status not 'pending'
+    """
     return [
         combination
         for combination in all_combinations()
         if both_mine(combination)
-        and incoming_status_is_pending(combination)
         and (
-            payee_status_is_not_pending(combination)
-            or (
-                payee_status_is_pending(combination)
-                and (
-                    payer_status_is_not_pending(combination)
-                    or payer_status_is_not_none(combination)
-                )
-            )
-        )
+                   payee_status_is_not_pending(combination)
+                   or (
+                           payee_status_is_pending(combination)
+                           and payer_status_is_not_pending(combination)
+                           and payer_status_is_not_none(combination)
+                   )
+           )
+
     ]
 
 
 def invalid_states_for_incoming_closed():
     """
     when both 'mine' and incoming status is 'closed' the side who sent the command must had been save his update in
-    the DB before sending, following this a number of states are define as invalid for incoming closed status: 1. one
-    of the sides invalid scenarios for incoming 'closed' when both 'mine':
+    the DB before sending, following this a number of states are define as invalid for incoming closed status:
     1. both not 'closed' in DB
     2. payee 'closed' but payer not 'pending' or 'valid'
     3. payer 'closed' but payee not 'pending' or 'valid'

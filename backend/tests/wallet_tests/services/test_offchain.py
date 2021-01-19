@@ -168,8 +168,3 @@ def jsonrpc_txn_sample(*args):
         transaction=jsonrpc.TransactionData(sequence_number=5),
         hash="3232-hash",
     )
-
-
-def print_expected_combinations(expected_combinations):
-    for comb in expected_combinations:
-        print(comb)
