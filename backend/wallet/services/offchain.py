@@ -118,22 +118,14 @@ def process_inbound_command(
                         "Can't update existing command unless the status is 'pending'"
                     )
             else:
-                role = get_role_by_command_status(approval)
-                # if incoming request not exist in DB and the incoming status is pending - save in DB
-                if approval.status == FundPullPreApprovalStatus.pending:
-                    commit_command(
-                        preapproval_command_to_model(
-                            account_id=account.get_account_id_from_bech32(
-                                approval.address
-                            ),
-                            command=preapproval_command,
-                            role=role,
-                        )
+                role = get_role_by_command_status(approval.status)
+                commit_command(
+                    preapproval_command_to_model(
+                        account_id=account.get_account_id_from_bech32(approval.address),
+                        command=preapproval_command,
+                        role=role,
                     )
-                else:
-                    raise FundsPullPreApprovalError(
-                        "New incoming request must have 'pending' status"
-                    )
+                )
 
         return _jws(command.id())
     except offchain.Error as e:
@@ -149,14 +141,16 @@ def validate_addresses(approval, command_in_db):
         raise ValueError("address and biller_addres values are immutable")
 
 
-def get_role_by_command_status(approval):
-    if approval.status is None or approval.status == FundPullPreApprovalStatus.pending:
+def get_role_by_command_status(status):
+    if status is None or status == FundPullPreApprovalStatus.pending:
         return Role.PAYER
-    elif approval.status in [
+    elif status in [
         FundPullPreApprovalStatus.valid,
         FundPullPreApprovalStatus.rejected,
     ]:
         return Role.PAYEE
+    else:
+        raise FundsPullPreApprovalError(f"Wrong status {status} for incoming request")
 
 
 def _jws(cid: Optional[str], err: Optional[offchain.OffChainErrorObject] = None):
