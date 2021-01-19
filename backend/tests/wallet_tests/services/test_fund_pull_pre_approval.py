@@ -358,7 +358,10 @@ def test_process_inbound_command_as_payer_with_incoming_pending_and_no_record_in
     biller_address = generate_address()
 
     cmd = generate_funds_pull_pre_approval_command(
-        address, biller_address, FUNDS_PULL_PRE_APPROVAL_ID
+        address=address,
+        biller_address=biller_address,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.pending,
     )
     mock_method(
         context.get().offchain_client,
@@ -436,7 +439,7 @@ def test_process_inbound_command_as_payer_with_incoming_reject_and_no_record_in_
     )
 
     with pytest.raises(
-        FundsPullPreApprovalInvalidStatus,
+        FundsPullPreApprovalError,
     ):
         process_inbound_command(address, cmd)
 
@@ -471,7 +474,7 @@ def test_process_inbound_command_as_payer_with_incoming_reject_while_record_db_e
     )
 
     with pytest.raises(
-        FundsPullPreApprovalInvalidStatus,
+        FundsPullPreApprovalError,
     ):
         process_inbound_command(address, cmd)
 
@@ -496,7 +499,7 @@ def test_process_inbound_command_as_payer_with_incoming_valid_and_no_record_in_d
     )
 
     with pytest.raises(
-        FundsPullPreApprovalInvalidStatus,
+        FundsPullPreApprovalError,
     ):
         process_inbound_command(address, cmd)
 
@@ -531,7 +534,7 @@ def test_process_inbound_command_as_payer_with_incoming_valid_while_record_db_ex
     )
 
     with pytest.raises(
-        FundsPullPreApprovalInvalidStatus,
+        FundsPullPreApprovalError,
     ):
         process_inbound_command(address, cmd)
 
@@ -556,7 +559,7 @@ def test_process_inbound_command_as_payer_with_incoming_closed_and_no_record_in_
     )
 
     with pytest.raises(
-        FundsPullPreApprovalCommandNotFound,
+        FundsPullPreApprovalError,
     ):
         process_inbound_command(address, cmd)
 
@@ -667,7 +670,7 @@ def test_process_inbound_command_as_payer_with_incoming_closed_while_record_db_e
     )
 
     with pytest.raises(
-        FundsPullPreApprovalInvalidStatus,
+        FundsPullPreApprovalError,
     ):
         process_inbound_command(address, cmd)
 
@@ -731,7 +734,7 @@ def test_process_inbound_command_as_payee_with_incoming_pending_while_record_db_
     )
 
     with pytest.raises(
-        FundsPullPreApprovalInvalidStatus,
+        FundsPullPreApprovalError,
     ):
         process_inbound_command(address, cmd)
 
@@ -829,7 +832,7 @@ def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_e
     )
 
     with pytest.raises(
-        FundsPullPreApprovalInvalidStatus,
+        FundsPullPreApprovalError,
     ):
         process_inbound_command(address, cmd)
 
@@ -864,7 +867,7 @@ def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_e
     )
 
     with pytest.raises(
-        FundsPullPreApprovalInvalidStatus,
+        FundsPullPreApprovalError,
     ):
         process_inbound_command(address, cmd)
 
@@ -899,7 +902,7 @@ def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_e
     )
 
     with pytest.raises(
-        FundsPullPreApprovalInvalidStatus,
+        FundsPullPreApprovalError,
     ):
         process_inbound_command(address, cmd)
 
@@ -997,7 +1000,7 @@ def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_ex
     )
 
     with pytest.raises(
-        FundsPullPreApprovalInvalidStatus,
+        FundsPullPreApprovalError,
     ):
         process_inbound_command(address, cmd)
 
@@ -1032,7 +1035,7 @@ def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_ex
     )
 
     with pytest.raises(
-        FundsPullPreApprovalInvalidStatus,
+        FundsPullPreApprovalError,
     ):
         process_inbound_command(address, cmd)
 
@@ -1067,7 +1070,7 @@ def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_ex
     )
 
     with pytest.raises(
-        FundsPullPreApprovalInvalidStatus,
+        FundsPullPreApprovalError,
     ):
         process_inbound_command(address, cmd)
 
@@ -1194,7 +1197,7 @@ def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_e
         address=address,
         biller_address=biller_address,
         funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
+        status=FundPullPreApprovalStatus.closed,
     )
     mock_method(
         context.get().offchain_client,
@@ -1203,7 +1206,7 @@ def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_e
     )
 
     with pytest.raises(
-        FundsPullPreApprovalInvalidStatus,
+        FundsPullPreApprovalError,
     ):
         process_inbound_command(address, cmd)
 
@@ -1229,7 +1232,7 @@ def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_e
         address=address,
         biller_address=biller_address,
         funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
+        status=FundPullPreApprovalStatus.closed,
     )
     mock_method(
         context.get().offchain_client,
@@ -1238,7 +1241,7 @@ def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_e
     )
 
     with pytest.raises(
-        FundsPullPreApprovalInvalidStatus,
+        FundsPullPreApprovalError,
     ):
         process_inbound_command(address, cmd)
 
