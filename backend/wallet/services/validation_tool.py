@@ -42,7 +42,7 @@ def request_funds_pull_pre_approval_from_another(
             funds_pull_pre_approval_type=scope.type,
             expiration_timestamp=scope.expiration_timestamp,
             description=description,
-            status=offchain.FundPullPreApprovalStatus.valid,
+            status=offchain.FundPullPreApprovalStatus.pending,
             role=Role.PAYEE,
             **max_cumulative_amount,
             **max_transaction_amount,
