@@ -440,6 +440,7 @@ def get_role_2():
     Existing = FundPullPreApprovalStatus
     explicit_combinations = {
         Combination(Incoming.pending, True, True, Existing.pending, None): Role.PAYER,  # new request from known payee
+        # TODO if approval.status == 'pending' compare all values to decide ?
         Combination(Incoming.pending, True, True, Existing.pending, Existing.pending): Role.PAYER,  # update request from known payee
         Combination(Incoming.pending, False, True, None, None): Role.PAYER,  # new request from unknown payee
         Combination(Incoming.pending, False, True, None, Existing.pending): Role.PAYER,  # update request from unknown payee
@@ -489,17 +490,10 @@ def get_role_2():
     explicit_combinations.update(
         make_error_combinations(invalid_states_for_incoming_closed())
     )
-    # explicit_combinations.update(
-    #     make_error_combinations(incoming_closed_both_mine_one_must_be_closed_and_second_must_be_pending_or_valid()))
 
     return explicit_combinations
 
 
-# If no record was found in DB then the incoming command is completely new
-# and therefore we can assume that we received it as PAYER
-#     # the side who sending the command is saving his update before he send it,
-#     # therefore we can assume that the side which is not have the updated status is the active role
-# TODO if approval.status == 'pending' compare all values to decide ?
 def get_role(approval):
     biller_address, biller_sub_address = identifier.decode_account(
         approval.biller_address, _hrp()
