@@ -3,6 +3,7 @@
 
 
 from vasp_validator import ValidatorClient
+from vasp_validator.models_fppa import FundPullPreApprovalScope
 from vasp_validator.vasp_proxy import VaspProxy, TxState
 
 
@@ -29,3 +30,16 @@ class VaspProxyTestee(VaspProxy):
 
     def get_offchain_state(self, reference_id: str):
         return self.vasp.get_offchain_state(reference_id)
+
+    def request_funds_pull_preapproval_from_another(
+        self,
+        payer_addr_bech32: str,
+        scope: FundPullPreApprovalScope,
+        description: str = None,
+    ) -> str:
+        return self.vasp.request_funds_pull_preapproval_from_another(
+            payer_addr_bech32, scope, description
+        )
+
+    def get_all_funds_pull_preapprovals(self):
+        return self.vasp.get_all_funds_pull_preapprovals()
