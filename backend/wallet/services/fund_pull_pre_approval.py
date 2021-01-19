@@ -1,6 +1,7 @@
+import logging
 import time
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 import context
 from diem import offchain, identifier
@@ -133,9 +134,10 @@ def update_status(
 
 def get_funds_pull_pre_approvals(
     account_id: int,
-):
-    commands = get_account_commands(account_id)
-    return [preapproval_model_to_command(commands) for commands in commands]
+) -> List[offchain.FundsPullPreApprovalCommand]:
+    return [
+        preapproval_model_to_command(fppa) for fppa in get_account_commands(account_id)
+    ]
 
 
 def validate_expiration_timestamp(expiration_timestamp):
@@ -147,12 +149,7 @@ def process_funds_pull_pre_approvals_requests():
     commands = get_commands_by_sent_status(False)
 
     for command in commands:
-        if command.role == Role.PAYER:
-            my_address = command.address
-        else:
-            my_address = command.biller_address
-
-        cmd = preapproval_model_to_command(my_address=my_address, command=command)
+        cmd = preapproval_model_to_command(command)
 
         context.get().offchain_client.send_command(
             cmd, context.get().config.compliance_private_key().sign
@@ -202,8 +199,31 @@ def preapproval_command_to_model(
 
 
 def preapproval_model_to_command(
-    command: models.FundsPullPreApprovalCommand, my_address: str
-):
+    command: models.FundsPullPreApprovalCommand,
+) -> offchain.FundsPullPreApprovalCommand:
+    if command.role == Role.PAYER:
+        my_address = command.address
+    else:
+        my_address = command.biller_address
+
+    max_cumulative_amount = None
+    if command.max_cumulative_unit is not None:
+        max_cumulative_amount = offchain.ScopedCumulativeAmountObject(
+            unit=command.max_cumulative_unit,
+            value=command.max_cumulative_unit_value,
+            max_amount=offchain.CurrencyObject(
+                amount=command.max_cumulative_amount,
+                currency=command.max_cumulative_amount_currency,
+            ),
+        )
+
+    max_transaction_amount = None
+    if command.max_transaction_amount is not None:
+        max_transaction_amount = offchain.CurrencyObject(
+            amount=command.max_transaction_amount,
+            currency=command.max_transaction_amount_currency,
+        )
+
     funds_pull_pre_approval = offchain.FundPullPreApprovalObject(
         funds_pull_pre_approval_id=command.funds_pull_pre_approval_id,
         address=command.address,
@@ -211,18 +231,8 @@ def preapproval_model_to_command(
         scope=offchain.FundPullPreApprovalScopeObject(
             type=offchain.FundPullPreApprovalType.consent,
             expiration_timestamp=command.expiration_timestamp,
-            max_cumulative_amount=offchain.ScopedCumulativeAmountObject(
-                unit=command.max_cumulative_unit,
-                value=command.max_cumulative_unit_value,
-                max_amount=offchain.CurrencyObject(
-                    amount=command.max_cumulative_amount,
-                    currency=command.max_cumulative_amount_currency,
-                ),
-            ),
-            max_transaction_amount=offchain.CurrencyObject(
-                amount=command.max_transaction_amount,
-                currency=command.max_transaction_amount_currency,
-            ),
+            max_cumulative_amount=max_cumulative_amount,
+            max_transaction_amount=max_transaction_amount,
         ),
         status=command.status,
         description=command.description,
