@@ -15,9 +15,6 @@ from wallet.services.offchain import (
     process_inbound_command,
     _txn_payment_command,
     _user_kyc_data,
-    get_role_2,
-    all_combinations,
-    Combination,
 )
 from wallet.services.transaction import (
     get_transaction_by_reference_id,
@@ -181,47 +178,3 @@ def jsonrpc_txn_sample(*args):
 def print_expected_combinations(expected_combinations):
     for comb in expected_combinations:
         print(comb)
-
-
-def test_role_calculation():
-    actual_combinations = get_role_2()
-    expected_combinations = set(all_combinations())
-
-    for com in actual_combinations:
-        expected_combinations.remove(com)
-
-    assert len(expected_combinations) == 0, expected_combinations
-    # print_expected_combinations(
-    # expected_combinations
-    # )
-
-
-# if both mine and incoming is pending payee must be pending and payer must be pending or None
-def my_method(comb):
-    # in [offchain.FundPullPreApprovalStatus.pending, None]
-    return (
-        comb.is_payer_address_mine
-        and comb.is_payee_address_mine
-        and (comb.incoming_status is offchain.FundPullPreApprovalStatus.pending)
-        and (
-            comb.existing_status_as_payee
-            is not offchain.FundPullPreApprovalStatus.pending
-        )
-        and (
-            (
-                comb.existing_status_as_payer
-                is not offchain.FundPullPreApprovalStatus.pending
-            )
-            or comb.existing_status_as_payer is not None
-        )
-    )
-
-
-def test_temp():
-    comb = Combination(
-        offchain.FundPullPreApprovalStatus.pending, True, True, None, None
-    )
-
-    answer = my_method(comb)
-
-    assert answer

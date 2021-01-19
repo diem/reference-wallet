@@ -22,7 +22,7 @@ from wallet.services.fund_pull_pre_approval import (
     FundsPullPreApprovalError,
     close,
     reject,
-    FundsPullPreApprovalInvalidStatus,
+    FundsPullPreApprovalInvalidStatus, get_role_2, all_combinations,
 )
 from wallet.services.offchain import (
     process_inbound_command,
@@ -1395,3 +1395,13 @@ def generate_fund_pull_pre_approval_object(
         description="test",
     )
     return funds_pull_pre_approval
+
+
+def test_role_calculation():
+    actual_combinations = get_role_2()
+    expected_combinations = set(all_combinations())
+
+    for com in actual_combinations:
+        expected_combinations.remove(com)
+
+    assert len(expected_combinations) == 0, expected_combinations
