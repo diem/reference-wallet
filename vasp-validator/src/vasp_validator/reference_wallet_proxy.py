@@ -1,7 +1,7 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
 
-from typing import List
+from typing import List, Callable, Optional
 
 import requests
 
@@ -16,12 +16,20 @@ from .models import (
     AccountInfo,
     OffChainSequenceInfo,
 )
+from .models_fppa import (
+    FundPullPreApprovalScope,
+    FundsPullPreApprovalRequest,
+    FundsPullPreApproval,
+)
+
+RequestSender = Callable[[str, str, Optional[dict]], requests.Response]
 
 
 class ReferenceWalletProxy:
     def __init__(self, base_url):
         self.base_url = base_url
         self.authorization_header = {}
+        self.funds_pull_preapproval = ReferenceWalletProxyFPPA(self._request_authorized)
 
     def create_new_user(self, username, password):
         add_user_json = {"username": username, "password": password}
@@ -107,7 +115,7 @@ class ReferenceWalletProxy:
         response.raise_for_status()
         return response
 
-    def _request_authorized(self, method, endpoint, json=None):
+    def _request_authorized(self, method, endpoint, json=None) -> requests.Response:
         response = requests.request(
             method,
             url=f"{self.base_url}/{endpoint}",
@@ -116,3 +124,33 @@ class ReferenceWalletProxy:
         )
         response.raise_for_status()
         return response
+
+
+class ReferenceWalletProxyFPPA:
+    """
+    Sends to the reference wallet funds pull pre-approval related requests.
+    """
+
+    def __init__(self, request_wallet_authorized: RequestSender):
+        self._request_authorized = request_wallet_authorized
+
+    def get_all_preapprovals(self) -> List[FundsPullPreApproval]:
+        r = self._request_authorized("GET", f"offchain/funds_pull_pre_approvals")
+        preapprovals = r.json()
+        return [FundsPullPreApproval.from_dict(x) for x in preapprovals["funds_pull_pre_approvals"]]
+
+    def request_preapproval_from_another(
+        self,
+        payer_addr_bech32: str,
+        scope: FundPullPreApprovalScope,
+        description: str = None,
+    ) -> str:
+        fppa_request = FundsPullPreApprovalRequest(
+            payer_address=payer_addr_bech32,
+            description=description,
+            scope=scope,
+        )
+        r = self._request_authorized(
+            "POST", "validation/funds_pull_pre_approvals", fppa_request.to_dict()
+        )
+        return r.json()["funds_pull_pre_approval_id"]

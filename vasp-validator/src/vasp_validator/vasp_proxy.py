@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 
+from .models_fppa import FundPullPreApprovalScope
+
 
 class TxStatus(str, Enum):
     PENDING = "pending"
@@ -36,4 +38,25 @@ class VaspProxy(ABC):
 
     @abstractmethod
     def get_offchain_state(self, reference_id: str):
+        ...
+
+    @abstractmethod
+    def request_funds_pull_preapproval_from_another(
+        self,
+        payer_addr_bech32: str,
+        scope: FundPullPreApprovalScope,
+        description: str = None,
+    ) -> str:
+        """
+        Send a request to a user, identified by their address, to pre-approve future
+        fund pulls, to be performed by this VASP.
+
+        :param payer_addr_bech32: Bech32 encoded address of the paying user.
+        :param scope: Definition of the scope of this request.
+        :param description: Optional, human readable description of the request.
+
+        :return: ID of the new funds pull pre-approval request.
+        """
+
+    def get_all_funds_pull_preapprovals(self):
         ...
