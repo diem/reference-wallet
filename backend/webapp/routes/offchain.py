@@ -9,6 +9,7 @@ from diem.offchain import (
     X_REQUEST_ID,
     X_REQUEST_SENDER_ADDRESS,
     FundPullPreApprovalStatus,
+    FundsPullPreApprovalCommand,
 )
 from flask import Blueprint, request
 from flask.views import MethodView
@@ -33,34 +34,43 @@ logger = logging.getLogger(__name__)
 offchain = Blueprint("offchain", __name__)
 
 
-class CommandsRoutes:
-    @classmethod
-    def create_command_response_object(
-        cls, approval: fppa_service.models.FundsPullPreApprovalCommand
-    ):
-        return {
-            "address": approval.address,
-            "biller_address": approval.biller_address,
-            "funds_pull_pre_approval_id": approval.funds_pull_pre_approval_id,
-            "scope": {
-                "type": approval.funds_pull_pre_approval_type,
-                "expiration_time": approval.expiration_timestamp,
-                "max_cumulative_amount": {
-                    "unit": approval.max_cumulative_unit,
-                    "value": approval.max_cumulative_unit_value,
-                    "max_amount": {
-                        "amount": approval.max_cumulative_amount,
-                        "currency": approval.max_cumulative_amount_currency,
-                    },
-                },
-                "max_transaction_amount": {
-                    "amount": approval.max_transaction_amount,
-                    "currency": approval.max_transaction_amount_currency,
-                },
+def preapproval_command_to_dict(preapproval: FundsPullPreApprovalCommand):
+    preapproval_object = preapproval.funds_pull_pre_approval
+    scope = preapproval_object.scope
+
+    result = {
+        "address": preapproval_object.address,
+        "biller_address": preapproval_object.biller_address,
+        "funds_pull_pre_approval_id": preapproval_object.funds_pull_pre_approval_id,
+        "status": preapproval_object.status,
+        "scope": {
+            "type": scope.type,
+            "expiration_timestamp": scope.expiration_timestamp,
+        },
+    }
+
+    if preapproval_object.description is not None:
+        result["description"] = preapproval_object.description
+
+    if scope.max_cumulative_amount is not None:
+        max_cumulative_amount = scope.max_cumulative_amount
+        result["max_cumulative_amount"] = {
+            "unit": max_cumulative_amount.unit,
+            "value": max_cumulative_amount.value,
+            "max_amount": {
+                "amount": max_cumulative_amount.max_amount.amount,
+                "currency": max_cumulative_amount.max_amount.currency,
             },
-            "description": approval.description,
-            "status": approval.status,
         }
+
+    if scope.max_transaction_amount is not None:
+        max_transaction_amount = scope.max_transaction_amount
+        result["max_transaction_amount"] = {
+            "amount": max_transaction_amount.amount,
+            "currency": max_transaction_amount.currency,
+        }
+
+    return result
 
 
 def payment_command_to_dict(command: diem_offchain.PaymentCommand):
@@ -181,14 +191,12 @@ class OffchainRoutes:
 
         def get(self):
             approvals = fppa_service.get_funds_pull_pre_approvals(self.user.account_id)
-
-            response = [
-                CommandsRoutes.create_command_response_object(approval)
-                for approval in approvals
+            serialized_preapprovals = [
+                preapproval_command_to_dict(approval) for approval in approvals
             ]
 
             return (
-                {"funds_pull_pre_approvals": response},
+                {"funds_pull_pre_approvals": serialized_preapprovals},
                 HTTPStatus.OK,
             )
 
