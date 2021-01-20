@@ -137,7 +137,7 @@ def update_status(
         if command.status in valid_statuses:
             command.status = new_status
             command.offchain_sent = not should_send
-            update_command(command)
+            update_command(command.account_id, command)
         else:
             raise FundsPullPreApprovalError(
                 f"Could not {operation_name} command with status {command.status}"
@@ -183,7 +183,7 @@ def process_funds_pull_pre_approvals_requests():
 
         command.offchain_sent = True
 
-        update_command(command)
+        update_command(command.account_id, command)
 
 
 def preapproval_command_to_model(
@@ -652,6 +652,7 @@ def handle_fund_pull_pre_approval_command(command):
         if approval.status == FundPullPreApprovalStatus.pending:
             if command_in_db:
                 update_command(
+                    command_in_db.account_id,
                     preapproval_command_to_model(
                         account_id=command_in_db.account_id,
                         command=command,
@@ -678,6 +679,7 @@ def handle_fund_pull_pre_approval_command(command):
         if approval.status == FundPullPreApprovalStatus.closed:
             if command_in_db:
                 update_command(
+                    command_in_db.account_id,
                     preapproval_command_to_model(
                         account_id=command_in_db.account_id,
                         command=command,
@@ -699,6 +701,7 @@ def handle_fund_pull_pre_approval_command(command):
                     ) = identifier.decode_account(approval.biller_address, hrp)
 
                     update_command(
+                        command_in_db.account_id,
                         preapproval_command_to_model(
                             account_id=get_account_id_from_subaddr(
                                 biller_sub_address.hex()
@@ -714,6 +717,7 @@ def handle_fund_pull_pre_approval_command(command):
         if approval.status == FundPullPreApprovalStatus.closed:
             if command_in_db:
                 update_command(
+                    command_in_db.account_id,
                     preapproval_command_to_model(
                         account_id=command_in_db.account_id,
                         command=command,
