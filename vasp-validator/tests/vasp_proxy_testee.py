@@ -49,3 +49,6 @@ class VaspProxyTestee(VaspProxy):
 
     def reject_funds_pull_request(self, funds_pre_approval_id: str):
         return self.vasp.reject_funds_pull_request(funds_pre_approval_id)
+
+    def close_funds_pull_preapproval(self, funds_pre_approval_id: str):
+        return self.vasp.close_funds_pull_preapproval(funds_pre_approval_id)

@@ -86,7 +86,7 @@ class Transaction:
     source: Vasp
     destination: Vasp
     is_internal: bool
-    blockchain_tx: BlockchainTransaction
+    blockchain_tx: Optional[BlockchainTransaction]
 
 
 @dataclass_json
