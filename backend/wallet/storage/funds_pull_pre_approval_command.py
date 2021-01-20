@@ -40,9 +40,9 @@ class FundsPullPreApprovalCommandNotFound(Exception):
     ...
 
 
-def update_command(account_id: int, command: models.FundsPullPreApprovalCommand):
+def update_command(command: models.FundsPullPreApprovalCommand):
     command_in_db = get_account_command_by_id(
-        account_id, command.funds_pull_pre_approval_id
+        command.account_id, command.funds_pull_pre_approval_id
     )
 
     if command_in_db:
