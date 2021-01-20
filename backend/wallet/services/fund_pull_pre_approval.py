@@ -328,6 +328,9 @@ def get_combinations():
         #
         Combination(Incoming.closed, True, True, Existing.pending, Existing.closed): Role.PAYEE,  # close request by payer
         Combination(Incoming.closed, True, True, Existing.valid, Existing.closed): Role.PAYEE,  # close request by payer
+        # TODO what about close by payee ??
+        Combination(Incoming.closed, True, True, Existing.closed, Existing.pending): Role.PAYER,  # close request by payee
+        Combination(Incoming.closed, True, True, Existing.closed, Existing.valid): Role.PAYER,  # close request by payee
         #
         Combination(Incoming.closed, True, False, Existing.closed, None): None,
         Combination(Incoming.closed, True, False, Existing.rejected, None): None,
@@ -335,30 +338,34 @@ def get_combinations():
         Combination(Incoming.closed, True, False, Existing.valid, None): Role.PAYEE,
     }
 
-    explicit_combinations.update(make_error_combinations(payee_and_payer_not_mine()))
-    explicit_combinations.update(make_error_combinations(invalid_states()))
-    explicit_combinations.update(
+    all_combinations_ = {}
+
+    all_combinations_.update(make_error_combinations(payee_and_payer_not_mine()))
+    all_combinations_.update(make_error_combinations(basic_invalid_states()))
+    all_combinations_.update(
         make_error_combinations(incoming_status_not_pending_and_no_records())
     )
-    explicit_combinations.update(make_error_combinations(incoming_pending_for_payee()))
-    explicit_combinations.update(
+    all_combinations_.update(make_error_combinations(incoming_pending_for_payee()))
+    all_combinations_.update(
         make_error_combinations(incoming_valid_or_rejected_but_payee_not_pending())
     )
-    explicit_combinations.update(
+    all_combinations_.update(
         make_error_combinations(
             incoming_valid_or_rejected_my_payee_not_pending_and_my_payer_not_equal_to_incoming()
         )
     )
-    explicit_combinations.update(
+    all_combinations_.update(
         make_error_combinations(
             incoming_pending_my_payee_not_pending_my_payer_pending_or_none()
         )
     )
-    explicit_combinations.update(
+    all_combinations_.update(
         make_error_combinations(invalid_states_for_incoming_closed())
     )
 
-    return explicit_combinations
+    all_combinations_.update(explicit_combinations)
+
+    return all_combinations_
 
 
 def get_role(approval):
@@ -424,18 +431,24 @@ def payee_and_payer_not_mine():
     ]
 
 
-def invalid_states():
+def basic_invalid_states():
+    """
+    basic states that are not valid:
+    1. payee is not mine but record exist
+    (OR)
+    2. payer is not mine but record exist
+    """
     return [
         combination
         for combination in all_combinations()
         if (
-            not combination.is_payee_address_mine
-            and combination.existing_status_as_payee is not None
-        )
-        or (
-            not combination.is_payer_address_mine
-            and combination.existing_status_as_payer is not None
-        )
+                   not combination.is_payee_address_mine
+                   and combination.existing_status_as_payee is not None
+           )
+           or (
+                   not combination.is_payer_address_mine
+                   and combination.existing_status_as_payer is not None
+           )
     ]
 
 
