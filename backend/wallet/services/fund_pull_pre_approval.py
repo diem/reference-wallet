@@ -296,11 +296,65 @@ def get_command_from_bech32(
 
 @dataclass(frozen=True)
 class Combination:
-    incoming_status: str  # 4
-    is_payee_address_mine: bool  # 2
-    is_payer_address_mine: bool  # 2
-    existing_status_as_payee: Optional[str]  # 5
-    existing_status_as_payer: Optional[str]  # 5
+    incoming_status: str
+    is_payee_address_mine: bool
+    is_payer_address_mine: bool
+    existing_status_as_payee: Optional[str]
+    existing_status_as_payer: Optional[str]
+
+    @property
+    def is_incoming_valid_or_rejected(self) -> bool:
+        return self.incoming_status in [
+            FundPullPreApprovalStatus.valid,
+            FundPullPreApprovalStatus.rejected,
+        ]
+
+    @property
+    def is_incoming_pending(self) -> bool:
+        return self.incoming_status is FundPullPreApprovalStatus.pending
+
+    @property
+    def is_incoming_closed(self) -> bool:
+        return self.incoming_status is FundPullPreApprovalStatus.closed
+
+    @property
+    def both_mine(self):
+        return self.is_payer_address_mine and self.is_payee_address_mine
+
+    @property
+    def preapproval_exists(self):
+        return (
+            self.existing_status_as_payer is not None
+            or self.existing_status_as_payee is not None
+        )
+
+    @property
+    def payer_preapproval_exists(self):
+        return self.existing_status_as_payee is not None
+
+    @property
+    def is_payee_pending(self):
+        return self.existing_status_as_payee is FundPullPreApprovalStatus.pending
+
+    @property
+    def is_payee_closed(self):
+        return self.existing_status_as_payee is FundPullPreApprovalStatus.closed
+
+    @property
+    def is_payee_valid(self):
+        return self.existing_status_as_payee is FundPullPreApprovalStatus.valid
+
+    @property
+    def is_payer_pending(self):
+        return self.existing_status_as_payer is FundPullPreApprovalStatus.pending
+
+    @property
+    def is_payer_closed(self):
+        return self.existing_status_as_payer is FundPullPreApprovalStatus.closed
+
+    @property
+    def is_payer_valid(self):
+        return self.existing_status_as_payer is FundPullPreApprovalStatus.valid
 
 
 def get_combinations():
@@ -434,7 +488,7 @@ def all_combinations():
 
 def payee_and_payer_not_mine():
     return [
-        combination for combination in all_combinations() if both_not_mine(combination)
+        combination for combination in all_combinations() if not combination.both_mine
     ]
 
 
@@ -463,7 +517,7 @@ def incoming_status_not_pending_and_no_records():
     return [
         combination
         for combination in all_combinations()
-        if incoming_status_is_not_pending(combination) and both_no_records(combination)
+        if not combination.is_incoming_pending and not combination.preapproval_exists
     ]
 
 
@@ -475,7 +529,7 @@ def incoming_pending_for_payee():
         for combination in all_combinations()
         if not combination.is_payer_address_mine
         and combination.is_payee_address_mine
-        and incoming_status_is_pending(combination)
+        and combination.is_incoming_pending
     ]
 
 
@@ -483,8 +537,8 @@ def incoming_valid_or_rejected_but_payee_not_pending():
     return [
         combination
         for combination in all_combinations()
-        if incoming_status_is_valid_or_rejected(combination)
-        and payee_status_is_not_pending(combination)
+        if combination.is_incoming_valid_or_rejected
+        and not combination.is_payee_pending
     ]
 
 
@@ -494,17 +548,10 @@ def incoming_valid_or_rejected_my_payee_not_pending_and_my_payer_not_equal_to_in
     return [
         combination
         for combination in all_combinations()
-        if both_mine(combination)
-        and incoming_status_is_valid_or_rejected(combination)
-        and payee_status_is_pending(combination)
-        and payer_status_equal_incoming_status(combination)
-    ]
-
-
-def incoming_status_is_valid_or_rejected(combination):
-    return combination.incoming_status in [
-        FundPullPreApprovalStatus.valid,
-        FundPullPreApprovalStatus.rejected,
+        if combination.both_mine
+        and combination.is_incoming_valid_or_rejected
+        and combination.is_payee_pending
+        and combination.existing_status_as_payer != combination.incoming_status
     ]
 
 
@@ -523,13 +570,13 @@ def incoming_pending_my_payee_not_pending_my_payer_pending_or_none():
     return [
         combination
         for combination in all_combinations()
-        if both_mine(combination)
+        if combination.both_mine
         and (
-            payee_status_is_not_pending(combination)
+            not combination.is_payee_pending
             or (
-                payee_status_is_pending(combination)
-                and payer_status_is_not_pending(combination)
-                and payer_status_is_not_none(combination)
+                combination.is_payee_pending
+                and not combination.is_payer_pending
+                and combination.payer_preapproval_exists
             )
         )
     ]
@@ -546,104 +593,24 @@ def invalid_states_for_incoming_closed():
     return [
         combination
         for combination in all_combinations()
-        if both_mine(combination)
-        and incoming_status_is_closed(combination)
+        if combination.both_mine
+        and combination.is_incoming_closed
         and (
-            (
-                payer_status_is_not_closed(combination)
-                and payee_status_is_not_closed(combination)
-            )
+            (not combination.is_payee_closed and not combination.is_payee_closed)
             or (
                 (
-                    payer_status_is_closed(combination)
-                    and payee_status_is_not_pending_or_valid(combination)
+                    combination.is_payee_closed
+                    and not combination.is_payee_pending
+                    and not combination.is_payee_valid
                 )
                 or (
-                    payee_status_is_closed(combination)
-                    and payer_status_is_not_pending_or_valid
+                    combination.is_payee_closed
+                    and not combination.is_payer_pending
+                    and not combination.is_payer_valid
                 )
             )
         )
     ]
-
-
-def payee_status_is_closed(combination):
-    return combination.existing_status_as_payee is FundPullPreApprovalStatus.closed
-
-
-def payer_status_is_closed(combination):
-    return combination.existing_status_as_payer is FundPullPreApprovalStatus.closed
-
-
-def payee_status_is_not_pending_or_valid(combination):
-    return combination.existing_status_as_payee not in [
-        FundPullPreApprovalStatus.pending,
-        FundPullPreApprovalStatus.valid,
-    ]
-
-
-def payer_status_is_not_pending_or_valid(combination):
-    return combination.existing_status_as_payer not in [
-        FundPullPreApprovalStatus.pending,
-        FundPullPreApprovalStatus.valid,
-    ]
-
-
-def both_not_mine(combination):
-    return (
-        not combination.is_payee_address_mine and not combination.is_payer_address_mine
-    )
-
-
-def both_no_records(combination):
-    return (
-        combination.existing_status_as_payer is None
-        and combination.existing_status_as_payee is None
-    )
-
-
-def payee_status_is_not_closed(combination):
-    return combination.existing_status_as_payee is not FundPullPreApprovalStatus.closed
-
-
-def payer_status_is_not_closed(combination):
-    return combination.existing_status_as_payer is not FundPullPreApprovalStatus.closed
-
-
-def incoming_status_is_not_pending(combination):
-    return combination.incoming_status is not FundPullPreApprovalStatus.pending
-
-
-def payer_status_equal_incoming_status(combination):
-    return combination.existing_status_as_payer != combination.incoming_status
-
-
-def payer_status_is_not_none(combination):
-    return combination.existing_status_as_payer is not None
-
-
-def payer_status_is_not_pending(combination):
-    return combination.existing_status_as_payer is not FundPullPreApprovalStatus.pending
-
-
-def payee_status_is_not_pending(combination):
-    return combination.existing_status_as_payee is not FundPullPreApprovalStatus.pending
-
-
-def payee_status_is_pending(combination):
-    return combination.existing_status_as_payee is FundPullPreApprovalStatus.pending
-
-
-def incoming_status_is_pending(combination):
-    return combination.incoming_status is FundPullPreApprovalStatus.pending
-
-
-def incoming_status_is_closed(combination):
-    return combination.incoming_status is FundPullPreApprovalStatus.closed
-
-
-def both_mine(combination):
-    return combination.is_payer_address_mine and combination.is_payee_address_mine
 
 
 def make_error_combinations(combinations) -> dict:
