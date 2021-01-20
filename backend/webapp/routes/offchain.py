@@ -25,7 +25,7 @@ from webapp.schemas import (
     PaymentCommands,
     PaymentCommand,
     FundsPullPreApprovalList,
-    ApproveFundsPullPreApproval,
+    UpdateFundsPullPreApproval,
     Error,
     CreateAndApproveFundPullPreApproval,
 )
@@ -203,7 +203,7 @@ class OffchainRoutes:
     class UpdateFundPullPreApprovalStatus(OffchainView):
         summary = "update funds pull pre approval status"
         parameters = [
-            body_parameter(ApproveFundsPullPreApproval),
+            body_parameter(UpdateFundsPullPreApproval),
             path_string_param(
                 name="funds_pull_pre_approval_id",
                 description="funds pull pre approval id",
@@ -211,9 +211,7 @@ class OffchainRoutes:
         ]
 
         responses = {
-            HTTPStatus.NO_CONTENT: response_definition(
-                "Request accepted. You should poll for command updates."
-            ),
+            HTTPStatus.NO_CONTENT: response_definition("Request accepted"),
             HTTPStatus.NOT_FOUND: response_definition(
                 "Command not found", schema=Error
             ),
@@ -227,14 +225,19 @@ class OffchainRoutes:
             try:
                 if status == FundPullPreApprovalStatus.valid:
                     fppa_service.approve(funds_pull_pre_approval_id)
-                if status == FundPullPreApprovalStatus.rejected:
+                elif status == FundPullPreApprovalStatus.rejected:
                     fppa_service.reject(funds_pull_pre_approval_id)
-                if status == FundPullPreApprovalStatus.closed:
+                elif status == FundPullPreApprovalStatus.closed:
                     fppa_service.close(funds_pull_pre_approval_id)
+                else:
+                    return self.respond_with_error(
+                        HTTPStatus.BAD_REQUEST,
+                        f"Updating status to {status} is not supported",
+                    )
             except fppa_service.FundsPullPreApprovalCommandNotFound:
                 return self.respond_with_error(
                     HTTPStatus.NOT_FOUND,
-                    f"Funds pre approval id {funds_pull_pre_approval_id} was not found.",
+                    f"Funds pre-approval ID {funds_pull_pre_approval_id} not found",
                 )
 
             return "OK", HTTPStatus.NO_CONTENT
