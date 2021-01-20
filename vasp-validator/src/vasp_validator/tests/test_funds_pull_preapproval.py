@@ -1,5 +1,6 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
+import os
 import time
 
 from ..vasp_proxy import VaspProxy
@@ -12,25 +13,40 @@ from ..models_fppa import (
 
 ONE_YEAR_SECONDS = 356 * 24 * 60 * 60
 
+RETRIES_COUNT = os.getenv("RETRIES_COUNT", 10)
+SECONDS_BETWEEN_RETRIES = os.getenv("SECONDS_BETWEEN_RETRIES", 1)
 
-def get_and_assert_one_preapproval(
-    vasp: VaspProxy, fppa_id: str, status: FundPullPreApprovalStatus
-) -> FundsPullPreApproval:
-    preapprovals = vasp.get_all_funds_pull_preapprovals()
-    assert len(preapprovals) == 1
+def create_preapproval_validator(vasp: VaspProxy, fppa_id: str):
+    def get_and_assert_one_preapproval(
+        status: FundPullPreApprovalStatus
+    ) -> FundsPullPreApproval:
+        preapproval = None
 
-    preapproval = preapprovals[0]
-    assert preapproval.funds_pull_pre_approval_id == fppa_id
-    assert preapproval.status == status
+        for i in range(RETRIES_COUNT):
+            preapprovals = vasp.get_all_funds_pull_preapprovals()
 
-    return preapproval
+            assert len(preapprovals) == 1
+
+            preapproval = preapprovals[0]
+            assert preapproval.funds_pull_pre_approval_id == fppa_id
+
+            if preapproval.status == status:
+                return preapproval
+
+            time.sleep(SECONDS_BETWEEN_RETRIES)
+
+        assert preapproval.status == status
+
+    return get_and_assert_one_preapproval
 
 
-def test_receive_request_and_approve(validator, vasp_proxy: VaspProxy):
+def test_request_approve_cancel(validator, vasp_proxy: VaspProxy):
     """
     The VASP receives a funds pull pre-approval request and approves it.
     """
-    actual_preapproval_id = validator.request_funds_pull_preapproval_from_another(
+
+    # Step 1: Create the request and validate it's "pending" on both sides
+    actual_id = validator.request_funds_pull_preapproval_from_another(
         payer_addr_bech32=vasp_proxy.get_receiving_address(),
         description="test_receive_request_and_approve",
         scope=FundPullPreApprovalScope(
@@ -39,10 +55,17 @@ def test_receive_request_and_approve(validator, vasp_proxy: VaspProxy):
         ),
     )
 
-    validator_preapproval = get_and_assert_one_preapproval(
-        validator, actual_preapproval_id, FundPullPreApprovalStatus.pending
-    )
-    vasp_preapproval = get_and_assert_one_preapproval(
-        vasp_proxy, actual_preapproval_id, FundPullPreApprovalStatus.pending
-    )
-    assert vasp_preapproval == validator_preapproval
+    assert_validator_preapproval = create_preapproval_validator(validator, actual_id)
+    assert_vasp_preapproval = create_preapproval_validator(vasp_proxy, actual_id)
+
+    validator_fppa = assert_validator_preapproval(FundPullPreApprovalStatus.pending)
+    vasp_fppa = assert_vasp_preapproval(FundPullPreApprovalStatus.pending)
+    assert vasp_fppa == validator_fppa
+
+    # Step 2: Approve the request and validate it is "valid" on both sides
+    vasp_proxy.approve_funds_pull_request(actual_id)
+    assert_validator_preapproval(FundPullPreApprovalStatus.valid)
+    assert_vasp_preapproval(FundPullPreApprovalStatus.valid)
+
+    # Step 3: Cancel the approved request
+    # TBD

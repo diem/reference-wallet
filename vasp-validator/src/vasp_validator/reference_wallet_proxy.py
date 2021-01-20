@@ -20,6 +20,7 @@ from .models_fppa import (
     FundPullPreApprovalScope,
     FundsPullPreApprovalRequest,
     FundsPullPreApproval,
+    FundPullPreApprovalStatus,
 )
 
 RequestSender = Callable[[str, str, Optional[dict]], requests.Response]
@@ -135,7 +136,7 @@ class ReferenceWalletProxyFPPA:
         self._request_authorized = request_wallet_authorized
 
     def get_all_preapprovals(self) -> List[FundsPullPreApproval]:
-        r = self._request_authorized("GET", f"offchain/funds_pull_pre_approvals")
+        r = self._request_authorized("GET", "offchain/funds_pull_pre_approvals")
         preapprovals = r.json()
         return [
             FundsPullPreApproval.from_dict(x)
@@ -157,3 +158,12 @@ class ReferenceWalletProxyFPPA:
             "POST", "validation/funds_pull_pre_approvals", fppa_request.to_dict()
         )
         return r.json()["funds_pull_pre_approval_id"]
+
+    def update_preapproval_status(
+        self, fppa_id: str, status: FundPullPreApprovalStatus
+    ):
+        self._request_authorized(
+            "PUT",
+            f"offchain/funds_pull_pre_approvals/{fppa_id}",
+            {"status": status.value},
+        )
