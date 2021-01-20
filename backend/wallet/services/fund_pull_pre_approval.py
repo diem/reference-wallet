@@ -19,6 +19,8 @@ from wallet.storage.funds_pull_pre_approval_command import (
     update_command,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class Role(str, Enum):
     PAYEE = "payee"
@@ -87,6 +89,7 @@ def approve(funds_pull_pre_approval_id: str) -> None:
         ],
         FundPullPreApprovalStatus.valid,
         "approve",
+        should_send=True,
     )
 
 
@@ -98,6 +101,7 @@ def reject(funds_pull_pre_approval_id):
         ],
         FundPullPreApprovalStatus.rejected,
         "reject",
+        should_send=True,
     )
 
 
@@ -110,17 +114,23 @@ def close(funds_pull_pre_approval_id):
         ],
         FundPullPreApprovalStatus.closed,
         "close",
+        should_send=True,
     )
 
 
 def update_status(
-    funds_pull_pre_approval_id, valid_statuses, new_status, operation_name
+    funds_pull_pre_approval_id,
+    valid_statuses,
+    new_status,
+    operation_name,
+    should_send=False,
 ):
     command = get_command_by_id(funds_pull_pre_approval_id)
 
     if command:
         if command.status in valid_statuses:
             command.status = new_status
+            command.offchain_sent = not should_send
             update_command(command)
         else:
             raise FundsPullPreApprovalError(
@@ -151,6 +161,16 @@ def process_funds_pull_pre_approvals_requests():
     for command in commands:
         cmd = preapproval_model_to_command(command)
 
+        logger.info(
+            f"Outgoing pre-approval: "
+            f"ID={cmd.funds_pull_pre_approval.funds_pull_pre_approval_id} "
+            f"status={cmd.funds_pull_pre_approval.status} "
+            f"my_address={cmd.my_address()} "
+            f"opponent_address={cmd.opponent_address()} "
+            f"payer={cmd.funds_pull_pre_approval.address} "
+            f"payee={cmd.funds_pull_pre_approval.biller_address}"
+        )
+
         context.get().offchain_client.send_command(
             cmd, context.get().config.compliance_private_key().sign
         )
@@ -161,13 +181,16 @@ def process_funds_pull_pre_approvals_requests():
 
 
 def preapproval_command_to_model(
-    account_id, command: offchain.FundsPullPreApprovalCommand, role: str
+    account_id,
+    command: offchain.FundsPullPreApprovalCommand,
+    role: str,
+    offchain_sent: Optional[bool] = None,
 ) -> models.FundsPullPreApprovalCommand:
     preapproval_object = command.funds_pull_pre_approval
     max_cumulative_amount = preapproval_object.scope.max_cumulative_amount
     max_transaction_amount = preapproval_object.scope.max_transaction_amount
 
-    return models.FundsPullPreApprovalCommand(
+    model = models.FundsPullPreApprovalCommand(
         account_id=account_id,
         funds_pull_pre_approval_id=preapproval_object.funds_pull_pre_approval_id,
         address=preapproval_object.address,
@@ -196,6 +219,11 @@ def preapproval_command_to_model(
         status=preapproval_object.status,
         role=role,
     )
+
+    if offchain_sent is not None:
+        model.offchain_sent = offchain_sent
+
+    return model
 
 
 def preapproval_model_to_command(

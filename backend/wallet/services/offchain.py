@@ -92,20 +92,37 @@ def process_inbound_command(
             preapproval_command = typing.cast(
                 offchain.FundsPullPreApprovalCommand, command
             )
-            approval = preapproval_command.funds_pull_pre_approval
+            incoming = preapproval_command.funds_pull_pre_approval
 
-            validate_expiration_timestamp(approval.scope.expiration_timestamp)
+            validate_expiration_timestamp(incoming.scope.expiration_timestamp)
 
-            command_in_db = get_command_by_id(approval.funds_pull_pre_approval_id)
+            command_in_db = get_command_by_id(incoming.funds_pull_pre_approval_id)
 
             if command_in_db:
-                validate_addresses(approval, command_in_db)
-                # update existing command only if incoming status and existing status are 'pending',
-                # otherwise - raise error
-                if (
-                    approval.status == FundPullPreApprovalStatus.pending
-                    and command_in_db.status == FundPullPreApprovalStatus.pending
-                ):
+                validate_addresses(incoming, command_in_db)
+
+                # FIXME: These are spec mandated state transitions - should be in SDK
+                simple_update = (
+                    command_in_db.status == FundPullPreApprovalStatus.pending
+                    and incoming.status == FundPullPreApprovalStatus.pending
+                )
+                pending_to_non_pending = (
+                    command_in_db.status == FundPullPreApprovalStatus.pending
+                    and incoming.status != FundPullPreApprovalStatus.pending
+                )
+                valid_to_closed = (
+                    command_in_db.status == FundPullPreApprovalStatus.valid
+                    and incoming.status == FundPullPreApprovalStatus.closed
+                )
+
+                if simple_update or pending_to_non_pending or valid_to_closed:
+                    logger.info(
+                        f"Incoming pre-approval update from {command_in_db.status} "
+                        f"to {incoming.status}; "
+                        f"ID={incoming.funds_pull_pre_approval_id} "
+                        f"payer={incoming.address} payee={incoming.biller_address}"
+                    )
+
                     update_command(
                         preapproval_command_to_model(
                             account_id=command_in_db.account_id,
@@ -115,15 +132,28 @@ def process_inbound_command(
                     )
                 else:
                     raise FundsPullPreApprovalError(
-                        "Can't update existing command unless the status is 'pending'"
+                        f"Can't update existing command from {command_in_db.status} "
+                        f"to {incoming.status}"
                     )
             else:
-                role = get_role_by_command_status(approval.status)
+                if incoming.status != FundPullPreApprovalStatus.pending:
+                    raise FundsPullPreApprovalError(
+                        "New incoming request must have 'pending' status"
+                    )
+
+                logger.info(
+                    f"Incoming new pre-approval: "
+                    f"ID={incoming.funds_pull_pre_approval_id} "
+                    f"payer={incoming.address} payee={incoming.biller_address}"
+                )
+
+                role = get_role_by_command_status(incoming.status)
                 commit_command(
                     preapproval_command_to_model(
-                        account_id=account.get_account_id_from_bech32(approval.address),
+                        account_id=account.get_account_id_from_bech32(incoming.address),
                         command=preapproval_command,
                         role=role,
+                        offchain_sent=True,
                     )
                 )
 
