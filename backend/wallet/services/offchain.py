@@ -9,19 +9,13 @@ from typing import Optional, Tuple, Callable, List, Dict
 import context
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import offchain, identifier
-from diem.offchain import (
-    CommandType,
-    FundPullPreApprovalStatus,
-)
+from diem.offchain import CommandType
 from diem_utils.types.currencies import DiemCurrency
 from wallet import storage
 from wallet.services import account, kyc
 from wallet.services.fund_pull_pre_approval import (
-    preapproval_command_to_model,
-    validate_expiration_timestamp,
     process_funds_pull_pre_approvals_requests,
-    Role,
-    FundsPullPreApprovalError,
+    handle_fund_pull_pre_approval_command,
 )
 
 # noinspection PyUnresolvedReferences
@@ -32,6 +26,7 @@ from wallet.storage.funds_pull_pre_approval_command import (
     get_commands_by_sent_status,
     get_command_by_id,
     update_command,
+    get_account_command_by_id,
 )
 
 from ..storage import (
@@ -92,95 +87,12 @@ def process_inbound_command(
             preapproval_command = typing.cast(
                 offchain.FundsPullPreApprovalCommand, command
             )
-            incoming = preapproval_command.funds_pull_pre_approval
-
-            validate_expiration_timestamp(incoming.scope.expiration_timestamp)
-
-            command_in_db = get_command_by_id(incoming.funds_pull_pre_approval_id)
-
-            if command_in_db:
-                validate_addresses(incoming, command_in_db)
-
-                # FIXME: These are spec mandated state transitions - should be in SDK
-                simple_update = (
-                    command_in_db.status == FundPullPreApprovalStatus.pending
-                    and incoming.status == FundPullPreApprovalStatus.pending
-                )
-                pending_to_non_pending = (
-                    command_in_db.status == FundPullPreApprovalStatus.pending
-                    and incoming.status != FundPullPreApprovalStatus.pending
-                )
-                valid_to_closed = (
-                    command_in_db.status == FundPullPreApprovalStatus.valid
-                    and incoming.status == FundPullPreApprovalStatus.closed
-                )
-
-                if simple_update or pending_to_non_pending or valid_to_closed:
-                    logger.info(
-                        f"Incoming pre-approval update from {command_in_db.status} "
-                        f"to {incoming.status}; "
-                        f"ID={incoming.funds_pull_pre_approval_id} "
-                        f"payer={incoming.address} payee={incoming.biller_address}"
-                    )
-
-                    update_command(
-                        preapproval_command_to_model(
-                            account_id=command_in_db.account_id,
-                            command=preapproval_command,
-                            role=command_in_db.role,
-                        )
-                    )
-                else:
-                    raise FundsPullPreApprovalError(
-                        f"Can't update existing command from {command_in_db.status} "
-                        f"to {incoming.status}"
-                    )
-            else:
-                if incoming.status != FundPullPreApprovalStatus.pending:
-                    raise FundsPullPreApprovalError(
-                        "New incoming request must have 'pending' status"
-                    )
-
-                logger.info(
-                    f"Incoming new pre-approval: "
-                    f"ID={incoming.funds_pull_pre_approval_id} "
-                    f"payer={incoming.address} payee={incoming.biller_address}"
-                )
-
-                role = get_role_by_command_status(incoming.status)
-                commit_command(
-                    preapproval_command_to_model(
-                        account_id=account.get_account_id_from_bech32(incoming.address),
-                        command=preapproval_command,
-                        role=role,
-                        offchain_sent=True,
-                    )
-                )
+            handle_fund_pull_pre_approval_command(preapproval_command)
 
         return _jws(command.id())
     except offchain.Error as e:
         logger.exception(e)
         return _jws(command.id() if command else None, e.obj)
-
-
-def validate_addresses(approval, command_in_db):
-    if (
-        approval.address != command_in_db.address
-        or approval.biller_address != command_in_db.biller_address
-    ):
-        raise ValueError("address and biller_addres values are immutable")
-
-
-def get_role_by_command_status(status):
-    if status is None or status == FundPullPreApprovalStatus.pending:
-        return Role.PAYER
-    elif status in [
-        FundPullPreApprovalStatus.valid,
-        FundPullPreApprovalStatus.rejected,
-    ]:
-        return Role.PAYEE
-    else:
-        raise FundsPullPreApprovalError(f"Wrong status {status} for incoming request")
 
 
 def _jws(cid: Optional[str], err: Optional[offchain.OffChainErrorObject] = None):
@@ -343,7 +255,7 @@ def _account_address_and_subaddress(account_id: str) -> Tuple[str, Optional[str]
     account_address, sub = identifier.decode_account(
         account_id, context.get().config.diem_address_hrp()
     )
-    return (account_address.to_hex(), sub.hex() if sub else None)
+    return account_address.to_hex(), sub.hex() if sub else None
 
 
 def _user_kyc_data(user_id: int) -> offchain.KycDataObject:
@@ -366,6 +278,10 @@ def _compliance_private_key() -> Ed25519PrivateKey:
 
 def _hrp() -> str:
     return context.get().config.diem_address_hrp()
+
+
+def _vasp_address():
+    return context.get().config.vasp_address
 
 
 def get_payment_command_json(transaction_id: int) -> Optional[Dict]:
