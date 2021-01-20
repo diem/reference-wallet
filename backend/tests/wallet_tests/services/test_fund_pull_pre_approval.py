@@ -33,7 +33,7 @@ from wallet.storage import (
     db_session,
     User,
     Account,
-    get_command_by_id,
+    get_command_by_id, update_command,
 )
 from wallet.types import RegistrationStatus
 
@@ -1247,12 +1247,14 @@ def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_e
         process_inbound_command(address, cmd)
 
 
-def test_process_inbound_command_as_both__new_request(mock_method):
+def test_process_inbound_command_as_both__happy_flow(mock_method):
     payer_user = generate_mock_user(user_name="payer_user")
     payer_bech32 = generate_my_address(payer_user)
     payee_user = generate_mock_user(user_name="payee_user")
     payee_bech32 = generate_my_address(payee_user)
 
+    # first step - payee initiate completely new funds pull pre approval request
+    # --------------------------------------------------------------------------
     # payee generate command in DB before sending
     OneFundsPullPreApproval.run(
         db_session=db_session,
@@ -1263,6 +1265,7 @@ def test_process_inbound_command_as_both__new_request(mock_method):
         account_id=payee_user.account_id,
         role=Role.PAYEE
     )
+    # payee generate pending command to payer
     cmd = generate_funds_pull_pre_approval_command(
         address=payer_bech32,
         biller_address=payee_bech32,
