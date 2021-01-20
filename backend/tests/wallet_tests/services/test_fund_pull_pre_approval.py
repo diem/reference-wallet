@@ -1259,10 +1259,18 @@ def test_process_inbound_command_as_both__happy_flow(mock_method):
 
     # first step - payee initiate completely new funds pull pre approval request
     # --------------------------------------------------------------------------
-    payee_initiate_completely_new_funds_pull_pre_approval_request_check(mock_method, payee_bech32, payee_user, payer_bech32)
+    payee_initiate_completely_new_funds_pull_pre_approval_request_check(
+        mock_method, payee_bech32, payee_user, payer_bech32
+    )
     # second step - payer approve the funds pull pre approval request
     # ---------------------------------------------------------------
-    payer_response_to_new_request_check(mock_method, payee_bech32, payer_bech32, payer_user, FundPullPreApprovalStatus.valid)
+    payer_response_to_new_request_check(
+        mock_method,
+        payee_bech32,
+        payer_bech32,
+        payer_user,
+        FundPullPreApprovalStatus.valid,
+    )
     # third step - payer close the funds pull pre approval request
     # ------------------------------------------------------------
     payer_close_request_check(mock_method, payee_bech32, payer_bech32, payer_user)
@@ -1276,10 +1284,18 @@ def test_process_inbound_command_as_both__reject_by_payer(mock_method):
 
     # first step - payee initiate completely new funds pull pre approval request
     # --------------------------------------------------------------------------
-    payee_initiate_completely_new_funds_pull_pre_approval_request_check(mock_method, payee_bech32, payee_user, payer_bech32)
+    payee_initiate_completely_new_funds_pull_pre_approval_request_check(
+        mock_method, payee_bech32, payee_user, payer_bech32
+    )
     # second step - payer reject the funds pull pre approval request
     # ---------------------------------------------------------------
-    payer_response_to_new_request_check(mock_method, payee_bech32, payer_bech32, payer_user, FundPullPreApprovalStatus.rejected)
+    payer_response_to_new_request_check(
+        mock_method,
+        payee_bech32,
+        payer_bech32,
+        payer_user,
+        FundPullPreApprovalStatus.rejected,
+    )
 
 
 def test_process_inbound_command_as_both__payer_close_pending_request(mock_method):
@@ -1290,10 +1306,18 @@ def test_process_inbound_command_as_both__payer_close_pending_request(mock_metho
 
     # first step - payee initiate completely new funds pull pre approval request
     # --------------------------------------------------------------------------
-    payee_initiate_completely_new_funds_pull_pre_approval_request_check(mock_method, payee_bech32, payee_user, payer_bech32)
+    payee_initiate_completely_new_funds_pull_pre_approval_request_check(
+        mock_method, payee_bech32, payee_user, payer_bech32
+    )
     # second step - payer close the funds pull pre approval request
     # ---------------------------------------------------------------
-    payer_response_to_new_request_check(mock_method, payee_bech32, payer_bech32, payer_user, FundPullPreApprovalStatus.closed)
+    payer_response_to_new_request_check(
+        mock_method,
+        payee_bech32,
+        payer_bech32,
+        payer_user,
+        FundPullPreApprovalStatus.closed,
+    )
 
 
 def test_process_inbound_command_as_both__payee_close_pending_request(mock_method):
@@ -1304,7 +1328,9 @@ def test_process_inbound_command_as_both__payee_close_pending_request(mock_metho
 
     # first step - payee initiate completely new funds pull pre approval request
     # --------------------------------------------------------------------------
-    payee_initiate_completely_new_funds_pull_pre_approval_request_check(mock_method, payee_bech32, payee_user, payer_bech32)
+    payee_initiate_completely_new_funds_pull_pre_approval_request_check(
+        mock_method, payee_bech32, payee_user, payer_bech32
+    )
     # second step - payee close the funds pull pre approval request
     # ---------------------------------------------------------------
     payee_close_request_check(mock_method, payee_bech32, payee_user, payer_bech32)
@@ -1318,10 +1344,18 @@ def test_process_inbound_command_as_both__payee_close_valid_request(mock_method)
 
     # first step - payee initiate completely new funds pull pre approval request
     # --------------------------------------------------------------------------
-    payee_initiate_completely_new_funds_pull_pre_approval_request_check(mock_method, payee_bech32, payee_user, payer_bech32)
+    payee_initiate_completely_new_funds_pull_pre_approval_request_check(
+        mock_method, payee_bech32, payee_user, payer_bech32
+    )
     # second step - payer approve the funds pull pre approval request
     # ---------------------------------------------------------------
-    payer_response_to_new_request_check(mock_method, payee_bech32, payer_bech32, payer_user, FundPullPreApprovalStatus.valid)
+    payer_response_to_new_request_check(
+        mock_method,
+        payee_bech32,
+        payer_bech32,
+        payer_user,
+        FundPullPreApprovalStatus.valid,
+    )
     # third step - payer close the funds pull pre approval request
     # ------------------------------------------------------------
     payee_close_request_check(mock_method, payee_bech32, payee_user, payer_bech32)
@@ -1357,16 +1391,16 @@ def payee_close_request_check(mock_method, payee_bech32, payee_user, payer_bech3
     )
     assert payer_command_in_db
     assert (
-            payer_command_in_db.funds_pull_pre_approval.status
-            == FundPullPreApprovalStatus.closed
+        payer_command_in_db.funds_pull_pre_approval.status
+        == FundPullPreApprovalStatus.closed
     )
     payee_command_in_db = get_command_from_bech32(
         payee_bech32, FUNDS_PULL_PRE_APPROVAL_ID
     )
     assert payee_command_in_db
     assert (
-            payee_command_in_db.funds_pull_pre_approval.status
-            == FundPullPreApprovalStatus.closed
+        payee_command_in_db.funds_pull_pre_approval.status
+        == FundPullPreApprovalStatus.closed
     )
 
 
@@ -1400,20 +1434,22 @@ def payer_close_request_check(mock_method, payee_bech32, payer_bech32, payer_use
     )
     assert payer_command_in_db
     assert (
-            payer_command_in_db.funds_pull_pre_approval.status
-            == FundPullPreApprovalStatus.closed
+        payer_command_in_db.funds_pull_pre_approval.status
+        == FundPullPreApprovalStatus.closed
     )
     payee_command_in_db = get_command_from_bech32(
         payee_bech32, FUNDS_PULL_PRE_APPROVAL_ID
     )
     assert payee_command_in_db
     assert (
-            payee_command_in_db.funds_pull_pre_approval.status
-            == FundPullPreApprovalStatus.closed
+        payee_command_in_db.funds_pull_pre_approval.status
+        == FundPullPreApprovalStatus.closed
     )
 
 
-def payer_response_to_new_request_check(mock_method, payee_bech32, payer_bech32, payer_user, response_status):
+def payer_response_to_new_request_check(
+    mock_method, payee_bech32, payer_bech32, payer_user, response_status
+):
     # payer generate valid command to payer
     cmd = generate_funds_pull_pre_approval_command(
         address=payer_bech32,
@@ -1442,21 +1478,17 @@ def payer_response_to_new_request_check(mock_method, payee_bech32, payer_bech32,
         payer_bech32, FUNDS_PULL_PRE_APPROVAL_ID
     )
     assert payer_command_in_db
-    assert (
-            payer_command_in_db.funds_pull_pre_approval.status
-            == response_status
-    )
+    assert payer_command_in_db.funds_pull_pre_approval.status == response_status
     payee_command_in_db = get_command_from_bech32(
         payee_bech32, FUNDS_PULL_PRE_APPROVAL_ID
     )
     assert payee_command_in_db
-    assert (
-            payee_command_in_db.funds_pull_pre_approval.status
-            == response_status
-    )
+    assert payee_command_in_db.funds_pull_pre_approval.status == response_status
 
 
-def payee_initiate_completely_new_funds_pull_pre_approval_request_check(mock_method, payee_bech32, payee_user, payer_bech32):
+def payee_initiate_completely_new_funds_pull_pre_approval_request_check(
+    mock_method, payee_bech32, payee_user, payer_bech32
+):
     # payee generate command in DB before sending
     OneFundsPullPreApproval.run(
         db_session=db_session,
@@ -1487,16 +1519,16 @@ def payee_initiate_completely_new_funds_pull_pre_approval_request_check(mock_met
     )
     assert payer_command_in_db
     assert (
-            payer_command_in_db.funds_pull_pre_approval.status
-            == FundPullPreApprovalStatus.pending
+        payer_command_in_db.funds_pull_pre_approval.status
+        == FundPullPreApprovalStatus.pending
     )
     payee_command_in_db = get_command_from_bech32(
         payee_bech32, FUNDS_PULL_PRE_APPROVAL_ID
     )
     assert payee_command_in_db
     assert (
-            payee_command_in_db.funds_pull_pre_approval.status
-            == FundPullPreApprovalStatus.pending
+        payee_command_in_db.funds_pull_pre_approval.status
+        == FundPullPreApprovalStatus.pending
     )
 
 
