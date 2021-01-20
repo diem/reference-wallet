@@ -5,15 +5,16 @@ import logging
 import os
 import random
 import string
-from typing import List
-
 import time
+from typing import List
 
 from .models import OffChainSequenceInfo, TransactionStatus, RegistrationStatus
 from .models_fppa import FundPullPreApprovalScope, FundsPullPreApproval
+from .models_fppa import (
+    FundPullPreApprovalStatus,
+)
 from .reference_wallet_proxy import ReferenceWalletProxy
 from .vasp_proxy import VaspProxy, TxStatus, TxState
-
 
 RETRIES_COUNT = os.getenv("RETRIES_COUNT", 20)
 SECONDS_BETWEEN_RETRIES = os.getenv("SECONDS_BETWEEN_RETRIES", 1)
@@ -154,6 +155,16 @@ class ValidatorClient(VaspProxy):
             time.sleep(SECONDS_BETWEEN_RETRIES)
 
         return self.wallet.funds_pull_preapproval.get_all_preapprovals()
+
+    def approve_funds_pull_request(self, funds_pre_approval_id: str):
+        self.wallet.funds_pull_preapproval.update_preapproval_status(
+            funds_pre_approval_id, FundPullPreApprovalStatus.valid
+        )
+
+    def reject_funds_pull_request(self, funds_pre_approval_id: str):
+        self.wallet.funds_pull_preapproval.update_preapproval_status(
+            funds_pre_approval_id, FundPullPreApprovalStatus.rejected
+        )
 
     def _create_approved_user(self, username, first_name, last_name, password):
         self.wallet.create_new_user(username, password)

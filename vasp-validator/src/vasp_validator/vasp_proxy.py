@@ -60,3 +60,9 @@ class VaspProxy(ABC):
 
     def get_all_funds_pull_preapprovals(self):
         ...
+
+    def approve_funds_pull_request(self, funds_pre_approval_id: str):
+        ...
+
+    def reject_funds_pull_request(self, funds_pre_approval_id: str):
+        ...
