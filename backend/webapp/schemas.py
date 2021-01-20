@@ -264,7 +264,7 @@ class Currency(Schema):
 
 
 class ScopedCumulativeAmount(Schema):
-    unit = fields.Str(required=True, validate=OneOf(["week", "month", "year"]))
+    unit = fields.Str(required=True, validate=OneOf(["day", "week", "month", "year"]))
     value = fields.Int(required=True)
     max_amount = fields.Nested(Currency)
 
@@ -282,7 +282,9 @@ class FundsPullPreApproval(Schema):
     funds_pull_pre_approval_id = fields.Str(required=True)
     scope = fields.Nested(Scope)
     description = fields.Str(required=False)
-    status = fields.Str(required=False)  # default="pending"
+    status = fields.Str(
+        required=True, validate=OneOf(["pending", "valid", "rejected", "closed"])
+    )
 
 
 class FundsPullPreApprovalList(Schema):
@@ -298,8 +300,8 @@ class FundsTransfer(Schema):
     payment_command = fields.Nested(PaymentCommand, required=False, allow_none=True)
 
 
-class ApproveFundsPullPreApproval(Schema):
-    status = fields.Str(required=False)  # verified\rejected
+class UpdateFundsPullPreApproval(Schema):
+    status = fields.Str(required=True, validate=OneOf(["valid", "rejected", "closed"]))
 
 
 class CreateAndApproveFundPullPreApproval(Schema):
