@@ -33,7 +33,7 @@ from wallet.storage import (
     db_session,
     User,
     Account,
-    get_command_by_id, update_command,
+    get_command_by_id,
 )
 from wallet.types import RegistrationStatus
 
@@ -1266,7 +1266,7 @@ def test_process_inbound_command_as_both__happy_flow(mock_method):
         funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
         status=FundPullPreApprovalStatus.pending,
         account_id=payee_user.account_id,
-        role=Role.PAYEE
+        role=Role.PAYEE,
     )
     # payee generate pending command to payer
     cmd = generate_funds_pull_pre_approval_command(
@@ -1385,7 +1385,9 @@ def test_role_calculation():
     for com in actual_combinations:
         expected_combinations.remove(com)
 
-    assert len(expected_combinations) == 0, print_expected_combinations(expected_combinations)
+    assert len(expected_combinations) == 0, print_expected_combinations(
+        expected_combinations
+    )
 
 
 def print_expected_combinations(expected_combinations):
