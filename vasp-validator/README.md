@@ -90,8 +90,7 @@ The general steps are:
 
 1. Boot two local instances of Reference Wallet. The fastest way is to run
  `make run-double` in the repository root directory.
-2. Configure the correct ports in `.env`.
-3. Run `./test.sh` 
+2. Run `./test.sh` in the vasp-validator directory.
 
 `test.sh` runs all the tests. It accepts all the usual pytest arguments;
 for example this command:
