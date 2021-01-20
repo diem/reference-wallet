@@ -1373,12 +1373,11 @@ def payee_close_request_check(mock_method, payee_bech32, payee_user, payer_bech3
     )
     # payee update his command to closed
     update_command(
-        payee_user.account_id,
         preapproval_command_to_model(
             account_id=payee_user.account_id,
             command=cmd,
             role=Role.PAYEE,
-        ),
+        )
     )
     mock_method(
         context.get().offchain_client,
@@ -1416,12 +1415,11 @@ def payer_close_request_check(mock_method, payee_bech32, payer_bech32, payer_use
     )
     # payer update his command to valid
     update_command(
-        payer_user.account_id,
         preapproval_command_to_model(
             account_id=payer_user.account_id,
             command=cmd,
             role=Role.PAYER,
-        ),
+        )
     )
     mock_method(
         context.get().offchain_client,
@@ -1461,12 +1459,11 @@ def payer_response_to_new_request_check(
     )
     # payer update his command to valid
     update_command(
-        payer_user.account_id,
         preapproval_command_to_model(
             account_id=payer_user.account_id,
             command=cmd,
             role=Role.PAYER,
-        ),
+        )
     )
     mock_method(
         context.get().offchain_client,
