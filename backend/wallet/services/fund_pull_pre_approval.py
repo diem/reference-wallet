@@ -309,36 +309,37 @@ def get_combinations():
 
     # fmt: off
     explicit_combinations = {
+        # only payer can receive 'pending'
         Combination(Incoming.pending, True, True, Existing.pending, None): Role.PAYER,  # new request from known payee
-        # TODO if approval.status == 'pending' compare all values to decide ?
         Combination(Incoming.pending, True, True, Existing.pending, Existing.pending): Role.PAYER,  # update request from known payee
         Combination(Incoming.pending, False, True, None, None): Role.PAYER,  # new request from unknown payee
         Combination(Incoming.pending, False, True, None, Existing.pending): Role.PAYER,  # update request from unknown payee
-        Combination(Incoming.pending, False, True, None, Existing.valid): None,
-        Combination(Incoming.pending, False, True, None, Existing.closed): None,
-        Combination(Incoming.pending, False, True, None, Existing.rejected): None,
-        #
+        # only payee can receive 'valid'
         Combination(Incoming.valid, True, False, Existing.pending, None): Role.PAYEE,  # approve request by unknown payer
         Combination(Incoming.valid, True, True, Existing.pending, Existing.valid): Role.PAYEE, # get approve from known payer
-        #
+        # only payee can receive 'rejected'
         Combination(Incoming.rejected, True, False, Existing.pending, None): Role.PAYEE,  # reject request by unknown payer
-        Combination(Incoming.rejected, True, True, Existing.pending, Existing.rejected): Role.PAYEE,
+        Combination(Incoming.rejected, True, True, Existing.pending, Existing.rejected): Role.PAYEE,  # reject request by known payer
         #
         Combination(Incoming.closed, False, True, None, Existing.pending): Role.PAYER,  # close 'pending' request by unknown payee
         Combination(Incoming.closed, False, True, None, Existing.valid): Role.PAYER,  # close 'valid' request by unknown payee
+        #
+        Combination(Incoming.closed, True, True, Existing.closed, Existing.pending): Role.PAYER,  # close request by known payee
+        Combination(Incoming.closed, True, True, Existing.closed, Existing.valid): Role.PAYER,  # close request by known payee
+        #
+        Combination(Incoming.closed, True, False, Existing.pending, None): Role.PAYEE,  # close 'pending' request by unknown payer
+        Combination(Incoming.closed, True, False, Existing.valid, None): Role.PAYEE,  # close 'valid' request by unknown payer
+        #
+        Combination(Incoming.closed, True, True, Existing.pending, Existing.closed): Role.PAYEE,  # close request by known payer
+        Combination(Incoming.closed, True, True, Existing.valid, Existing.closed): Role.PAYEE,  # close request by known payer
+        #
+        Combination(Incoming.pending, False, True, None, Existing.valid): None,
+        Combination(Incoming.pending, False, True, None, Existing.closed): None,
+        Combination(Incoming.pending, False, True, None, Existing.rejected): None,
         Combination(Incoming.closed, False, True, None, Existing.rejected): None,
         Combination(Incoming.closed, False, True, None, Existing.closed): None,
-        #
-        Combination(Incoming.closed, True, True, Existing.pending, Existing.closed): Role.PAYEE,  # close request by payer
-        Combination(Incoming.closed, True, True, Existing.valid, Existing.closed): Role.PAYEE,  # close request by payer
-        # TODO what about close by payee ??
-        Combination(Incoming.closed, True, True, Existing.closed, Existing.pending): Role.PAYER,  # close request by payee
-        Combination(Incoming.closed, True, True, Existing.closed, Existing.valid): Role.PAYER,  # close request by payee
-        #
         Combination(Incoming.closed, True, False, Existing.closed, None): None,
         Combination(Incoming.closed, True, False, Existing.rejected, None): None,
-        Combination(Incoming.closed, True, False, Existing.pending, None): Role.PAYEE,
-        Combination(Incoming.closed, True, False, Existing.valid, None): Role.PAYEE,
     }
 
     all_combinations_ = {}
@@ -400,6 +401,8 @@ def get_role(approval):
     combinations = get_combinations()
 
     role = combinations.get(combination)
+
+    print(f"combination: {combination}, role: {role}")
 
     if role is None:
         raise FundsPullPreApprovalError()

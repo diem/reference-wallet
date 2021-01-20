@@ -25,8 +25,9 @@ from wallet.services.fund_pull_pre_approval import (
     reject,
     get_combinations,
     all_combinations,
-    get_command_from_bech32,
     process_funds_pull_pre_approvals_requests,
+    preapproval_command_to_model,
+    get_command_from_bech32,
 )
 from wallet.services.offchain import (
     process_inbound_command,
@@ -36,6 +37,7 @@ from wallet.storage import (
     User,
     Account,
     get_command_by_id,
+    update_command,
 )
 from wallet.types import RegistrationStatus
 
@@ -1257,6 +1259,204 @@ def test_process_inbound_command_as_both__happy_flow(mock_method):
 
     # first step - payee initiate completely new funds pull pre approval request
     # --------------------------------------------------------------------------
+    payee_initiate_completely_new_funds_pull_pre_approval_request_check(mock_method, payee_bech32, payee_user, payer_bech32)
+    # second step - payer approve the funds pull pre approval request
+    # ---------------------------------------------------------------
+    payer_response_to_new_request_check(mock_method, payee_bech32, payer_bech32, payer_user, FundPullPreApprovalStatus.valid)
+    # third step - payer close the funds pull pre approval request
+    # ------------------------------------------------------------
+    payer_close_request_check(mock_method, payee_bech32, payer_bech32, payer_user)
+
+
+def test_process_inbound_command_as_both__reject_by_payer(mock_method):
+    payer_user = generate_mock_user(user_name="payer_user")
+    payer_bech32 = generate_my_address(payer_user)
+    payee_user = generate_mock_user(user_name="payee_user")
+    payee_bech32 = generate_my_address(payee_user)
+
+    # first step - payee initiate completely new funds pull pre approval request
+    # --------------------------------------------------------------------------
+    payee_initiate_completely_new_funds_pull_pre_approval_request_check(mock_method, payee_bech32, payee_user, payer_bech32)
+    # second step - payer reject the funds pull pre approval request
+    # ---------------------------------------------------------------
+    payer_response_to_new_request_check(mock_method, payee_bech32, payer_bech32, payer_user, FundPullPreApprovalStatus.rejected)
+
+
+def test_process_inbound_command_as_both__payer_close_pending_request(mock_method):
+    payer_user = generate_mock_user(user_name="payer_user")
+    payer_bech32 = generate_my_address(payer_user)
+    payee_user = generate_mock_user(user_name="payee_user")
+    payee_bech32 = generate_my_address(payee_user)
+
+    # first step - payee initiate completely new funds pull pre approval request
+    # --------------------------------------------------------------------------
+    payee_initiate_completely_new_funds_pull_pre_approval_request_check(mock_method, payee_bech32, payee_user, payer_bech32)
+    # second step - payer close the funds pull pre approval request
+    # ---------------------------------------------------------------
+    payer_response_to_new_request_check(mock_method, payee_bech32, payer_bech32, payer_user, FundPullPreApprovalStatus.closed)
+
+
+def test_process_inbound_command_as_both__payee_close_pending_request(mock_method):
+    payer_user = generate_mock_user(user_name="payer_user")
+    payer_bech32 = generate_my_address(payer_user)
+    payee_user = generate_mock_user(user_name="payee_user")
+    payee_bech32 = generate_my_address(payee_user)
+
+    # first step - payee initiate completely new funds pull pre approval request
+    # --------------------------------------------------------------------------
+    payee_initiate_completely_new_funds_pull_pre_approval_request_check(mock_method, payee_bech32, payee_user, payer_bech32)
+    # second step - payee close the funds pull pre approval request
+    # ---------------------------------------------------------------
+    payee_close_request_check(mock_method, payee_bech32, payee_user, payer_bech32)
+
+
+def test_process_inbound_command_as_both__payee_close_valid_request(mock_method):
+    payer_user = generate_mock_user(user_name="payer_user")
+    payer_bech32 = generate_my_address(payer_user)
+    payee_user = generate_mock_user(user_name="payee_user")
+    payee_bech32 = generate_my_address(payee_user)
+
+    # first step - payee initiate completely new funds pull pre approval request
+    # --------------------------------------------------------------------------
+    payee_initiate_completely_new_funds_pull_pre_approval_request_check(mock_method, payee_bech32, payee_user, payer_bech32)
+    # second step - payer approve the funds pull pre approval request
+    # ---------------------------------------------------------------
+    payer_response_to_new_request_check(mock_method, payee_bech32, payer_bech32, payer_user, FundPullPreApprovalStatus.valid)
+    # third step - payer close the funds pull pre approval request
+    # ------------------------------------------------------------
+    payee_close_request_check(mock_method, payee_bech32, payee_user, payer_bech32)
+
+
+def payee_close_request_check(mock_method, payee_bech32, payee_user, payer_bech32):
+    # payee generate closed command to payer
+    cmd = generate_funds_pull_pre_approval_command(
+        address=payer_bech32,
+        biller_address=payee_bech32,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.closed,
+    )
+    # payee update his command to closed
+    update_command(
+        payee_user.account_id,
+        preapproval_command_to_model(
+            account_id=payee_user.account_id,
+            command=cmd,
+            role=Role.PAYEE,
+        ),
+    )
+    mock_method(
+        context.get().offchain_client,
+        "process_inbound_request",
+        will_return=cmd,
+    )
+    code, resp = process_inbound_command(payee_bech32, cmd)
+    assert code == 200
+    assert resp
+    payer_command_in_db = get_command_from_bech32(
+        payer_bech32, FUNDS_PULL_PRE_APPROVAL_ID
+    )
+    assert payer_command_in_db
+    assert (
+            payer_command_in_db.funds_pull_pre_approval.status
+            == FundPullPreApprovalStatus.closed
+    )
+    payee_command_in_db = get_command_from_bech32(
+        payee_bech32, FUNDS_PULL_PRE_APPROVAL_ID
+    )
+    assert payee_command_in_db
+    assert (
+            payee_command_in_db.funds_pull_pre_approval.status
+            == FundPullPreApprovalStatus.closed
+    )
+
+
+def payer_close_request_check(mock_method, payee_bech32, payer_bech32, payer_user):
+    # payer generate closed command to payer
+    cmd = generate_funds_pull_pre_approval_command(
+        address=payer_bech32,
+        biller_address=payee_bech32,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.closed,
+    )
+    # payer update his command to valid
+    update_command(
+        payer_user.account_id,
+        preapproval_command_to_model(
+            account_id=payer_user.account_id,
+            command=cmd,
+            role=Role.PAYER,
+        ),
+    )
+    mock_method(
+        context.get().offchain_client,
+        "process_inbound_request",
+        will_return=cmd,
+    )
+    code, resp = process_inbound_command(payee_bech32, cmd)
+    assert code == 200
+    assert resp
+    payer_command_in_db = get_command_from_bech32(
+        payer_bech32, FUNDS_PULL_PRE_APPROVAL_ID
+    )
+    assert payer_command_in_db
+    assert (
+            payer_command_in_db.funds_pull_pre_approval.status
+            == FundPullPreApprovalStatus.closed
+    )
+    payee_command_in_db = get_command_from_bech32(
+        payee_bech32, FUNDS_PULL_PRE_APPROVAL_ID
+    )
+    assert payee_command_in_db
+    assert (
+            payee_command_in_db.funds_pull_pre_approval.status
+            == FundPullPreApprovalStatus.closed
+    )
+
+
+def payer_response_to_new_request_check(mock_method, payee_bech32, payer_bech32, payer_user, response_status):
+    # payer generate valid command to payer
+    cmd = generate_funds_pull_pre_approval_command(
+        address=payer_bech32,
+        biller_address=payee_bech32,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=response_status,
+    )
+    # payer update his command to valid
+    update_command(
+        payer_user.account_id,
+        preapproval_command_to_model(
+            account_id=payer_user.account_id,
+            command=cmd,
+            role=Role.PAYER,
+        ),
+    )
+    mock_method(
+        context.get().offchain_client,
+        "process_inbound_request",
+        will_return=cmd,
+    )
+    code, resp = process_inbound_command(payee_bech32, cmd)
+    assert code == 200
+    assert resp
+    payer_command_in_db = get_command_from_bech32(
+        payer_bech32, FUNDS_PULL_PRE_APPROVAL_ID
+    )
+    assert payer_command_in_db
+    assert (
+            payer_command_in_db.funds_pull_pre_approval.status
+            == response_status
+    )
+    payee_command_in_db = get_command_from_bech32(
+        payee_bech32, FUNDS_PULL_PRE_APPROVAL_ID
+    )
+    assert payee_command_in_db
+    assert (
+            payee_command_in_db.funds_pull_pre_approval.status
+            == response_status
+    )
+
+
+def payee_initiate_completely_new_funds_pull_pre_approval_request_check(mock_method, payee_bech32, payee_user, payer_bech32):
     # payee generate command in DB before sending
     OneFundsPullPreApproval.run(
         db_session=db_session,
@@ -1286,47 +1486,18 @@ def test_process_inbound_command_as_both__happy_flow(mock_method):
         payer_bech32, FUNDS_PULL_PRE_APPROVAL_ID
     )
     assert payer_command_in_db
-    # command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
-    # assert command_in_db.address == payer_bech32
-    # assert command_in_db.biller_address == payee_bech32
-    # assert command_in_db.status == FundPullPreApprovalStatus.closed
-
-
-def test_outgoing_commands(mock_method):
-    offchain_client = context.get().offchain_client
-    send_command_calls = mock_method(offchain_client, "send_command")
-
-    payer_user = generate_mock_user(user_name="payer_user")
-    address = generate_my_address(payer_user)
-    payee_user = generate_mock_user(user_name="payee_user")
-    biller_address = generate_my_address(payee_user)
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        address=address,
-        biller_address=biller_address,
-        status=FundPullPreApprovalStatus.valid,
+    assert (
+            payer_command_in_db.funds_pull_pre_approval.status
+            == FundPullPreApprovalStatus.pending
     )
-
-    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
-    assert not command_in_db.offchain_sent
-
-    # One command should be sent
-    process_funds_pull_pre_approvals_requests()
-    assert len(send_command_calls) == 1
-
-    send_command_call = send_command_calls.pop()
-    sent_cmd: FundPullPreApprovalObject = send_command_call[0].funds_pull_pre_approval
-    assert sent_cmd.funds_pull_pre_approval_id == FUNDS_PULL_PRE_APPROVAL_ID
-    assert sent_cmd.status == FundPullPreApprovalStatus.valid
-
-    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
-    assert command_in_db.offchain_sent
-
-    # No commands to send this time
-    process_funds_pull_pre_approvals_requests()
-    assert len(send_command_calls) == 0
+    payee_command_in_db = get_command_from_bech32(
+        payee_bech32, FUNDS_PULL_PRE_APPROVAL_ID
+    )
+    assert payee_command_in_db
+    assert (
+            payee_command_in_db.funds_pull_pre_approval.status
+            == FundPullPreApprovalStatus.pending
+    )
 
 
 def generate_mock_user(user_name="test_user"):
@@ -1429,3 +1600,40 @@ def test_role_calculation():
 def print_expected_combinations(expected_combinations):
     for comb in expected_combinations:
         print(comb)
+
+
+def test_outgoing_commands(mock_method):
+    offchain_client = context.get().offchain_client
+    send_command_calls = mock_method(offchain_client, "send_command")
+
+    payer_user = generate_mock_user(user_name="payer_user")
+    address = generate_my_address(payer_user)
+    payee_user = generate_mock_user(user_name="payee_user")
+    biller_address = generate_my_address(payee_user)
+
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        address=address,
+        biller_address=biller_address,
+        status=FundPullPreApprovalStatus.valid,
+    )
+
+    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
+    assert not command_in_db.offchain_sent
+
+    # One command should be sent
+    process_funds_pull_pre_approvals_requests()
+    assert len(send_command_calls) == 1
+
+    send_command_call = send_command_calls.pop()
+    sent_cmd: FundPullPreApprovalObject = send_command_call[0].funds_pull_pre_approval
+    assert sent_cmd.funds_pull_pre_approval_id == FUNDS_PULL_PRE_APPROVAL_ID
+    assert sent_cmd.status == FundPullPreApprovalStatus.valid
+
+    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
+    assert command_in_db.offchain_sent
+
+    # No commands to send this time
+    process_funds_pull_pre_approvals_requests()
+    assert len(send_command_calls) == 0
