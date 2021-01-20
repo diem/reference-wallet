@@ -306,6 +306,8 @@ class Combination:
 def get_combinations():
     Incoming = FundPullPreApprovalStatus
     Existing = FundPullPreApprovalStatus
+
+    # fmt: off
     explicit_combinations = {
         Combination(Incoming.pending, True, True, Existing.pending, None): Role.PAYER,  # new request from known payee
         # TODO if approval.status == 'pending' compare all values to decide ?
@@ -365,6 +367,7 @@ def get_combinations():
     )
 
     all_combinations_.update(explicit_combinations)
+    # fmt: on
 
     return all_combinations_
 
@@ -443,13 +446,13 @@ def basic_invalid_states():
         combination
         for combination in all_combinations()
         if (
-                   not combination.is_payee_address_mine
-                   and combination.existing_status_as_payee is not None
-           )
-           or (
-                   not combination.is_payer_address_mine
-                   and combination.existing_status_as_payer is not None
-           )
+            not combination.is_payee_address_mine
+            and combination.existing_status_as_payee is not None
+        )
+        or (
+            not combination.is_payer_address_mine
+            and combination.existing_status_as_payer is not None
+        )
     ]
 
 
@@ -519,14 +522,13 @@ def incoming_pending_my_payee_not_pending_my_payer_pending_or_none():
         for combination in all_combinations()
         if both_mine(combination)
         and (
-                   payee_status_is_not_pending(combination)
-                   or (
-                           payee_status_is_pending(combination)
-                           and payer_status_is_not_pending(combination)
-                           and payer_status_is_not_none(combination)
-                   )
-           )
-
+            payee_status_is_not_pending(combination)
+            or (
+                payee_status_is_pending(combination)
+                and payer_status_is_not_pending(combination)
+                and payer_status_is_not_none(combination)
+            )
+        )
     ]
 
 
@@ -671,12 +673,10 @@ def handle_fund_pull_pre_approval_command(command):
                         account_id=command_in_db.account_id,
                         command=command,
                         role=command_in_db.role,
-                    )
+                    ),
                 )
             else:
-                address, sub_address = identifier.decode_account(
-                    approval.address, hrp
-                )
+                address, sub_address = identifier.decode_account(approval.address, hrp)
 
                 commit_command(
                     preapproval_command_to_model(
@@ -698,7 +698,7 @@ def handle_fund_pull_pre_approval_command(command):
                         account_id=command_in_db.account_id,
                         command=command,
                         role=command_in_db.role,
-                    )
+                    ),
                 )
             else:
                 raise FundsPullPreApprovalCommandNotFound()
@@ -722,7 +722,7 @@ def handle_fund_pull_pre_approval_command(command):
                             ),
                             command=command,
                             role=command_in_db.role,
-                        )
+                        ),
                     )
                 else:
                     raise FundsPullPreApprovalInvalidStatus()
@@ -736,7 +736,7 @@ def handle_fund_pull_pre_approval_command(command):
                         account_id=command_in_db.account_id,
                         command=command,
                         role=command_in_db.role,
-                    )
+                    ),
                 )
             else:
                 raise FundsPullPreApprovalCommandNotFound()
