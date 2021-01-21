@@ -33,6 +33,7 @@ class ValidationToolRoutes:
 
             payer_address = request_details["payer_address"]
             description = request_details.get("description")
+            should_send = request_details.get("should_send")
 
             max_cumulative_amount = (
                 offchain.ScopedCumulativeAmountObject(
@@ -69,6 +70,7 @@ class ValidationToolRoutes:
                     payer_address=payer_address,
                     scope=scope,
                     description=description,
+                    should_send=should_send is None or should_send,
                 )
             )
 

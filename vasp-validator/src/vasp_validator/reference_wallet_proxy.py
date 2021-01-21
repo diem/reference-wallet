@@ -148,11 +148,13 @@ class ReferenceWalletProxyFPPA:
         payer_addr_bech32: str,
         scope: FundPullPreApprovalScope,
         description: str = None,
+        should_send: bool = True,
     ) -> str:
         fppa_request = FundsPullPreApprovalRequest(
             payer_address=payer_addr_bech32,
             description=description,
             scope=scope,
+            should_send=should_send,
         )
         r = self._request_authorized(
             "POST", "validation/funds_pull_pre_approvals", fppa_request.to_dict()

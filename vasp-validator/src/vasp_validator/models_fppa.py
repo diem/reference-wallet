@@ -52,6 +52,7 @@ class FundsPullPreApprovalRequest:
     payer_address: str
     scope: FundPullPreApprovalScope
     description: Optional[str] = None
+    should_send: Optional[bool] = True
 
 
 class FundPullPreApprovalStatus(str, Enum):

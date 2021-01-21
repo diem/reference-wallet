@@ -12,6 +12,7 @@ def request_funds_pull_pre_approval_from_another(
     account_id: int,
     payer_address: str,
     scope: offchain.FundPullPreApprovalScopeObject,
+    should_send: bool,
     description: str = None,
 ) -> str:
     biller_address = get_biller_address(account_id)
@@ -44,12 +45,11 @@ def request_funds_pull_pre_approval_from_another(
             description=description,
             status=offchain.FundPullPreApprovalStatus.pending,
             role=Role.PAYEE,
+            offchain_sent=should_send,
             **max_cumulative_amount,
             **max_transaction_amount,
         )
     )
-
-    # TODO send to offchain client
 
     return funds_pull_pre_approval_id
 
