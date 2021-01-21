@@ -345,7 +345,13 @@ def handle_fund_pull_pre_approval_command(
         validate_addresses(approval, command_in_db)
         validate_status(approval, command_in_db)
 
-    execute(approval, command, command_in_db, role)
+    action = get_next_action(
+        role,
+        approval.status,
+        command_in_db and command_in_db.status,
+    )
+
+    action(preapproval_command_to_model(command, role))
 
 
 def get_existing_command_status(address_bech32: str, fppa_id: str) -> Optional[str]:
@@ -355,22 +361,6 @@ def get_existing_command_status(address_bech32: str, fppa_id: str) -> Optional[s
     """
     command = get_command_from_bech32(address_bech32, fppa_id)
     return command and command.funds_pull_pre_approval.status
-
-
-def execute(approval, command, command_in_db, role):
-    hrp = context.get().config.diem_address_hrp()
-
-    action = get_next_action(
-        role,
-        command.funds_pull_pre_approval.status,
-        command_in_db and command_in_db.status,
-    )
-
-    _, sub_address = identifier.decode_account(
-        approval.address if role == Role.PAYER else approval.biller_address, hrp
-    )
-
-    action(preapproval_command_to_model(command, role))
 
 
 def validate_status(approval, command_in_db):
