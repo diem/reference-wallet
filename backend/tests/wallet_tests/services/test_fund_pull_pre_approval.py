@@ -22,11 +22,13 @@ from wallet.services.fund_pull_pre_approval import (
     FundsPullPreApprovalError,
     close,
     reject,
-    get_combinations,
-    all_combinations,
     process_funds_pull_pre_approvals_requests,
     preapproval_command_to_model,
     get_command_from_bech32,
+)
+from wallet.services.fund_pull_pre_approval_sm import (
+    get_combinations,
+    all_combinations,
 )
 from wallet.services.offchain import (
     process_inbound_command,
