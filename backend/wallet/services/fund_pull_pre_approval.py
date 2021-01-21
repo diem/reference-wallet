@@ -187,12 +187,13 @@ def process_funds_pull_pre_approvals_requests():
 
 
 def preapproval_command_to_model(
-    account_id,
     command: offchain.FundsPullPreApprovalCommand,
-    role: str,
+    role: Role,
     offchain_sent: Optional[bool] = None,
 ) -> models.FundsPullPreApprovalCommand:
+    account_id = get_account_id_from_command(command, role)
     preapproval_object = command.funds_pull_pre_approval
+
     max_cumulative_amount = preapproval_object.scope.max_cumulative_amount
     max_transaction_amount = preapproval_object.scope.max_transaction_amount
 
@@ -278,6 +279,23 @@ def preapproval_model_to_command(
     )
 
 
+def get_account_id_from_command(
+    command: offchain.FundsPullPreApprovalCommand,
+    role: Role,
+) -> Optional[int]:
+    preapproval = command.funds_pull_pre_approval
+
+    if role == Role.PAYER:
+        my_address = preapproval.address
+    else:
+        my_address = preapproval.biller_address
+
+    _, sub_address = identifier.decode_account(
+        my_address, hrp=context.get().config.diem_address_hrp()
+    )
+    return get_account_id_from_subaddr(sub_address.hex())
+
+
 def get_command_from_bech32(
     address_bech32: str, funds_pull_pre_approval_id: str
 ) -> Optional[offchain.FundsPullPreApprovalCommand]:
@@ -353,13 +371,7 @@ def execute(approval, command, command_in_db, role):
         approval.address if role == Role.PAYER else approval.biller_address, hrp
     )
 
-    action(
-        preapproval_command_to_model(
-            account_id=get_account_id_from_subaddr(sub_address.hex()),
-            command=command,
-            role=role,
-        ),
-    )
+    action(preapproval_command_to_model(command, role))
 
 
 def validate_status(approval, command_in_db):
