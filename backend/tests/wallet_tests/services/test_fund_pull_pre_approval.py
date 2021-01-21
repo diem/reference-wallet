@@ -1376,7 +1376,6 @@ def payee_close_request_check(mock_method, payee_bech32, payee_user, payer_bech3
     # payee update his command to closed
     update_command(
         preapproval_command_to_model(
-            account_id=payee_user.account_id,
             command=cmd,
             role=Role.PAYEE,
         )
@@ -1418,7 +1417,6 @@ def payer_close_request_check(mock_method, payee_bech32, payer_bech32, payer_use
     # payer update his command to valid
     update_command(
         preapproval_command_to_model(
-            account_id=payer_user.account_id,
             command=cmd,
             role=Role.PAYER,
         )
@@ -1462,7 +1460,6 @@ def payer_response_to_new_request_check(
     # payer update his command to valid
     update_command(
         preapproval_command_to_model(
-            account_id=payer_user.account_id,
             command=cmd,
             role=Role.PAYER,
         )

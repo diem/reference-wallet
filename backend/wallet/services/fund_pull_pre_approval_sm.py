@@ -28,7 +28,7 @@ def get_role(
     is_payer_address_mine: bool,
     existing_status_as_payee: Optional[str],
     existing_status_as_payer: Optional[str],
-):
+) -> Role:
     combination = Combination(
         incoming_status=incoming_status,
         is_payee_address_mine=is_payee_address_mine,
