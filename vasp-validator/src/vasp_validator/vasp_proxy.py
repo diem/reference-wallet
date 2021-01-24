@@ -58,14 +58,18 @@ class VaspProxy(ABC):
         :return: ID of the new funds pull pre-approval request.
         """
 
+    @abstractmethod
     def get_all_funds_pull_preapprovals(self):
         ...
 
+    @abstractmethod
     def approve_funds_pull_request(self, funds_pre_approval_id: str):
         ...
 
+    @abstractmethod
     def reject_funds_pull_request(self, funds_pre_approval_id: str):
         ...
 
+    @abstractmethod
     def close_funds_pull_preapproval(self, funds_pre_approval_id: str):
         ...
