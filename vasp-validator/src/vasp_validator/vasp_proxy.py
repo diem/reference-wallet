@@ -59,6 +59,23 @@ class VaspProxy(ABC):
         """
 
     @abstractmethod
+    def create_funds_pull_pre_approval_data(
+        self,
+        scope: FundPullPreApprovalScope,
+        description: str = None,
+    ) -> str:
+        """
+        Send only request data to be saved on this VASP without be sending through offchain,
+        so testee VASP could approve this request data through offchain.
+
+        :param scope: Definition of the scope of this request.
+        :param description: Optional, human readable description of the request.
+
+        :return: ID of the new funds pull pre-approval request.
+        """
+        ...
+
+    @abstractmethod
     def get_all_funds_pull_preapprovals(self):
         ...
 

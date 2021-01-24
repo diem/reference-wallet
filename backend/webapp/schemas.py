@@ -274,4 +274,8 @@ class FundsPullPreApprovalRequest(Schema):
     payer_address = fields.Str(required=True)
     scope = fields.Nested(Scope)
     description = fields.Str(required=False)
-    should_send = fields.Bool(required=False, default=True)
+
+
+class FundsPullPreApprovalData(Schema):
+    scope = fields.Nested(Scope)
+    description = fields.Str(required=False)

@@ -152,6 +152,16 @@ class ValidatorClient(VaspProxy):
             description=description,
         )
 
+    def create_funds_pull_pre_approval_data(
+        self,
+        scope: FundPullPreApprovalScope,
+        description: str = None,
+    ):
+        return self.wallet.funds_pull_preapproval.create_funds_pull_pre_approval_data(
+            scope=scope,
+            description=description,
+        )
+
     def get_all_funds_pull_preapprovals(self) -> List[FundsPullPreApproval]:
         for i in range(RETRIES_COUNT):
             preapprovals = self.wallet.funds_pull_preapproval.get_all_preapprovals()

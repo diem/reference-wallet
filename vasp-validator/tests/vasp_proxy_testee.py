@@ -43,6 +43,13 @@ class VaspProxyTestee(VaspProxy):
             description=description,
         )
 
+    def create_funds_pull_pre_approval_data(
+        self,
+        scope: FundPullPreApprovalScope,
+        description: str = None,
+    ) -> str:
+        return self.vasp.create_and_approve_funds_pull_request(scope, description)
+
     def get_all_funds_pull_preapprovals(self):
         return self.vasp.get_all_funds_pull_preapprovals()
 
