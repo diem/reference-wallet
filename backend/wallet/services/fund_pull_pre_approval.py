@@ -359,15 +359,13 @@ def get_existing_command_status(address_bech32: str, fppa_id: str) -> Optional[s
 
 
 def validate_status(approval, command_in_db):
+    if command_in_db.status == approval.status:
+        return
+
     if command_in_db.status in [
         FundPullPreApprovalStatus.rejected,
         FundPullPreApprovalStatus.closed,
     ]:
-        raise FundsPullPreApprovalInvalidStatus
-    if (
-        command_in_db.status == approval.status
-        and command_in_db.status != FundPullPreApprovalStatus.pending
-    ):
         raise FundsPullPreApprovalInvalidStatus
 
 
