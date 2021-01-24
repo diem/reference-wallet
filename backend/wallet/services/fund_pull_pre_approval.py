@@ -657,7 +657,7 @@ def handle_fund_pull_pre_approval_command(command):
         approval.funds_pull_pre_approval_id, role
     )
     if command_in_db:
-        validate_addresses(approval, command_in_db)
+        validate_addresses(approval, command_in_db, role)
         validate_status(approval, command_in_db)
 
     execute(approval, command, command_in_db, role)
@@ -721,9 +721,10 @@ def validate_status(approval, command_in_db):
         raise FundsPullPreApprovalInvalidStatus
 
 
-def validate_addresses(approval, command_in_db):
-    if (
-        approval.address != command_in_db.address
-        or approval.biller_address != command_in_db.biller_address
-    ):
-        raise ValueError("address and biller_addres values are immutable")
+def validate_addresses(approval, command_in_db, role):
+    if command_in_db.address is None and role != Role.PAYEE:
+        raise FundsPullPreApprovalError("Not payee but address is none")
+    if command_in_db.address is not None and approval.address != command_in_db.address:
+        raise FundsPullPreApprovalError("address is immutable")
+    if approval.biller_address != command_in_db.biller_address:
+        raise FundsPullPreApprovalError("biller address is immutable")
