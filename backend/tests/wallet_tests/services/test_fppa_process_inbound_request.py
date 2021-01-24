@@ -8,6 +8,7 @@ from diem.offchain import FundPullPreApprovalStatus
 from diem_utils.types.currencies import FiatCurrency, DiemCurrency
 
 import context
+import wallet.services.offchain as offchain_service
 from wallet.services.account import generate_new_subaddress
 from wallet.services.fund_pull_pre_approval_sm import (
     FundsPullPreApprovalStateError,
@@ -81,6 +82,91 @@ def random_bech32_address():
     )
 
 
+@pytest.fixture
+def process_inbound_command_(mock_method):
+    def process_inbound_command_builder(request_sender_address, command_properties):
+        return ProcessInboundCommand(
+            mock_method, request_sender_address, command_properties
+        )
+
+    return process_inbound_command_builder
+
+
+class ProcessInboundCommand:
+    def __init__(self, mock_method, request_sender_address, command_properties: dict):
+        self.fppa_id = command_properties.get("funds_pull_pre_approval_id")
+        self.command = self.generate_fppa_command(**command_properties)
+
+        self.request_sender_address = request_sender_address
+        self.command_properties = command_properties
+
+        mock_method(
+            context.get().offchain_client,
+            "process_inbound_request",
+            will_return=self.command,
+        )
+
+    def assert_command_stored(self):
+        ...
+
+    def assert_error_raised(self):
+        with pytest.raises(FundsPullPreApprovalStateError):
+            _ = b"Unused because process_inbound_request is mocked"
+            offchain_service.process_inbound_command(self.request_sender_address, _)
+
+    @classmethod
+    def generate_fppa_command(
+        cls,
+        address,
+        biller_address,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        max_cumulative_unit="week",
+        max_cumulative_unit_value=1,
+        status=FundPullPreApprovalStatus.pending,
+    ):
+        funds_pull_pre_approval = cls.generate_fppa_object(
+            address=address,
+            biller_address=biller_address,
+            funds_pull_pre_approval_id=funds_pull_pre_approval_id,
+            max_cumulative_unit=max_cumulative_unit,
+            max_cumulative_unit_value=max_cumulative_unit_value,
+            status=status,
+        )
+
+        return offchain.FundsPullPreApprovalCommand(
+            my_actor_address=address, funds_pull_pre_approval=funds_pull_pre_approval
+        )
+
+    @staticmethod
+    def generate_fppa_object(
+        address,
+        biller_address,
+        funds_pull_pre_approval_id,
+        max_cumulative_unit="week",
+        max_cumulative_unit_value=1,
+        status=FundPullPreApprovalStatus.pending,
+    ):
+        funds_pull_pre_approval = offchain.FundPullPreApprovalObject(
+            funds_pull_pre_approval_id=funds_pull_pre_approval_id,
+            address=address,
+            biller_address=biller_address,
+            scope=offchain.FundPullPreApprovalScopeObject(
+                type=offchain.FundPullPreApprovalType.consent,
+                expiration_timestamp=int(time.time()) + 30,
+                max_cumulative_amount=offchain.ScopedCumulativeAmountObject(
+                    unit=max_cumulative_unit,
+                    value=max_cumulative_unit_value,
+                    max_amount=offchain.CurrencyObject(
+                        amount=10_000_000_000_000, currency=currency
+                    ),
+                ),
+            ),
+            status=status,
+            description="test",
+        )
+        return funds_pull_pre_approval
+
+
 def test_process_inbound_command_as_payer_with_incoming_pending_and_no_record_in_db(
     mock_method, my_user, random_bech32_address
 ):
@@ -149,29 +235,21 @@ def test_process_inbound_command_as_payer_with_incoming_pending_while_record_db_
 
 
 def test_process_inbound_command_as_payer_with_incoming_reject_and_no_record_in_db(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
-    biller_address = random_bech32_address
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=my_user.address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(my_user.address, unused)
+    process_inbound_command_(
+        request_sender_address=my_user.address,
+        command_properties=dict(
+            address=my_user.address,
+            biller_address=random_bech32_address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.rejected,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payer_with_incoming_reject_while_record_db_exist(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
     biller_address = random_bech32_address
 
@@ -185,47 +263,33 @@ def test_process_inbound_command_as_payer_with_incoming_reject_while_record_db_e
         role=Role.PAYER,
     )
 
-    cmd = generate_funds_pull_pre_approval_command(
-        address=my_user.address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(my_user.address, unused)
+    process_inbound_command_(
+        request_sender_address=my_user.address,
+        command_properties=dict(
+            address=my_user.address,
+            biller_address=biller_address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.rejected,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payer_with_incoming_valid_and_no_record_in_db(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
-    biller_address = random_bech32_address
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=my_user.address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(my_user.address, unused)
+    process_inbound_command_(
+        request_sender_address=my_user.address,
+        command_properties=dict(
+            address=my_user.address,
+            biller_address=random_bech32_address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.valid,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payer_with_incoming_valid_while_record_db_exist(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
     biller_address = random_bech32_address
 
@@ -239,43 +303,29 @@ def test_process_inbound_command_as_payer_with_incoming_valid_while_record_db_ex
         role=Role.PAYER,
     )
 
-    cmd = generate_funds_pull_pre_approval_command(
-        address=my_user.address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(my_user.address, unused)
+    process_inbound_command_(
+        request_sender_address=my_user.address,
+        command_properties=dict(
+            address=my_user.address,
+            biller_address=biller_address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.rejected,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payer_with_incoming_closed_and_no_record_in_db(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
-    biller_address = random_bech32_address
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=my_user.address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(my_user.address, unused)
+    process_inbound_command_(
+        request_sender_address=my_user.address,
+        command_properties=dict(
+            address=my_user.address,
+            biller_address=random_bech32_address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.closed,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payer_with_incoming_closed_while_record_db_exist_with_valid_status(
@@ -353,7 +403,7 @@ def test_process_inbound_command_as_payer_with_incoming_closed_while_record_db_e
 
 
 def test_process_inbound_command_as_payer_with_incoming_closed_while_record_db_exist_with_rejected_status(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
     biller_address = random_bech32_address
 
@@ -367,47 +417,35 @@ def test_process_inbound_command_as_payer_with_incoming_closed_while_record_db_e
         role=Role.PAYER,
     )
 
-    cmd = generate_funds_pull_pre_approval_command(
-        address=my_user.address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(my_user.address, unused)
+    process_inbound_command_(
+        request_sender_address=my_user.address,
+        command_properties=dict(
+            address=my_user.address,
+            biller_address=biller_address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.closed,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payee_with_incoming_pending_and_no_record_in_db(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
     address = random_bech32_address
 
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(address, unused)
+    process_inbound_command_(
+        request_sender_address=address,
+        command_properties=dict(
+            address=address,
+            biller_address=my_user.address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.pending,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payee_with_incoming_pending_while_record_db_exist(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
     address = random_bech32_address
 
@@ -423,45 +461,33 @@ def test_process_inbound_command_as_payee_with_incoming_pending_while_record_db_
         role=Role.PAYEE,
     )
 
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
-        max_cumulative_unit="month",
-        max_cumulative_unit_value=2,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(address, unused)
+    process_inbound_command_(
+        request_sender_address=address,
+        command_properties=dict(
+            address=address,
+            biller_address=my_user.address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.pending,
+            max_cumulative_unit="month",
+            max_cumulative_unit_value=2,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payee_with_incoming_reject_and_no_record_in_db(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
     address = random_bech32_address
 
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(address, unused)
+    process_inbound_command_(
+        request_sender_address=address,
+        command_properties=dict(
+            address=address,
+            biller_address=my_user.address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.rejected,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_exist_with_pending_status(
@@ -502,7 +528,7 @@ def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_e
 
 
 def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_exist_with_valid_status(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
     address = random_bech32_address
 
@@ -516,25 +542,19 @@ def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_e
         role=Role.PAYEE,
     )
 
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(address, unused)
+    process_inbound_command_(
+        request_sender_address=address,
+        command_properties=dict(
+            address=address,
+            biller_address=my_user.address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.rejected,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_exist_with_rejected_status(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
     address = random_bech32_address
 
@@ -548,25 +568,19 @@ def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_e
         role=Role.PAYEE,
     )
 
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(address, unused)
+    process_inbound_command_(
+        request_sender_address=address,
+        command_properties=dict(
+            address=address,
+            biller_address=my_user.address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.rejected,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_exist_with_closed_status(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
     address = random_bech32_address
 
@@ -580,43 +594,31 @@ def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_e
         role=Role.PAYEE,
     )
 
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(address, unused)
+    process_inbound_command_(
+        request_sender_address=address,
+        command_properties=dict(
+            address=address,
+            biller_address=my_user.address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.rejected,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payee_with_incoming_valid_and_no_record_in_db(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
     address = random_bech32_address
 
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(address, unused)
+    process_inbound_command_(
+        request_sender_address=address,
+        command_properties=dict(
+            address=address,
+            biller_address=my_user.address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.valid,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_exist_with_pending_status(
@@ -657,7 +659,7 @@ def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_ex
 
 
 def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_exist_with_valid_status(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
     address = random_bech32_address
 
@@ -671,25 +673,19 @@ def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_ex
         role=Role.PAYEE,
     )
 
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(address, unused)
+    process_inbound_command_(
+        request_sender_address=address,
+        command_properties=dict(
+            address=address,
+            biller_address=my_user.address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.valid,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_exist_with_rejected_status(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
     address = random_bech32_address
 
@@ -703,25 +699,19 @@ def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_ex
         role=Role.PAYEE,
     )
 
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(address, unused)
+    process_inbound_command_(
+        request_sender_address=address,
+        command_properties=dict(
+            address=address,
+            biller_address=my_user.address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.valid,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_exist_with_closed_status(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
     address = random_bech32_address
 
@@ -735,43 +725,31 @@ def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_ex
         role=Role.PAYEE,
     )
 
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(address, unused)
+    process_inbound_command_(
+        request_sender_address=address,
+        command_properties=dict(
+            address=address,
+            biller_address=my_user.address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.valid,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payee_with_incoming_closed_and_no_record_in_db(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
     address = random_bech32_address
 
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(address, unused)
+    process_inbound_command_(
+        request_sender_address=address,
+        command_properties=dict(
+            address=address,
+            biller_address=my_user.address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.closed,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_exist_with_valid_status(
@@ -849,7 +827,7 @@ def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_e
 
 
 def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_exist_with_rejected_status(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
     address = random_bech32_address
 
@@ -863,25 +841,19 @@ def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_e
         role=Role.PAYEE,
     )
 
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(address, unused)
+    process_inbound_command_(
+        request_sender_address=address,
+        command_properties=dict(
+            address=address,
+            biller_address=my_user.address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.closed,
+        ),
+    ).assert_error_raised()
 
 
 def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_exist_with_closed_status(
-    mock_method, my_user, random_bech32_address
+    mock_method, my_user, random_bech32_address, process_inbound_command_
 ):
     address = random_bech32_address
 
@@ -895,21 +867,15 @@ def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_e
         role=Role.PAYEE,
     )
 
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(FundsPullPreApprovalStateError):
-        unused = b"Unused because process_inbound_request is mocked"
-        process_inbound_command(address, unused)
+    process_inbound_command_(
+        request_sender_address=address,
+        command_properties=dict(
+            address=address,
+            biller_address=my_user.address,
+            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+            status=FundPullPreApprovalStatus.closed,
+        ),
+    ).assert_error_raised()
 
 
 def generate_funds_pull_pre_approval_command(
