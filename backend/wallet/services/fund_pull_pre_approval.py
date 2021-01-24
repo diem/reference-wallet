@@ -96,7 +96,6 @@ def approve(funds_pull_pre_approval_id: str) -> None:
         ],
         FundPullPreApprovalStatus.valid,
         "approve",
-        should_send=True,
     )
 
 
@@ -108,7 +107,6 @@ def reject(funds_pull_pre_approval_id):
         ],
         FundPullPreApprovalStatus.rejected,
         "reject",
-        should_send=True,
     )
 
 
@@ -121,7 +119,6 @@ def close(funds_pull_pre_approval_id):
         ],
         FundPullPreApprovalStatus.closed,
         "close",
-        should_send=True,
     )
 
 
@@ -130,14 +127,12 @@ def update_status(
     valid_statuses,
     new_status,
     operation_name,
-    should_send=False,
 ):
     command = get_command_by_id(funds_pull_pre_approval_id)
 
     if command:
         if command.status in valid_statuses:
             command.status = new_status
-            command.offchain_sent = not should_send
             update_command(command)
         else:
             raise FundsPullPreApprovalError(

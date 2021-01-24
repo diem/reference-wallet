@@ -46,7 +46,6 @@ class VaspProxy(ABC):
         payer_addr_bech32: str,
         scope: FundPullPreApprovalScope,
         description: str = None,
-        should_send: bool = True,
     ) -> str:
         """
         Send a request to a user, identified by their address, to pre-approve future
@@ -55,8 +54,6 @@ class VaspProxy(ABC):
         :param payer_addr_bech32: Bech32 encoded address of the paying user.
         :param scope: Definition of the scope of this request.
         :param description: Optional, human readable description of the request.
-        :param should_send: Optional, indicate if the request should be send by
-                the requested VASP through offchain or just be saved on his DB.
 
         :return: ID of the new funds pull pre-approval request.
         """

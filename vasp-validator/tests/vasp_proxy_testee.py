@@ -36,13 +36,11 @@ class VaspProxyTestee(VaspProxy):
         payer_addr_bech32: str,
         scope: FundPullPreApprovalScope,
         description: str = None,
-        should_send: bool = True,
     ) -> str:
         return self.vasp.request_funds_pull_preapproval_from_another(
             payer_addr_bech32=payer_addr_bech32,
             scope=scope,
             description=description,
-            should_send=should_send,
         )
 
     def get_all_funds_pull_preapprovals(self):
