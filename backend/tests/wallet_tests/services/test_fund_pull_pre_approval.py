@@ -27,6 +27,7 @@ from wallet.services.fund_pull_pre_approval import (
     preapproval_command_to_model,
     get_command_from_bech32,
 )
+from wallet.services.fund_pull_pre_approval_sm import FundsPullPreApprovalStateError
 from wallet.services.fund_pull_pre_approval_sm import (
     reduce_role,
     all_possible_states,
@@ -447,9 +448,7 @@ def test_process_inbound_command_as_payer_with_incoming_reject_and_no_record_in_
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -483,9 +482,7 @@ def test_process_inbound_command_as_payer_with_incoming_reject_while_record_db_e
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -509,9 +506,7 @@ def test_process_inbound_command_as_payer_with_incoming_valid_and_no_record_in_d
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -545,9 +540,7 @@ def test_process_inbound_command_as_payer_with_incoming_valid_while_record_db_ex
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -571,9 +564,7 @@ def test_process_inbound_command_as_payer_with_incoming_closed_and_no_record_in_
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -685,9 +676,7 @@ def test_process_inbound_command_as_payer_with_incoming_closed_while_record_db_e
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -711,9 +700,7 @@ def test_process_inbound_command_as_payee_with_incoming_pending_and_no_record_in
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -751,9 +738,7 @@ def test_process_inbound_command_as_payee_with_incoming_pending_while_record_db_
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -777,9 +762,7 @@ def test_process_inbound_command_as_payee_with_incoming_reject_and_no_record_in_
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -852,9 +835,7 @@ def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_e
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -888,9 +869,7 @@ def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_e
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -924,9 +903,7 @@ def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_e
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -950,9 +927,7 @@ def test_process_inbound_command_as_payee_with_incoming_valid_and_no_record_in_d
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -1028,9 +1003,7 @@ def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_ex
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -1064,9 +1037,7 @@ def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_ex
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -1100,9 +1071,7 @@ def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_ex
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -1126,9 +1095,7 @@ def test_process_inbound_command_as_payee_with_incoming_closed_and_no_record_in_
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -1240,9 +1207,7 @@ def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_e
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -1276,9 +1241,7 @@ def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_e
         will_return=cmd,
     )
 
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
+    with pytest.raises(FundsPullPreApprovalStateError):
         unused = b"Unused because process_inbound_request is mocked"
         process_inbound_command(address, unused)
 
@@ -1656,7 +1619,7 @@ def test_role_calculation():
             # Raises KeyError if a state is unknown and FundsPullPreApprovalError
             # if the state is illegal
             reduce_role(**asdict(state))
-        except FundsPullPreApprovalError:
+        except FundsPullPreApprovalStateError:
             continue
 
 
