@@ -127,9 +127,6 @@ def build_role_reducer():
         FppaState(Incoming.closed, True, True, Existing.pending, Existing.closed): Role.PAYEE,  # close request by known payer
         FppaState(Incoming.closed, True, True, Existing.valid, Existing.closed): Role.PAYEE,  # close request by known payer
         #
-        FppaState(Incoming.pending, False, True, None, Existing.valid): None,
-        FppaState(Incoming.pending, False, True, None, Existing.closed): None,
-        FppaState(Incoming.pending, False, True, None, Existing.rejected): None,
         FppaState(Incoming.closed, False, True, None, Existing.rejected): None,
         FppaState(Incoming.closed, False, True, None, Existing.closed): None,
         FppaState(Incoming.closed, True, False, Existing.closed, None): None,
@@ -139,19 +136,21 @@ def build_role_reducer():
     all_states = {}
 
     all_states.update(make_error_combinations(payee_and_payer_not_mine()))
-    all_states.update(make_error_combinations(basic_invalid_states()))
+    all_states.update(make_error_combinations(payee_not_mine_but_has_record()))
+    all_states.update(make_error_combinations(payer_not_mine_but_has_record()))
     all_states.update(make_error_combinations(incoming_status_not_pending_and_no_records()))
-    all_states.update(make_error_combinations(incoming_pending_for_payee()))
+    all_states.update(make_error_combinations(incoming_pending_for_payee_payer_not_mine()))
+    all_states.update(make_error_combinations(incoming_pending_for_non_pending_payer()))
+    all_states.update(make_error_combinations(incoming_pending_non_pending_payee_payer_mine()))
     all_states.update(make_error_combinations(incoming_valid_or_rejected_but_payee_not_pending()))
     all_states.update(make_error_combinations(incoming_valid_or_rejected_my_payee_not_pending_and_my_payer_not_equal_to_incoming()))
-    all_states.update(make_error_combinations(incoming_pending_my_payee_not_pending_my_payer_pending_or_none()))
     all_states.update(make_error_combinations(invalid_states_for_incoming_closed()))
 
     all_states.update(explicit_states)
     # fmt: on
 
     def reducer(state: FppaState) -> Role:
-        role = all_states.get(state)
+        role = all_states[state]
 
         if role is None:
             raise FundsPullPreApprovalError()
@@ -159,6 +158,10 @@ def build_role_reducer():
         return role
 
     return reducer
+
+
+def make_error_combinations(states) -> dict:
+    return {state: None for state in states}
 
 
 def all_possible_states():
@@ -183,31 +186,28 @@ def all_possible_states():
                         )
 
 
-_all_possible_states = all_possible_states()
+_all_possible_states = set(all_possible_states())
 
 
 def payee_and_payer_not_mine():
     return [state for state in _all_possible_states if not state.both_mine]
 
 
-def basic_invalid_states():
-    """
-    basic states that are not valid:
-    1. payee is not mine but record exist
-    (OR)
-    2. payer is not mine but record exist
-    """
+def payee_not_mine_but_has_record():
     return [
         state
         for state in _all_possible_states
-        if (
-            not state.is_payee_address_mine
-            and state.existing_status_as_payee is not None
-        )
-        or (
-            not state.is_payer_address_mine
-            and state.existing_status_as_payer is not None
-        )
+        if not state.is_payee_address_mine
+        and state.existing_status_as_payee is not None
+    ]
+
+
+def payer_not_mine_but_has_record():
+    return [
+        state
+        for state in _all_possible_states
+        if not state.is_payer_address_mine
+        and state.existing_status_as_payer is not None
     ]
 
 
@@ -219,15 +219,33 @@ def incoming_status_not_pending_and_no_records():
     ]
 
 
-def incoming_pending_for_payee():
-    # if incoming status is 'pending', the payer address is not mine
-    # and the payee address is mine all combinations are invalid
+def incoming_pending_for_payee_payer_not_mine():
     return [
         state
         for state in _all_possible_states
-        if not state.is_payer_address_mine
+        if state.is_incoming_pending
         and state.is_payee_address_mine
-        and state.is_incoming_pending
+        and not state.is_payer_address_mine
+    ]
+
+
+def incoming_pending_non_pending_payee_payer_mine():
+    return [
+        state
+        for state in _all_possible_states
+        if state.both_mine
+        and state.is_payer_address_mine
+        and not state.is_payee_pending
+    ]
+
+
+def incoming_pending_for_non_pending_payer():
+    return [
+        state
+        for state in _all_possible_states
+        if state.is_incoming_pending
+        and state.is_payer_address_mine
+        and not state.is_payer_pending
     ]
 
 
@@ -249,33 +267,6 @@ def incoming_valid_or_rejected_my_payee_not_pending_and_my_payer_not_equal_to_in
         and state.is_incoming_valid_or_rejected
         and state.is_payee_pending
         and state.existing_status_as_payer != state.incoming_status
-    ]
-
-
-# if payer none or pending --> payee must be pending
-# if payee pending --> payer must be none or pending
-def incoming_pending_my_payee_not_pending_my_payer_pending_or_none():
-    """
-    'pending' commands only payee can send, therefore when both 'mine' and incoming status is 'pending' the payee
-    must had been save his command in the DB before sending. only 2 scenarios are valid in the payer side:
-    1. receiving completely new command and therefore no record in DB.
-    2. receiving update to existing command and therefore record with status 'pending' exist in DB
-    following this a number of states are define as invalid for incoming 'pending' status:
-    1. payee don't have record or record exist with status not 'pending'
-    2. payer have record with status not 'pending'
-    """
-    return [
-        state
-        for state in _all_possible_states
-        if state.both_mine
-        and (
-            not state.is_payee_pending
-            or (
-                state.is_payee_pending
-                and not state.is_payer_pending
-                and state.payer_preapproval_exists
-            )
-        )
     ]
 
 
@@ -308,10 +299,6 @@ def invalid_states_for_incoming_closed():
             )
         )
     ]
-
-
-def make_error_combinations(states) -> dict:
-    return {state: None for state in states}
 
 
 _reduce_role = build_role_reducer()
