@@ -25,8 +25,7 @@ from wallet.storage.funds_pull_pre_approval_command import (
 
 from .fund_pull_pre_approval_sm import (
     Role,
-    get_role,
-    get_next_action,
+    reduce_role,
     FundsPullPreApprovalError,
 )
 
@@ -331,7 +330,7 @@ def handle_fund_pull_pre_approval_command(
     payee_address = approval.biller_address
     payer_address = approval.address
 
-    role = get_role(
+    role = reduce_role(
         incoming_status=approval.status,
         is_payee_address_mine=is_my_address(payee_address),
         is_payer_address_mine=is_my_address(approval.address),
@@ -345,14 +344,9 @@ def handle_fund_pull_pre_approval_command(
     if command_in_db:
         validate_addresses(approval, command_in_db)
         validate_status(approval, command_in_db)
-
-    action = get_next_action(
-        role,
-        approval.status,
-        command_in_db and command_in_db.status,
-    )
-
-    action(preapproval_command_to_model(command, role))
+        update_command(preapproval_command_to_model(command, role))
+    else:
+        commit_command(preapproval_command_to_model(command, role))
 
 
 def get_existing_command_status(address_bech32: str, fppa_id: str) -> Optional[str]:

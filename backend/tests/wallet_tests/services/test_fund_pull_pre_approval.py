@@ -1,6 +1,7 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 import time
+from dataclasses import asdict
 
 import context
 import pytest
@@ -28,8 +29,8 @@ from wallet.services.fund_pull_pre_approval import (
     get_command_from_bech32,
 )
 from wallet.services.fund_pull_pre_approval_sm import (
-    get_combinations,
-    all_combinations,
+    reduce_role,
+    all_possible_states,
 )
 from wallet.services.offchain import (
     process_inbound_command,
@@ -1614,15 +1615,16 @@ def generate_fund_pull_pre_approval_object(
 
 
 def test_role_calculation():
-    actual_combinations = get_combinations()
-    expected_combinations = set(all_combinations())
-
-    for com in actual_combinations:
-        expected_combinations.remove(com)
-
-    assert len(expected_combinations) == 0, print_expected_combinations(
-        expected_combinations
-    )
+    """
+    Tests that the reducer knows all the possible states.
+    """
+    for state in all_possible_states():
+        try:
+            # Raises KeyError if a state is unknown and FundsPullPreApprovalError
+            # if the state is illegal
+            reduce_role(**asdict(state))
+        except FundsPullPreApprovalError:
+            continue
 
 
 def print_expected_combinations(expected_combinations):
