@@ -162,7 +162,7 @@ class FundsPullPreApprovalCommand(Base):
     account_id = Column(
         Integer, ForeignKey("account.id"), primary_key=True, nullable=True
     )
-    address = Column(String, nullable=False)
+    address = Column(String, nullable=True)
     biller_address = Column(String, nullable=False)
     funds_pull_pre_approval_type = Column(String, nullable=False)
     expiration_timestamp = Column(Integer, nullable=False)
