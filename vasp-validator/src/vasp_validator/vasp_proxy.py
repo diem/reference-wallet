@@ -73,3 +73,13 @@ class VaspProxy(ABC):
     @abstractmethod
     def close_funds_pull_preapproval(self, funds_pre_approval_id: str):
         ...
+
+    @abstractmethod
+    def create_and_approve_funds_pull_request(
+        self,
+        biller_address: str,
+        funds_pull_pre_approval_id: str,
+        scope: FundPullPreApprovalScope,
+        description: str,
+    ):
+        ...

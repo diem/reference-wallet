@@ -177,6 +177,20 @@ class ValidatorClient(VaspProxy):
             funds_pre_approval_id, FundPullPreApprovalStatus.closed
         )
 
+    def create_and_approve_funds_pull_request(
+        self,
+        biller_address: str,
+        funds_pull_pre_approval_id: str,
+        scope: FundPullPreApprovalScope,
+        description: str,
+    ):
+        self.wallet.funds_pull_preapproval.create_and_approve(
+            biller_address=biller_address,
+            funds_pull_pre_approval_id=funds_pull_pre_approval_id,
+            scope=scope,
+            description=description,
+        )
+
     def _create_approved_user(self, username, first_name, last_name, password):
         self.wallet.create_new_user(username, password)
         user = self.wallet.get_user()

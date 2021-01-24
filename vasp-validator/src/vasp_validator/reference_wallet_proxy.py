@@ -167,3 +167,21 @@ class ReferenceWalletProxyFPPA:
             f"offchain/funds_pull_pre_approvals/{fppa_id}",
             {"status": status.value},
         )
+
+    def create_and_approve(
+        self,
+        biller_address: str,
+        funds_pull_pre_approval_id: str,
+        scope: FundPullPreApprovalScope,
+        description: str,
+    ):
+        self._request_authorized(
+            "POST",
+            f"offchain/funds_pull_pre_approvals",
+            {
+                "biller_address": biller_address,
+                "funds_pull_pre_approval_id": funds_pull_pre_approval_id,
+                "scope": scope.to_dict(),
+                "description": description,
+            },
+        )

@@ -54,3 +54,17 @@ class VaspProxyTestee(VaspProxy):
 
     def close_funds_pull_preapproval(self, funds_pre_approval_id: str):
         return self.vasp.close_funds_pull_preapproval(funds_pre_approval_id)
+
+    def create_and_approve_funds_pull_request(
+        self,
+        biller_address: str,
+        funds_pull_pre_approval_id: str,
+        scope: FundPullPreApprovalScope,
+        description: str,
+    ):
+        return self.vasp.create_and_approve_funds_pull_request(
+            biller_address=biller_address,
+            funds_pull_pre_approval_id=funds_pull_pre_approval_id,
+            scope=scope,
+            description=description,
+        )
