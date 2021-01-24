@@ -1,14 +1,9 @@
-from typing import List
-
-import pytest
 from diem import offchain
 from diem.offchain import FundPullPreApprovalStatus
 from flask import Response
 from flask.testing import Client
 from wallet.services import fund_pull_pre_approval as fppa_service
 from wallet.services import offchain as offchain_service
-from wallet.storage import models
-
 
 FUNDS_PULL_PRE_APPROVAL_ID = "28992c81-e85a-4771-995a-af1d22bcaf63"
 FUNDS_PULL_PRE_APPROVAL_ID_2 = "e1f7f846-f9e6-46f9-b184-c949f8d6b197"

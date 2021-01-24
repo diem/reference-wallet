@@ -1,10 +1,13 @@
 from http import HTTPStatus
 
 from diem import offchain
-from diem_utils.types.currencies import DiemCurrency
 from flask import Blueprint, request
 from wallet.services import validation_tool as validation_tool_service
-from webapp.schemas import FundsPullPreApprovalId, FundsPullPreApprovalRequest
+from webapp.schemas import (
+    FundsPullPreApprovalId,
+    FundsPullPreApprovalRequest,
+    FundsPullPreApprovalData,
+)
 
 from .strict_schema_view import StrictSchemaView, response_definition, body_parameter
 
