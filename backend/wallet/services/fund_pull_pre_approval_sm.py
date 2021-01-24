@@ -58,6 +58,14 @@ class FppaState:
         return self.incoming_status is FundPullPreApprovalStatus.pending
 
     @property
+    def is_incoming_valid(self) -> bool:
+        return self.incoming_status is FundPullPreApprovalStatus.valid
+
+    @property
+    def is_incoming_rejected(self) -> bool:
+        return self.incoming_status is FundPullPreApprovalStatus.rejected
+
+    @property
     def is_incoming_closed(self) -> bool:
         return self.incoming_status is FundPullPreApprovalStatus.closed
 
@@ -89,6 +97,10 @@ class FppaState:
         return self.existing_status_as_payee is FundPullPreApprovalStatus.valid
 
     @property
+    def is_payee_rejected(self):
+        return self.existing_status_as_payee is FundPullPreApprovalStatus.rejected
+
+    @property
     def is_payer_pending(self):
         return self.existing_status_as_payer is FundPullPreApprovalStatus.pending
 
@@ -99,6 +111,10 @@ class FppaState:
     @property
     def is_payer_valid(self):
         return self.existing_status_as_payer is FundPullPreApprovalStatus.valid
+
+    @property
+    def is_payer_rejected(self):
+        return self.existing_status_as_payer is FundPullPreApprovalStatus.rejected
 
 
 def build_role_reducer():
@@ -117,14 +133,20 @@ def build_role_reducer():
         FppaState(Incoming.pending, False, True, None, Existing.pending): Role.PAYER,
         # Payer from another VASP approves
         FppaState(Incoming.valid, True, False, Existing.pending, None): Role.PAYEE,
+        FppaState(Incoming.valid, True, False, Existing.valid, None): Role.PAYEE,
         # Payer from the same VASP approves
         FppaState(Incoming.valid, True, True, Existing.pending, Existing.valid): Role.PAYEE,
+        FppaState(Incoming.valid, True, True, Existing.valid, Existing.valid): Role.PAYEE,
         # Payer from another VASP rejects
         FppaState(Incoming.rejected, True, False, Existing.pending, None): Role.PAYEE,
+        FppaState(Incoming.rejected, True, False, Existing.rejected, None): Role.PAYEE,
         # Payer from the same VASP rejects
         FppaState(Incoming.rejected, True, True, Existing.pending, Existing.rejected): Role.PAYEE,
+        FppaState(Incoming.rejected, True, True, Existing.rejected, Existing.rejected): Role.PAYEE,
         # Payee from another VASP closes a pending request
         FppaState(Incoming.closed, False, True, None, Existing.pending): Role.PAYER,
+        # Payee from another VASP closes again
+        FppaState(Incoming.closed, False, True, None, Existing.closed): Role.PAYER,
         # Payee from another VASP closes a valid request
         FppaState(Incoming.closed, False, True, None, Existing.valid): Role.PAYER,
         # Payee from the same VASP closes a pending request
@@ -133,12 +155,16 @@ def build_role_reducer():
         FppaState(Incoming.closed, True, True, Existing.closed, Existing.valid): Role.PAYER,
         # Payer from another VASP closes a pending request
         FppaState(Incoming.closed, True, False, Existing.pending, None): Role.PAYEE,
+        # Payer from another VASP closes again
+        FppaState(Incoming.closed, True, False, Existing.closed, None): Role.PAYEE,
         # Payer from another VASP closes a valid request
         FppaState(Incoming.closed, True, False, Existing.valid, None): Role.PAYEE,
         # Payer from the same VASP closes a pending request
         FppaState(Incoming.closed, True, True, Existing.pending, Existing.closed): Role.PAYEE,
         # Payer from the same VASP closes a valid request
         FppaState(Incoming.closed, True, True, Existing.valid, Existing.closed): Role.PAYEE,
+        # Payer closes again
+        FppaState(Incoming.closed, True, True, Existing.closed, Existing.closed): Role.PAYEE,
     }
 
     all_states = {}
@@ -178,6 +204,22 @@ def build_role_reducer():
     all_states.update(make_error_states(
         invalid_states_for_incoming_closed(),
         "Only pending and valid requests can be closed"
+    ))
+    all_states.update(make_error_states(
+        payee_valid_or_closed_becomes_rejected(),
+        "Approved or closed request cannot be rejected"
+    ))
+    all_states.update(make_error_states(
+        payee_rejected_or_closed_becomes_valid(),
+        "Rejected or closed request cannot be approved"
+    ))
+    all_states.update(make_error_states(
+        payee_approves_or_rejects(),
+        "Payee cannot approve or reject"
+    ))
+    all_states.update(make_error_states(
+        rejected_being_closed(),
+        "Cannot close rejected request"
     ))
 
     all_states.update(explicit_states)
@@ -224,7 +266,11 @@ _all_possible_states = set(all_possible_states())
 
 
 def payee_and_payer_not_mine():
-    return [state for state in _all_possible_states if not state.both_mine]
+    return [
+        state
+        for state in _all_possible_states
+        if not state.is_payer_address_mine and not state.is_payee_address_mine
+    ]
 
 
 def payee_not_mine_but_has_record():
@@ -242,6 +288,33 @@ def payer_not_mine_but_has_record():
         for state in _all_possible_states
         if not state.is_payer_address_mine
         and state.existing_status_as_payer is not None
+    ]
+
+
+def payee_valid_or_closed_becomes_rejected():
+    return [
+        state
+        for state in _all_possible_states
+        if not state.is_payer_address_mine and state.is_payee_address_mine
+        and (state.is_payee_valid or state.is_payee_closed) and state.is_incoming_rejected
+    ]
+
+
+def payee_rejected_or_closed_becomes_valid():
+    return [
+        state
+        for state in _all_possible_states
+        if not state.is_payer_address_mine and state.is_payee_address_mine
+        and (state.is_payee_rejected or state.is_payee_closed) and state.is_incoming_valid
+    ]
+
+
+def payee_approves_or_rejects():
+    return [
+        state
+        for state in _all_possible_states
+        if state.is_payer_address_mine and not state.is_payee_address_mine
+        and (state.is_incoming_valid or state.is_incoming_rejected)
     ]
 
 
@@ -289,6 +362,16 @@ def incoming_valid_or_rejected_my_payee_not_pending_and_my_payer_not_equal_to_in
         and state.is_incoming_valid_or_rejected
         and state.is_payee_pending
         and state.existing_status_as_payer != state.incoming_status
+    ]
+
+
+def rejected_being_closed():
+    return [
+        state
+        for state in _all_possible_states
+        if not state.both_mine
+        and state.is_incoming_closed
+        and (state.is_payee_rejected or state.is_payer_rejected)
     ]
 
 
