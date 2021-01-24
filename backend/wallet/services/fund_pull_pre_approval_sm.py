@@ -12,6 +12,10 @@ class FundsPullPreApprovalError(Exception):
     ...
 
 
+class FundsPullPreApprovalStateError(Exception):
+    ...
+
+
 class Role(str, Enum):
     PAYEE = "payee"
     PAYER = "payer"
@@ -103,65 +107,95 @@ def build_role_reducer():
 
     # fmt: off
     explicit_states = {
-        # only payer can receive 'pending'
-        FppaState(Incoming.pending, True, True, Existing.pending, None): Role.PAYER,  # new request from known payee
-        FppaState(Incoming.pending, True, True, Existing.pending, Existing.pending): Role.PAYER,  # update request from known payee
-        FppaState(Incoming.pending, False, True, None, None): Role.PAYER,  # new request from unknown payee
-        FppaState(Incoming.pending, False, True, None, Existing.pending): Role.PAYER,  # update request from unknown payee
-        # only payee can receive 'valid'
-        FppaState(Incoming.valid, True, False, Existing.pending, None): Role.PAYEE,  # approve request by unknown payer
-        FppaState(Incoming.valid, True, True, Existing.pending, Existing.valid): Role.PAYEE, # get approve from known payer
-        # only payee can receive 'rejected'
-        FppaState(Incoming.rejected, True, False, Existing.pending, None): Role.PAYEE,  # reject request by unknown payer
-        FppaState(Incoming.rejected, True, True, Existing.pending, Existing.rejected): Role.PAYEE,  # reject request by known payer
-        #
-        FppaState(Incoming.closed, False, True, None, Existing.pending): Role.PAYER,  # close 'pending' request by unknown payee
-        FppaState(Incoming.closed, False, True, None, Existing.valid): Role.PAYER,  # close 'valid' request by unknown payee
-        #
-        FppaState(Incoming.closed, True, True, Existing.closed, Existing.pending): Role.PAYER,  # close request by known payee
-        FppaState(Incoming.closed, True, True, Existing.closed, Existing.valid): Role.PAYER,  # close request by known payee
-        #
-        FppaState(Incoming.closed, True, False, Existing.pending, None): Role.PAYEE,  # close 'pending' request by unknown payer
-        FppaState(Incoming.closed, True, False, Existing.valid, None): Role.PAYEE,  # close 'valid' request by unknown payer
-        #
-        FppaState(Incoming.closed, True, True, Existing.pending, Existing.closed): Role.PAYEE,  # close request by known payer
-        FppaState(Incoming.closed, True, True, Existing.valid, Existing.closed): Role.PAYEE,  # close request by known payer
-        #
-        FppaState(Incoming.closed, False, True, None, Existing.rejected): None,
-        FppaState(Incoming.closed, False, True, None, Existing.closed): None,
-        FppaState(Incoming.closed, True, False, Existing.closed, None): None,
-        FppaState(Incoming.closed, True, False, Existing.rejected, None): None,
+        # New request from a peyee in the same VASP
+        FppaState(Incoming.pending, True, True, Existing.pending, None): Role.PAYER,
+        # Payee in the same VASP updates an existing request
+        FppaState(Incoming.pending, True, True, Existing.pending, Existing.pending): Role.PAYER,
+        # New request from another VASP
+        FppaState(Incoming.pending, False, True, None, None): Role.PAYER,
+        # Updated request from another VASP
+        FppaState(Incoming.pending, False, True, None, Existing.pending): Role.PAYER,
+        # Payer from another VASP approves
+        FppaState(Incoming.valid, True, False, Existing.pending, None): Role.PAYEE,
+        # Payer from the same VASP approves
+        FppaState(Incoming.valid, True, True, Existing.pending, Existing.valid): Role.PAYEE,
+        # Payer from another VASP rejects
+        FppaState(Incoming.rejected, True, False, Existing.pending, None): Role.PAYEE,
+        # Payer from the same VASP rejects
+        FppaState(Incoming.rejected, True, True, Existing.pending, Existing.rejected): Role.PAYEE,
+        # Payee from another VASP closes a pending request
+        FppaState(Incoming.closed, False, True, None, Existing.pending): Role.PAYER,
+        # Payee from another VASP closes a valid request
+        FppaState(Incoming.closed, False, True, None, Existing.valid): Role.PAYER,
+        # Payee from the same VASP closes a pending request
+        FppaState(Incoming.closed, True, True, Existing.closed, Existing.pending): Role.PAYER,
+        # Payee from the same VASP closes a valid request
+        FppaState(Incoming.closed, True, True, Existing.closed, Existing.valid): Role.PAYER,
+        # Payer from another VASP closes a pending request
+        FppaState(Incoming.closed, True, False, Existing.pending, None): Role.PAYEE,
+        # Payer from another VASP closes a valid request
+        FppaState(Incoming.closed, True, False, Existing.valid, None): Role.PAYEE,
+        # Payer from the same VASP closes a pending request
+        FppaState(Incoming.closed, True, True, Existing.pending, Existing.closed): Role.PAYEE,
+        # Payer from the same VASP closes a valid request
+        FppaState(Incoming.closed, True, True, Existing.valid, Existing.closed): Role.PAYEE,
     }
 
     all_states = {}
 
-    all_states.update(make_error_combinations(payee_and_payer_not_mine()))
-    all_states.update(make_error_combinations(payee_not_mine_but_has_record()))
-    all_states.update(make_error_combinations(payer_not_mine_but_has_record()))
-    all_states.update(make_error_combinations(incoming_status_not_pending_and_no_records()))
-    all_states.update(make_error_combinations(incoming_pending_for_payee_payer_not_mine()))
-    all_states.update(make_error_combinations(incoming_pending_for_non_pending_payer()))
-    all_states.update(make_error_combinations(incoming_pending_non_pending_payee_payer_mine()))
-    all_states.update(make_error_combinations(incoming_valid_or_rejected_but_payee_not_pending()))
-    all_states.update(make_error_combinations(incoming_valid_or_rejected_my_payee_not_pending_and_my_payer_not_equal_to_incoming()))
-    all_states.update(make_error_combinations(invalid_states_for_incoming_closed()))
+    all_states.update(make_error_states(
+        payee_and_payer_not_mine(),
+        "Bad request: Both the payee and the payer do not belong to this VASP"
+    ))
+    all_states.update(make_error_states(
+        payee_not_mine_but_has_record(),
+        "Payee doesn't belong to this VASP but the request is in the storage"
+    ))
+    all_states.update(make_error_states(
+        payer_not_mine_but_has_record(),
+        "Payer doesn't belong to this VASP but the request is in the storage"
+    ))
+    all_states.update(make_error_states(
+        incoming_status_not_pending_and_no_records(),
+        "Incoming update for unknown request "
+    ))
+    all_states.update(make_error_states(
+        incoming_pending_for_payee_payer_not_mine(),
+        "Payee cannot update request status to pending"
+    ))
+    all_states.update(make_error_states(
+        incoming_pending_for_non_pending_payer(),
+        "Processed request cannot become pending"
+    ))
+    all_states.update(make_error_states(
+        incoming_pending_both_mine_payee_non_pending(),
+        "Payee is not pending but a request claims it is"
+    ))
+    all_states.update(make_error_states(
+        incoming_valid_or_rejected_my_payee_not_pending_and_my_payer_not_equal_to_incoming(),
+        "Only pending requests can become valid or rejected"
+    ))
+    all_states.update(make_error_states(
+        invalid_states_for_incoming_closed(),
+        "Only pending and valid requests can be closed"
+    ))
 
     all_states.update(explicit_states)
     # fmt: on
 
     def reducer(state: FppaState) -> Role:
-        role = all_states[state]
+        x = all_states[state]
 
-        if role is None:
-            raise FundsPullPreApprovalError()
+        if isinstance(x, FundsPullPreApprovalStateError):
+            raise x
 
-        return role
+        return x
 
     return reducer
 
 
-def make_error_combinations(states) -> dict:
-    return {state: None for state in states}
+def make_error_states(states, error_description) -> dict:
+    return {st: FundsPullPreApprovalStateError(error_description) for st in states}
 
 
 def all_possible_states():
@@ -229,13 +263,11 @@ def incoming_pending_for_payee_payer_not_mine():
     ]
 
 
-def incoming_pending_non_pending_payee_payer_mine():
+def incoming_pending_both_mine_payee_non_pending():
     return [
         state
         for state in _all_possible_states
-        if state.both_mine
-        and state.is_payer_address_mine
-        and not state.is_payee_pending
+        if state.both_mine and not state.is_payee_pending
     ]
 
 
@@ -249,16 +281,6 @@ def incoming_pending_for_non_pending_payer():
     ]
 
 
-def incoming_valid_or_rejected_but_payee_not_pending():
-    return [
-        state
-        for state in _all_possible_states
-        if state.is_incoming_valid_or_rejected and not state.is_payee_pending
-    ]
-
-
-# both role are mine, incoming status is 'valid' or 'rejected',
-# payee must be 'pending' and payer must be equals to incoming status
 def incoming_valid_or_rejected_my_payee_not_pending_and_my_payer_not_equal_to_incoming():
     return [
         state
