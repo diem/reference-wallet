@@ -54,7 +54,9 @@ class ValidationToolRoutes:
             )
 
     class CreateFundsPullPreApprovalData(ValidationToolView):
-        summary = "Save funds pull pre-approval data without sending it through offchain"
+        summary = (
+            "Save funds pull pre-approval data without sending it through offchain"
+        )
         parameters = [
             body_parameter(FundsPullPreApprovalData),
         ]
@@ -73,10 +75,12 @@ class ValidationToolRoutes:
 
             scope = get_scope_from_request_details(request_details)
 
-            funds_pull_pre_approval_id = validation_tool_service.create_funds_pull_pre_approval_data(
-                account_id=user.account_id,
-                scope=scope,
-                description=description,
+            funds_pull_pre_approval_id = (
+                validation_tool_service.create_funds_pull_pre_approval_data(
+                    account_id=user.account_id,
+                    scope=scope,
+                    description=description,
+                )
             )
 
             return (

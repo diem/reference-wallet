@@ -25,7 +25,9 @@ def create_funds_pull_pre_approval_data(
     return commit_funds_pull_pre_approval(account_id, description, None, scope, True)
 
 
-def commit_funds_pull_pre_approval(account_id, description, payer_address, scope, offchain_sent=False):
+def commit_funds_pull_pre_approval(
+    account_id, description, payer_address, scope, offchain_sent=False
+):
     biller_address = get_biller_address(account_id)
 
     funds_pull_pre_approval_id = generate_funds_pull_pre_approval_id(biller_address)
