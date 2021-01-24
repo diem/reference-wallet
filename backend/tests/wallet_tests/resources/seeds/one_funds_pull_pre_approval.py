@@ -24,6 +24,7 @@ class OneFundsPullPreApproval:
         max_cumulative_unit_value=1,
         account_id=1,
         role=Role.PAYER,
+        offchain_sent=False,
     ) -> FundsPullPreApprovalCommand:
         command = FundsPullPreApprovalCommand(
             account_id=account_id,
@@ -41,6 +42,7 @@ class OneFundsPullPreApproval:
             description="OneFundsPullPreApprovalRun",
             status=status,
             role=role,
+            offchain_sent=offchain_sent,
         )
 
         db_session.add(command)

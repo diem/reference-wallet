@@ -1666,3 +1666,29 @@ def test_outgoing_commands(mock_method):
     # No commands to send this time
     process_funds_pull_pre_approvals_requests()
     assert len(send_command_calls) == 0
+
+
+def test_outgoing_command_offchain_sent_true(mock_method):
+    offchain_client = context.get().offchain_client
+    send_command_calls = mock_method(offchain_client, "send_command")
+
+    payer_user = generate_mock_user(user_name="payer_user")
+    address = generate_my_address(payer_user)
+    payee_user = generate_mock_user(user_name="payee_user")
+    biller_address = generate_my_address(payee_user)
+
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        address=address,
+        biller_address=biller_address,
+        status=FundPullPreApprovalStatus.valid,
+        offchain_sent=True,
+    )
+
+    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
+    assert command_in_db.offchain_sent
+
+    # One command should be sent
+    process_funds_pull_pre_approvals_requests()
+    assert len(send_command_calls) == 0
