@@ -131,6 +131,7 @@ def update_status(
     if command:
         if command.status in valid_statuses:
             command.status = new_status
+            command.offchain_sent = False
             update_command(command)
         else:
             raise FundsPullPreApprovalError(

@@ -68,7 +68,7 @@ def test_request_approve_close(validator, vasp_proxy: VaspProxy):
     assert_validator_preapproval(FundPullPreApprovalStatus.valid)
     assert_vasp_preapproval(FundPullPreApprovalStatus.valid)
 
-    # Step 3: Cancel the approved request
+    # Step 3: Close the approved request and validate it is "closed" on both sides
     vasp_proxy.close_funds_pull_preapproval(actual_id)
     assert_validator_preapproval(FundPullPreApprovalStatus.closed)
     assert_vasp_preapproval(FundPullPreApprovalStatus.closed)
@@ -135,8 +135,5 @@ def test_approve_request_by_payer(validator, vasp_proxy: VaspProxy):
         description=description,
     )
     assert_vasp_preapproval = create_preapproval_validator(vasp_proxy, actual_id)
-
-    # time.sleep(5)
-
     assert_vasp_preapproval(FundPullPreApprovalStatus.valid)
     assert_validator_preapproval(FundPullPreApprovalStatus.valid)
