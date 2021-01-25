@@ -1,11 +1,13 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
-
+import logging
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 
 from diem.offchain import FundPullPreApprovalStatus
+
+logger = logging.getLogger(__name__)
 
 
 class FundsPullPreApprovalError(Exception):
@@ -35,7 +37,12 @@ def reduce_role(
         existing_status_as_payee=existing_status_as_payee,
         existing_status_as_payer=existing_status_as_payer,
     )
-    return _reduce_role(state)
+    logger.info(f"~~~~~~ {state}")
+    role = _reduce_role(state)
+
+    logger.info(f"role: {role}")
+
+    return role
 
 
 @dataclass(frozen=True)
@@ -45,6 +52,15 @@ class FppaState:
     is_payer_address_mine: bool
     existing_status_as_payee: Optional[str]
     existing_status_as_payer: Optional[str]
+
+    def __str__(self):
+        return (
+            f"incoming_status={self.incoming_status}, "
+            f"is_payee_address_mine={self.is_payee_address_mine}, "
+            f"is_payer_address_mine={self.is_payer_address_mine}, "
+            f"existing_status_as_payee={self.existing_status_as_payee}, "
+            f"existing_status_as_payer={self.existing_status_as_payer}"
+        )
 
     @property
     def is_incoming_valid_or_rejected(self) -> bool:
