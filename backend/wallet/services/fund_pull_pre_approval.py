@@ -725,6 +725,10 @@ def validate_addresses(approval, command_in_db, role):
     if command_in_db.address is None and role != Role.PAYEE:
         raise FundsPullPreApprovalError("Not payee but address is none")
     if command_in_db.address is not None and approval.address != command_in_db.address:
-        raise FundsPullPreApprovalError("address is immutable")
+        raise FundsPullPreApprovalError(
+            f"Address is immutable; approval address: {approval.address}, db address: {command_in_db.address}"
+        )
     if approval.biller_address != command_in_db.biller_address:
-        raise FundsPullPreApprovalError("biller address is immutable")
+        raise FundsPullPreApprovalError(
+            f"Biller address is immutable; approval address: {approval.biller_address}, db address: {command_in_db.biller_address}"
+        )
