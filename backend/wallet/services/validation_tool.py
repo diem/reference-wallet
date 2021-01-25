@@ -13,21 +13,21 @@ def request_funds_pull_pre_approval_from_another(
     payer_address: str,
     scope: offchain.FundPullPreApprovalScopeObject,
     description: str = None,
-) -> str:
+) -> (str, str):
     return commit_funds_pull_pre_approval(account_id, description, payer_address, scope)
 
 
-def create_funds_pull_pre_approval_data(
+def create_funds_pull_pre_approval_request_for_unknown_payer(
     account_id: int,
     scope: offchain.FundPullPreApprovalScopeObject,
     description: str = None,
-) -> str:
+) -> (str, str):
     return commit_funds_pull_pre_approval(account_id, description, None, scope, True)
 
 
 def commit_funds_pull_pre_approval(
     account_id, description, payer_address, scope, offchain_sent=False
-):
+) -> (str, str):
     biller_address = get_biller_address(account_id)
 
     funds_pull_pre_approval_id = generate_funds_pull_pre_approval_id(biller_address)
@@ -52,7 +52,7 @@ def commit_funds_pull_pre_approval(
         )
     )
 
-    return funds_pull_pre_approval_id
+    return funds_pull_pre_approval_id, biller_address
 
 
 def get_max_transaction_amount_from_scope(scope):

@@ -59,7 +59,7 @@ class VaspProxy(ABC):
         """
 
     @abstractmethod
-    def create_funds_pull_pre_approval_data(
+    def create_funds_pull_pre_approval_request_for_unknown_payer(
         self,
         scope: FundPullPreApprovalScope,
         description: str = None,

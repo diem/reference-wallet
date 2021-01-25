@@ -4,9 +4,8 @@ from diem import offchain
 from flask import Blueprint, request
 from wallet.services import validation_tool as validation_tool_service
 from webapp.schemas import (
-    FundsPullPreApprovalId,
+    FundsPullPreApprovalRequestCreationResponse,
     FundsPullPreApprovalRequest,
-    FundsPullPreApprovalData,
 )
 
 from .strict_schema_view import StrictSchemaView, response_definition, body_parameter
@@ -25,8 +24,8 @@ class ValidationToolRoutes:
         ]
         responses = {
             HTTPStatus.OK: response_definition(
-                "ID of the new funds_pull_pre_approval object",
-                schema=FundsPullPreApprovalId,
+                "ID of the new funds_pull_pre_approval object and the address who been generate for the created request",
+                schema=FundsPullPreApprovalRequestCreationResponse,
             )
         }
 
@@ -34,57 +33,36 @@ class ValidationToolRoutes:
             user = self.user
             request_details = request.json
 
-            payer_address = request_details["payer_address"]
+            payer_address = request_details.get("payer_address")
             description = request_details.get("description")
 
             scope = get_scope_from_request_details(request_details)
 
-            funds_pull_pre_approval_id = (
-                validation_tool_service.request_funds_pull_pre_approval_from_another(
+            if payer_address:
+                (
+                    funds_pull_pre_approval_id,
+                    address,
+                ) = validation_tool_service.request_funds_pull_pre_approval_from_another(
                     account_id=user.account_id,
                     payer_address=payer_address,
                     scope=scope,
                     description=description,
                 )
-            )
-
-            return (
-                {"funds_pull_pre_approval_id": funds_pull_pre_approval_id},
-                HTTPStatus.OK,
-            )
-
-    class CreateFundsPullPreApprovalData(ValidationToolView):
-        summary = (
-            "Save funds pull pre-approval data without sending it through offchain"
-        )
-        parameters = [
-            body_parameter(FundsPullPreApprovalData),
-        ]
-        responses = {
-            HTTPStatus.OK: response_definition(
-                "ID of the new funds_pull_pre_approval object",
-                schema=FundsPullPreApprovalId,
-            )
-        }
-
-        def post(self):
-            user = self.user
-            request_details = request.json
-
-            description = request_details.get("description")
-
-            scope = get_scope_from_request_details(request_details)
-
-            funds_pull_pre_approval_id = (
-                validation_tool_service.create_funds_pull_pre_approval_data(
+            else:
+                (
+                    funds_pull_pre_approval_id,
+                    address,
+                ) = validation_tool_service.create_funds_pull_pre_approval_request_for_unknown_payer(
                     account_id=user.account_id,
                     scope=scope,
                     description=description,
                 )
-            )
 
             return (
-                {"funds_pull_pre_approval_id": funds_pull_pre_approval_id},
+                {
+                    "funds_pull_pre_approval_id": funds_pull_pre_approval_id,
+                    "address": address,
+                },
                 HTTPStatus.OK,
             )
 

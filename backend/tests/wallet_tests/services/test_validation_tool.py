@@ -34,7 +34,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
             ),
         )
 
-        fppa_id = request_funds_pull_pre_approval_from_another(
+        fppa_id, _ = request_funds_pull_pre_approval_from_another(
             account_id=user.account_id,
             payer_address=SOME_ADDRESS_BECH32,
             description=SOME_DESCRIPTION,
@@ -89,7 +89,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
             expiration_timestamp=12345,
         )
 
-        fppa_id = request_funds_pull_pre_approval_from_another(
+        fppa_id, _ = request_funds_pull_pre_approval_from_another(
             account_id=user.account_id,
             payer_address=SOME_ADDRESS_BECH32,
             scope=expected_scope,
