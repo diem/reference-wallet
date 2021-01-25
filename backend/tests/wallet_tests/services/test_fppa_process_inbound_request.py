@@ -216,8 +216,16 @@ def test_process_inbound_command_as_payer_with_incoming_pending_while_record_db_
     ).assert_command_stored()
 
 
-def test_process_inbound_command_as_payer_with_incoming_reject_and_no_record_in_db(
-    mock_method, my_user, random_bech32_address, process_inbound_command
+@pytest.mark.parametrize(
+    "new_status",
+    [
+        FundPullPreApprovalStatus.rejected,
+        FundPullPreApprovalStatus.valid,
+        FundPullPreApprovalStatus.closed,
+    ],
+)
+def test_failure_as_payer_without_record_in_db(
+    new_status, my_user, random_bech32_address, process_inbound_command
 ):
     process_inbound_command(
         request_sender_address=my_user.address,
@@ -225,13 +233,21 @@ def test_process_inbound_command_as_payer_with_incoming_reject_and_no_record_in_
             address=my_user.address,
             biller_address=random_bech32_address,
             funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.rejected,
+            status=new_status,
         ),
     ).assert_error_raised()
 
 
-def test_process_inbound_command_as_payer_with_incoming_reject_while_record_db_exist(
-    mock_method, my_user, random_bech32_address, process_inbound_command
+@pytest.mark.parametrize(
+    "new_status,stored_status",
+    [
+        (FundPullPreApprovalStatus.closed, FundPullPreApprovalStatus.pending),
+        (FundPullPreApprovalStatus.closed, FundPullPreApprovalStatus.valid),
+        (FundPullPreApprovalStatus.closed, FundPullPreApprovalStatus.closed),
+    ],
+)
+def test_success_as_payer_with_record_in_db(
+    new_status, stored_status, my_user, random_bech32_address, process_inbound_command
 ):
     biller_address = random_bech32_address
 
@@ -241,7 +257,7 @@ def test_process_inbound_command_as_payer_with_incoming_reject_while_record_db_e
         address=my_user.address,
         biller_address=biller_address,
         funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
+        status=stored_status,
         role=Role.PAYER,
     )
 
@@ -251,27 +267,24 @@ def test_process_inbound_command_as_payer_with_incoming_reject_while_record_db_e
             address=my_user.address,
             biller_address=biller_address,
             funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.rejected,
+            status=new_status,
         ),
-    ).assert_error_raised()
+    ).assert_command_stored()
 
 
-def test_process_inbound_command_as_payer_with_incoming_valid_and_no_record_in_db(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    process_inbound_command(
-        request_sender_address=my_user.address,
-        command_properties=dict(
-            address=my_user.address,
-            biller_address=random_bech32_address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.valid,
-        ),
-    ).assert_error_raised()
-
-
-def test_process_inbound_command_as_payer_with_incoming_valid_while_record_db_exist(
-    mock_method, my_user, random_bech32_address, process_inbound_command
+@pytest.mark.parametrize(
+    "new_status,stored_status",
+    [
+        (FundPullPreApprovalStatus.closed, FundPullPreApprovalStatus.rejected),
+        (FundPullPreApprovalStatus.valid, FundPullPreApprovalStatus.rejected),
+        (FundPullPreApprovalStatus.valid, FundPullPreApprovalStatus.pending),
+        (FundPullPreApprovalStatus.rejected, FundPullPreApprovalStatus.valid),
+        (FundPullPreApprovalStatus.rejected, FundPullPreApprovalStatus.closed),
+        (FundPullPreApprovalStatus.rejected, FundPullPreApprovalStatus.pending),
+    ],
+)
+def test_failure_as_payer_with_record_in_db(
+    new_status, stored_status, my_user, random_bech32_address, process_inbound_command
 ):
     biller_address = random_bech32_address
 
@@ -281,7 +294,7 @@ def test_process_inbound_command_as_payer_with_incoming_valid_while_record_db_ex
         address=my_user.address,
         biller_address=biller_address,
         funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
+        status=stored_status,
         role=Role.PAYER,
     )
 
@@ -291,121 +304,86 @@ def test_process_inbound_command_as_payer_with_incoming_valid_while_record_db_ex
             address=my_user.address,
             biller_address=biller_address,
             funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.rejected,
+            status=new_status,
         ),
     ).assert_error_raised()
 
 
-def test_process_inbound_command_as_payer_with_incoming_closed_and_no_record_in_db(
-    mock_method, my_user, random_bech32_address, process_inbound_command
+@pytest.mark.parametrize(
+    "new_status",
+    [
+        FundPullPreApprovalStatus.pending,
+        FundPullPreApprovalStatus.rejected,
+        FundPullPreApprovalStatus.valid,
+        FundPullPreApprovalStatus.closed,
+    ],
+)
+def test_failure_as_payee_without_record_in_db(
+    new_status, my_user, random_bech32_address, process_inbound_command
 ):
+    address = random_bech32_address
+
     process_inbound_command(
-        request_sender_address=my_user.address,
+        request_sender_address=address,
         command_properties=dict(
-            address=my_user.address,
-            biller_address=random_bech32_address,
+            address=address,
+            biller_address=my_user.address,
             funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.closed,
+            status=new_status,
         ),
     ).assert_error_raised()
 
 
-def test_process_inbound_command_as_payer_with_incoming_closed_while_record_db_exist_with_valid_status(
-    mock_method, my_user, random_bech32_address, process_inbound_command
+@pytest.mark.parametrize(
+    "new_status,stored_status",
+    [
+        (FundPullPreApprovalStatus.rejected, FundPullPreApprovalStatus.pending),
+        (FundPullPreApprovalStatus.rejected, FundPullPreApprovalStatus.rejected),
+        (FundPullPreApprovalStatus.valid, FundPullPreApprovalStatus.pending),
+        (FundPullPreApprovalStatus.valid, FundPullPreApprovalStatus.valid),
+        (FundPullPreApprovalStatus.closed, FundPullPreApprovalStatus.pending),
+        (FundPullPreApprovalStatus.closed, FundPullPreApprovalStatus.valid),
+        (FundPullPreApprovalStatus.closed, FundPullPreApprovalStatus.closed),
+    ],
+)
+def test_success_as_payee_with_record_in_db(
+    new_status, stored_status, my_user, random_bech32_address, process_inbound_command
 ):
-    biller_address = random_bech32_address
+    address = random_bech32_address
 
     OneFundsPullPreApproval.run(
         db_session=db_session,
         account_id=my_user.account_id,
-        address=my_user.address,
-        biller_address=biller_address,
+        address=address,
+        biller_address=my_user.address,
         funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-        role=Role.PAYER,
+        status=stored_status,
+        role=Role.PAYEE,
     )
 
     process_inbound_command(
-        request_sender_address=my_user.address,
+        request_sender_address=address,
         command_properties=dict(
-            address=my_user.address,
-            biller_address=biller_address,
+            address=address,
+            biller_address=my_user.address,
             funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.closed,
+            status=new_status,
         ),
     ).assert_command_stored()
 
 
-def test_process_inbound_command_as_payer_with_incoming_closed_while_record_db_exist_with_pending_status(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    biller_address = random_bech32_address
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=my_user.account_id,
-        address=my_user.address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
-        role=Role.PAYER,
-    )
-
-    process_inbound_command(
-        request_sender_address=my_user.address,
-        command_properties=dict(
-            address=my_user.address,
-            biller_address=biller_address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.closed,
-        ),
-    ).assert_command_stored()
-
-
-def test_process_inbound_command_as_payer_with_incoming_closed_while_record_db_exist_with_rejected_status(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    biller_address = random_bech32_address
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=my_user.account_id,
-        address=my_user.address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-        role=Role.PAYER,
-    )
-
-    process_inbound_command(
-        request_sender_address=my_user.address,
-        command_properties=dict(
-            address=my_user.address,
-            biller_address=biller_address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.closed,
-        ),
-    ).assert_error_raised()
-
-
-def test_process_inbound_command_as_payee_with_incoming_pending_and_no_record_in_db(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    address = random_bech32_address
-
-    process_inbound_command(
-        request_sender_address=address,
-        command_properties=dict(
-            address=address,
-            biller_address=my_user.address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.pending,
-        ),
-    ).assert_error_raised()
-
-
-def test_process_inbound_command_as_payee_with_incoming_pending_while_record_db_exist(
-    mock_method, my_user, random_bech32_address, process_inbound_command
+@pytest.mark.parametrize(
+    "new_status,stored_status",
+    [
+        (FundPullPreApprovalStatus.pending, FundPullPreApprovalStatus.pending),
+        (FundPullPreApprovalStatus.rejected, FundPullPreApprovalStatus.closed),
+        (FundPullPreApprovalStatus.closed, FundPullPreApprovalStatus.rejected),
+        (FundPullPreApprovalStatus.valid, FundPullPreApprovalStatus.rejected),
+        (FundPullPreApprovalStatus.valid, FundPullPreApprovalStatus.closed),
+    ],
+)
+def test_failure_as_payee_with_record_in_db(
+    new_status, stored_status, my_user, random_bech32_address, process_inbound_command
 ):
     address = random_bech32_address
 
@@ -415,9 +393,7 @@ def test_process_inbound_command_as_payee_with_incoming_pending_while_record_db_
         address=address,
         biller_address=my_user.address,
         funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
-        max_cumulative_unit="week",
-        max_cumulative_unit_value=1,
+        status=stored_status,
         role=Role.PAYEE,
     )
 
@@ -427,368 +403,6 @@ def test_process_inbound_command_as_payee_with_incoming_pending_while_record_db_
             address=address,
             biller_address=my_user.address,
             funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.pending,
-            max_cumulative_unit="month",
-            max_cumulative_unit_value=2,
-        ),
-    ).assert_error_raised()
-
-
-def test_process_inbound_command_as_payee_with_incoming_reject_and_no_record_in_db(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    address = random_bech32_address
-
-    process_inbound_command(
-        request_sender_address=address,
-        command_properties=dict(
-            address=address,
-            biller_address=my_user.address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.rejected,
-        ),
-    ).assert_error_raised()
-
-
-def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_exist_with_pending_status(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    address = random_bech32_address
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=my_user.account_id,
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
-        role=Role.PAYEE,
-    )
-
-    process_inbound_command(
-        request_sender_address=address,
-        command_properties=dict(
-            address=address,
-            biller_address=my_user.address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.rejected,
-        ),
-    ).assert_command_stored()
-
-
-def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_exist_with_valid_status(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    address = random_bech32_address
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=my_user.account_id,
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-        role=Role.PAYEE,
-    )
-
-    process_inbound_command(
-        request_sender_address=address,
-        command_properties=dict(
-            address=address,
-            biller_address=my_user.address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.rejected,
-        ),
-    ).assert_error_raised()
-
-
-def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_exist_with_rejected_status(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    address = random_bech32_address
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=my_user.account_id,
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-        role=Role.PAYEE,
-    )
-
-    process_inbound_command(
-        request_sender_address=address,
-        command_properties=dict(
-            address=address,
-            biller_address=my_user.address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.rejected,
-        ),
-    ).assert_error_raised()
-
-
-def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_exist_with_closed_status(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    address = random_bech32_address
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=my_user.account_id,
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-        role=Role.PAYEE,
-    )
-
-    process_inbound_command(
-        request_sender_address=address,
-        command_properties=dict(
-            address=address,
-            biller_address=my_user.address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.rejected,
-        ),
-    ).assert_error_raised()
-
-
-def test_process_inbound_command_as_payee_with_incoming_valid_and_no_record_in_db(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    address = random_bech32_address
-
-    process_inbound_command(
-        request_sender_address=address,
-        command_properties=dict(
-            address=address,
-            biller_address=my_user.address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.valid,
-        ),
-    ).assert_error_raised()
-
-
-def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_exist_with_pending_status(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    address = random_bech32_address
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=my_user.account_id,
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
-        role=Role.PAYEE,
-    )
-
-    process_inbound_command(
-        request_sender_address=address,
-        command_properties=dict(
-            address=address,
-            biller_address=my_user.address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.valid,
-        ),
-    ).assert_command_stored()
-
-
-def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_exist_with_valid_status(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    address = random_bech32_address
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=my_user.account_id,
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-        role=Role.PAYEE,
-    )
-
-    process_inbound_command(
-        request_sender_address=address,
-        command_properties=dict(
-            address=address,
-            biller_address=my_user.address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.valid,
-        ),
-    ).assert_error_raised()
-
-
-def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_exist_with_rejected_status(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    address = random_bech32_address
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=my_user.account_id,
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-        role=Role.PAYEE,
-    )
-
-    process_inbound_command(
-        request_sender_address=address,
-        command_properties=dict(
-            address=address,
-            biller_address=my_user.address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.valid,
-        ),
-    ).assert_error_raised()
-
-
-def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_exist_with_closed_status(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    address = random_bech32_address
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=my_user.account_id,
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-        role=Role.PAYEE,
-    )
-
-    process_inbound_command(
-        request_sender_address=address,
-        command_properties=dict(
-            address=address,
-            biller_address=my_user.address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.valid,
-        ),
-    ).assert_error_raised()
-
-
-def test_process_inbound_command_as_payee_with_incoming_closed_and_no_record_in_db(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    address = random_bech32_address
-
-    process_inbound_command(
-        request_sender_address=address,
-        command_properties=dict(
-            address=address,
-            biller_address=my_user.address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.closed,
-        ),
-    ).assert_error_raised()
-
-
-def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_exist_with_valid_status(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    address = random_bech32_address
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=my_user.account_id,
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-        role=Role.PAYEE,
-    )
-
-    process_inbound_command(
-        request_sender_address=address,
-        command_properties=dict(
-            address=address,
-            biller_address=my_user.address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.closed,
-        ),
-    ).assert_command_stored()
-
-
-def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_exist_with_pending_status(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    address = random_bech32_address
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=my_user.account_id,
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
-        role=Role.PAYEE,
-    )
-
-    process_inbound_command(
-        request_sender_address=address,
-        command_properties=dict(
-            address=address,
-            biller_address=my_user.address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.closed,
-        ),
-    ).assert_command_stored()
-
-
-def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_exist_with_rejected_status(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    address = random_bech32_address
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=my_user.account_id,
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-        role=Role.PAYEE,
-    )
-
-    process_inbound_command(
-        request_sender_address=address,
-        command_properties=dict(
-            address=address,
-            biller_address=my_user.address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.closed,
-        ),
-    ).assert_error_raised()
-
-
-def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_exist_with_closed_status(
-    mock_method, my_user, random_bech32_address, process_inbound_command
-):
-    address = random_bech32_address
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=my_user.account_id,
-        address=address,
-        biller_address=my_user.address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-        role=Role.PAYEE,
-    )
-
-    process_inbound_command(
-        request_sender_address=address,
-        command_properties=dict(
-            address=address,
-            biller_address=my_user.address,
-            funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-            status=FundPullPreApprovalStatus.closed,
+            status=new_status,
         ),
     ).assert_error_raised()
