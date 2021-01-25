@@ -104,23 +104,39 @@ def test_request_and_reject(validator, vasp_proxy: VaspProxy):
 
 def test_approve_request_by_payer(validator, vasp_proxy: VaspProxy):
     """
-    The VASP receives a funds pull pre-approval request details through QR code and approve it
+    The VASP receives a funds pull pre-approval request details and approve it
     """
-    # Step 1: Trigger the request creation and validate it's "pending"
-    actual_id = vasp_proxy.request_funds_pull_preapproval_from_another(
-        payer_addr_bech32=vasp_proxy.get_receiving_address(),
-        description="test_approve_request_by_payer",
-        scope=FundPullPreApprovalScope(
-            type=FundPullPreApprovalType.consent,
-            expiration_timestamp=int(time.time()) + ONE_YEAR_SECONDS,
-        ),
-        should_send=False,
+    # Step 1: Trigger the request creation in the validator and validate it's been created with "pending" status
+    # and validate that no request was created in vasp_proxy
+    scope = FundPullPreApprovalScope(
+        type=FundPullPreApprovalType.consent,
+        expiration_timestamp=int(time.time()) + ONE_YEAR_SECONDS,
+    )
+    description = "test_approve_request_by_payer"
+    (
+        actual_id,
+        validator_address,
+    ) = validator.create_funds_pull_pre_approval_request_for_unknown_payer(
+        description=description,
+        scope=scope,
     )
 
-    # assert_validator_preapproval = create_preapproval_validator(validator, actual_id)
+    assert len(vasp_proxy.get_all_funds_pull_preapprovals()) == 0
+
+    assert_validator_preapproval = create_preapproval_validator(validator, actual_id)
+
+    assert_validator_preapproval(FundPullPreApprovalStatus.pending)
+
+    # Step 2: Create and approve the request in vasp_proxy and validate it is "valid" on both sides
+    vasp_proxy.create_and_approve_funds_pull_request(
+        biller_address=validator_address,
+        funds_pull_pre_approval_id=actual_id,
+        scope=scope,
+        description=description,
+    )
     assert_vasp_preapproval = create_preapproval_validator(vasp_proxy, actual_id)
 
-    # validator_fppa = assert_validator_preapproval(FundPullPreApprovalStatus.pending)
-    vasp_fppa = assert_vasp_preapproval(FundPullPreApprovalStatus.pending)
-    print(f"vasp_fppa: {vasp_fppa}")
-    assert vasp_fppa.status == FundPullPreApprovalStatus.pending
+    # time.sleep(5)
+
+    assert_vasp_preapproval(FundPullPreApprovalStatus.valid)
+    assert_validator_preapproval(FundPullPreApprovalStatus.valid)
