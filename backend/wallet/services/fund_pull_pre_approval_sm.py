@@ -295,8 +295,10 @@ def payee_valid_or_closed_becomes_rejected():
     return [
         state
         for state in _all_possible_states
-        if not state.is_payer_address_mine and state.is_payee_address_mine
-        and (state.is_payee_valid or state.is_payee_closed) and state.is_incoming_rejected
+        if not state.is_payer_address_mine
+        and state.is_payee_address_mine
+        and (state.is_payee_valid or state.is_payee_closed)
+        and state.is_incoming_rejected
     ]
 
 
@@ -304,8 +306,10 @@ def payee_rejected_or_closed_becomes_valid():
     return [
         state
         for state in _all_possible_states
-        if not state.is_payer_address_mine and state.is_payee_address_mine
-        and (state.is_payee_rejected or state.is_payee_closed) and state.is_incoming_valid
+        if not state.is_payer_address_mine
+        and state.is_payee_address_mine
+        and (state.is_payee_rejected or state.is_payee_closed)
+        and state.is_incoming_valid
     ]
 
 
@@ -313,7 +317,8 @@ def payee_approves_or_rejects():
     return [
         state
         for state in _all_possible_states
-        if state.is_payer_address_mine and not state.is_payee_address_mine
+        if state.is_payer_address_mine
+        and not state.is_payee_address_mine
         and (state.is_incoming_valid or state.is_incoming_rejected)
     ]
 
