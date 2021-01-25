@@ -1,6 +1,7 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 import time
+from dataclasses import asdict
 
 import context
 import pytest
@@ -23,11 +24,14 @@ from wallet.services.fund_pull_pre_approval import (
     FundsPullPreApprovalError,
     close,
     reject,
-    get_combinations,
-    all_combinations,
     process_funds_pull_pre_approvals_requests,
     preapproval_command_to_model,
     get_command_from_bech32,
+)
+from wallet.services.fund_pull_pre_approval_sm import FundsPullPreApprovalStateError
+from wallet.services.fund_pull_pre_approval_sm import (
+    reduce_role,
+    all_possible_states,
 )
 from wallet.services.offchain import (
     process_inbound_command,
@@ -294,7 +298,7 @@ def test_create_and_approve_happy_flow():
         max_cumulative_amount_currency=currency,
         max_transaction_amount=10_000,
         max_transaction_amount_currency=currency,
-        description="test_establish_funds_pull_pre_approval_command_already_exist_in_db",
+        description="test_create_and_approve_happy_flow",
     )
 
     command = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
@@ -324,7 +328,7 @@ def test_create_and_approve_with_expired_expiration_timestamp():
             max_cumulative_amount_currency=currency,
             max_transaction_amount=10_000,
             max_transaction_amount_currency=currency,
-            description="test_establish_funds_pull_pre_approval_command_already_exist_in_db",
+            description="test_create_and_approve_with_expired_expiration_timestamp",
         )
 
 
@@ -351,904 +355,8 @@ def test_create_and_approve_while_command_already_exist_in_db():
             max_cumulative_amount_currency=currency,
             max_transaction_amount=10_000,
             max_transaction_amount_currency=currency,
-            description="test_establish_funds_pull_pre_approval_command_already_exist_in_db",
+            description="test_create_and_approve_while_command_already_exist_in_db",
         )
-
-
-def test_process_inbound_command_as_payer_with_incoming_pending_and_no_record_in_db(
-    mock_method,
-):
-    user = generate_mock_user()
-    address = generate_my_address(user)
-    biller_address = generate_address()
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    code, resp = process_inbound_command(address, cmd)
-    assert code == 200
-    assert resp
-    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
-    assert command_in_db.address == address
-    assert command_in_db.biller_address == biller_address
-
-
-def test_process_inbound_command_as_payer_with_incoming_pending_while_record_db_exist(
-    mock_method,
-):
-    user = generate_mock_user()
-    address = generate_my_address(user)
-    biller_address = generate_address()
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
-        max_cumulative_unit="week",
-        max_cumulative_unit_value=1,
-        role=Role.PAYER,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        max_cumulative_unit="month",
-        max_cumulative_unit_value=2,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    code, resp = process_inbound_command(address, cmd)
-    assert code == 200
-    assert resp
-    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
-    assert command_in_db.address == address
-    assert command_in_db.biller_address == biller_address
-    assert command_in_db.max_cumulative_unit == "month"
-    assert command_in_db.max_cumulative_unit_value == 2
-
-
-def test_process_inbound_command_as_payer_with_incoming_reject_and_no_record_in_db(
-    mock_method,
-):
-    user = generate_mock_user()
-    address = generate_my_address(user)
-    biller_address = generate_address()
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payer_with_incoming_reject_while_record_db_exist(
-    mock_method,
-):
-    user = generate_mock_user()
-    address = generate_my_address(user)
-    biller_address = generate_address()
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
-        role=Role.PAYER,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payer_with_incoming_valid_and_no_record_in_db(
-    mock_method,
-):
-    user = generate_mock_user()
-    address = generate_my_address(user)
-    biller_address = generate_address()
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payer_with_incoming_valid_while_record_db_exist(
-    mock_method,
-):
-    user = generate_mock_user()
-    address = generate_my_address(user)
-    biller_address = generate_address()
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-        role=Role.PAYER,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payer_with_incoming_closed_and_no_record_in_db(
-    mock_method,
-):
-    user = generate_mock_user()
-    address = generate_my_address(user)
-    biller_address = generate_address()
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payer_with_incoming_closed_while_record_db_exist_with_valid_status(
-    mock_method,
-):
-    user = generate_mock_user()
-    address = generate_my_address(user)
-    biller_address = generate_address()
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-        role=Role.PAYER,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    code, resp = process_inbound_command(address, cmd)
-    assert code == 200
-    assert resp
-    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
-    assert command_in_db.address == address
-    assert command_in_db.biller_address == biller_address
-    assert command_in_db.status == FundPullPreApprovalStatus.closed
-
-
-def test_process_inbound_command_as_payer_with_incoming_closed_while_record_db_exist_with_pending_status(
-    mock_method,
-):
-    user = generate_mock_user()
-    address = generate_my_address(user)
-    biller_address = generate_address()
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
-        role=Role.PAYER,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    code, resp = process_inbound_command(address, cmd)
-    assert code == 200
-    assert resp
-    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
-    assert command_in_db.address == address
-    assert command_in_db.biller_address == biller_address
-    assert command_in_db.status == FundPullPreApprovalStatus.closed
-
-
-def test_process_inbound_command_as_payer_with_incoming_closed_while_record_db_exist_with_rejected_status(
-    mock_method,
-):
-    user = generate_mock_user()
-    address = generate_my_address(user)
-    biller_address = generate_address()
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-        role=Role.PAYER,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payee_with_incoming_pending_and_no_record_in_db(
-    mock_method,
-):
-    address = generate_address()
-    biller_user = generate_mock_user()
-    biller_address = generate_my_address(biller_user)
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payee_with_incoming_pending_while_record_db_exist(
-    mock_method,
-):
-    address = generate_address()
-    biller_user = generate_mock_user()
-    biller_address = generate_my_address(biller_user)
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=biller_user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
-        max_cumulative_unit="week",
-        max_cumulative_unit_value=1,
-        role=Role.PAYEE,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
-        max_cumulative_unit="month",
-        max_cumulative_unit_value=2,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payee_with_incoming_reject_and_no_record_in_db(
-    mock_method,
-):
-    address = generate_address()
-    biller_user = generate_mock_user()
-    biller_address = generate_my_address(biller_user)
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_exist_with_pending_status(
-    mock_method,
-):
-    address = generate_address()
-    biller_user = generate_mock_user()
-    biller_address = generate_my_address(biller_user)
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=biller_user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
-        role=Role.PAYEE,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    code, resp = process_inbound_command(address, cmd)
-    assert code == 200
-    assert resp
-    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
-    assert command_in_db.address == address
-    assert command_in_db.biller_address == biller_address
-    assert command_in_db.status == FundPullPreApprovalStatus.rejected
-
-
-def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_exist_with_valid_status(
-    mock_method,
-):
-    address = generate_address()
-    biller_user = generate_mock_user()
-    biller_address = generate_my_address(biller_user)
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=biller_user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-        role=Role.PAYEE,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_exist_with_rejected_status(
-    mock_method,
-):
-    address = generate_address()
-    biller_user = generate_mock_user()
-    biller_address = generate_my_address(biller_user)
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=biller_user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-        role=Role.PAYEE,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payee_with_incoming_reject_while_record_db_exist_with_closed_status(
-    mock_method,
-):
-    address = generate_address()
-    biller_user = generate_mock_user()
-    biller_address = generate_my_address(biller_user)
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=biller_user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-        role=Role.PAYEE,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payee_with_incoming_valid_and_no_record_in_db(
-    mock_method,
-):
-    address = generate_address()
-    biller_user = generate_mock_user()
-    biller_address = generate_my_address(biller_user)
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_exist_with_pending_status(
-    mock_method,
-):
-    address = generate_address()
-    biller_user = generate_mock_user()
-    biller_address = generate_my_address(biller_user)
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=biller_user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
-        role=Role.PAYEE,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    code, resp = process_inbound_command(address, cmd)
-    assert code == 200
-    assert resp
-    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
-    assert command_in_db.address == address
-    assert command_in_db.biller_address == biller_address
-    assert command_in_db.status == FundPullPreApprovalStatus.valid
-
-
-def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_exist_with_valid_status(
-    mock_method,
-):
-    address = generate_address()
-    biller_user = generate_mock_user()
-    biller_address = generate_my_address(biller_user)
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=biller_user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-        role=Role.PAYEE,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_exist_with_rejected_status(
-    mock_method,
-):
-    address = generate_address()
-    biller_user = generate_mock_user()
-    biller_address = generate_my_address(biller_user)
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=biller_user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-        role=Role.PAYEE,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_exist_with_closed_status(
-    mock_method,
-):
-    address = generate_address()
-    biller_user = generate_mock_user()
-    biller_address = generate_my_address(biller_user)
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=biller_user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-        role=Role.PAYEE,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payee_with_incoming_closed_and_no_record_in_db(
-    mock_method,
-):
-    address = generate_address()
-    biller_user = generate_mock_user()
-    biller_address = generate_my_address(biller_user)
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_exist_with_valid_status(
-    mock_method,
-):
-    address = generate_address()
-    biller_user = generate_mock_user()
-    biller_address = generate_my_address(biller_user)
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=biller_user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.valid,
-        role=Role.PAYEE,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    code, resp = process_inbound_command(address, cmd)
-    assert code == 200
-    assert resp
-    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
-    assert command_in_db.address == address
-    assert command_in_db.biller_address == biller_address
-    assert command_in_db.status == FundPullPreApprovalStatus.closed
-
-
-def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_exist_with_pending_status(
-    mock_method,
-):
-    address = generate_address()
-    biller_user = generate_mock_user()
-    biller_address = generate_my_address(biller_user)
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=biller_user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.pending,
-        role=Role.PAYEE,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    code, resp = process_inbound_command(address, cmd)
-    assert code == 200
-    assert resp
-    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
-    assert command_in_db.address == address
-    assert command_in_db.biller_address == biller_address
-    assert command_in_db.status == FundPullPreApprovalStatus.closed
-
-
-def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_exist_with_rejected_status(
-    mock_method,
-):
-    address = generate_address()
-    biller_user = generate_mock_user()
-    biller_address = generate_my_address(biller_user)
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=biller_user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.rejected,
-        role=Role.PAYEE,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
-
-
-def test_process_inbound_command_as_payee_with_incoming_closed_while_record_db_exist_with_closed_status(
-    mock_method,
-):
-    address = generate_address()
-    biller_user = generate_mock_user()
-    biller_address = generate_my_address(biller_user)
-
-    OneFundsPullPreApproval.run(
-        db_session=db_session,
-        account_id=biller_user.account_id,
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-        role=Role.PAYEE,
-    )
-
-    cmd = generate_funds_pull_pre_approval_command(
-        address=address,
-        biller_address=biller_address,
-        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
-        status=FundPullPreApprovalStatus.closed,
-    )
-    mock_method(
-        context.get().offchain_client,
-        "process_inbound_request",
-        will_return=cmd,
-    )
-
-    with pytest.raises(
-        FundsPullPreApprovalError,
-    ):
-        process_inbound_command(address, cmd)
 
 
 def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_exist_with_pending_status_and_no_address(
@@ -1413,7 +521,6 @@ def payee_close_request_check(mock_method, payee_bech32, payee_user, payer_bech3
     # payee update his command to closed
     update_command(
         preapproval_command_to_model(
-            account_id=payee_user.account_id,
             command=cmd,
             role=Role.PAYEE,
         )
@@ -1423,7 +530,8 @@ def payee_close_request_check(mock_method, payee_bech32, payee_user, payer_bech3
         "process_inbound_request",
         will_return=cmd,
     )
-    code, resp = process_inbound_command(payee_bech32, cmd)
+    unused = b"Unused because process_inbound_request is mocked"
+    code, resp = process_inbound_command(payee_bech32, unused)
     assert code == 200
     assert resp
     payer_command_in_db = get_command_from_bech32(
@@ -1455,7 +563,6 @@ def payer_close_request_check(mock_method, payee_bech32, payer_bech32, payer_use
     # payer update his command to valid
     update_command(
         preapproval_command_to_model(
-            account_id=payer_user.account_id,
             command=cmd,
             role=Role.PAYER,
         )
@@ -1465,7 +572,8 @@ def payer_close_request_check(mock_method, payee_bech32, payer_bech32, payer_use
         "process_inbound_request",
         will_return=cmd,
     )
-    code, resp = process_inbound_command(payee_bech32, cmd)
+    unused = b"Unused because process_inbound_request is mocked"
+    code, resp = process_inbound_command(payee_bech32, unused)
     assert code == 200
     assert resp
     payer_command_in_db = get_command_from_bech32(
@@ -1499,7 +607,6 @@ def payer_response_to_new_request_check(
     # payer update his command to valid
     update_command(
         preapproval_command_to_model(
-            account_id=payer_user.account_id,
             command=cmd,
             role=Role.PAYER,
         )
@@ -1509,7 +616,8 @@ def payer_response_to_new_request_check(
         "process_inbound_request",
         will_return=cmd,
     )
-    code, resp = process_inbound_command(payee_bech32, cmd)
+    unused = b"Unused because process_inbound_request is mocked"
+    code, resp = process_inbound_command(payee_bech32, unused)
     assert code == 200
     assert resp
     payer_command_in_db = get_command_from_bech32(
@@ -1549,7 +657,8 @@ def payee_initiate_completely_new_funds_pull_pre_approval_request_check(
         "process_inbound_request",
         will_return=cmd,
     )
-    code, resp = process_inbound_command(payee_bech32, cmd)
+    unused = b"Unused because process_inbound_request is mocked"
+    code, resp = process_inbound_command(payee_bech32, unused)
     assert code == 200
     assert resp
     payer_command_in_db = get_command_from_bech32(
@@ -1656,15 +765,16 @@ def generate_fund_pull_pre_approval_object(
 
 
 def test_role_calculation():
-    actual_combinations = get_combinations()
-    expected_combinations = set(all_combinations())
-
-    for com in actual_combinations:
-        expected_combinations.remove(com)
-
-    assert len(expected_combinations) == 0, print_expected_combinations(
-        expected_combinations
-    )
+    """
+    Tests that the reducer knows all the possible states.
+    """
+    for state in all_possible_states():
+        try:
+            # Raises KeyError if a state is unknown and FundsPullPreApprovalError
+            # if the state is illegal
+            reduce_role(**asdict(state))
+        except FundsPullPreApprovalStateError:
+            continue
 
 
 def print_expected_combinations(expected_combinations):

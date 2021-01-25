@@ -1,6 +1,8 @@
+#  Copyright (c) The Diem Core Contributors
+#  SPDX-License-Identifier: Apache-2.0
+
 import logging
 import time
-from enum import Enum
 from typing import List, Optional
 
 import context
@@ -20,18 +22,14 @@ from wallet.storage.funds_pull_pre_approval_command import (
     update_command,
     get_account_command_by_id,
 )
-from dataclasses import dataclass
+
+from .fund_pull_pre_approval_sm import (
+    Role,
+    reduce_role,
+    FundsPullPreApprovalError,
+)
 
 logger = logging.getLogger(__name__)
-
-
-class Role(str, Enum):
-    PAYEE = "payee"
-    PAYER = "payer"
-
-
-class FundsPullPreApprovalError(Exception):
-    ...
 
 
 class FundsPullPreApprovalInvalidStatus(FundsPullPreApprovalError):
@@ -183,12 +181,13 @@ def process_funds_pull_pre_approvals_requests():
 
 
 def preapproval_command_to_model(
-    account_id,
     command: offchain.FundsPullPreApprovalCommand,
-    role: str,
+    role: Role,
     offchain_sent: Optional[bool] = None,
 ) -> models.FundsPullPreApprovalCommand:
+    account_id = get_account_id_from_command(command, role)
     preapproval_object = command.funds_pull_pre_approval
+
     max_cumulative_amount = preapproval_object.scope.max_cumulative_amount
     max_transaction_amount = preapproval_object.scope.max_transaction_amount
 
@@ -274,6 +273,23 @@ def preapproval_model_to_command(
     )
 
 
+def get_account_id_from_command(
+    command: offchain.FundsPullPreApprovalCommand,
+    role: Role,
+) -> Optional[int]:
+    preapproval = command.funds_pull_pre_approval
+
+    if role == Role.PAYER:
+        my_address = preapproval.address
+    else:
+        my_address = preapproval.biller_address
+
+    _, sub_address = identifier.decode_account(
+        my_address, hrp=context.get().config.diem_address_hrp()
+    )
+    return get_account_id_from_subaddr(sub_address.hex())
+
+
 def get_command_from_bech32(
     address_bech32: str, funds_pull_pre_approval_id: str
 ) -> Optional[offchain.FundsPullPreApprovalCommand]:
@@ -289,435 +305,62 @@ def get_command_from_bech32(
     return None
 
 
-@dataclass(frozen=True)
-class Combination:
-    incoming_status: str  # 4
-    is_payee_address_mine: bool  # 2
-    is_payer_address_mine: bool  # 2
-    existing_status_as_payee: Optional[str]  # 5
-    existing_status_as_payer: Optional[str]  # 5
-
-
-def get_combinations():
-    Incoming = FundPullPreApprovalStatus
-    Existing = FundPullPreApprovalStatus
-
-    # fmt: off
-    explicit_combinations = {
-        # only payer can receive 'pending'
-        Combination(Incoming.pending, True, True, Existing.pending, None): Role.PAYER,  # new request from known payee
-        Combination(Incoming.pending, True, True, Existing.pending, Existing.pending): Role.PAYER,  # update request from known payee
-        Combination(Incoming.pending, False, True, None, None): Role.PAYER,  # new request from unknown payee
-        Combination(Incoming.pending, False, True, None, Existing.pending): Role.PAYER,  # update request from unknown payee
-        # only payee can receive 'valid'
-        Combination(Incoming.valid, True, False, Existing.pending, None): Role.PAYEE,  # approve request by unknown payer
-        Combination(Incoming.valid, True, True, Existing.pending, Existing.valid): Role.PAYEE, # get approve from known payer
-        # only payee can receive 'rejected'
-        Combination(Incoming.rejected, True, False, Existing.pending, None): Role.PAYEE,  # reject request by unknown payer
-        Combination(Incoming.rejected, True, True, Existing.pending, Existing.rejected): Role.PAYEE,  # reject request by known payer
-        #
-        Combination(Incoming.closed, False, True, None, Existing.pending): Role.PAYER,  # close 'pending' request by unknown payee
-        Combination(Incoming.closed, False, True, None, Existing.valid): Role.PAYER,  # close 'valid' request by unknown payee
-        #
-        Combination(Incoming.closed, True, True, Existing.closed, Existing.pending): Role.PAYER,  # close request by known payee
-        Combination(Incoming.closed, True, True, Existing.closed, Existing.valid): Role.PAYER,  # close request by known payee
-        #
-        Combination(Incoming.closed, True, False, Existing.pending, None): Role.PAYEE,  # close 'pending' request by unknown payer
-        Combination(Incoming.closed, True, False, Existing.valid, None): Role.PAYEE,  # close 'valid' request by unknown payer
-        #
-        Combination(Incoming.closed, True, True, Existing.pending, Existing.closed): Role.PAYEE,  # close request by known payer
-        Combination(Incoming.closed, True, True, Existing.valid, Existing.closed): Role.PAYEE,  # close request by known payer
-        #
-        Combination(Incoming.pending, False, True, None, Existing.valid): None,
-        Combination(Incoming.pending, False, True, None, Existing.closed): None,
-        Combination(Incoming.pending, False, True, None, Existing.rejected): None,
-        Combination(Incoming.closed, False, True, None, Existing.rejected): None,
-        Combination(Incoming.closed, False, True, None, Existing.closed): None,
-        Combination(Incoming.closed, True, False, Existing.closed, None): None,
-        Combination(Incoming.closed, True, False, Existing.rejected, None): None,
-    }
-
-    all_combinations_ = {}
-
-    all_combinations_.update(make_error_combinations(payee_and_payer_not_mine()))
-    all_combinations_.update(make_error_combinations(basic_invalid_states()))
-    all_combinations_.update(
-        make_error_combinations(incoming_status_not_pending_and_no_records())
-    )
-    all_combinations_.update(make_error_combinations(incoming_pending_for_payee()))
-    all_combinations_.update(
-        make_error_combinations(incoming_valid_or_rejected_but_payee_not_pending())
-    )
-    all_combinations_.update(
-        make_error_combinations(
-            incoming_valid_or_rejected_my_payee_not_pending_and_my_payer_not_equal_to_incoming()
-        )
-    )
-    all_combinations_.update(
-        make_error_combinations(
-            incoming_pending_my_payee_not_pending_my_payer_pending_or_none()
-        )
-    )
-    all_combinations_.update(
-        make_error_combinations(invalid_states_for_incoming_closed())
-    )
-
-    all_combinations_.update(explicit_combinations)
-    # fmt: on
-
-    return all_combinations_
-
-
-def get_role(approval):
+def is_my_address(address_bech32: str) -> bool:
+    """
+    Does the address belong the VASP asking the question?
+    """
     hrp = context.get().config.diem_address_hrp()
-    biller_address, biller_sub_address = identifier.decode_account(
-        approval.biller_address, hrp
-    )
-    address, sub_address = identifier.decode_account(approval.address, hrp)
-    payee_command = get_command_from_bech32(
-        approval.biller_address, approval.funds_pull_pre_approval_id
-    )
-    payer_command = get_command_from_bech32(
-        approval.address, approval.funds_pull_pre_approval_id
-    )
+    address, _ = identifier.decode_account(address_bech32, hrp)
 
-    combination = Combination(
-        incoming_status=approval.status,
-        is_payee_address_mine=is_my_address(biller_address),
-        is_payer_address_mine=is_my_address(address),
-        existing_status_as_payee=payee_command.funds_pull_pre_approval.status
-        if payee_command is not None
-        else None,
-        existing_status_as_payer=payer_command.funds_pull_pre_approval.status
-        if payer_command is not None
-        else None,
-    )
-
-    combinations = get_combinations()
-
-    role = combinations.get(combination)
-
-    print(f"combination: {combination}, role: {role}")
-
-    if role is None:
-        raise FundsPullPreApprovalError()
-
-    return role
-
-
-def all_combinations():
-    statuses = [
-        FundPullPreApprovalStatus.pending,
-        FundPullPreApprovalStatus.valid,
-        FundPullPreApprovalStatus.rejected,
-        FundPullPreApprovalStatus.closed,
-    ]
-
-    for incoming_status in statuses:
-        for is_payee_address_mine in [True, False]:
-            for is_payer_address_mine in [True, False]:
-                for existing_status_as_payee in statuses + [None]:
-                    for existing_status_as_payer in statuses + [None]:
-                        yield Combination(
-                            incoming_status,
-                            is_payee_address_mine,
-                            is_payer_address_mine,
-                            existing_status_as_payee,
-                            existing_status_as_payer,
-                        )
-
-
-def payee_and_payer_not_mine():
-    return [
-        combination for combination in all_combinations() if both_not_mine(combination)
-    ]
-
-
-def basic_invalid_states():
-    """
-    basic states that are not valid:
-    1. payee is not mine but record exist
-    (OR)
-    2. payer is not mine but record exist
-    """
-    return [
-        combination
-        for combination in all_combinations()
-        if (
-            not combination.is_payee_address_mine
-            and combination.existing_status_as_payee is not None
-        )
-        or (
-            not combination.is_payer_address_mine
-            and combination.existing_status_as_payer is not None
-        )
-    ]
-
-
-def incoming_status_not_pending_and_no_records():
-    return [
-        combination
-        for combination in all_combinations()
-        if incoming_status_is_not_pending(combination) and both_no_records(combination)
-    ]
-
-
-def incoming_pending_for_payee():
-    # if incoming status is 'pending', the payer address is not mine
-    # and the payee address is mine all combinations are invalid
-    return [
-        combination
-        for combination in all_combinations()
-        if not combination.is_payer_address_mine
-        and combination.is_payee_address_mine
-        and incoming_status_is_pending(combination)
-    ]
-
-
-def incoming_valid_or_rejected_but_payee_not_pending():
-    return [
-        combination
-        for combination in all_combinations()
-        if incoming_status_is_valid_or_rejected(combination)
-        and payee_status_is_not_pending(combination)
-    ]
-
-
-# both role are mine, incoming status is 'valid' or 'rejected',
-# payee must be 'pending' and payer must be equals to incoming status
-def incoming_valid_or_rejected_my_payee_not_pending_and_my_payer_not_equal_to_incoming():
-    return [
-        combination
-        for combination in all_combinations()
-        if both_mine(combination)
-        and incoming_status_is_valid_or_rejected(combination)
-        and payee_status_is_pending(combination)
-        and payer_status_equal_incoming_status(combination)
-    ]
-
-
-def incoming_status_is_valid_or_rejected(combination):
-    return combination.incoming_status in [
-        FundPullPreApprovalStatus.valid,
-        FundPullPreApprovalStatus.rejected,
-    ]
-
-
-# if payer none or pending --> payee must be pending
-# if payee pending --> payer must be none or pending
-def incoming_pending_my_payee_not_pending_my_payer_pending_or_none():
-    """
-    'pending' commands only payee can send, therefore when both 'mine' and incoming status is 'pending' the payee
-    must had been save his command in the DB before sending. only 2 scenarios are valid in the payer side:
-    1. receiving completely new command and therefore no record in DB.
-    2. receiving update to existing command and therefore record with status 'pending' exist in DB
-    following this a number of states are define as invalid for incoming 'pending' status:
-    1. payee don't have record or record exist with status not 'pending'
-    2. payer have record with status not 'pending'
-    """
-    return [
-        combination
-        for combination in all_combinations()
-        if both_mine(combination)
-        and (
-            payee_status_is_not_pending(combination)
-            or (
-                payee_status_is_pending(combination)
-                and payer_status_is_not_pending(combination)
-                and payer_status_is_not_none(combination)
-            )
-        )
-    ]
-
-
-def invalid_states_for_incoming_closed():
-    """
-    when both 'mine' and incoming status is 'closed' the side who sent the command must had been save his update in
-    the DB before sending, following this a number of states are define as invalid for incoming closed status:
-    1. both not 'closed' in DB
-    2. payee 'closed' but payer not 'pending' or 'valid'
-    3. payer 'closed' but payee not 'pending' or 'valid'
-    """
-    return [
-        combination
-        for combination in all_combinations()
-        if both_mine(combination)
-        and incoming_status_is_closed(combination)
-        and (
-            (
-                payer_status_is_not_closed(combination)
-                and payee_status_is_not_closed(combination)
-            )
-            or (
-                (
-                    payer_status_is_closed(combination)
-                    and payee_status_is_not_pending_or_valid(combination)
-                )
-                or (
-                    payee_status_is_closed(combination)
-                    and payer_status_is_not_pending_or_valid
-                )
-            )
-        )
-    ]
-
-
-def payee_status_is_closed(combination):
-    return combination.existing_status_as_payee is FundPullPreApprovalStatus.closed
-
-
-def payer_status_is_closed(combination):
-    return combination.existing_status_as_payer is FundPullPreApprovalStatus.closed
-
-
-def payee_status_is_not_pending_or_valid(combination):
-    return combination.existing_status_as_payee not in [
-        FundPullPreApprovalStatus.pending,
-        FundPullPreApprovalStatus.valid,
-    ]
-
-
-def payer_status_is_not_pending_or_valid(combination):
-    return combination.existing_status_as_payer not in [
-        FundPullPreApprovalStatus.pending,
-        FundPullPreApprovalStatus.valid,
-    ]
-
-
-def both_not_mine(combination):
-    return (
-        not combination.is_payee_address_mine and not combination.is_payer_address_mine
-    )
-
-
-def both_no_records(combination):
-    return (
-        combination.existing_status_as_payer is None
-        and combination.existing_status_as_payee is None
-    )
-
-
-def payee_status_is_not_closed(combination):
-    return combination.existing_status_as_payee is not FundPullPreApprovalStatus.closed
-
-
-def payer_status_is_not_closed(combination):
-    return combination.existing_status_as_payer is not FundPullPreApprovalStatus.closed
-
-
-def incoming_status_is_not_pending(combination):
-    return combination.incoming_status is not FundPullPreApprovalStatus.pending
-
-
-def payer_status_equal_incoming_status(combination):
-    return combination.existing_status_as_payer != combination.incoming_status
-
-
-def payer_status_is_not_none(combination):
-    return combination.existing_status_as_payer is not None
-
-
-def payer_status_is_not_pending(combination):
-    return combination.existing_status_as_payer is not FundPullPreApprovalStatus.pending
-
-
-def payee_status_is_not_pending(combination):
-    return combination.existing_status_as_payee is not FundPullPreApprovalStatus.pending
-
-
-def payee_status_is_pending(combination):
-    return combination.existing_status_as_payee is FundPullPreApprovalStatus.pending
-
-
-def incoming_status_is_pending(combination):
-    return combination.incoming_status is FundPullPreApprovalStatus.pending
-
-
-def incoming_status_is_closed(combination):
-    return combination.incoming_status is FundPullPreApprovalStatus.closed
-
-
-def both_mine(combination):
-    return combination.is_payer_address_mine and combination.is_payee_address_mine
-
-
-def make_error_combinations(combinations) -> dict:
-    return {combination: None for combination in combinations}
-
-
-def is_my_address(address):
     return address.to_hex() == context.get().config.vasp_address
 
 
-def handle_fund_pull_pre_approval_command(command):
+def handle_fund_pull_pre_approval_command(
+    command: offchain.FundsPullPreApprovalCommand,
+):
     approval = command.funds_pull_pre_approval
     validate_expiration_timestamp(approval.scope.expiration_timestamp)
-    role = get_role(approval)
+
+    fppa_id = approval.funds_pull_pre_approval_id
+    payee_address = approval.biller_address
+    payer_address = approval.address
+
+    role = reduce_role(
+        incoming_status=approval.status,
+        is_payee_address_mine=is_my_address(payee_address),
+        is_payer_address_mine=is_my_address(approval.address),
+        existing_status_as_payee=get_existing_command_status(payee_address, fppa_id),
+        existing_status_as_payer=get_existing_command_status(payer_address, fppa_id),
+    )
+
     command_in_db = get_command_by_id_and_role(
         approval.funds_pull_pre_approval_id, role
     )
     if command_in_db:
         validate_addresses(approval, command_in_db, role)
         validate_status(approval, command_in_db)
-
-    execute(approval, command, command_in_db, role)
-
-
-@dataclass(frozen=True)
-class Option:
-    role: str
-    incoming_status: str
-    status_in_db: Optional[str]
-
-
-def execute(approval, command, command_in_db, role):
-    hrp = context.get().config.diem_address_hrp()
-
-    # fmt: off
-    options = {
-        Option(Role.PAYER, FundPullPreApprovalStatus.pending, None): commit_command,
-        Option(Role.PAYER, FundPullPreApprovalStatus.pending, FundPullPreApprovalStatus.pending): update_command,
-        Option(Role.PAYER, FundPullPreApprovalStatus.closed, FundPullPreApprovalStatus.pending): update_command,
-        Option(Role.PAYER, FundPullPreApprovalStatus.closed, FundPullPreApprovalStatus.valid): update_command,
-        Option(Role.PAYEE, FundPullPreApprovalStatus.valid, FundPullPreApprovalStatus.pending): update_command,
-        Option(Role.PAYEE, FundPullPreApprovalStatus.rejected, FundPullPreApprovalStatus.pending): update_command,
-        Option(Role.PAYEE, FundPullPreApprovalStatus.closed, FundPullPreApprovalStatus.pending): update_command,
-        Option(Role.PAYEE, FundPullPreApprovalStatus.closed, FundPullPreApprovalStatus.valid): update_command,
-    }
-    # fmt: on
-
-    option = Option(
-        role, approval.status, command_in_db.status if command_in_db else None
-    )
-
-    if option in options:
-        action = options.get(option)
-
-        _, sub_address = identifier.decode_account(
-            approval.address if role == Role.PAYER else approval.biller_address, hrp
-        )
-
-        action(
-            preapproval_command_to_model(
-                account_id=get_account_id_from_subaddr(sub_address.hex()),
-                command=command,
-                role=role,
-            ),
-        )
+        update_command(preapproval_command_to_model(command, role))
     else:
-        raise FundsPullPreApprovalError(f"Failed to find action for option {option}")
+        commit_command(preapproval_command_to_model(command, role))
+
+
+def get_existing_command_status(address_bech32: str, fppa_id: str) -> Optional[str]:
+    """
+    Try to find the command in the storage. If found, return its status;
+    otherwise return None.
+    """
+    command = get_command_from_bech32(address_bech32, fppa_id)
+    return command and command.funds_pull_pre_approval.status
 
 
 def validate_status(approval, command_in_db):
+    if command_in_db.status == approval.status:
+        return
+
     if command_in_db.status in [
         FundPullPreApprovalStatus.rejected,
         FundPullPreApprovalStatus.closed,
     ]:
-        raise FundsPullPreApprovalInvalidStatus
-    if (
-        command_in_db.status == approval.status
-        and command_in_db.status != FundPullPreApprovalStatus.pending
-    ):
         raise FundsPullPreApprovalInvalidStatus
 
 
