@@ -24,7 +24,7 @@ jobs:
       - name: Check kill switch
         id: check_ks
         run: |
-          if ${{ secrets.KILL_SWITCH_E2E_TEST }}; then
+          if [ -z "${{ secrets.KILL_SWITCH_E2E_TEST }}" ]; then
             echo "::set-output name=should_run::false";
           else
             echo "::set-output name=should_run::true";
