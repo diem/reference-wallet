@@ -63,7 +63,7 @@ spec:
         - name: VASP_ADDR
           value: {{ .Values.vaspAddr }}
         - name: VASP_COMPLIANCE_KEY
-          value: {{ .Values.vaspComplianceKey | toJson | quote }}
+          value: {{ .Values.vaspComplianceKey | quote }}
         - name: JSON_RPC_URL
           value: {{ .Values.sdk.jsonRpc }}
         - name: OFFCHAIN_SERVICE_PORT
