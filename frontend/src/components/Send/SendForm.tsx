@@ -79,7 +79,9 @@ function SendForm({ value, onSubmit }: SendFormProps) {
   const [settings] = useContext(settingsContext)!;
   const { register, errors, handleSubmit, control, setValue, watch } = useForm<Send>();
 
-  const [selectedCurrency, setSelectedCurrency] = useState<DiemCurrency | undefined>(value.currency);
+  const [selectedCurrency, setSelectedCurrency] = useState<DiemCurrency | undefined>(
+    value.currency
+  );
   const [selectedFiatCurrency, setSelectedFiatCurrency] = useState<FiatCurrency>(
     value.fiatCurrency
   );

@@ -45,7 +45,9 @@ function WithdrawForm({ value, onSubmit }: WithdrawFormProps) {
   const [settings] = useContext(settingsContext)!;
   const { errors, handleSubmit, control, setValue, watch } = useForm<WithdrawData>();
 
-  const [selectedCurrency, setSelectedCurrency] = useState<DiemCurrency | undefined>(value.currency);
+  const [selectedCurrency, setSelectedCurrency] = useState<DiemCurrency | undefined>(
+    value.currency
+  );
   const [selectedFiatCurrency, setSelectedFiatCurrency] = useState<FiatCurrency>(
     value.fiatCurrency
   );
