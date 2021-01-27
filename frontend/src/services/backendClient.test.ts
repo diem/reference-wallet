@@ -5,7 +5,7 @@ import axios, { AxiosResponse } from "axios";
 import * as HttpCodes from "http-status-codes";
 import BackendClient from "./backendClient";
 import SessionStorage from "../services/sessionStorage";
-import { FiatCurrency, Currency } from "../interfaces/currencies";
+import { FiatCurrency, DiemCurrency } from "../interfaces/currencies";
 import { Quote, Rate, RequestForQuote } from "../interfaces/cico";
 import { PaymentMethod, User } from "../interfaces/user";
 import { Account } from "../interfaces/account";
@@ -459,7 +459,7 @@ describe("Account", () => {
 
 describe("CICO", () => {
   const fiatCurrency: FiatCurrency = "USD";
-  const currency: Currency = "XUS";
+  const currency: DiemCurrency = "XUS";
   const currencyPair = "XUS_USD";
   const amount = 123;
   const quoteId = "MAGNA-QUOTUM";

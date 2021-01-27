@@ -19,7 +19,7 @@ import { Link } from "react-router-dom";
 import NumberInput from "react-number-format";
 import SelectDropdown from "../select";
 import { settingsContext } from "../../contexts/app";
-import { FiatCurrency, Currency } from "../../interfaces/currencies";
+import { FiatCurrency, DiemCurrency } from "../../interfaces/currencies";
 import { DepositData } from "./interfaces";
 import { Controller, useForm } from "react-hook-form";
 import {
@@ -44,7 +44,7 @@ function DepositForm({ value, onSubmit }: DepositFormProps) {
   const [settings] = useContext(settingsContext)!;
   const { errors, handleSubmit, control, setValue, watch } = useForm<DepositData>();
 
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency | undefined>(value.currency);
+  const [selectedCurrency, setSelectedCurrency] = useState<DiemCurrency | undefined>(value.currency);
   const [selectedFiatCurrency, setSelectedFiatCurrency] = useState<FiatCurrency>(
     value.fiatCurrency
   );

@@ -1,13 +1,13 @@
 // Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { FiatCurrency, Currency } from "./currencies";
+import { FiatCurrency, DiemCurrency } from "./currencies";
 import { PaymentMethod, User } from "./user";
 import { Account, CurrencyBalance } from "./account";
 
 export interface CurrencySettings {
   name: string;
-  symbol: Currency;
+  symbol: DiemCurrency;
   sign: string;
   rates: {
     [key in FiatCurrency]: number;
@@ -27,7 +27,7 @@ export interface WalletTotals {
 export interface AppSettings {
   network: string;
   currencies: {
-    [key in Currency]: CurrencySettings;
+    [key in DiemCurrency]: CurrencySettings;
   };
   fiatCurrencies: {
     [key in FiatCurrency]: FiatCurrencySettings;

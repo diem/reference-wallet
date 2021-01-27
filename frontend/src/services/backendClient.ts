@@ -7,7 +7,7 @@ import { BackendError, ErrorMessage, UsernameAlreadyExistsError } from "./errors
 import { PaymentMethod, User, UserInfo } from "../interfaces/user";
 import { Account, CurrencyBalance } from "../interfaces/account";
 import { Transaction, TransactionDirection } from "../interfaces/transaction";
-import { FiatCurrency, Currency } from "../interfaces/currencies";
+import { FiatCurrency, DiemCurrency } from "../interfaces/currencies";
 import { Quote, QuoteAction, Rate } from "../interfaces/cico";
 import { Debt } from "../interfaces/settlement";
 import { Chain } from "../interfaces/system";
@@ -201,7 +201,7 @@ export default class BackendClient {
   }
 
   async getTransactions(
-    currency?: Currency,
+    currency?: DiemCurrency,
     direction?: TransactionDirection,
     sort?: string,
     limit?: number
@@ -218,7 +218,7 @@ export default class BackendClient {
   }
 
   async createTransaction(
-    currency: Currency,
+    currency: DiemCurrency,
     amount: number,
     receiver_address: string
   ): Promise<Transaction> {
@@ -239,14 +239,14 @@ export default class BackendClient {
 
   async requestDepositQuote(
     fromFiatCurrency: FiatCurrency,
-    toCurrency: Currency,
+    toCurrency: DiemCurrency,
     amount: number
   ): Promise<Quote> {
     return this.requestQuote("buy", toCurrency, fromFiatCurrency, amount);
   }
 
   async requestWithdrawQuote(
-    fromCurrency: Currency,
+    fromCurrency: DiemCurrency,
     toFiatCurrency: FiatCurrency,
     amount: number
   ): Promise<Quote> {
@@ -254,8 +254,8 @@ export default class BackendClient {
   }
 
   async requestConvertQuote(
-    fromCurrency: Currency,
-    toCurrency: Currency,
+    fromCurrency: DiemCurrency,
+    toCurrency: DiemCurrency,
     amount: number
   ): Promise<Quote> {
     return this.requestQuote("sell", fromCurrency, toCurrency, amount);
@@ -263,8 +263,8 @@ export default class BackendClient {
 
   private async requestQuote(
     action: QuoteAction,
-    baseCurrency: Currency,
-    quoteCurrency: Currency | FiatCurrency,
+    baseCurrency: DiemCurrency,
+    quoteCurrency: DiemCurrency | FiatCurrency,
     amount: number
   ): Promise<Quote> {
     try {
