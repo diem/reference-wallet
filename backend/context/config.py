@@ -24,7 +24,7 @@ class Config:
         return utils.account_address(self.vasp_address)
 
     def diem_address_hrp(self) -> str:
-        return identifier.HRPS[self.chain_id]
+        return identifier.HRPS.get(self.chain_id, identifier.PDM)
 
     def compliance_private_key(self) -> Ed25519PrivateKey:
         return Ed25519PrivateKey.from_private_bytes(
