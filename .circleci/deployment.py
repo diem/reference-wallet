@@ -1,6 +1,7 @@
 import json
 import time
 from dataclasses import dataclass, asdict
+from enum import IntEnum, unique
 from secrets import token_bytes
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
@@ -25,16 +26,29 @@ from mothership.utils.k8s.k8s import SecretMapping, WorkerLabelSelector
 
 ECR_HOST = '695406093586.dkr.ecr.eu-central-1.amazonaws.com'
 REFERENCE_WALLET_KUB_SECRET_NAME = 'diem-reference-wallet'
-WALLET_BACKEND_SERVICE_NAME = 'diem-reference-wallet-backend'
-LIQUIDITY_SERVICE_NAME = 'diem-reference-wallet-liquidity'
+WALLET_BACKEND_IMAGE_NAME = 'diem-reference-wallet-backend'
+LIQUIDITY_IMAGE_NAME = 'diem-reference-wallet-liquidity'
 
-CHAIN_ID = testnet.CHAIN_ID.to_int()
-JSON_RPC_URL = testnet.JSON_RPC_URL
 CURRENCY = 'XUS'
 
 
 def get_account_from_private_key(private_key) -> LocalAccount:
     return LocalAccount(Ed25519PrivateKey.from_private_bytes(bytes.fromhex(private_key)))
+
+
+@unique
+class ChainType(IntEnum):
+    TESTNET = testnet.CHAIN_ID.to_int()
+    PREMAINNET = 21
+    
+    @property
+    def json_rpc_url(self) -> str:
+        if self == ChainType.TESTNET:
+            return testnet.JSON_RPC_URL
+        elif self == ChainType.PREMAINNET:
+            return "https://premainnet.diem.com/v1"
+        else:
+            raise ValueError(f"Unexpected chain type {self.name}({self.value})")
 
 
 class ComplianceKey:
@@ -100,8 +114,9 @@ class WalletSecrets:
 
 
 class Vasp:
-    def __init__(self, private_key, base_url, compliance_private_key):
-        self.api = jsonrpc.Client(JSON_RPC_URL)
+    def __init__(self, chain: ChainType, private_key, base_url, compliance_private_key):
+        self.chain = chain
+        self.api = jsonrpc.Client(chain.json_rpc_url)
         self.faucet = testnet.Faucet(self.api)
 
         self.account = get_account_from_private_key(private_key)
@@ -109,8 +124,8 @@ class Vasp:
         self.compliance_key = ComplianceKey.from_str(compliance_private_key)
 
     @classmethod
-    def create(cls, private_key, base_url, compliance_private_key):
-        vasp = cls(private_key, base_url, compliance_private_key)
+    def create(cls, chain, private_key, base_url, compliance_private_key):
+        vasp = cls(chain, private_key, base_url, compliance_private_key)
         vasp.ensure_account()
         return vasp
 
@@ -158,13 +173,37 @@ class Vasp:
             gas_unit_price=diem_types.st.uint64(0),
             gas_currency_code=CURRENCY,
             expiration_timestamp_secs=diem_types.st.uint64(int(time.time()) + 30),
-            chain_id=diem_types.ChainId.from_int(CHAIN_ID),
+            chain_id=diem_types.ChainId.from_int(self.chain.value),
         )
         signed_tx = self.account.sign(tx)
 
         self.api.submit(signed_tx)
         self.api.wait_for_transaction(signed_tx)
         logger.info(f'Rotated dual attestation for account {self.account_address_hex}')
+
+
+@dataclass
+class DeployableNames:
+    web_backend_service: str
+    web_backend_db: str
+    dramatiq_service: str
+    pubsub_service: str
+    liquidity_service: str
+    liquidity_db: str
+
+    @classmethod
+    def create(cls, chain: ChainType, env_prefix: str):
+        base_service = "diem-reference-wallet-backend"
+        service_chain = f"-{chain.name}" if chain != ChainType.TESTNET else ""
+        db_chain = f"_{chain.name}" if chain != ChainType.TESTNET else ""
+        return cls(
+            web_backend_service=f"{base_service}-web{service_chain}",
+            web_backend_db=f"{env_prefix}_diem_reference_wallet{db_chain}",
+            dramatiq_service=f"{base_service}-dramatiq{service_chain}",
+            pubsub_service=f"{base_service}-pubsub{service_chain}",
+            liquidity_service=f"diem-reference-wallet-liquidity{service_chain}",
+            liquidity_db=f"{env_prefix}_lp{db_chain}",
+        )
 
 
 class DiemReferenceWallet(Deployment):
@@ -195,6 +234,7 @@ class DiemReferenceWallet(Deployment):
 
     def backend_deployable(self,
                            service_name,
+                           liquidity_service_name,
                            command,
                            routes,
                            db_username,
@@ -216,21 +256,23 @@ class DiemReferenceWallet(Deployment):
             'REDIS_HOST': redis_host,
             'DB_URL': db_url_diem_reference_wallet,
             'VASP_ADDR': vasp.account_address_hex,
-            'LIQUIDITY_SERVICE_HOST': LIQUIDITY_SERVICE_NAME,
+            'LIQUIDITY_SERVICE_HOST': liquidity_service_name,
             'LIQUIDITY_SERVICE_PORT': 8080,
             'WALLET_CUSTODY_ACCOUNT_NAME': 'wallet',
             'VASP_BASE_URL': vasp.base_url,
             'OFFCHAIN_SERVICE_PORT': 5091,
-            'JSON_RPC_URL': JSON_RPC_URL,
-            'CHAIN_ID': CHAIN_ID,
+            'JSON_RPC_URL': vasp.chain.json_rpc_url,
+            'CHAIN_ID': vasp.chain.value,
             'GAS_CURRENCY_CODE': CURRENCY,
         }
         if env_vars is not None:
             environment_variables.update(env_vars)
 
+        docker_image = f"{ECR_HOST}/{WALLET_BACKEND_IMAGE_NAME}:{self.variables['build_tag']['value']}"
+
         return SimpleService(namespace=self.env_prefix,
                              service_name=service_name,
-                             docker_image=f"{ECR_HOST}/{WALLET_BACKEND_SERVICE_NAME}:{self.variables['build_tag']['value']}",
+                             docker_image=docker_image,
                              command=command,
                              port=8080,
                              collect_telemetry=True,
@@ -258,6 +300,7 @@ class DiemReferenceWallet(Deployment):
                              db_name_liquidity_provider,
                              liquidity_vasp_auth_key,
                              worker_label_selector: WorkerLabelSelector,
+                             chain: ChainType,
                              env_vars=None):
         db_url_lp = f'postgresql://{db_username}:{db_password}@{db_host}:{db_port}/{db_name_liquidity_provider}'
 
@@ -268,8 +311,8 @@ class DiemReferenceWallet(Deployment):
             'LIQUIDITY_PORT': 8080,
             'LIQUIDITY_CUSTODY_ACCOUNT_NAME': 'liquidity',
             'ACCOUNT_WATCHER_AUTH_KEY': liquidity_vasp_auth_key,
-            'JSON_RPC_URL': JSON_RPC_URL,
-            'CHAIN_ID': CHAIN_ID,
+            'JSON_RPC_URL': chain.json_rpc_url,
+            'CHAIN_ID': chain.value,
         }
         if env_vars is not None:
             environment_variables.update(env_vars)
@@ -277,7 +320,7 @@ class DiemReferenceWallet(Deployment):
         return SimpleService(namespace=self.env_prefix,
                              service_name=service_name,
                              command=["/liquidity/run.sh"],
-                             docker_image=f"{ECR_HOST}/{LIQUIDITY_SERVICE_NAME}:{self.variables['build_tag']['value']}",
+                             docker_image=f"{ECR_HOST}/{LIQUIDITY_IMAGE_NAME}:{self.variables['build_tag']['value']}",
                              port=8080,
                              collect_telemetry=True,
                              routes=routes,
@@ -296,7 +339,24 @@ class DiemReferenceWallet(Deployment):
                               path='/',
                               resources_dir='/frontend')
 
+    def db_for_service_deployable(self, db_name, db_password):
+        return PostgresDatabase(
+            cd_mode=self.cd_mode,
+            aws_region=self.region,
+            db_host=self.outputs['PostgresInstance']['db_host'],
+            db_port=self.outputs['PostgresInstance']['db_port'],
+            master_username=self.outputs['PostgresInstance']['master_username'],
+            master_password=self.outputs['PostgresInstance']['master_password'],
+            db_name=db_name,
+            db_username='drwuser',
+            db_password=db_password,
+        )
+
     def _deploy(self):
+        chain = ChainType.TESTNET
+
+        deployable_names = DeployableNames.create(chain, self.env_prefix)
+
         worker_type_label = self.outputs['EKS']['worker-type-label']['value']
         worker_tag = self.outputs['EKS']['worker-tag']['value']
         worker_label_selector = WorkerLabelSelector(worker_type_label, [worker_tag])
@@ -305,6 +365,7 @@ class DiemReferenceWallet(Deployment):
         secrets = self.deploy_secrets(wallet_secrets)
 
         wallet_vasp = Vasp.create(
+            chain=chain,
             private_key=secrets.backend_wallet_private_key,
             base_url=self.get_diem_wallet_hostname(),  # FIXME: Should be fixed to use offchain
             compliance_private_key=secrets.backend_compliance_private_key,
@@ -317,95 +378,76 @@ class DiemReferenceWallet(Deployment):
         # Liquidity is not a real VASP at this moment, so the attestation info is not
         # used and contains dummy values
         liquidity_vasp = Vasp.create(
+            chain=chain,
             private_key=secrets.liquidity_wallet_private_key,
             base_url="UNUSED",
             compliance_private_key=ComplianceKey.generate().export_full(),
         )
         liquidity_vasp.mint(99 * 1_000_000, CURRENCY)
 
-        db_host = self.outputs['PostgresInstance']['db_host']
-        db_port = self.outputs['PostgresInstance']['db_port']
-        master_username = self.outputs['PostgresInstance']['master_username']
-        master_password = self.outputs['PostgresInstance']['master_password']
-        db_name_wallet = f'{self.env_prefix}_diem_reference_wallet'
-        db_name_liquidity_provider = f'{self.env_prefix}_lp'
-        db_username = 'drwuser'
-        db_password = secrets.db_password
-
         redis_host = self.outputs['ElasticCacheRedis']['redis_host']['value']
 
-        db_config = {
-            "cd_mode": self.cd_mode,
-            "aws_region": self.region,
-            "db_host": db_host,
-            "db_port": db_port,
-            "master_username": master_username,
-            "master_password": master_password,
-            "db_name": db_name_wallet,
-            "db_username": db_username,
-            "db_password": db_password
-        }
-
         # Wallet database
-        database = PostgresDatabase(**db_config)
-        database.deploy()
+        wallet_db = self.db_for_service_deployable(deployable_names.web_backend_db, secrets.db_password)
+        wallet_db_connection_params = dict(
+            db_username=wallet_db.db_username,
+            db_password=wallet_db.db_password,
+            db_host=wallet_db.db_host,
+            db_port=wallet_db.db_port,
+            db_name_wallet=wallet_db.db_name,
+        )
+        wallet_db.deploy()
 
         # Liquidity provider database
-        db_config["db_name"] = db_name_liquidity_provider
-        lp_database = PostgresDatabase(**db_config)
-        lp_database.deploy()
+        lp_db = self.db_for_service_deployable(deployable_names.liquidity_db, secrets.db_password)
+        lp_db_connection_params = dict(
+            db_username=lp_db.db_username,
+            db_password=lp_db.db_password,
+            db_host=lp_db.db_host,
+            db_port=lp_db.db_port,
+            db_name_liquidity_provider=lp_db.db_name,
+        )
+        lp_db.deploy()
 
         # web backend
-        self.backend_deployable(service_name=f'{WALLET_BACKEND_SERVICE_NAME}-web',
+        self.backend_deployable(service_name=deployable_names.web_backend_service,
+                                liquidity_service_name=deployable_names.liquidity_service,
                                 command=['/wallet/run_web.sh'],
                                 routes=[Route(host=self.get_diem_wallet_hostname(), path='/api')],
-                                db_username=db_username,
-                                db_password=db_password,
-                                db_host=db_host,
-                                db_port=db_port,
-                                db_name_wallet=db_name_wallet,
                                 redis_host=redis_host,
                                 worker_label_selector=worker_label_selector,
                                 vasp=wallet_vasp,
-                                env_vars={'ADMIN_USERNAME': 'admin@diem'}).deploy()
+                                env_vars={'ADMIN_USERNAME': 'admin@diem'},
+                                **wallet_db_connection_params).deploy()
 
         # dramatiq backend
-        self.backend_deployable(service_name=f'{WALLET_BACKEND_SERVICE_NAME}-dramatiq',
+        self.backend_deployable(service_name=deployable_names.dramatiq_service,
+                                liquidity_service_name=deployable_names.liquidity_service,
                                 command=['/wallet/run_worker.sh'],
                                 routes=None,
-                                db_username=db_username,
-                                db_password=db_password,
-                                db_host=db_host,
-                                db_port=db_port,
-                                db_name_wallet=db_name_wallet,
                                 redis_host=redis_host,
                                 vasp=wallet_vasp,
                                 worker_label_selector=worker_label_selector,
-                                env_vars={'PROCS': 10, 'THREADS': 10}).deploy()
+                                env_vars={'PROCS': 10, 'THREADS': 10},
+                                **wallet_db_connection_params).deploy()
 
         # pubsub backend
-        self.backend_deployable(service_name=f'{WALLET_BACKEND_SERVICE_NAME}-pubsub',
+        self.backend_deployable(service_name=deployable_names.pubsub_service,
+                                liquidity_service_name=deployable_names.liquidity_service,
                                 command=['/wallet/run_pubsub.sh'],
                                 routes=None,
-                                db_username=db_username,
-                                db_password=db_password,
-                                db_host=db_host,
-                                db_port=db_port,
-                                db_name_wallet=db_name_wallet,
                                 redis_host=redis_host,
                                 vasp=wallet_vasp,
-                                worker_label_selector=worker_label_selector).deploy()
+                                worker_label_selector=worker_label_selector,
+                                **wallet_db_connection_params).deploy()
 
         # liquidity
-        self.liquidity_deployable(service_name=LIQUIDITY_SERVICE_NAME,
+        self.liquidity_deployable(service_name=deployable_names.liquidity_service,
                                   routes=None,
-                                  db_username=db_username,
-                                  db_password=db_password,
-                                  db_host=db_host,
-                                  db_port=db_port,
-                                  db_name_liquidity_provider=db_name_liquidity_provider,
                                   liquidity_vasp_auth_key=liquidity_vasp.auth_key_hex,
-                                  worker_label_selector=worker_label_selector).deploy()
+                                  worker_label_selector=worker_label_selector,
+                                  chain=liquidity_vasp.chain,
+                                  **lp_db_connection_params).deploy()
 
         self.frontend_deployable().deploy()
 
