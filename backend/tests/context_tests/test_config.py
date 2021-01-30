@@ -53,3 +53,5 @@ def test_diem_address_hrp():
     assert conf.diem_address_hrp() == "dm"
     conf.chain_id = 2
     assert conf.diem_address_hrp() == "tdm"
+    conf.chain_id = 222
+    assert conf.diem_address_hrp() == "pdm"
