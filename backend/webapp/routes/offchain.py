@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 offchain = Blueprint("offchain", __name__)
 
 
-def preapproval_command_to_dict(preapproval: FundsPullPreApprovalCommand):
+def preapproval_command_to_dict(preapproval: fppa_service.FPPAObject):
     preapproval_object = preapproval.funds_pull_pre_approval
     scope = preapproval_object.scope
 
@@ -46,6 +46,8 @@ def preapproval_command_to_dict(preapproval: FundsPullPreApprovalCommand):
             "type": scope.type,
             "expiration_timestamp": scope.expiration_timestamp,
         },
+        "biller_name": preapproval.biller_name,
+        "created_timestamp": preapproval.created_timestamp,
     }
 
     if preapproval_object.description is not None:

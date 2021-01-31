@@ -15,7 +15,7 @@ CURRENCY = "XUS"
 
 
 def invent_preapproval(description):
-    return offchain.FundsPullPreApprovalCommand(
+    return fppa_service.FPPAObject(
         my_actor_address=ADDRESS,
         funds_pull_pre_approval=offchain.FundPullPreApprovalObject(
             funds_pull_pre_approval_id=f"{BILLER_ADDRESS}_123",
@@ -40,6 +40,8 @@ def invent_preapproval(description):
             status=offchain.FundPullPreApprovalStatus.pending,
             description=description,
         ),
+        biller_name="Bond",
+        created_timestamp=datetime.utcnow(),
     )
 
 
