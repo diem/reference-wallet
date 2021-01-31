@@ -32,7 +32,9 @@ function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
                 <>
                   <span className="text-black mr-4 overflow-auto">
                     <div>
-                      Received from <b>{approval.biller_name}</b> ({approval.created_timestamp})
+                      Received from <b>{approval.biller_name}</b> (
+                      {new Date(approval.created_timestamp).toLocaleString()})
+                      {/*// new Date(approval.created_timestamp).toLocaleDateString()*/}
                     </div>
 
                     <div className="text-black mr-4 overflow-auto inline-block">
