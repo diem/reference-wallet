@@ -11,6 +11,7 @@ import { FiatCurrency, DiemCurrency } from "../interfaces/currencies";
 import { Quote, QuoteAction, Rate } from "../interfaces/cico";
 import { Debt } from "../interfaces/settlement";
 import { Chain } from "../interfaces/system";
+import { Approval } from "../interfaces/approval";
 
 export default class BackendClient {
   private client: AxiosInstance;
@@ -398,6 +399,21 @@ export default class BackendClient {
       const response = await this.client.get("/network");
 
       return response.data;
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async getFundsPullPreApprovals(): Promise<Approval[]> {
+    try {
+      const response = await this.client.get("/offchain/funds_pull_pre_approvals");
+      console.log("getFundsPullPreApprovals");
+      console.log("Bond and Gurki");
+      // data.funds_pull_pre_approvals
+      console.log(response);
+
+      return response.data.funds_pull_pre_approvals;
     } catch (e) {
       BackendClient.handleError(e);
       throw e;

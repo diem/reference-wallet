@@ -22,8 +22,11 @@ import TransactionsList from "../components/TransactionsList";
 import BackendClient from "../services/backendClient";
 import TransactionModal from "../components/TransactionModal";
 import TestnetWarning from "components/TestnetWarning";
+import FundsPullPreApprovalsList from "components/FundsPullPreApprovalsList";
+import { Approval } from "../interfaces/approval";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
+const REFRESH_APPROVALS_INTERVAL = 3000;
 
 function Home() {
   const { t } = useTranslation("layout");
@@ -38,6 +41,7 @@ function Home() {
 
   const [activeCurrency, setActiveCurrency] = useState<DiemCurrency | undefined>();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [approvals, setApprovals] = useState<Approval[]>([]);
   const [transactionModal, setTransactionModal] = useState<Transaction>();
 
   const [transferModalOpen, setTransferModalOpen] = useState<boolean>(false);
@@ -77,6 +81,28 @@ function Home() {
 
     return () => {
       refreshTransactions = false;
+    };
+  }, []);
+
+  let refreshApprovals = true;
+
+  useEffect(() => {
+    const fetchApprovals = async () => {
+      try {
+        if (refreshApprovals) {
+          setApprovals(await new BackendClient().getFundsPullPreApprovals());
+        }
+        setTimeout(fetchApprovals, REFRESH_APPROVALS_INTERVAL);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    // noinspection JSIgnoredPromiseFromCall
+    fetchApprovals();
+
+    return () => {
+      refreshApprovals = false;
     };
   }, []);
 
@@ -147,6 +173,11 @@ function Home() {
                 />
               </section>
             )}
+
+            <section className="my-5">
+              <h2 className="h5 font-weight-normal text-body">Funds Pull Pre Approvals Requests</h2>
+              <FundsPullPreApprovalsList approvals={approvals} />
+            </section>
 
             <SendModal open={sendModalOpen} onClose={() => setSendModalOpen(false)} />
             <ReceiveModal open={receiveModalOpen} onClose={() => setReceiveModalOpen(false)} />
