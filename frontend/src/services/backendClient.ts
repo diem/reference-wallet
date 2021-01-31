@@ -7,7 +7,7 @@ import { BackendError, ErrorMessage, UsernameAlreadyExistsError } from "./errors
 import { PaymentMethod, User, UserInfo } from "../interfaces/user";
 import { Account, CurrencyBalance } from "../interfaces/account";
 import { Transaction, TransactionDirection } from "../interfaces/transaction";
-import { FiatCurrency, DiemCurrency } from "../interfaces/currencies";
+import { DiemCurrency, FiatCurrency } from "../interfaces/currencies";
 import { Quote, QuoteAction, Rate } from "../interfaces/cico";
 import { Debt } from "../interfaces/settlement";
 import { Chain } from "../interfaces/system";
@@ -408,10 +408,6 @@ export default class BackendClient {
   async getFundsPullPreApprovals(): Promise<Approval[]> {
     try {
       const response = await this.client.get("/offchain/funds_pull_pre_approvals");
-      console.log("getFundsPullPreApprovals");
-      console.log("Bond and Gurki");
-      // data.funds_pull_pre_approvals
-      console.log(response);
 
       return response.data.funds_pull_pre_approvals;
     } catch (e) {
