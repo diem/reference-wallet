@@ -46,6 +46,7 @@ def update_command(command: models.FundsPullPreApprovalCommand):
     )
 
     if command_in_db:
+        command.created_timestamp = command_in_db.created_timestamp
         command_in_db.update(command)
         db_session.commit()
     else:

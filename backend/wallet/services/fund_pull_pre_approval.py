@@ -1,6 +1,6 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
-
+import dataclasses
 import logging
 import time
 from typing import List, Optional
@@ -34,6 +34,12 @@ logger = logging.getLogger(__name__)
 
 class FundsPullPreApprovalInvalidStatus(FundsPullPreApprovalError):
     ...
+
+
+@dataclasses.dataclass(frozen=True)
+class FPPAObject(offchain.FundsPullPreApprovalCommand):
+    biller_name: str = None
+    created_timestamp: int = None
 
 
 def create_and_approve(
@@ -145,7 +151,7 @@ def update_status(
 
 def get_funds_pull_pre_approvals(
     account_id: int,
-) -> List[offchain.FundsPullPreApprovalCommand]:
+) -> List[FPPAObject]:
     return [
         preapproval_model_to_command(fppa) for fppa in get_account_commands(account_id)
     ]
@@ -234,7 +240,7 @@ def preapproval_command_to_model(
 
 def preapproval_model_to_command(
     command: models.FundsPullPreApprovalCommand,
-) -> offchain.FundsPullPreApprovalCommand:
+) -> FPPAObject:
     if command.role == Role.PAYER:
         my_address = command.address
     else:
@@ -272,9 +278,11 @@ def preapproval_model_to_command(
         description=command.description,
     )
 
-    return offchain.FundsPullPreApprovalCommand(
+    return FPPAObject(
         my_actor_address=my_address,
         funds_pull_pre_approval=funds_pull_pre_approval,
+        biller_name=command.biller_name,
+        created_timestamp=command.created_timestamp,
     )
 
 
@@ -297,7 +305,7 @@ def get_account_id_from_command(
 
 def get_command_from_bech32(
     address_bech32: str, funds_pull_pre_approval_id: str
-) -> Optional[offchain.FundsPullPreApprovalCommand]:
+) -> Optional[FPPAObject]:
     address, sub_address = identifier.decode_account(
         address_bech32, context.get().config.diem_address_hrp()
     )

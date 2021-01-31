@@ -16,6 +16,8 @@ export interface Approval {
   scope: Scope;
   description: string;
   status: ApprovalStatus;
+  biller_name: string;
+  created_timestamp: string;
 }
 
 interface Scope {

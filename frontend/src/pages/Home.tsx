@@ -174,10 +174,14 @@ function Home() {
               </section>
             )}
 
-            <section className="my-5">
-              <h2 className="h5 font-weight-normal text-body">Funds Pull Pre Approvals Requests</h2>
-              <FundsPullPreApprovalsList approvals={approvals} />
-            </section>
+            {!!approvals.length && (
+              <section className="my-5">
+                <h2 className="h5 font-weight-normal text-body">
+                  Funds Pull Pre Approvals Requests
+                </h2>
+                <FundsPullPreApprovalsList approvals={approvals} />
+              </section>
+            )}
 
             <SendModal open={sendModalOpen} onClose={() => setSendModalOpen(false)} />
             <ReceiveModal open={receiveModalOpen} onClose={() => setReceiveModalOpen(false)} />

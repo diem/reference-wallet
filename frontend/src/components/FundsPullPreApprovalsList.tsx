@@ -4,7 +4,6 @@
 import React from "react";
 import { Approval } from "../interfaces/approval";
 import { classNames } from "../utils/class-names";
-import { Button } from "reactstrap";
 
 interface ApprovalsListProps {
   approvals: Approval[];
@@ -32,15 +31,20 @@ function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
               <div className="d-flex">
                 <>
                   <span className="text-black mr-4 overflow-auto">
-                    <strong className="text-capitalize-first">{"Received"}</strong> {"from"}{" "}
-                    <span>{approval.biller_address}</span>
+                    <div>
+                      Received from <b>{approval.biller_name}</b> ({approval.created_timestamp})
+                    </div>
+
+                    <div className="text-black mr-4 overflow-auto inline-block">
+                      <strong>{"Limits:"}</strong>{" "}
+                    </div>
                   </span>
-                  <Button color="black" outline onClick={approveRequest}>
-                    {"Approve"}
-                  </Button>
-                  <Button color="black" outline>
-                    {"Reject"}
-                  </Button>
+                  {/*<Button color="black" outline onClick={approveRequest}>*/}
+                  {/*  {"Approve"}*/}
+                  {/*</Button>*/}
+                  {/*<Button color="black" outline>*/}
+                  {/*  {"Reject"}*/}
+                  {/*</Button>*/}
                 </>
               </div>
             </li>
