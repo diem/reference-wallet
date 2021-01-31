@@ -185,6 +185,7 @@ def preapproval_command_to_model(
     command: offchain.FundsPullPreApprovalCommand,
     role: Role,
     offchain_sent: Optional[bool] = None,
+    biller_name: Optional[str] = None,
 ) -> models.FundsPullPreApprovalCommand:
     account_id = get_account_id_from_command(command, role)
     preapproval_object = command.funds_pull_pre_approval
@@ -224,6 +225,9 @@ def preapproval_command_to_model(
 
     if offchain_sent is not None:
         model.offchain_sent = offchain_sent
+
+    if biller_name is not None:
+        model.biller_name = biller_name
 
     return model
 
@@ -342,7 +346,23 @@ def handle_fund_pull_pre_approval_command(
         validate_status(approval, command_in_db)
         update_command(preapproval_command_to_model(command, role))
     else:
-        commit_command(preapproval_command_to_model(command, role))
+        biller_name = get_biller_name(command)
+        commit_command(
+            preapproval_command_to_model(command, role, biller_name=biller_name)
+        )
+
+
+def get_biller_name(command):
+    address, _ = identifier.decode_account(
+        command.funds_pull_pre_approval.biller_address,
+        context.get().config.diem_address_hrp(),
+    )
+    biller_account = context.get().jsonrpc_client.get_account(address)
+
+    if biller_account:
+        return biller_account.role.human_name
+    else:
+        return None
 
 
 def get_existing_command_status(address_bech32: str, fppa_id: str) -> Optional[str]:
