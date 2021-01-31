@@ -28,7 +28,7 @@ class AddressSequence:
 
 
 class TradeStatus(str, Enum):
-    Pending = "Pendinig"
+    Pending = "Pending"
     Complete = "Complete"
     Consolidated = "Consolidated"
 
