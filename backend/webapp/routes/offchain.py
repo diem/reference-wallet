@@ -55,7 +55,7 @@ def preapproval_command_to_dict(preapproval: fppa_service.FPPAObject):
 
     if scope.max_cumulative_amount is not None:
         max_cumulative_amount = scope.max_cumulative_amount
-        result["max_cumulative_amount"] = {
+        result["scope"]["max_cumulative_amount"] = {
             "unit": max_cumulative_amount.unit,
             "value": max_cumulative_amount.value,
             "max_amount": {
@@ -66,7 +66,7 @@ def preapproval_command_to_dict(preapproval: fppa_service.FPPAObject):
 
     if scope.max_transaction_amount is not None:
         max_transaction_amount = scope.max_transaction_amount
-        result["max_transaction_amount"] = {
+        result["scope"]["max_transaction_amount"] = {
             "amount": max_transaction_amount.amount,
             "currency": max_transaction_amount.currency,
         }
