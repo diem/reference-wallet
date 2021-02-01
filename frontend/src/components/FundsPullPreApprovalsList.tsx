@@ -49,14 +49,15 @@ function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
               <div className="text-black">
                 {approval.scope.max_transaction_amount &&
                   "Single payment limit: Up to " +
-                    diemAmountToHumanFriendly(approval.scope.max_transaction_amount.amount) +
+                    diemAmountToHumanFriendly(approval.scope.max_transaction_amount.amount, true) +
                     settings.currencies[approval.scope.max_transaction_amount.currency].sign}{" "}
               </div>
               <div className="text-black">
                 {approval.scope.max_cumulative_amount &&
                   "Total payments limit: Up to " +
                     diemAmountToHumanFriendly(
-                      approval.scope.max_cumulative_amount.max_amount.amount
+                      approval.scope.max_cumulative_amount.max_amount.amount,
+                      true
                     ) +
                     " " +
                     settings.currencies[approval.scope.max_cumulative_amount.max_amount.currency]
