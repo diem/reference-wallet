@@ -194,8 +194,8 @@ class DeployableNames:
     @classmethod
     def create(cls, chain: ChainType, env_prefix: str):
         base_service = "diem-reference-wallet-backend"
-        service_chain = f"-{chain.name}" if chain != ChainType.TESTNET else ""
-        db_chain = f"_{chain.name}" if chain != ChainType.TESTNET else ""
+        service_chain = f"-{chain.name.lower()}" if chain != ChainType.TESTNET else ""
+        db_chain = f"_{chain.name.lower()}" if chain != ChainType.TESTNET else ""
         return cls(
             web_backend_service=f"{base_service}-web{service_chain}",
             web_backend_db=f"{env_prefix}_diem_reference_wallet{db_chain}",
@@ -213,11 +213,15 @@ class DiemReferenceWallet(Deployment):
         self.variables['build_tag'] = {'description': 'Official Diem Reference wallet build tag for all components'}
         self.depends_on = [EKS, IngressController, PostgresInstance, ElasticCacheRedis]
 
-    def get_diem_wallet_hostname(self):
+    def get_diem_wallet_hostname(self, chain: ChainType):
         domains: DomainRepository = self.outputs['IngressController']['domains']
+
         application_name = 'diem-reference-wallet'
-        diem_reference_wallet_hostname = domains.get_mapped_domain(Subsystem.DEMO, application_name)
-        return diem_reference_wallet_hostname
+        if chain != ChainType.TESTNET:
+            application_name += '-'
+            application_name += chain.name.lower()
+
+        return domains.get_mapped_domain(Subsystem.DEMO, application_name)
 
     def deploy_secrets(self, secrets: WalletSecrets):
         kub_secrets = KubSecret(
@@ -252,7 +256,7 @@ class DiemReferenceWallet(Deployment):
         environment_variables = {
             'COMPOSE_ENV': 'production',
             'WALLET_PORT': 8080,
-            'API_URL': f'https://{self.get_diem_wallet_hostname()}/api',
+            'API_URL': f'https://{self.get_diem_wallet_hostname(vasp.chain)}/api',
             'REDIS_HOST': redis_host,
             'DB_URL': db_url_diem_reference_wallet,
             'VASP_ADDR': vasp.account_address_hex,
@@ -332,10 +336,10 @@ class DiemReferenceWallet(Deployment):
                              ],
                              worker_selector=worker_label_selector)
 
-    def frontend_deployable(self):
+    def frontend_deployable(self, chain):
         return StaticResource(cd_mode=self.cd_mode,
                               env_prefix=self.env_prefix,
-                              host=self.get_diem_wallet_hostname(),
+                              host=self.get_diem_wallet_hostname(chain),
                               path='/',
                               resources_dir='/frontend')
 
@@ -364,10 +368,14 @@ class DiemReferenceWallet(Deployment):
         wallet_secrets = WalletSecrets.generate()
         secrets = self.deploy_secrets(wallet_secrets)
 
+        wallet_hostname = self.get_diem_wallet_hostname(chain)
+        offchain_endpoint = '/offchain'
+        offchain_url = f'{wallet_hostname}{offchain_endpoint}'
+
         wallet_vasp = Vasp.create(
             chain=chain,
             private_key=secrets.backend_wallet_private_key,
-            base_url=self.get_diem_wallet_hostname(),  # FIXME: Should be fixed to use offchain
+            base_url=offchain_url,
             compliance_private_key=secrets.backend_compliance_private_key,
         )
 
@@ -413,7 +421,10 @@ class DiemReferenceWallet(Deployment):
         self.backend_deployable(service_name=deployable_names.web_backend_service,
                                 liquidity_service_name=deployable_names.liquidity_service,
                                 command=['/wallet/run_web.sh'],
-                                routes=[Route(host=self.get_diem_wallet_hostname(), path='/api')],
+                                routes=[
+                                    Route(host=wallet_hostname, path='/api'),
+                                    Route(host=wallet_hostname, path=offchain_endpoint),
+                                ],
                                 redis_host=redis_host,
                                 worker_label_selector=worker_label_selector,
                                 vasp=wallet_vasp,
@@ -449,7 +460,7 @@ class DiemReferenceWallet(Deployment):
                                   chain=liquidity_vasp.chain,
                                   **lp_db_connection_params).deploy()
 
-        self.frontend_deployable().deploy()
+        self.frontend_deployable(chain).deploy()
 
     def _destroy(self):
         pass
