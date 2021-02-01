@@ -73,6 +73,10 @@ function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
                             approval.scope.max_cumulative_amount.unit +
                             (approval.scope.max_cumulative_amount.value > 1 ? "s" : "")}
                       </div>
+                      <div className="small ml-auto ">
+                        {"Last payment allowed on "}
+                        {new Date(approval.scope.expiration_timestamp).toLocaleString()}
+                      </div>
                     </div>
                   </span>
                   {/*<Button color="black" outline onClick={approveRequest}>*/}
