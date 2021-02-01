@@ -375,8 +375,7 @@ class DiemReferenceWallet(Deployment):
         secrets = self.deploy_secrets(wallet_secrets)
 
         wallet_hostname = self.get_diem_wallet_hostname(chain)
-        offchain_endpoint = '/offchain'
-        offchain_url = f'{wallet_hostname}{offchain_endpoint}'
+        offchain_url = f'{wallet_hostname}/api/offchain'
 
         wallet_vasp = Vasp.create(
             chain=chain,
@@ -430,7 +429,6 @@ class DiemReferenceWallet(Deployment):
                                 command=['/wallet/run_web.sh'],
                                 routes=[
                                     Route(host=wallet_hostname, path='/api'),
-                                    Route(host=wallet_hostname, path=offchain_endpoint),
                                 ],
                                 redis_host=redis_host,
                                 worker_label_selector=worker_label_selector,
