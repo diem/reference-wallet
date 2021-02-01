@@ -6,6 +6,7 @@ import { Approval } from "../interfaces/approval";
 import { classNames } from "../utils/class-names";
 import { settingsContext } from "../contexts/app";
 import { diemAmountToHumanFriendly } from "../utils/amount-precision";
+import { Button } from "reactstrap";
 
 interface ApprovalsListProps {
   approvals: Approval[];
@@ -24,7 +25,7 @@ function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
 
   return (
     <>
-      <ul>
+      <ul className="list-group my-4">
         {approvals.map((approval) => {
           return (
             <li
@@ -40,7 +41,7 @@ function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
                   (<span>{new Date(approval.created_timestamp).toLocaleString()})</span>
                 </div>
                 <div className="text-black">
-                  <strong>{"Limits:"}</strong>
+                  <strong>{"Limits"}</strong>
                 </div>
                 <div className="text-black">
                   {!approval.scope.max_cumulative_amount &&
@@ -72,18 +73,16 @@ function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
                       approval.scope.max_cumulative_amount.unit +
                       (approval.scope.max_cumulative_amount.value > 1 ? "s" : "")}
                 </div>
-                <div className="small ml-auto ">
+                <div>
                   {"Last payment allowed on "}
                   {new Date(approval.scope.expiration_timestamp).toLocaleString()}
                 </div>
               </span>
               <span className="float-right">
-                <button type="button" className="btn btn-success btn-sm">
-                  Approve
-                </button>
-                <button type="button" className="btn btn-danger btn-sm">
+                <Button className="mr-1" size="sm">
                   Reject
-                </button>
+                </Button>
+                <Button size="sm">Approve</Button>
               </span>
             </li>
           );
