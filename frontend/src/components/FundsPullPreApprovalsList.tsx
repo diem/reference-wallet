@@ -1,15 +1,19 @@
 // Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React from "react";
+import React, { useContext } from "react";
 import { Approval } from "../interfaces/approval";
 import { classNames } from "../utils/class-names";
+import { settingsContext } from "../contexts/app";
+import { diemAmountToHumanFriendly } from "../utils/amount-precision";
 
 interface ApprovalsListProps {
   approvals: Approval[];
 }
 
 function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
+  const [settings] = useContext(settingsContext)!;
+
   const itemStyles = {
     "list-group-item": true,
     // "list-group-item-action": !!onSelect,
@@ -46,19 +50,23 @@ function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
                           "No Limits"}
                       </div>
                       <div>
-                        {/*diemAmountToHumanFriendly(transaction.amount, true)*/}
                         {approval.scope.max_transaction_amount &&
                           "Single payment limit: Up to " +
-                            approval.scope.max_transaction_amount.amount +
-                            " " +
-                            approval.scope.max_transaction_amount.currency}
+                            diemAmountToHumanFriendly(
+                              approval.scope.max_transaction_amount.amount
+                            )}{" "}
+                        {settings.currencies[approval.scope.max_transaction_amount.currency].sign}
                       </div>
                       <div>
                         {approval.scope.max_cumulative_amount &&
                           "Total payments limit: Up to " +
-                            approval.scope.max_cumulative_amount.max_amount.amount +
+                            diemAmountToHumanFriendly(
+                              approval.scope.max_cumulative_amount.max_amount.amount
+                            ) +
                             " " +
-                            approval.scope.max_cumulative_amount.max_amount.currency +
+                            settings.currencies[
+                              approval.scope.max_cumulative_amount.max_amount.currency
+                            ].sign +
                             " every " +
                             approval.scope.max_cumulative_amount.value +
                             " " +
