@@ -6,8 +6,6 @@ from secrets import token_bytes
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import jsonrpc, testnet, LocalAccount, utils, diem_types, stdlib
-from jwcrypto import jwk
-from jwcrypto.common import base64url_encode
 from logzero import logger
 from mothership import go_hyperspace
 from mothership.deployables.pg_rds.pg_database import PostgresDatabase
@@ -51,42 +49,6 @@ class ChainType(IntEnum):
             raise ValueError(f"Unexpected chain type {self.name}({self.value})")
 
 
-class ComplianceKey:
-    def __init__(self, key):
-        self._key = key
-
-    def get_public(self):
-        return self._key.get_op_key('verify')
-
-    def get_private(self):
-        return self._key.get_op_key('sign')
-
-    @staticmethod
-    def generate():
-        key = jwk.JWK.generate(kty='OKP', crv='Ed25519')
-        return ComplianceKey(key)
-
-    @staticmethod
-    def from_str(data):
-        key = jwk.JWK(**json.loads(data))
-        return ComplianceKey(key)
-
-    @staticmethod
-    def from_pub_bytes(pub_key_data):
-        key = jwk.JWK(
-            kty='OKP',
-            crv='Ed25519',
-            x=base64url_encode(pub_key_data)
-        )
-        return ComplianceKey(key)
-
-    def export_pub(self):
-        return self._key.export_public()
-
-    def export_full(self):
-        return self._key.export_private()
-
-
 @dataclass
 class WalletSecrets:
     db_password: str
@@ -101,7 +63,7 @@ class WalletSecrets:
         db_password = passwords.generate_pg_password(18)
         backend_custodial_private_key = token_bytes(32).hex()
         liquidity_custodial_private_key = token_bytes(32).hex()
-        backend_compliance_private_key = ComplianceKey.generate().export_full()
+        backend_compliance_private_key = utils.private_key_bytes(Ed25519PrivateKey.generate()).hex()
 
         return cls(
             db_password=db_password,
@@ -121,9 +83,9 @@ class Vasp:
 
         self.account = get_account_from_private_key(private_key)
         self.base_url = base_url
-        self.compliance_key = None
+        self.compliance_private_key = None
         if compliance_private_key:
-            self.compliance_key = ComplianceKey.from_str(compliance_private_key)
+            self.compliance_private_key = Ed25519PrivateKey.from_private_bytes(bytes.fromhex(compliance_private_key))
 
     @classmethod
     def create(cls, chain, private_key, base_url, compliance_private_key):
@@ -141,11 +103,7 @@ class Vasp:
 
     @property
     def compliance_public_key_bytes(self) -> bytes:
-        return utils.public_key_bytes(self.compliance_key.get_public())
-
-    @property
-    def compliance_private_key_str(self) -> str:
-        return self.compliance_key.export_full()
+        return utils.public_key_bytes(self.compliance_private_key.public_key())
 
     def ensure_account(self):
         logger.info(f'Creating and initialize the blockchain account {self.account_address_hex}')

@@ -6,7 +6,6 @@ verify_ssl = true
 [packages]
 mothership = "*"
 diem = "*"
-jwcrypto = "*"
 
 [requires]
 python_version = "3.7"
