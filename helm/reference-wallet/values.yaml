@@ -91,8 +91,6 @@ service:
   type: ClusterIP
   port: 8080
   targetPort: 8080
-  offchainPort: 8091
-  targetOffchainPort: 8091
 
 ingress:
   enabled: true
