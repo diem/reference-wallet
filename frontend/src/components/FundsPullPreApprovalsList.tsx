@@ -32,13 +32,39 @@ function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
                 <>
                   <span className="text-black mr-4 overflow-auto">
                     <div>
-                      Received from <b>{approval.biller_name}</b> (
-                      {new Date(approval.created_timestamp).toLocaleString()})
-                      {/*// new Date(approval.created_timestamp).toLocaleDateString()*/}
+                      <span>
+                        Received from <b>{approval.biller_name}</b> (
+                        {new Date(approval.created_timestamp).toLocaleString()})
+                      </span>
                     </div>
 
-                    <div className="text-black mr-4 overflow-auto inline-block">
-                      <strong>{"Limits:"}</strong>{" "}
+                    <div className="text-black mr-4 overflow-auto">
+                      <strong>{"Limits:"}</strong>
+                      <div>
+                        {!approval.scope.max_cumulative_amount &&
+                          !approval.scope.max_transaction_amount &&
+                          "No Limits"}
+                      </div>
+                      <div>
+                        {/*diemAmountToHumanFriendly(transaction.amount, true)*/}
+                        {approval.scope.max_transaction_amount &&
+                          "Single payment limit: Up to " +
+                            approval.scope.max_transaction_amount.amount +
+                            " " +
+                            approval.scope.max_transaction_amount.currency}
+                      </div>
+                      <div>
+                        {approval.scope.max_cumulative_amount &&
+                          "Total payments limit: Up to " +
+                            approval.scope.max_cumulative_amount.max_amount.amount +
+                            " " +
+                            approval.scope.max_cumulative_amount.max_amount.currency +
+                            " every " +
+                            approval.scope.max_cumulative_amount.value +
+                            " " +
+                            approval.scope.max_cumulative_amount.unit +
+                            (approval.scope.max_cumulative_amount.value > 1 ? "s" : "")}
+                      </div>
                     </div>
                   </span>
                   {/*<Button color="black" outline onClick={approveRequest}>*/}
