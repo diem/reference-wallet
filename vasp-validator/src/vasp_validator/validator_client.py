@@ -156,8 +156,8 @@ class ValidatorClient(VaspProxy):
         self,
         scope: FundPullPreApprovalScope,
         description: str = None,
-    ):
-        return self.wallet.funds_pull_preapproval.create_funds_pull_pre_approval_request_for_unknown_payer(
+    ) -> (str, str):
+        return self.wallet.funds_pull_preapproval.create_preapproval_for_unknown_payer(
             scope=scope,
             description=description,
         )

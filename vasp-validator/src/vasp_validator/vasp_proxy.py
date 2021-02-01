@@ -63,7 +63,7 @@ class VaspProxy(ABC):
         self,
         scope: FundPullPreApprovalScope,
         description: str = None,
-    ) -> str:
+    ) -> (str, str):
         """
         Send only request data to be saved on this VASP without be sending through offchain,
         so testee VASP could approve this request data through offchain.

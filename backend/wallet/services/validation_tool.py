@@ -17,7 +17,7 @@ def request_funds_pull_pre_approval_from_another(
     return commit_funds_pull_pre_approval(account_id, description, payer_address, scope)
 
 
-def create_funds_pull_pre_approval_request_for_unknown_payer(
+def create_preapproval_for_unknown_payer(
     account_id: int,
     scope: offchain.FundPullPreApprovalScopeObject,
     description: str = None,
@@ -26,7 +26,7 @@ def create_funds_pull_pre_approval_request_for_unknown_payer(
 
 
 def commit_funds_pull_pre_approval(
-    account_id, description, payer_address, scope, offchain_sent=False
+    account_id, description, payer_address, scope, offchain_sent
 ) -> (str, str):
     biller_address = get_biller_address(account_id)
 
