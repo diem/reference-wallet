@@ -121,7 +121,9 @@ class Vasp:
 
         self.account = get_account_from_private_key(private_key)
         self.base_url = base_url
-        self.compliance_key = ComplianceKey.from_str(compliance_private_key)
+        self.compliance_key = None
+        if compliance_private_key:
+            self.compliance_key = ComplianceKey.from_str(compliance_private_key)
 
     @classmethod
     def create(cls, chain, private_key, base_url, compliance_private_key):
@@ -303,24 +305,31 @@ class DiemReferenceWallet(Deployment):
                              db_host,
                              db_port,
                              db_name_liquidity_provider,
-                             liquidity_vasp_auth_key,
                              worker_label_selector: WorkerLabelSelector,
+                             liquidity_vasp_address,
                              chain: ChainType,
                              env_vars=None):
         db_url_lp = f'postgresql://{db_username}:{db_password}@{db_host}:{db_port}/{db_name_liquidity_provider}'
 
         environment_variables = {
             'COMPOSE_ENV': 'production',
-            'ADMIN_USERNAME': 'admin@diem',
             'LP_DB_URL': db_url_lp,
             'LIQUIDITY_PORT': 8080,
             'LIQUIDITY_CUSTODY_ACCOUNT_NAME': 'liquidity',
-            'ACCOUNT_WATCHER_AUTH_KEY': liquidity_vasp_auth_key,
             'JSON_RPC_URL': chain.json_rpc_url,
             'CHAIN_ID': chain.value,
         }
         if env_vars is not None:
             environment_variables.update(env_vars)
+
+        secret_mappings = None
+        if chain == ChainType.PREMAINNET:
+            environment_variables['LIQUIDITY_VASP_ADDR'] = liquidity_vasp_address
+            secret_mappings = [
+                SecretMapping(
+                    secret=f'{REFERENCE_WALLET_KUB_SECRET_NAME}.liquidity_custodial_private_keys',
+                    set_to_env='CUSTODY_PRIVATE_KEYS'),
+            ]
 
         return SimpleService(namespace=self.env_prefix,
                              service_name=service_name,
@@ -330,11 +339,7 @@ class DiemReferenceWallet(Deployment):
                              collect_telemetry=True,
                              routes=routes,
                              environment_variables=environment_variables,
-                             secret_mappings=[
-                                 SecretMapping(
-                                     secret=f'{REFERENCE_WALLET_KUB_SECRET_NAME}.liquidity_custodial_private_keys',
-                                     set_to_env='CUSTODY_PRIVATE_KEYS'),
-                             ],
+                             secret_mappings=secret_mappings,
                              worker_selector=worker_label_selector)
 
     def frontend_deployable(self, chain):
@@ -384,15 +389,16 @@ class DiemReferenceWallet(Deployment):
             # means it's a new compliance key, needs to be rotated in the blockchain!
             wallet_vasp.rotate_dual_attestation_info()
 
-        # Liquidity is not a real VASP at this moment, so the attestation info is not
-        # used and contains dummy values
-        liquidity_vasp = Vasp.create(
-            chain=chain,
-            private_key=secrets.liquidity_wallet_private_key,
-            base_url="UNUSED",
-            compliance_private_key=ComplianceKey.generate().export_full(),
-        )
-        liquidity_vasp.mint(99 * 1_000_000, CURRENCY)
+        liquidity_vasp_address = None
+        if chain == ChainType.PREMAINNET:
+            # Liquidity is a DD so no offchain related values
+            liquidity_vasp = Vasp.create(
+                chain=chain,
+                private_key=secrets.liquidity_wallet_private_key,
+                base_url=None,
+                compliance_private_key=None,
+            )
+            liquidity_vasp_address = liquidity_vasp.account_address_hex
 
         redis_host = self.outputs['ElasticCacheRedis']['redis_host']['value']
 
@@ -456,9 +462,9 @@ class DiemReferenceWallet(Deployment):
         # liquidity
         self.liquidity_deployable(service_name=deployable_names.liquidity_service,
                                   routes=None,
-                                  liquidity_vasp_auth_key=liquidity_vasp.auth_key_hex,
                                   worker_label_selector=worker_label_selector,
-                                  chain=liquidity_vasp.chain,
+                                  liquidity_vasp_address=liquidity_vasp_address,
+                                  chain=chain,
                                   **lp_db_connection_params).deploy()
 
         self.frontend_deployable(chain).deploy()
