@@ -415,4 +415,15 @@ export default class BackendClient {
       throw e;
     }
   }
+
+  async updateApprovalStatus(funds_pull_pre_approval_id, status): Promise<void> {
+    try {
+      await this.client.put(`/offchain/funds_pull_pre_approvals/${funds_pull_pre_approval_id}`, {
+        status,
+      });
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
 }
