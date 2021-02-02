@@ -14,6 +14,14 @@ def get_account_commands(account_id: int) -> List[models.FundsPullPreApprovalCom
     ).all()
 
 
+def get_account_commands_by_status(
+    account_id: int, status: str
+) -> List[models.FundsPullPreApprovalCommand]:
+    return models.FundsPullPreApprovalCommand.query.filter_by(
+        account_id=account_id, status=status
+    ).all()
+
+
 def get_account_command_by_id(account_id: int, funds_pull_pre_approval_id: str):
     return models.FundsPullPreApprovalCommand.query.filter_by(
         account_id=account_id, funds_pull_pre_approval_id=funds_pull_pre_approval_id

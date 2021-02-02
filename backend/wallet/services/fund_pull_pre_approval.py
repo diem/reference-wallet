@@ -21,6 +21,7 @@ from wallet.storage.funds_pull_pre_approval_command import (
     get_command_by_id_and_role,
     update_command,
     get_account_command_by_id,
+    get_account_commands_by_status,
 )
 
 from .fund_pull_pre_approval_sm import (
@@ -154,6 +155,16 @@ def get_funds_pull_pre_approvals(
 ) -> List[FPPAObject]:
     return [
         preapproval_model_to_command(fppa) for fppa in get_account_commands(account_id)
+    ]
+
+
+def get_funds_pull_pre_approvals_by_status(
+    account_id: int,
+    status: str,
+) -> List[FPPAObject]:
+    return [
+        preapproval_model_to_command(fppa)
+        for fppa in get_account_commands_by_status(account_id, status)
     ]
 
 

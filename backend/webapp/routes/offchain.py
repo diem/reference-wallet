@@ -8,7 +8,6 @@ from diem.offchain import (
     X_REQUEST_ID,
     X_REQUEST_SENDER_ADDRESS,
     FundPullPreApprovalStatus,
-    FundsPullPreApprovalCommand,
 )
 from flask import Blueprint, request
 from flask.views import MethodView
@@ -19,6 +18,7 @@ from webapp.routes.strict_schema_view import (
     response_definition,
     path_string_param,
     body_parameter,
+    query_str_param,
 )
 from webapp.schemas import (
     PaymentCommands,
@@ -121,6 +121,15 @@ class OffchainRoutes:
     class GetFundsPullPreApprovals(OffchainView):
         summary = "Get funds pull pre approvals of a user"
 
+        parameters = [
+            query_str_param(
+                name="status",
+                description="approval status in DB",
+                required=False,
+                allowed_vlaues=["pending", "rejected", "valid", "closed"],
+            ),
+        ]
+
         responses = {
             HTTPStatus.OK: response_definition(
                 "Funds pull pre approvals", schema=FundsPullPreApprovalList
@@ -128,7 +137,17 @@ class OffchainRoutes:
         }
 
         def get(self):
-            approvals = fppa_service.get_funds_pull_pre_approvals(self.user.account_id)
+            status = request.args["status"] if "status" in request.args else None
+
+            if status is None:
+                approvals = fppa_service.get_funds_pull_pre_approvals(
+                    self.user.account_id
+                )
+            else:
+                approvals = fppa_service.get_funds_pull_pre_approvals_by_status(
+                    self.user.account_id, status
+                )
+
             serialized_preapprovals = [
                 preapproval_command_to_dict(approval) for approval in approvals
             ]
