@@ -405,9 +405,9 @@ export default class BackendClient {
     }
   }
 
-  async getFundsPullPreApprovals(): Promise<Approval[]> {
+  async getNewFundsPullPreApprovals(): Promise<Approval[]> {
     try {
-      const response = await this.client.get("/offchain/funds_pull_pre_approvals");
+      const response = await this.client.get("/offchain/funds_pull_pre_approvals?status=pending");
 
       return response.data.funds_pull_pre_approvals;
     } catch (e) {

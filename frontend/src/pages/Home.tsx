@@ -90,7 +90,7 @@ function Home() {
     const fetchApprovals = async () => {
       try {
         if (refreshApprovals) {
-          setApprovals(await new BackendClient().getFundsPullPreApprovals());
+          setApprovals(await new BackendClient().getNewFundsPullPreApprovals());
         }
         setTimeout(fetchApprovals, REFRESH_APPROVALS_INTERVAL);
       } catch (e) {

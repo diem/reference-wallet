@@ -21,14 +21,12 @@ function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
       <ul className="list-group my-4">
         {approvals.map((approval) => {
           return (
-            approval.status === "pending" && (
-              <FundsPullPreApproval
-                approval={approval}
-                onApproveClick={() => setApproveModalOpen(true)}
-                onRejectClick={() => setRejectModalOpen(true)}
-                onAnyClickSetApproval={() => setApprovalInModal(approval)}
-              />
-            )
+            <FundsPullPreApproval
+              approval={approval}
+              onApproveClick={() => setApproveModalOpen(true)}
+              onRejectClick={() => setRejectModalOpen(true)}
+              onAnyClickSetApproval={() => setApprovalInModal(approval)}
+            />
           );
         })}
       </ul>
