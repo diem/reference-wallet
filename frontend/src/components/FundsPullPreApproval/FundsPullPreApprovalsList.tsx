@@ -22,6 +22,7 @@ function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
         {approvals.map((approval) => {
           return (
             <FundsPullPreApproval
+              key={approval.funds_pull_pre_approval_id}
               approval={approval}
               onApproveClick={() => setApproveModalOpen(true)}
               onRejectClick={() => setRejectModalOpen(true)}
