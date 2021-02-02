@@ -32,7 +32,10 @@ function RejectModal({ approval, open, onClose }: RejectModalProps) {
         <CloseButton onClick={onClose} />
         <>
           <h3>Reject Request</h3>
-          <ApprovalDetails approval={approval} />
+          <div className="text-black">
+            Please confirm your rejection for the fund pre-approval request from{" "}
+            {approval?.biller_name}.
+          </div>
           <span className="mt-3">Are you sure you want to reject this request?</span>
           <span>
             <Button outline onClick={onClose}>
