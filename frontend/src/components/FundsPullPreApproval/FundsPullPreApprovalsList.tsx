@@ -14,6 +14,7 @@ interface ApprovalsListProps {
 function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
   const [approveModalOpen, setApproveModalOpen] = useState<boolean>(false);
   const [rejectModalOpen, setRejectModalOpen] = useState<boolean>(false);
+  const [approvalInModal, setApprovalInModal] = useState<Approval>();
 
   return (
     <>
@@ -24,12 +25,27 @@ function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
               approval={approval}
               onApproveClick={() => setApproveModalOpen(true)}
               onRejectClick={() => setRejectModalOpen(true)}
+              onAnyClickSetApproval={() => setApprovalInModal(approval)}
             />
           );
         })}
       </ul>
-      <ApproveModal open={approveModalOpen} onClose={() => setApproveModalOpen(false)} />
-      <RejectModal open={rejectModalOpen} onClose={() => setRejectModalOpen(false)} />
+      <ApproveModal
+        approval={approvalInModal}
+        open={approveModalOpen}
+        onClose={() => {
+          setApproveModalOpen(false);
+          setApprovalInModal(undefined);
+        }}
+      />
+      <RejectModal
+        approval={approvalInModal}
+        open={rejectModalOpen}
+        onClose={() => {
+          setRejectModalOpen(false);
+          setApprovalInModal(undefined);
+        }}
+      />
     </>
   );
 }

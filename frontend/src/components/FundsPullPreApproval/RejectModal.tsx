@@ -1,23 +1,31 @@
 //RejectModal
 import React from "react";
-import { Modal, ModalBody } from "reactstrap";
+import { Button, Modal, ModalBody } from "reactstrap";
 import CloseButton from "../CloseButton";
+import { Approval } from "../../interfaces/approval";
+import ApprovalDetails from "./ApprovalDetails";
 
 interface RejectModalProps {
+  approval: Approval | undefined;
   open: boolean;
   onClose: () => void;
 }
 
-function RejectModal({ open, onClose }: RejectModalProps) {
-  function onModalClose() {
-    onClose();
-  }
-
+function RejectModal({ approval, open, onClose }: RejectModalProps) {
   return (
-    <Modal className="modal-dialog-centered" isOpen={open} onClosed={onModalClose}>
+    <Modal className="modal-dialog-centered" isOpen={open} onClosed={onClose}>
       <ModalBody>
-        <CloseButton onClick={onModalClose} />
-        <p>Bond Reject</p>
+        <CloseButton onClick={onClose} />
+        <>
+          <h3>Reject Request</h3>
+          <ApprovalDetails approval={approval} />
+          <span>
+            <Button outline onClick={onClose}>
+              Cancel
+            </Button>
+            <Button outline>Reject</Button>
+          </span>
+        </>
       </ModalBody>
     </Modal>
   );
