@@ -35,18 +35,12 @@ function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
       <ApproveModal
         approval={approvalInModal}
         open={approveModalOpen}
-        onClose={() => {
-          setApproveModalOpen(false);
-          setApprovalInModal(undefined);
-        }}
+        onClose={() => setApproveModalOpen(false)}
       />
       <RejectModal
         approval={approvalInModal}
         open={rejectModalOpen}
-        onClose={() => {
-          setRejectModalOpen(false);
-          setApprovalInModal(undefined);
-        }}
+        onClose={() => setRejectModalOpen(false)}
       />
     </>
   );
