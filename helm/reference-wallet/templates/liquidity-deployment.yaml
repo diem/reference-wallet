@@ -64,6 +64,8 @@ spec:
           value: {{ .Values.sdk.faucet }}
         - name: CHAIN_ID
           value: {{ .Values.chainId | quote }}
+        - name: BLOCKCHAIN
+          value: {{ .Values.blockchain }}
         name: lrw-liquidity
         image: "{{ .Values.images.liquidity }}"
         imagePullPolicy: {{ .Values.images.pullPolicy }}
