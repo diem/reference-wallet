@@ -1,12 +1,14 @@
 // Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Approval } from "../interfaces/approval";
 import { classNames } from "../utils/class-names";
 import { settingsContext } from "../contexts/app";
 import { diemAmountToHumanFriendly } from "../utils/amount-precision";
 import { Button } from "reactstrap";
+import ApproveModal from "./ApproveModal";
+import RejectModal from "./RejectModal";
 
 interface ApprovalsListProps {
   approvals: Approval[];
@@ -14,14 +16,14 @@ interface ApprovalsListProps {
 
 function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
   const [settings] = useContext(settingsContext)!;
+  const [approveModalOpen, setApproveModalOpen] = useState<boolean>(false);
+  const [rejectModalOpen, setRejectModalOpen] = useState<boolean>(false);
 
   const itemStyles = {
     "list-group-item": true,
     // "list-group-item-action": !!onSelect,
     // "cursor-pointer": !!onSelect,
   };
-
-  function approveRequest() {}
 
   return (
     <>
@@ -88,6 +90,8 @@ function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
           );
         })}
       </ul>
+      <ApproveModal open={approveModalOpen} onClose={() => setApproveModalOpen(false)} />
+      <RejectModal open={rejectModalOpen} onClose={() => setRejectModalOpen(false)} />
     </>
   );
 }
