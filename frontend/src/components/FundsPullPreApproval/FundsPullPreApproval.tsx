@@ -1,8 +1,8 @@
-import { Approval } from "../interfaces/approval";
+import { Approval } from "../../interfaces/approval";
 import React, { useContext } from "react";
-import { settingsContext } from "../contexts/app";
-import { classNames } from "../utils/class-names";
-import { diemAmountToHumanFriendly } from "../utils/amount-precision";
+import { settingsContext } from "../../contexts/app";
+import { classNames } from "../../utils/class-names";
+import { diemAmountToHumanFriendly } from "../../utils/amount-precision";
 import { Button } from "reactstrap";
 
 interface ApprovalProps {

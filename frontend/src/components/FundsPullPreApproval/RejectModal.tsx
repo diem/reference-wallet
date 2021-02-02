@@ -1,13 +1,14 @@
+//RejectModal
 import React from "react";
 import { Modal, ModalBody } from "reactstrap";
-import CloseButton from "./CloseButton";
+import CloseButton from "../CloseButton";
 
-interface ApproveModalProps {
+interface RejectModalProps {
   open: boolean;
   onClose: () => void;
 }
 
-function ApproveModal({ open, onClose }: ApproveModalProps) {
+function RejectModal({ open, onClose }: RejectModalProps) {
   function onModalClose() {
     onClose();
   }
@@ -16,10 +17,10 @@ function ApproveModal({ open, onClose }: ApproveModalProps) {
     <Modal className="modal-dialog-centered" isOpen={open} onClosed={onModalClose}>
       <ModalBody>
         <CloseButton onClick={onModalClose} />
-        <p>Bond Approve</p>
+        <p>Bond Reject</p>
       </ModalBody>
     </Modal>
   );
 }
 
-export default ApproveModal;
+export default RejectModal;

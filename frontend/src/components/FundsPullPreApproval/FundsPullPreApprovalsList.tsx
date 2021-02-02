@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useState } from "react";
-import { Approval } from "../interfaces/approval";
+import { Approval } from "../../interfaces/approval";
 import ApproveModal from "./ApproveModal";
 import RejectModal from "./RejectModal";
 import FundsPullPreApproval from "./FundsPullPreApproval";

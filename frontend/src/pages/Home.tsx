@@ -22,7 +22,7 @@ import TransactionsList from "../components/TransactionsList";
 import BackendClient from "../services/backendClient";
 import TransactionModal from "../components/TransactionModal";
 import TestnetWarning from "components/TestnetWarning";
-import FundsPullPreApprovalsList from "components/FundsPullPreApprovalsList";
+import FundsPullPreApprovalsList from "components/FundsPullPreApproval/FundsPullPreApprovalsList";
 import { Approval } from "../interfaces/approval";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
