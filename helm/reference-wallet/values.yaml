@@ -18,6 +18,7 @@ custodyPrivateKeysLiquidity:
 # accountWatcherPrivKey: null
 
 chainId: 2
+blockchain: "testnet"
 gasCurrencyCode: "XUS"
 vaspComplianceKey:
 
