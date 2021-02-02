@@ -7,9 +7,11 @@ import { Button } from "reactstrap";
 
 interface ApprovalProps {
   approval: Approval;
+  onApproveClick?: () => void;
+  onRejectClick?: () => void;
 }
 
-function FundsPullPreApproval({ approval }: ApprovalProps) {
+function FundsPullPreApproval({ approval, onApproveClick, onRejectClick }: ApprovalProps) {
   const [settings] = useContext(settingsContext)!;
   const itemStyles = {
     "list-group-item": true,
@@ -65,10 +67,12 @@ function FundsPullPreApproval({ approval }: ApprovalProps) {
         </div>
       </span>
       <span className="float-right">
-        <Button className="mr-1" size="sm">
+        <Button className="mr-1" size="sm" disabled={!onRejectClick} onClick={onRejectClick}>
           Reject
         </Button>
-        <Button size="sm">Approve</Button>
+        <Button size="sm" disabled={!onApproveClick} onClick={onApproveClick}>
+          Approve
+        </Button>
       </span>
     </li>
   );
