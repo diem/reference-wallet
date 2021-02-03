@@ -183,7 +183,7 @@ function Home() {
             <section className="my-5">
               <h2 className="h5 font-weight-normal text-body">Funds Pull Pre Approvals Requests</h2>
               <ul className="list-group my-4">
-                <FundsPullPreApprovalsList approvals={approvals} />
+                <FundsPullPreApprovalsList approvals={approvals} displayApproveRejectButtons={true} />
                 <li className={classNames(bottomStyles)}>
                   <Link to="/fundsPullPreApprovals" className="text-black font-weight-bold">
                     See All Approvals

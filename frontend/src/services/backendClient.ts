@@ -416,6 +416,17 @@ export default class BackendClient {
     }
   }
 
+  async getAllFundsPullPreApprovals(): Promise<Approval[]> {
+    try {
+      const response = await this.client.get("/offchain/funds_pull_pre_approvals");
+
+      return response.data.funds_pull_pre_approvals;
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
   async updateApprovalStatus(funds_pull_pre_approval_id, status): Promise<void> {
     try {
       await this.client.put(`/offchain/funds_pull_pre_approvals/${funds_pull_pre_approval_id}`, {

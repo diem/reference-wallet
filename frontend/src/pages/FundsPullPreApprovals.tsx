@@ -1,12 +1,86 @@
 // Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Approval } from "../interfaces/approval";
+import BackendClient from "../services/backendClient";
+import TestnetWarning from "../components/TestnetWarning";
+import Breadcrumbs from "../components/Breadcrumbs";
+import { Container } from "reactstrap";
+import FundsPullPreApprovalsList from "../components/FundsPullPreApproval/FundsPullPreApprovalsList";
+
+const REFRESH_APPROVALS_INTERVAL = 3000;
 
 function FundsPullPreApprovals() {
+  const [newApprovals, setNewApprovals] = useState<Approval[]>([]);
+  const [activeApprovals, setActiveApprovals] = useState<Approval[]>([]);
+  const [historyApprovals, setHistoryApprovals] = useState<Approval[]>([]);
+
+  let refreshApprovals = true;
+
+  useEffect(() => {
+    const fetchApprovals = async () => {
+      try {
+        if (refreshApprovals) {
+          let innerNewApprovals: Approval[] = [];
+          let innerActiveApprovals: Approval[] = [];
+          let innerHistoryApprovals: Approval[] = [];
+          const approvals = await new BackendClient().getAllFundsPullPreApprovals();
+          for (const approval of approvals) {
+            if (approval.status === "pending") {
+              innerNewApprovals.push(approval);
+            } else if (approval.status === "valid") {
+              innerActiveApprovals.push(approval);
+            } else {
+              innerHistoryApprovals.push(approval);
+            }
+          }
+          setNewApprovals(innerNewApprovals);
+          setActiveApprovals(innerActiveApprovals);
+          setHistoryApprovals(innerHistoryApprovals);
+        }
+        setTimeout(fetchApprovals, REFRESH_APPROVALS_INTERVAL);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    // noinspection JSIgnoredPromiseFromCall
+    fetchApprovals();
+
+    return () => {
+      refreshApprovals = false;
+    };
+  }, []);
+
   return (
+    // display new requests
+    // display active requests + option to close
+    // display history
     <>
-      <p>Here we gonna display all approvals</p>
+      <TestnetWarning />
+
+      <Breadcrumbs pageName={"All Funds Pull Pre Approvals"} />
+      <Container className="py-5">
+        <section>
+          <h2 className="h5 font-weight-normal text-body">New Requests</h2>
+          {!!newApprovals.length && (
+            <FundsPullPreApprovalsList approvals={newApprovals} displayApproveRejectButtons={true} />
+          )}
+        </section>
+        <section>
+          <h2 className="h5 font-weight-normal text-body">Active Requests</h2>
+          {!!activeApprovals.length && (
+            <FundsPullPreApprovalsList approvals={activeApprovals} displayApproveRejectButtons={false} />
+          )}
+        </section>
+        <section>
+          <h2 className="h5 font-weight-normal text-body">History</h2>
+          {!!historyApprovals.length && (
+            <FundsPullPreApprovalsList approvals={historyApprovals} displayApproveRejectButtons={false} />
+          )}
+        </section>
+      </Container>
     </>
   );
 }

@@ -9,9 +9,10 @@ import FundsPullPreApproval from "./FundsPullPreApproval";
 
 interface ApprovalsListProps {
   approvals: Approval[];
+  displayApproveRejectButtons: boolean;
 }
 
-function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
+function FundsPullPreApprovalsList({ approvals, displayApproveRejectButtons }: ApprovalsListProps) {
   const [approveModalOpen, setApproveModalOpen] = useState<boolean>(false);
   const [rejectModalOpen, setRejectModalOpen] = useState<boolean>(false);
   const [approvalInModal, setApprovalInModal] = useState<Approval>();
@@ -26,6 +27,7 @@ function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
             onApproveClick={() => setApproveModalOpen(true)}
             onRejectClick={() => setRejectModalOpen(true)}
             onAnyClickSetApproval={() => setApprovalInModal(approval)}
+            displayApproveRejectButtons={displayApproveRejectButtons}
           />
         );
       })}
