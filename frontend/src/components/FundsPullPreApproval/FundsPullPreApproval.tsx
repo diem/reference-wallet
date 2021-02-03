@@ -1,9 +1,7 @@
 import { Approval } from "../../interfaces/approval";
-import React, { useContext } from "react";
-import { settingsContext } from "../../contexts/app";
+import React from "react";
 import { classNames } from "../../utils/class-names";
-import { diemAmountToHumanFriendly } from "../../utils/amount-precision";
-import { Button } from "reactstrap";
+import { Button, Col, Container, Row } from "reactstrap";
 import ApprovalDetails from "./ApprovalDetails";
 
 interface ApprovalProps {
@@ -30,20 +28,30 @@ function FundsPullPreApproval({
 
   return (
     <li className={classNames(itemStyles)} key={approval.funds_pull_pre_approval_id}>
-      <ApprovalDetails approval={approval} />
-      <span className="float-right">
-        <Button
-          className="mr-1"
-          size="sm"
-          disabled={!onRejectClick}
-          onClick={onAnyClick(onRejectClick)}
-        >
-          Reject
-        </Button>
-        <Button size="sm" disabled={!onApproveClick} onClick={onAnyClick(onApproveClick)}>
-          Approve
-        </Button>
-      </span>
+      <Container>
+        <Row>
+          <Col sm="8" className="p-0">
+            <ApprovalDetails approval={approval} />
+          </Col>
+          <Col sm="4" className="p-0 d-flex align-items-end">
+            <div className="mt-5 ml-auto">
+              <Button
+                className="mr-1 btn-black"
+                size="sm"
+                disabled={!onRejectClick}
+                onClick={onAnyClick(onRejectClick)}
+              >
+                <i className="fa fa-times mr-1" />
+                Reject
+              </Button>
+              <Button size="sm" disabled={!onApproveClick} onClick={onAnyClick(onApproveClick)}>
+                <i className="fa fa-check mr-1" />
+                Approve
+              </Button>
+            </div>
+          </Col>
+        </Row>
+      </Container>
     </li>
   );
 }
