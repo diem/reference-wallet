@@ -179,6 +179,17 @@ class Vasp:
         self.api.wait_for_transaction(signed_tx)
         logger.info(f'Rotated dual attestation for account {self.account_address_hex}')
 
+    def validate_account(self):
+        self.api.must_get_account(self.account.account_address)
+
+    def validate_attestation(self):
+        onchain_account_info = self.api.must_get_account(self.account.account_address)
+
+        if self.compliance_public_key_bytes != bytes.fromhex(onchain_account_info.role.compliance_key):
+            raise Exception(f'Wrong compliance key {onchain_account_info.role.compliance_key}')
+        if self.base_url != onchain_account_info.role.base_url:
+            raise Exception(f'Wrong base URL {onchain_account_info.role.base_url}')
+
 
 @dataclass
 class DeployableNames:
@@ -358,16 +369,16 @@ class DiemReferenceWallet(Deployment):
         )
 
     def _deploy(self):
-        chain = ChainType.TESTNET
+        secrets = self.deploy_secrets(WalletSecrets.generate())
+        self.deploy_for_chain(ChainType.TESTNET, secrets)
+        self.deploy_for_chain(ChainType.PREMAINNET, secrets)
 
+    def deploy_for_chain(self, chain: ChainType, secrets: WalletSecrets):
         deployable_names = DeployableNames.create(chain, self.env_prefix)
 
         worker_type_label = self.outputs['EKS']['worker-type-label']['value']
         worker_tag = self.outputs['EKS']['worker-tag']['value']
         worker_label_selector = WorkerLabelSelector(worker_type_label, [worker_tag])
-
-        wallet_secrets = WalletSecrets.generate()
-        secrets = self.deploy_secrets(wallet_secrets)
 
         wallet_hostname = self.get_diem_wallet_hostname(chain)
         offchain_url = f'{wallet_hostname}/api/offchain'
@@ -380,9 +391,8 @@ class DiemReferenceWallet(Deployment):
             compliance_private_key=backend_compliance_private_key,
         )
 
-        if wallet_secrets.get_backend_compliance_private_key(chain) == backend_compliance_private_key:
-            # means it's a new compliance key, needs to be rotated in the blockchain!
-            wallet_vasp.rotate_dual_attestation_info()
+        wallet_vasp.rotate_dual_attestation_info()
+        wallet_vasp.validate_attestation()
 
         liquidity_vasp_address = None
         if chain == ChainType.PREMAINNET:
@@ -393,6 +403,7 @@ class DiemReferenceWallet(Deployment):
                 base_url=None,
                 compliance_private_key=None,
             )
+            liquidity_vasp.validate_account()
             liquidity_vasp_address = liquidity_vasp.account_address_hex
 
         redis_host = self.outputs['ElasticCacheRedis']['redis_host']['value']
