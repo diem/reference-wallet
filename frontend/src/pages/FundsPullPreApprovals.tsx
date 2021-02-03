@@ -54,9 +54,6 @@ function FundsPullPreApprovals() {
   }, []);
 
   return (
-    // display new requests
-    // display active requests + option to close
-    // display history
     <>
       <TestnetWarning />
 
@@ -72,7 +69,7 @@ function FundsPullPreApprovals() {
             />
           )}
         </section>
-        <section>
+        <section className="pt-4">
           <h2 className="h5 font-weight-normal text-body">Active Requests</h2>
           {!!activeApprovals.length && (
             <FundsPullPreApprovalsList
@@ -82,7 +79,7 @@ function FundsPullPreApprovals() {
             />
           )}
         </section>
-        <section>
+        <section className="pt-4">
           <h2 className="h5 font-weight-normal text-body">History</h2>
           {!!historyApprovals.length && (
             <FundsPullPreApprovalsList
