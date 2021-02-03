@@ -29,13 +29,12 @@ function ApproveModal({ approval, open, onClose }: ApproveModalProps) {
         <>
           <h3>Approve Request</h3>
           <div className="text-black pb-5">
-            Please confirm your approval for the fund pre-approval request from{" "}
-            {approval?.biller_name}.
+            Are you sure you want to approve the request from {approval?.biller_name}?.
           </div>
           <span>
             <div className="float-right">
               <Button onClick={onClose} color="black" className="mr-1">
-                Cancel
+                Back
               </Button>
               <Button outline onClick={updateApproval} color="black">
                 Approve
