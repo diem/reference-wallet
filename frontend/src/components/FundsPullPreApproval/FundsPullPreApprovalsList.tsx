@@ -18,19 +18,18 @@ function FundsPullPreApprovalsList({ approvals }: ApprovalsListProps) {
 
   return (
     <>
-      <ul className="list-group my-4">
-        {approvals.map((approval) => {
-          return (
-            <FundsPullPreApproval
-              key={approval.funds_pull_pre_approval_id}
-              approval={approval}
-              onApproveClick={() => setApproveModalOpen(true)}
-              onRejectClick={() => setRejectModalOpen(true)}
-              onAnyClickSetApproval={() => setApprovalInModal(approval)}
-            />
-          );
-        })}
-      </ul>
+      {approvals.map((approval) => {
+        return (
+          <FundsPullPreApproval
+            key={approval.funds_pull_pre_approval_id}
+            approval={approval}
+            onApproveClick={() => setApproveModalOpen(true)}
+            onRejectClick={() => setRejectModalOpen(true)}
+            onAnyClickSetApproval={() => setApprovalInModal(approval)}
+          />
+        );
+      })}
+
       <ApproveModal
         approval={approvalInModal}
         open={approveModalOpen}

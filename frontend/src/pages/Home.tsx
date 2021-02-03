@@ -24,6 +24,7 @@ import TransactionModal from "../components/TransactionModal";
 import TestnetWarning from "components/TestnetWarning";
 import FundsPullPreApprovalsList from "components/FundsPullPreApproval/FundsPullPreApprovalsList";
 import { Approval } from "../interfaces/approval";
+import { classNames } from "../utils/class-names";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
 const REFRESH_APPROVALS_INTERVAL = 3000;
@@ -110,6 +111,11 @@ function Home() {
     return <WalletLoader />;
   }
 
+  const bottomStyles = {
+    "list-group-item": true,
+    "text-center": true,
+  };
+
   return (
     <>
       {userVerificationRequired && <Redirect to="/verify" />}
@@ -174,14 +180,17 @@ function Home() {
               </section>
             )}
 
-            {!!approvals.length && (
-              <section className="my-5">
-                <h2 className="h5 font-weight-normal text-body">
-                  Funds Pull Pre Approvals Requests
-                </h2>
+            <section className="my-5">
+              <h2 className="h5 font-weight-normal text-body">Funds Pull Pre Approvals Requests</h2>
+              <ul className="list-group my-4">
                 <FundsPullPreApprovalsList approvals={approvals} />
-              </section>
-            )}
+                <li className={classNames(bottomStyles)}>
+                  <Link to="/fundsPullPreApprovals" className="text-black font-weight-bold">
+                    See All Approvals
+                  </Link>
+                </li>
+              </ul>
+            </section>
 
             <SendModal open={sendModalOpen} onClose={() => setSendModalOpen(false)} />
             <ReceiveModal open={receiveModalOpen} onClose={() => setReceiveModalOpen(false)} />
