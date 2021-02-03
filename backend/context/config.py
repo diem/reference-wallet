@@ -47,17 +47,25 @@ def from_env() -> Config:
     )
 
 
-def generate(index: int) -> typing.Tuple[LocalAccount, Config]:
+def generate(
+    index: int,
+    vasp_private_key: typing.Optional[str] = None,
+    json_rpc_url: typing.Optional[str] = None,
+    chain_id: typing.Optional[int] = None,
+) -> typing.Tuple[LocalAccount, Config]:
     port = 5000 + index
     base_url = f"http://localhost:{port}/api/offchain"
     account = LocalAccount.generate()
+    if vasp_private_key:
+        account = LocalAccount.from_private_key_hex(vasp_private_key)
+
     conf = Config(
         wallet_custody_account_name=f"wallet{index}",
         vasp_compliance_key=utils.private_key_bytes(Ed25519PrivateKey.generate()).hex(),
         vasp_address=account.account_address.to_hex(),
         base_url=base_url,
-        json_rpc_url=testnet.JSON_RPC_URL,
-        chain_id=testnet.CHAIN_ID.to_int(),
+        json_rpc_url=json_rpc_url or testnet.JSON_RPC_URL,
+        chain_id=chain_id or testnet.CHAIN_ID.to_int(),
         gas_currency_code=testnet.TEST_CURRENCY_CODE,
     )
     return (account, conf)

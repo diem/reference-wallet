@@ -2,7 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import typing
-from .context import from_config, from_env, for_local_dev, generate, Context
+from .context import (
+    from_config,
+    from_env,
+    for_local_dev,
+    generate,
+    Context,
+)
 
 
 # a global variable for storing shared instance, use get / set to access

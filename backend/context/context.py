@@ -3,6 +3,7 @@
 
 import logging
 import time
+import typing
 from dataclasses import dataclass, field
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
@@ -157,8 +158,13 @@ def for_local_dev() -> Context:
     return generate(1)
 
 
-def generate(index: int) -> Context:
-    account, conf = config.generate(index)
+def generate(
+    index: int,
+    vasp_private_key: typing.Optional[str] = None,
+    json_rpc_url: typing.Optional[str] = None,
+    chain_id: typing.Optional[int] = None,
+) -> Context:
+    account, conf = config.generate(index, vasp_private_key, json_rpc_url, chain_id)
     ctx = from_config(conf)
     ctx.register_wallet_private_key(account.private_key)
 

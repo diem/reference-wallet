@@ -347,7 +347,12 @@ watch_test() {
 }
 
 setup_environment() {
-  local skip_build=${1:-false}
+  local skip_build
+  skip_build=${1:-false}
+
+  local chain_type
+  chain_type=${2:-testnet}
+
   if ! command -v pipenv &> /dev/null
   then
     ec "Installing pipenv"
@@ -365,10 +370,15 @@ setup_environment() {
   sh -c "cd liquidity && pipenv install --dev"
 
   info "***Setup Liquidity Provider***"
-  (cd liquidity; pipenv run python setup_env.py || exit 1) || fail "Liquidity service setup failed"
+  (cd liquidity; BLOCKCHAIN=${chain_type} pipenv run python setup_env.py || exit 1) || fail "Liquidity service setup failed"
 
-  info "***Setting up environment .env files***"
-  PIPENV_PIPFILE=backend/Pipfile pipenv run python3 scripts/set_env.py || fail "Wallet setup failed"
+  if [ "${chain_type}" == "premainnet" ]; then
+    info "***Setting up wallet .env file to use premainnet***"
+    PIPENV_PIPFILE=backend/Pipfile pipenv run python3 scripts/set_env_premainnet.py || fail "Wallet setup failed"
+  else
+    info "***Setting up wallet .env file to use testnet***"
+    PIPENV_PIPFILE=backend/Pipfile pipenv run python3 scripts/set_env.py || fail "Wallet setup failed"
+  fi
 
   info "***Setting up docker-compose project name***"
   cp .env.example .env
@@ -384,6 +394,8 @@ setup_environment() {
   info "***Building docker images***"
   build
 }
+
+
 # make sure we actually *did* get passed a valid function name
 if declare -f "$1" >/dev/null 2>&1; then
   # invoke that function, passing arguments through
