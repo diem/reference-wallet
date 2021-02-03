@@ -36,7 +36,9 @@ function FundsPullPreApproval({
           <Col sm="4" className="p-0 d-flex align-items-end">
             <div className="mt-5 ml-auto">
               <Button
-                className="mr-1 btn-black"
+                className="mr-1"
+                color="black"
+                outline
                 size="sm"
                 disabled={!onRejectClick}
                 onClick={onAnyClick(onRejectClick)}
@@ -44,7 +46,12 @@ function FundsPullPreApproval({
                 <i className="fa fa-times mr-1" />
                 Reject
               </Button>
-              <Button size="sm" disabled={!onApproveClick} onClick={onAnyClick(onApproveClick)}>
+              <Button
+                color="black"
+                size="sm"
+                disabled={!onApproveClick}
+                onClick={onAnyClick(onApproveClick)}
+              >
                 <i className="fa fa-check mr-1" />
                 Approve
               </Button>

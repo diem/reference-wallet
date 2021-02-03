@@ -18,21 +18,21 @@ function ApprovalDetails({ approval }: RequestDetailsProps) {
         </span>{" "}
         (<span>{new Date(approval!.created_timestamp).toLocaleString()})</span>
       </div>
-      <div className="text-black">
+      <div className="text-black pt-1">
         <strong>{"Limits"}</strong>
       </div>
-      <div className="text-black">
+      <div className="text-black pl-1">
         {!approval!.scope.max_cumulative_amount &&
           !approval!.scope.max_transaction_amount &&
           "No Limits"}
       </div>
-      <div className="text-black">
+      <div className="text-black pl-1">
         {approval!.scope.max_transaction_amount &&
           "Single payment limit: Up to " +
             diemAmountToHumanFriendly(approval!.scope.max_transaction_amount.amount, true) +
             settings.currencies[approval!.scope.max_transaction_amount.currency].sign}{" "}
       </div>
-      <div className="text-black">
+      <div className="text-black pl-1">
         {approval!.scope.max_cumulative_amount &&
           "Total payments limit: Up to " +
             diemAmountToHumanFriendly(
@@ -47,7 +47,7 @@ function ApprovalDetails({ approval }: RequestDetailsProps) {
             approval!.scope.max_cumulative_amount.unit +
             (approval!.scope.max_cumulative_amount.value > 1 ? "s" : "")}
       </div>
-      <div>
+      <div className="pt-1">
         {"Last payment allowed on "}
         {new Date(approval!.scope.expiration_timestamp).toLocaleString()}
       </div>

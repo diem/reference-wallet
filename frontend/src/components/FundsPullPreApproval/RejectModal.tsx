@@ -32,18 +32,19 @@ function RejectModal({ approval, open, onClose }: RejectModalProps) {
         <CloseButton onClick={onClose} />
         <>
           <h3>Reject Request</h3>
-          <div className="text-black">
+          <div className="text-black  pb-5">
             Please confirm your rejection for the fund pre-approval request from{" "}
             {approval?.biller_name}.
           </div>
-          <span className="mt-3">Are you sure you want to reject this request?</span>
           <span>
-            <Button outline onClick={onClose}>
-              Cancel
-            </Button>
-            <Button outline onClick={updateApproval}>
-              Reject
-            </Button>
+            <div className="float-right">
+              <Button color="black" onClick={onClose} className="mr-1">
+                Cancel
+              </Button>
+              <Button color="black" outline onClick={updateApproval}>
+                Reject
+              </Button>
+            </div>
           </span>
         </>
       </ModalBody>
