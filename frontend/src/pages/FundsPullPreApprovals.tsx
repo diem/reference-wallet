@@ -60,7 +60,7 @@ function FundsPullPreApprovals() {
       <Breadcrumbs pageName={"All Funds Pull Pre Approvals"} />
       <Container className="py-5">
         <section>
-          <h2 className="h5 font-weight-normal text-body">New Requests</h2>
+          <h2 className="pl-1 h5 font-weight-normal text-body">New Requests</h2>
           {!!newApprovals.length && (
             <FundsPullPreApprovalsList
               approvals={newApprovals}
@@ -70,7 +70,7 @@ function FundsPullPreApprovals() {
           )}
         </section>
         <section className="pt-4">
-          <h2 className="h5 font-weight-normal text-body">Active Requests</h2>
+          <h2 className="pl-1 h5 font-weight-normal text-body">Active Requests</h2>
           {!!activeApprovals.length && (
             <FundsPullPreApprovalsList
               approvals={activeApprovals}
@@ -80,7 +80,7 @@ function FundsPullPreApprovals() {
           )}
         </section>
         <section className="pt-4">
-          <h2 className="h5 font-weight-normal text-body">History</h2>
+          <h2 className="pl-1 h5 font-weight-normal text-body">History</h2>
           {!!historyApprovals.length && (
             <FundsPullPreApprovalsList
               approvals={historyApprovals}
