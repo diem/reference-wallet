@@ -65,19 +65,31 @@ function FundsPullPreApprovals() {
         <section>
           <h2 className="h5 font-weight-normal text-body">New Requests</h2>
           {!!newApprovals.length && (
-            <FundsPullPreApprovalsList approvals={newApprovals} displayApproveRejectButtons={true} />
+            <FundsPullPreApprovalsList
+              approvals={newApprovals}
+              displayApproveRejectButtons={true}
+              displayCloseButton={false}
+            />
           )}
         </section>
         <section>
           <h2 className="h5 font-weight-normal text-body">Active Requests</h2>
           {!!activeApprovals.length && (
-            <FundsPullPreApprovalsList approvals={activeApprovals} displayApproveRejectButtons={false} />
+            <FundsPullPreApprovalsList
+              approvals={activeApprovals}
+              displayApproveRejectButtons={false}
+              displayCloseButton={true}
+            />
           )}
         </section>
         <section>
           <h2 className="h5 font-weight-normal text-body">History</h2>
           {!!historyApprovals.length && (
-            <FundsPullPreApprovalsList approvals={historyApprovals} displayApproveRejectButtons={false} />
+            <FundsPullPreApprovalsList
+              approvals={historyApprovals}
+              displayApproveRejectButtons={false}
+              displayCloseButton={false}
+            />
           )}
         </section>
       </Container>

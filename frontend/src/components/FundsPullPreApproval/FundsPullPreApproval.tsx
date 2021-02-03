@@ -8,16 +8,20 @@ interface ApprovalProps {
   approval: Approval;
   onApproveClick: () => void;
   onRejectClick: () => void;
+  onCloseClick: () => void;
   onAnyClickSetApproval: () => void;
   displayApproveRejectButtons: boolean;
+  displayCloseButton: boolean;
 }
 
 function FundsPullPreApproval({
   approval,
   onApproveClick,
   onRejectClick,
+  onCloseClick,
   onAnyClickSetApproval,
   displayApproveRejectButtons,
+  displayCloseButton,
 }: ApprovalProps) {
   const itemStyles = {
     "list-group-item": true,
@@ -57,6 +61,22 @@ function FundsPullPreApproval({
                 >
                   <i className="fa fa-check mr-1" />
                   Approve
+                </Button>
+              </div>
+            </Col>
+          )}
+          {displayCloseButton && (
+            <Col sm="4" className="p-0 d-flex align-items-end">
+              <div className="mt-5 ml-auto">
+                <Button
+                  className="mr-1"
+                  color="black"
+                  size="sm"
+                  disabled={!onCloseClick}
+                  onClick={onAnyClick(onCloseClick)}
+                >
+                  <i className="fa fa-times mr-1" />
+                  Close
                 </Button>
               </div>
             </Col>
