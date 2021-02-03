@@ -256,6 +256,7 @@ class DiemReferenceWallet(Deployment):
                            db_port,
                            db_name_wallet,
                            redis_host,
+                           redis_db,
                            vasp: Vasp,
                            worker_label_selector: WorkerLabelSelector,
                            env_vars=None):
@@ -267,6 +268,7 @@ class DiemReferenceWallet(Deployment):
             'WALLET_PORT': 8080,
             'API_URL': f'https://{self.get_diem_wallet_hostname(vasp.chain)}/api',
             'REDIS_HOST': redis_host,
+            'REDIS_DB': redis_db,
             'DB_URL': db_url_diem_reference_wallet,
             'VASP_ADDR': vasp.account_address_hex,
             'LIQUIDITY_SERVICE_HOST': liquidity_service_name,
@@ -407,6 +409,7 @@ class DiemReferenceWallet(Deployment):
             liquidity_vasp_address = liquidity_vasp.account_address_hex
 
         redis_host = self.outputs['ElasticCacheRedis']['redis_host']['value']
+        redis_db = 0 if chain == ChainType.TESTNET else 1
 
         # Wallet database
         wallet_db = self.db_for_service_deployable(deployable_names.web_backend_db, secrets.db_password)
@@ -438,6 +441,7 @@ class DiemReferenceWallet(Deployment):
                                     Route(host=wallet_hostname, path='/api'),
                                 ],
                                 redis_host=redis_host,
+                                redis_db=0,
                                 worker_label_selector=worker_label_selector,
                                 vasp=wallet_vasp,
                                 env_vars={'ADMIN_USERNAME': 'admin@diem'},
@@ -449,6 +453,7 @@ class DiemReferenceWallet(Deployment):
                                 command=['/wallet/run_worker.sh'],
                                 routes=None,
                                 redis_host=redis_host,
+                                redis_db=0,
                                 vasp=wallet_vasp,
                                 worker_label_selector=worker_label_selector,
                                 env_vars={'PROCS': 10, 'THREADS': 10},
@@ -460,6 +465,7 @@ class DiemReferenceWallet(Deployment):
                                 command=['/wallet/run_pubsub.sh'],
                                 routes=None,
                                 redis_host=redis_host,
+                                redis_db=0,
                                 vasp=wallet_vasp,
                                 worker_label_selector=worker_label_selector,
                                 **wallet_db_connection_params).deploy()
