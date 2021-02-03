@@ -30,6 +30,10 @@ LIQUIDITY_IMAGE_NAME = 'diem-reference-wallet-liquidity'
 CURRENCY = 'XUS'
 
 
+def generate_private_key() -> str:
+    return utils.private_key_bytes(Ed25519PrivateKey.generate()).hex()
+
+
 def get_account_from_private_key(private_key) -> LocalAccount:
     return LocalAccount(Ed25519PrivateKey.from_private_bytes(bytes.fromhex(private_key)))
 
@@ -53,26 +57,60 @@ class ChainType(IntEnum):
 class WalletSecrets:
     db_password: str
     backend_custodial_private_keys: str
+    backend_custodial_private_keys_premainnet: str
     backend_wallet_private_key: str
+    backend_wallet_private_key_premainnet: str
     backend_compliance_private_key: str
+    backend_compliance_private_key_premainnet: str
     liquidity_custodial_private_keys: str
     liquidity_wallet_private_key: str
 
     @classmethod
     def generate(cls):
         db_password = passwords.generate_pg_password(18)
-        backend_custodial_private_key = token_bytes(32).hex()
-        liquidity_custodial_private_key = token_bytes(32).hex()
-        backend_compliance_private_key = utils.private_key_bytes(Ed25519PrivateKey.generate()).hex()
+        backend_custodial_private_key = generate_private_key()
+        backend_custodial_private_key_premainnet = generate_private_key()
+        backend_compliance_private_key = generate_private_key()
+        backend_compliance_private_key_premainnet = generate_private_key()
+        liquidity_custodial_private_key = generate_private_key()
 
         return cls(
             db_password=db_password,
             backend_custodial_private_keys='{"wallet":"' + backend_custodial_private_key + '"}',
+            backend_custodial_private_keys_premainnet='{"wallet":"' + backend_custodial_private_key_premainnet + '"}',
             backend_wallet_private_key=backend_custodial_private_key,
+            backend_wallet_private_key_premainnet=backend_custodial_private_key_premainnet,
             backend_compliance_private_key=backend_compliance_private_key,
+            backend_compliance_private_key_premainnet=backend_compliance_private_key_premainnet,
             liquidity_custodial_private_keys='{"liquidity":"' + liquidity_custodial_private_key + '"}',
             liquidity_wallet_private_key=liquidity_custodial_private_key,
         )
+
+    def get_backend_wallet_private_key(self, chain: ChainType):
+        if chain == ChainType.PREMAINNET:
+            return self.backend_wallet_private_key_premainnet
+        else:
+            return self.backend_wallet_private_key
+
+    def get_backend_compliance_private_key(self, chain: ChainType):
+        if chain == ChainType.PREMAINNET:
+            return self.backend_compliance_private_key_premainnet
+        else:
+            return self.backend_compliance_private_key
+
+    @staticmethod
+    def get_backend_custodial_private_keys_secret_name(chain: ChainType):
+        if chain == ChainType.PREMAINNET:
+            return f'{REFERENCE_WALLET_KUB_SECRET_NAME}.backend_custodial_private_keys_premainnet'
+        else:
+            return f'{REFERENCE_WALLET_KUB_SECRET_NAME}.backend_custodial_private_keys'
+
+    @staticmethod
+    def get_backend_compliance_private_key_secret_name(chain: ChainType):
+        if chain == ChainType.PREMAINNET:
+            return f'{REFERENCE_WALLET_KUB_SECRET_NAME}.backend_compliance_private_key_premainnet'
+        else:
+            return f'{REFERENCE_WALLET_KUB_SECRET_NAME}.backend_compliance_private_key'
 
 
 class Vasp:
@@ -228,7 +266,6 @@ class DiemReferenceWallet(Deployment):
             'JSON_RPC_URL': vasp.chain.json_rpc_url,
             'CHAIN_ID': vasp.chain.value,
             'GAS_CURRENCY_CODE': CURRENCY,
-            'VASP_COMPLIANCE_KEY': vasp.compliance_private_key_str,
         }
         if env_vars is not None:
             environment_variables.update(env_vars)
@@ -245,11 +282,11 @@ class DiemReferenceWallet(Deployment):
                              environment_variables=environment_variables,
                              secret_mappings=[
                                  SecretMapping(
-                                     secret=f'{REFERENCE_WALLET_KUB_SECRET_NAME}.backend_custodial_private_keys',
+                                     secret=WalletSecrets.get_backend_custodial_private_keys_secret_name(vasp.chain),
                                      set_to_env='CUSTODY_PRIVATE_KEYS'
                                  ),
                                  SecretMapping(
-                                     secret=f'{REFERENCE_WALLET_KUB_SECRET_NAME}.backend_compliance_private_key',
+                                     secret=WalletSecrets.get_backend_compliance_private_key_secret_name(vasp.chain),
                                      set_to_env='VASP_COMPLIANCE_KEY'
                                  ),
                              ],
@@ -335,14 +372,15 @@ class DiemReferenceWallet(Deployment):
         wallet_hostname = self.get_diem_wallet_hostname(chain)
         offchain_url = f'{wallet_hostname}/api/offchain'
 
+        backend_compliance_private_key = secrets.get_backend_compliance_private_key(chain)
         wallet_vasp = Vasp.create(
             chain=chain,
-            private_key=secrets.backend_wallet_private_key,
+            private_key=secrets.get_backend_wallet_private_key(chain),
             base_url=offchain_url,
-            compliance_private_key=secrets.backend_compliance_private_key,
+            compliance_private_key=backend_compliance_private_key,
         )
 
-        if wallet_secrets.backend_compliance_private_key == secrets.backend_compliance_private_key:
+        if wallet_secrets.get_backend_compliance_private_key(chain) == backend_compliance_private_key:
             # means it's a new compliance key, needs to be rotated in the blockchain!
             wallet_vasp.rotate_dual_attestation_info()
 
