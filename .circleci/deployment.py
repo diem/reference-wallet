@@ -371,6 +371,7 @@ class DiemReferenceWallet(Deployment):
     def _deploy(self):
         secrets = self.deploy_secrets(WalletSecrets.generate())
         self.deploy_for_chain(ChainType.TESTNET, secrets)
+        self.deploy_for_chain(ChainType.PREMAINNET, secrets)
 
     def deploy_for_chain(self, chain: ChainType, secrets: WalletSecrets):
         deployable_names = DeployableNames.create(chain, self.env_prefix)
