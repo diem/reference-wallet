@@ -266,7 +266,6 @@ class DiemReferenceWallet(Deployment):
             'JSON_RPC_URL': vasp.chain.json_rpc_url,
             'CHAIN_ID': vasp.chain.value,
             'GAS_CURRENCY_CODE': CURRENCY,
-            'VASP_COMPLIANCE_KEY': vasp.compliance_private_key_str,
         }
         if env_vars is not None:
             environment_variables.update(env_vars)
