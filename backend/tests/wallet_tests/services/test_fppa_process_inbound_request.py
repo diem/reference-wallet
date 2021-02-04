@@ -4,13 +4,12 @@ import time
 from datetime import datetime
 
 import pytest
-from diem import identifier, LocalAccount, offchain
+from diem import offchain
 from diem.offchain import FundPullPreApprovalStatus
 from diem_utils.types.currencies import FiatCurrency, DiemCurrency
 
 import context
 import wallet.services.offchain as offchain_service
-from wallet.services.account import generate_new_subaddress
 from wallet.services.fund_pull_pre_approval_sm import (
     FundsPullPreApprovalStateError,
     Role,
@@ -18,10 +17,7 @@ from wallet.services.fund_pull_pre_approval_sm import (
 from wallet.storage import (
     db_session,
     get_command_by_id,
-    User,
-    Account,
 )
-from wallet.types import RegistrationStatus
 
 from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import (
     OneFundsPullPreApproval,
