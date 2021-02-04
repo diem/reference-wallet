@@ -251,6 +251,7 @@ class FundsPullPreApproval(Schema):
     )
     biller_name = fields.Str(required=False)
     created_timestamp = fields.DateTime(required=True)
+    updated_at = fields.DateTime(required=True)
 
 
 class FundsPullPreApprovalList(Schema):

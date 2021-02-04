@@ -48,6 +48,7 @@ def preapproval_command_to_dict(preapproval: fppa_service.FPPAObject):
         },
         "biller_name": preapproval.biller_name,
         "created_timestamp": preapproval.created_timestamp,
+        "updated_at": preapproval.updated_at,
     }
 
     if preapproval_object.description is not None:
