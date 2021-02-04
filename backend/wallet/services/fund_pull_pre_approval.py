@@ -159,11 +159,13 @@ def get_funds_pull_pre_approvals(
         preapproval_model_to_command(fppa) for fppa in get_account_commands(account_id)
     ]
 
-    return _sort_approvals(approvals)
+    _sort_approvals(approvals)
+
+    return approvals
 
 
 def _sort_approvals(approvals) -> List[FPPAObject]:
-    approvals.sort(key=attrgetter("created_timestamp"))
+    return approvals.sort(key=attrgetter("created_timestamp"))
 
 
 def get_funds_pull_pre_approvals_by_status(
@@ -175,7 +177,9 @@ def get_funds_pull_pre_approvals_by_status(
         for fppa in get_account_commands_by_status(account_id, status)
     ]
 
-    return _sort_approvals(approvals)
+    _sort_approvals(approvals)
+
+    return approvals
 
 
 def validate_expiration_timestamp(expiration_timestamp):
