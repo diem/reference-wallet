@@ -1,5 +1,6 @@
 import time
 import uuid
+from datetime import datetime
 
 from diem.offchain import FundPullPreApprovalStatus
 from diem_utils.types.currencies import DiemCurrency
@@ -32,7 +33,7 @@ class OneFundsPullPreApproval:
             biller_address=biller_address,
             funds_pull_pre_approval_id=funds_pull_pre_approval_id,
             funds_pull_pre_approval_type="consent",
-            expiration_timestamp=int(time.time() + 30),
+            expiration_timestamp=datetime(2027, 3, 3, 10, 10, 10),
             max_cumulative_unit=max_cumulative_unit,
             max_cumulative_unit_value=max_cumulative_unit_value,
             max_cumulative_amount=10_000_000_000,

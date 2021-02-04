@@ -1,5 +1,6 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
+from datetime import datetime
 
 from diem import offchain
 
@@ -19,7 +20,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
 
         expected_scope = offchain.FundPullPreApprovalScopeObject(
             type=offchain.FundPullPreApprovalType.consent,
-            expiration_timestamp=12345,
+            expiration_timestamp=datetime.now(),
             max_cumulative_amount=offchain.ScopedCumulativeAmountObject(
                 unit=offchain.TimeUnit.month,
                 value=3,
@@ -86,7 +87,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
 
         expected_scope = offchain.FundPullPreApprovalScopeObject(
             type=offchain.FundPullPreApprovalType.consent,
-            expiration_timestamp=12345,
+            expiration_timestamp=datetime.now(),
         )
 
         fppa_id, _ = request_funds_pull_pre_approval_from_another(

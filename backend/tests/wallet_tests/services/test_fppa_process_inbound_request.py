@@ -1,6 +1,7 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
 import time
+from datetime import datetime
 
 import pytest
 from diem import identifier, LocalAccount, offchain
@@ -110,7 +111,7 @@ class ProcessInboundCommand:
             biller_address=biller_address,
             scope=offchain.FundPullPreApprovalScopeObject(
                 type=offchain.FundPullPreApprovalType.consent,
-                expiration_timestamp=int(time.time()) + 30,
+                expiration_timestamp=datetime(2027, 3, 3, 10, 10, 10),
                 max_cumulative_amount=offchain.ScopedCumulativeAmountObject(
                     unit=max_cumulative_unit,
                     value=max_cumulative_unit_value,

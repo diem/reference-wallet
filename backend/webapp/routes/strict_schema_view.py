@@ -4,7 +4,7 @@ from typing import Tuple, List, Optional
 
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
-
+import jsonschema
 from flasgger import SwaggerView, utils
 from flask import request
 
@@ -36,6 +36,9 @@ class StrictSchemaView(SwaggerView):
     # Set to true if the requesting user must have admin privileges
     require_admin_privileges = False
     require_authenticated_user = True
+
+    def validation_function(self, json, schema):
+        jsonschema.validate(json, schema, format_checker=jsonschema.FormatChecker())
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

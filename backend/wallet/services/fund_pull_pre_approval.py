@@ -2,7 +2,7 @@
 #  SPDX-License-Identifier: Apache-2.0
 import dataclasses
 import logging
-import time
+from datetime import datetime
 from operator import attrgetter
 from typing import List, Optional
 
@@ -183,7 +183,7 @@ def get_funds_pull_pre_approvals_by_status(
 
 
 def validate_expiration_timestamp(expiration_timestamp):
-    if expiration_timestamp < time.time():
+    if expiration_timestamp < datetime.now():
         raise ValueError("expiration timestamp must be in the future")
 
 
