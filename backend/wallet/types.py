@@ -35,6 +35,7 @@ class TransactionType(str, Enum):
     EXTERNAL = "external"
     INTERNAL = "internal"
     OFFCHAIN = "offchain"
+    REFUND = "refund"
 
 
 class TransactionSortOption(str, Enum):

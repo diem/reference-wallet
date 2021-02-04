@@ -48,6 +48,7 @@ def add_transaction(
     blockchain_version: Optional[int] = None,
     reference_id: Optional[str] = None,
     command_json: Optional[str] = None,
+    referenced_event: Optional[int] = None,
 ) -> Transaction:
     return commit_transaction(
         Transaction(
@@ -66,6 +67,7 @@ def add_transaction(
             blockchain_version=blockchain_version,
             reference_id=reference_id,
             command_json=command_json,
+            referenced_event=referenced_event,
         )
     )
 
@@ -75,6 +77,7 @@ def update_transaction(
     status: Optional[TransactionStatus] = None,
     blockchain_version: Optional[int] = None,
     sequence: Optional[int] = None,
+    referenced_event: Optional[int] = None,
 ) -> None:
     tx = Transaction.query.get(transaction_id)
     if status:
@@ -83,6 +86,8 @@ def update_transaction(
         tx.blockchain_version = blockchain_version
     if sequence:
         tx.sequence = sequence
+    if referenced_event:
+        tx.referenced_event = referenced_event
     commit_transaction(tx)
 
 
@@ -118,6 +123,10 @@ def get_transaction_by_details(
         source_subaddress=source_subaddress,
         sequence=sequence,
     ).first()
+
+
+def get_transaction_by_referenced_event(referenced_event: int) -> Transaction:
+    return Transaction.query.filter_by(referenced_event=referenced_event).first()
 
 
 def get_payment_type(transaction_id):

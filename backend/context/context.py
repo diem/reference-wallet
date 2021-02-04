@@ -4,6 +4,7 @@
 import logging
 import time
 from dataclasses import dataclass, field
+from typing import Optional
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,
@@ -57,10 +58,12 @@ class Context:
         receiver_vasp_address: str,
         receiver_sub_address: str,
         sender_sub_address: str,
+        referenced_event: Optional[int] = None,
     ) -> jsonrpc.Transaction:
         metadata = txnmetadata.general_metadata(
             from_subaddress=bytes.fromhex(sender_sub_address),
             to_subaddress=bytes.fromhex(receiver_sub_address),
+            referenced_event=referenced_event,
         )
         return self._p2p_transfer(
             currency, amount, receiver_vasp_address, metadata, b""

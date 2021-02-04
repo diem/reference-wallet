@@ -96,6 +96,7 @@ class Transaction(Base):
     created_timestamp = Column(DateTime, nullable=False)
     blockchain_version = Column(Integer, nullable=True)
     sequence = Column(Integer, nullable=True)
+    referenced_event = Column(Integer, nullable=True)
     logs = relationship("TransactionLog", backref="tx", lazy=True)
     source_account = relationship(
         "Account", backref="sent_transactions", foreign_keys=[source_id]
