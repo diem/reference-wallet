@@ -16,7 +16,7 @@ function ApprovalDetails({ approval }: RequestDetailsProps) {
         <span>
           Received from <b>{approval!.biller_name}</b>
         </span>{" "}
-        (<span>{new Date(approval!.created_timestamp).toLocaleString()})</span>
+        {"on"} <span>{new Date(approval!.created_timestamp).toLocaleString()}</span>
       </div>
       {approval?.description && <div>{approval.description}</div>}
       <div className="pt-1">
