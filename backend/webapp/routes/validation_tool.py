@@ -36,6 +36,8 @@ class ValidationToolRoutes:
             payer_address = request_details.get("payer_address")
             description = request_details.get("description")
 
+            # datetime.datetime.fromtimestamp(your_timestamp / 1e3)
+
             scope = get_scope_from_request_details(request_details)
 
             if payer_address:

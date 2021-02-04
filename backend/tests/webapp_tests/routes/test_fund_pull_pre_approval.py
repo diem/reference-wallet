@@ -25,7 +25,7 @@ def invent_preapproval(description):
             biller_address=BILLER_ADDRESS,
             scope=offchain.FundPullPreApprovalScopeObject(
                 type=offchain.FundPullPreApprovalType.consent,
-                expiration_timestamp=datetime(2027, 3, 3, 10, 10, 10),
+                expiration_timestamp=1620766800,
                 max_cumulative_amount=offchain.ScopedCumulativeAmountObject(
                     unit=offchain.TimeUnit.month,
                     value=1,
@@ -153,7 +153,7 @@ class TestCreateAndApprove:
             "funds_pull_pre_approval_id": FUNDS_PULL_PRE_APPROVAL_ID,
             "scope": {
                 "type": "consent",
-                "expiration_timestamp": datetime(2027, 3, 3, 10, 10, 10),
+                "expiration_timestamp": 1620766800,
                 "max_cumulative_amount": {
                     "unit": "week",
                     "value": 1,
@@ -189,7 +189,10 @@ class TestCreateAndApprove:
             == request_body["funds_pull_pre_approval_id"]
         )
         assert call.pop("funds_pull_pre_approval_type") == request_body["scope"]["type"]
-        assert call.pop("expiration_timestamp") == "Wed, 03 Mar 2027 10:10:10 GMT"
+        assert (
+            call.pop("expiration_timestamp")
+            == request_body["scope"]["expiration_timestamp"]
+        )
         assert (
             call.pop("max_cumulative_unit")
             == request_body["scope"]["max_cumulative_amount"]["unit"]

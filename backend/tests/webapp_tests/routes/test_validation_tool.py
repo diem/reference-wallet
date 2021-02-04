@@ -1,6 +1,5 @@
 import json
 import uuid
-from datetime import datetime
 
 import pytest
 from diem import offchain
@@ -50,7 +49,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
         }
         expected_scope = {
             "type": "consent",
-            "expiration_timestamp": datetime(2027, 3, 3, 10, 10, 10),
+            "expiration_timestamp": 1620766800,
             "max_cumulative_amount": expected_max_cumulative_amount,
             "max_transaction_amount": expected_max_transaction_amount,
         }
@@ -84,7 +83,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
 
         scope: offchain.FundPullPreApprovalScopeObject = call["scope"]
         assert scope.type == expected_scope["type"]
-        assert scope.expiration_timestamp == "Wed, 03 Mar 2027 10:10:10 GMT"
+        assert scope.expiration_timestamp == expected_scope["expiration_timestamp"]
 
         assert scope.max_cumulative_amount is not None
         assert (
@@ -121,7 +120,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
 
         expected_scope = {
             "type": "consent",
-            "expiration_timestamp": "Wed, 03 Mar 2027 10:10:10 GMT",
+            "expiration_timestamp": 1620766800,
         }
         request_body = {
             "payer_address": "tdm1pvjua68j72mhmp3n7jkuthmxlkj0g57gkpegq6qgkjfxwc",
