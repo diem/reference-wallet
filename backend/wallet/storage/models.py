@@ -178,6 +178,7 @@ class FundsPullPreApprovalCommand(Base):
     offchain_sent = Column(Boolean, default=False)
     biller_name = Column(String, nullable=True)
     created_timestamp = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     def update(self, updated_command):
         new_command_attributes = [

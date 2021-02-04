@@ -1,6 +1,6 @@
 from typing import List
 
-from . import db_session, models
+from . import db_session, models, datetime
 
 
 def commit_command(command: models.FundsPullPreApprovalCommand):
@@ -55,6 +55,7 @@ def update_command(command: models.FundsPullPreApprovalCommand):
 
     if command_in_db:
         command.created_timestamp = command_in_db.created_timestamp
+        command.updated_at = datetime.utcnow()
         command_in_db.update(command)
         db_session.commit()
     else:

@@ -44,6 +44,7 @@ def invent_preapproval(description):
         ),
         biller_name="Bond",
         created_timestamp=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
     )
 
 

@@ -3,6 +3,7 @@
 import dataclasses
 import logging
 import time
+from operator import attrgetter
 from typing import List, Optional
 
 import context
@@ -41,6 +42,7 @@ class FundsPullPreApprovalInvalidStatus(FundsPullPreApprovalError):
 class FPPAObject(offchain.FundsPullPreApprovalCommand):
     biller_name: str = None
     created_timestamp: int = None
+    updated_at: int = None
 
 
 def create_and_approve(
@@ -153,19 +155,27 @@ def update_status(
 def get_funds_pull_pre_approvals(
     account_id: int,
 ) -> List[FPPAObject]:
-    return [
+    approvals = [
         preapproval_model_to_command(fppa) for fppa in get_account_commands(account_id)
     ]
+
+    return _sort_approvals(approvals)
+
+
+def _sort_approvals(approvals) -> List[FPPAObject]:
+    approvals.sort(key=attrgetter("created_timestamp"))
 
 
 def get_funds_pull_pre_approvals_by_status(
     account_id: int,
     status: str,
 ) -> List[FPPAObject]:
-    return [
+    approvals = [
         preapproval_model_to_command(fppa)
         for fppa in get_account_commands_by_status(account_id, status)
     ]
+
+    return _sort_approvals(approvals)
 
 
 def validate_expiration_timestamp(expiration_timestamp):
@@ -294,6 +304,7 @@ def preapproval_model_to_command(
         funds_pull_pre_approval=funds_pull_pre_approval,
         biller_name=command.biller_name,
         created_timestamp=command.created_timestamp,
+        updated_at=command.updated_at,
     )
 
 
