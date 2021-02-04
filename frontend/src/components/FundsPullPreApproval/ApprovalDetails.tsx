@@ -18,6 +18,7 @@ function ApprovalDetails({ approval }: RequestDetailsProps) {
         </span>{" "}
         (<span>{new Date(approval!.created_timestamp).toLocaleString()})</span>
       </div>
+      {approval?.description && <div>{approval.description}</div>}
       <div className="pt-1">
         <div className="text-black ">
           {!approval!.scope.max_cumulative_amount &&
