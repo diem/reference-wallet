@@ -27,6 +27,7 @@ from wallet.services.fund_pull_pre_approval import (
     process_funds_pull_pre_approvals_requests,
     preapproval_command_to_model,
     get_command_from_bech32,
+    get_funds_pull_pre_approvals,
 )
 from wallet.services.fund_pull_pre_approval_sm import FundsPullPreApprovalStateError
 from wallet.services.fund_pull_pre_approval_sm import (
@@ -47,7 +48,29 @@ from wallet.types import RegistrationStatus
 
 CID = "35a1b548-3170-438f-bf3a-6ca0fef85d15"
 FUNDS_PULL_PRE_APPROVAL_ID = "5fc49fa0-5f2a-4faa-b391-ac1652c57e4d"
+FUNDS_PULL_PRE_APPROVAL_ID_2 = "e1f7f846-f9e6-46f9-b184-c949f8d6b197"
+
 currency = DiemCurrency.XUS
+
+
+def test_get_funds_pull_pre_approvals():
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.pending,
+        account_id=1,
+    )
+
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID_2,
+        status=FundPullPreApprovalStatus.pending,
+        account_id=1,
+    )
+
+    approvals = get_funds_pull_pre_approvals(1)
+
+    assert len(approvals) == 2
 
 
 def test_approve_but_no_command_in_db():
