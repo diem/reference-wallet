@@ -65,7 +65,7 @@ function FundsPullPreApprovals() {
             <FundsPullPreApprovalsList
               approvals={newApprovals}
               displayApproveRejectButtons={true}
-              displayCloseButton={false}
+              displayRevokeButton={false}
             />
           )}
         </section>
@@ -75,7 +75,7 @@ function FundsPullPreApprovals() {
             <FundsPullPreApprovalsList
               approvals={activeApprovals}
               displayApproveRejectButtons={false}
-              displayCloseButton={true}
+              displayRevokeButton={true}
             />
           )}
         </section>
@@ -85,7 +85,7 @@ function FundsPullPreApprovals() {
             <FundsPullPreApprovalsList
               approvals={historyApprovals}
               displayApproveRejectButtons={false}
-              displayCloseButton={false}
+              displayRevokeButton={false}
             />
           )}
         </section>

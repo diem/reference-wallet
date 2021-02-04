@@ -186,7 +186,7 @@ function Home() {
                 <FundsPullPreApprovalsList
                   approvals={approvals}
                   displayApproveRejectButtons={true}
-                  displayCloseButton={false}
+                  displayRevokeButton={false}
                 />
                 <li className={classNames(bottomStyles)}>
                   <Link to="/fundsPullPreApprovals" className="text-black font-weight-bold">

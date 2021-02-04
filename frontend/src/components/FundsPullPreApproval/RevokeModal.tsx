@@ -4,13 +4,13 @@ import CloseButton from "../CloseButton";
 import { Approval } from "../../interfaces/approval";
 import BackendClient from "../../services/backendClient";
 
-interface ApproveModalProps {
+interface RevokeModalProps {
   approval: Approval | undefined;
   open: boolean;
   onClose: () => void;
 }
 
-function CloseModal({ approval, open, onClose }: ApproveModalProps) {
+function RevokeModal({ approval, open, onClose }: RevokeModalProps) {
   const updateApproval = async () => {
     try {
       await new BackendClient().updateApprovalStatus(
@@ -29,9 +29,9 @@ function CloseModal({ approval, open, onClose }: ApproveModalProps) {
       <ModalBody>
         <CloseButton onClick={onClose} />
         <>
-          <h3>Close Request</h3>
+          <h3>Revoke Request</h3>
           <div className="text-black pb-5">
-            Are you sure you want to close the request from {approval?.biller_name}?
+            Are you sure you want to revoke the request from {approval?.biller_name}?
           </div>
           <span>
             <div className="float-right">
@@ -39,7 +39,7 @@ function CloseModal({ approval, open, onClose }: ApproveModalProps) {
                 Cancel
               </Button>
               <Button onClick={updateApproval} color="black">
-                Close
+                Revoke
               </Button>
             </div>
           </span>
@@ -49,4 +49,4 @@ function CloseModal({ approval, open, onClose }: ApproveModalProps) {
   );
 }
 
-export default CloseModal;
+export default RevokeModal;

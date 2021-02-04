@@ -6,22 +6,22 @@ import { Approval } from "../../interfaces/approval";
 import ApproveModal from "./ApproveModal";
 import RejectModal from "./RejectModal";
 import FundsPullPreApproval from "./FundsPullPreApproval";
-import CloseModal from "./CloseModal";
+import RevokeModal from "./RevokeModal";
 
 interface ApprovalsListProps {
   approvals: Approval[];
   displayApproveRejectButtons: boolean;
-  displayCloseButton: boolean;
+  displayRevokeButton: boolean;
 }
 
 function FundsPullPreApprovalsList({
   approvals,
   displayApproveRejectButtons,
-  displayCloseButton,
+  displayRevokeButton,
 }: ApprovalsListProps) {
   const [approveModalOpen, setApproveModalOpen] = useState<boolean>(false);
   const [rejectModalOpen, setRejectModalOpen] = useState<boolean>(false);
-  const [closeModalOpen, setCloseModalOpen] = useState<boolean>(false);
+  const [revokeModalOpen, setRevokeModalOpen] = useState<boolean>(false);
   const [approvalInModal, setApprovalInModal] = useState<Approval>();
 
   return (
@@ -33,10 +33,10 @@ function FundsPullPreApprovalsList({
             approval={approval}
             onApproveClick={() => setApproveModalOpen(true)}
             onRejectClick={() => setRejectModalOpen(true)}
-            onCloseClick={() => setCloseModalOpen(true)}
+            onRevokeClick={() => setRevokeModalOpen(true)}
             onAnyClickSetApproval={() => setApprovalInModal(approval)}
             displayApproveRejectButtons={displayApproveRejectButtons}
-            displayCloseButton={displayCloseButton}
+            displayRevokeButton={displayRevokeButton}
           />
         );
       })}
@@ -51,10 +51,10 @@ function FundsPullPreApprovalsList({
         open={rejectModalOpen}
         onClose={() => setRejectModalOpen(false)}
       />
-      <CloseModal
+      <RevokeModal
         approval={approvalInModal}
-        open={closeModalOpen}
-        onClose={() => setCloseModalOpen(false)}
+        open={revokeModalOpen}
+        onClose={() => setRevokeModalOpen(false)}
       />
     </>
   );
