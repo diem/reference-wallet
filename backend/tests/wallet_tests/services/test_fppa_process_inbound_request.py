@@ -20,7 +20,8 @@ from wallet.storage import (
 )
 
 from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import (
-    OneFundsPullPreApproval, TIMESTAMP,
+    OneFundsPullPreApproval,
+    TIMESTAMP,
 )
 
 

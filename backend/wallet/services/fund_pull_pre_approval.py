@@ -235,7 +235,9 @@ def preapproval_command_to_model(
         address=preapproval_object.address,
         biller_address=preapproval_object.biller_address,
         funds_pull_pre_approval_type=preapproval_object.scope.type,
-        expiration_timestamp=datetime.fromtimestamp(preapproval_object.scope.expiration_timestamp),
+        expiration_timestamp=datetime.fromtimestamp(
+            preapproval_object.scope.expiration_timestamp
+        ),
         max_cumulative_unit=max_cumulative_amount.unit
         if max_cumulative_amount
         else None,
@@ -314,7 +316,7 @@ def preapproval_model_to_command(
         biller_name=command.biller_name,
         created_timestamp=command.created_at,
         updated_at=command.updated_at,
-        approved_at=command.approved_at
+        approved_at=command.approved_at,
     )
 
 

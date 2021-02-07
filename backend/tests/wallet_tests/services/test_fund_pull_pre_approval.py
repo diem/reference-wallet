@@ -12,7 +12,9 @@ from diem.offchain import (
 )
 from diem_utils.types.currencies import FiatCurrency, DiemCurrency
 from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import (
-    OneFundsPullPreApproval, TIMESTAMP, EXPIRED_TIMESTAMP,
+    OneFundsPullPreApproval,
+    TIMESTAMP,
+    EXPIRED_TIMESTAMP,
 )
 from wallet.services.account import (
     generate_new_subaddress,
