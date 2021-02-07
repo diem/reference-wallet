@@ -20,7 +20,7 @@ from wallet.storage import (
 )
 
 from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import (
-    OneFundsPullPreApproval,
+    OneFundsPullPreApproval, TIMESTAMP,
 )
 
 
@@ -107,7 +107,7 @@ class ProcessInboundCommand:
             biller_address=biller_address,
             scope=offchain.FundPullPreApprovalScopeObject(
                 type=offchain.FundPullPreApprovalType.consent,
-                expiration_timestamp=datetime(2027, 3, 3, 10, 10, 10),
+                expiration_timestamp=TIMESTAMP,
                 max_cumulative_amount=offchain.ScopedCumulativeAmountObject(
                     unit=max_cumulative_unit,
                     value=max_cumulative_unit_value,

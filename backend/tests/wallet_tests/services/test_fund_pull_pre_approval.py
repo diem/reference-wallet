@@ -12,7 +12,7 @@ from diem.offchain import (
 )
 from diem_utils.types.currencies import FiatCurrency, DiemCurrency
 from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import (
-    OneFundsPullPreApproval,
+    OneFundsPullPreApproval, TIMESTAMP, EXPIRED_TIMESTAMP,
 )
 from wallet.services.account import (
     generate_new_subaddress,
@@ -314,7 +314,7 @@ def test_create_and_approve_happy_flow():
         biller_address=generate_my_address(user),
         funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
         funds_pull_pre_approval_type="consent",
-        expiration_timestamp=datetime(2027, 3, 3, 10, 10, 10),
+        expiration_timestamp=TIMESTAMP,
         max_cumulative_unit="week",
         max_cumulative_unit_value=1,
         max_cumulative_amount=10_000_000_000,
@@ -344,7 +344,7 @@ def test_create_and_approve_with_expired_expiration_timestamp():
             biller_address=generate_address(),
             funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
             funds_pull_pre_approval_type="consent",
-            expiration_timestamp=datetime(2020, 3, 3, 10, 10, 10),
+            expiration_timestamp=EXPIRED_TIMESTAMP,
             max_cumulative_unit="week",
             max_cumulative_unit_value=1,
             max_cumulative_amount=10_000_000_000,
@@ -371,7 +371,7 @@ def test_create_and_approve_while_command_already_exist_in_db():
             biller_address=generate_address(),
             funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
             funds_pull_pre_approval_type="consent",
-            expiration_timestamp=datetime(2027, 3, 3, 10, 10, 10),
+            expiration_timestamp=TIMESTAMP,
             max_cumulative_unit="week",
             max_cumulative_unit_value=1,
             max_cumulative_amount=10_000_000_000,
@@ -772,7 +772,7 @@ def generate_fund_pull_pre_approval_object(
         biller_address=biller_address,
         scope=offchain.FundPullPreApprovalScopeObject(
             type=offchain.FundPullPreApprovalType.consent,
-            expiration_timestamp=datetime(2027, 3, 3, 10, 10, 10),
+            expiration_timestamp=TIMESTAMP,
             max_cumulative_amount=offchain.ScopedCumulativeAmountObject(
                 unit=max_cumulative_unit,
                 value=max_cumulative_unit_value,

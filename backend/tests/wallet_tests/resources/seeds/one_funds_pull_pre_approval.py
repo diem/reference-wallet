@@ -12,6 +12,9 @@ ADDRESS_2 = "tdm1pztdjx2z8wp0q25jakqeklk0nxj2wmk2kg9whu8c3fdm9u"
 
 BILLER_ADDRESS = "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
 
+TIMESTAMP = 1802010490
+EXPIRED_TIMESTAMP = 1581085690
+
 
 class OneFundsPullPreApproval:
     @staticmethod
