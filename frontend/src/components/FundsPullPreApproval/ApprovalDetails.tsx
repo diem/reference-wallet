@@ -10,37 +10,54 @@ interface RequestDetailsProps {
 function ApprovalDetails({ approval }: RequestDetailsProps) {
   const [settings] = useContext(settingsContext)!;
 
-  function dateToDisplay(text: string, timestamp: string) {
-    return (
-      <>
-        {text} <span>{new Date(timestamp).toLocaleString()}</span>
-      </>
-    );
-  }
-
   const dateToDisplayByApprovalStatus = () => {
     if (approval!.status === "pending") {
-      return dateToDisplay("on", approval!.created_at);
+      return (
+        <>
+          {"on"} <span>{new Date(approval!.created_at).toLocaleString()}</span>
+        </>
+      );
     }
     if (approval!.status === "rejected") {
-      return dateToDisplay("rejected on", approval!.updated_at);
+      return (
+        <div>
+          {"rejected on"} <span>{new Date(approval!.updated_at).toLocaleString()}</span>
+        </div>
+      );
     }
     if (approval!.status === "closed") {
-      return dateToDisplay(
-        `approved on ${approval!.approved_at}, revoked on`,
-        approval!.updated_at
+      return (
+        <>
+          <div>
+            {"approved on"} <span>{new Date(approval!.approved_at).toLocaleString()}</span>
+          </div>
+          <div>
+            {"revoked on"} <span>{new Date(approval!.updated_at).toLocaleString()}</span>
+          </div>
+        </>
       );
     }
     if (approval!.status === "valid") {
       const now = new Date().toISOString();
       if (Date.parse(approval!.scope.expiration_timestamp) < Date.parse(now)) {
-        return dateToDisplay(
-          `approved on ${approval!.approved_at}, expired at`,
-          approval!.scope.expiration_timestamp
+        return (
+          <>
+            <div>
+              {"approved on"} <span>{new Date(approval!.approved_at).toLocaleString()}</span>
+            </div>
+            <div>
+              {"expired on"}{" "}
+              <span>{new Date(approval!.scope.expiration_timestamp).toLocaleString()}</span>
+            </div>
+          </>
         );
       }
 
-      return dateToDisplay("approved on", approval!.updated_at);
+      return (
+        <div>
+          {"approved on"} <span>{new Date(approval!.updated_at).toLocaleString()}</span>
+        </div>
+      );
     }
   };
 
