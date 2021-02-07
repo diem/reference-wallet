@@ -21,7 +21,7 @@ function ApprovalDetails({ approval }: RequestDetailsProps) {
     if (approval!.status === "rejected") {
       return (
         <div>
-          {"rejected on"} <span>{new Date(approval!.updated_at).toLocaleString()}</span>
+          {"Rejected on"} <span>{new Date(approval!.updated_at).toLocaleString()}</span>
         </div>
       );
     }
@@ -29,10 +29,10 @@ function ApprovalDetails({ approval }: RequestDetailsProps) {
       return (
         <>
           <div>
-            {"approved on"} <span>{new Date(approval!.approved_at).toLocaleString()}</span>
+            {"Approved on"} <span>{new Date(approval!.approved_at).toLocaleString()}</span>
           </div>
           <div>
-            {"revoked on"} <span>{new Date(approval!.updated_at).toLocaleString()}</span>
+            {"Revoked on"} <span>{new Date(approval!.updated_at).toLocaleString()}</span>
           </div>
         </>
       );
@@ -43,10 +43,10 @@ function ApprovalDetails({ approval }: RequestDetailsProps) {
         return (
           <>
             <div>
-              {"approved on"} <span>{new Date(approval!.approved_at).toLocaleString()}</span>
+              {"Approved on"} <span>{new Date(approval!.approved_at).toLocaleString()}</span>
             </div>
             <div>
-              {"expired on"}{" "}
+              {"Expired on"}{" "}
               <span>{new Date(approval!.scope.expiration_timestamp).toLocaleString()}</span>
             </div>
           </>
@@ -55,7 +55,7 @@ function ApprovalDetails({ approval }: RequestDetailsProps) {
 
       return (
         <div>
-          {"approved on"} <span>{new Date(approval!.updated_at).toLocaleString()}</span>
+          {"Approved on"} <span>{new Date(approval!.updated_at).toLocaleString()}</span>
         </div>
       );
     }
