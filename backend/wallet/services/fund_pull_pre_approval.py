@@ -302,7 +302,7 @@ def preapproval_model_to_command(
         biller_address=command.biller_address,
         scope=offchain.FundPullPreApprovalScopeObject(
             type=offchain.FundPullPreApprovalType.consent,
-            expiration_timestamp=datetime.timestamp(command.expiration_timestamp),
+            expiration_timestamp=int(datetime.timestamp(command.expiration_timestamp)),
             max_cumulative_amount=max_cumulative_amount,
             max_transaction_amount=max_transaction_amount,
         ),
