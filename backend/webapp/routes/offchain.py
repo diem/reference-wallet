@@ -47,7 +47,7 @@ def preapproval_command_to_dict(preapproval: fppa_service.FPPAObject):
             "expiration_timestamp": scope.expiration_timestamp,
         },
         "biller_name": preapproval.biller_name,
-        "created_timestamp": preapproval.created_timestamp,
+        "created_at": preapproval.created_timestamp,
         "updated_at": preapproval.updated_at,
     }
 

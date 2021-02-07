@@ -17,12 +17,13 @@ export interface Approval {
   description: string;
   status: ApprovalStatus;
   biller_name: string;
-  created_timestamp: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface Scope {
   type: ScopeType;
-  expiration_timestamp: number;
+  expiration_timestamp: string;
   max_cumulative_amount: ScopedCumulativeAmount;
   max_transaction_amount: Currency;
 }

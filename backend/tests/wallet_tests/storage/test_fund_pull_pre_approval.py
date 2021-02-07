@@ -24,7 +24,7 @@ def test_update_at(random_bech32_address, my_user):
 
     command = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
 
-    created_at = command.created_timestamp
+    created_at = command.created_at
     updated_at = command.updated_at
 
     command.status = "valid"
@@ -35,5 +35,5 @@ def test_update_at(random_bech32_address, my_user):
 
     assert updated_command.updated_at != updated_at
     assert updated_command.updated_at > updated_at
-    assert updated_command.created_timestamp == created_at
+    assert updated_command.created_at == created_at
     assert updated_command.status == "valid"

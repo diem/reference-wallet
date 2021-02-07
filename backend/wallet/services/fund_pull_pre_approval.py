@@ -307,7 +307,7 @@ def preapproval_model_to_command(
         my_actor_address=my_address,
         funds_pull_pre_approval=funds_pull_pre_approval,
         biller_name=command.biller_name,
-        created_timestamp=command.created_timestamp,
+        created_timestamp=command.created_at,
         updated_at=command.updated_at,
     )
 

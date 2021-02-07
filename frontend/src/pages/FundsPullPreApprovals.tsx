@@ -30,7 +30,12 @@ function FundsPullPreApprovals() {
             if (approval.status === "pending") {
               innerNewApprovals.push(approval);
             } else if (approval.status === "valid") {
-              innerActiveApprovals.push(approval);
+              const now = new Date().toISOString();
+              if (Date.parse(approval!.scope.expiration_timestamp) < Date.parse(now)) {
+                innerHistoryApprovals.push(approval);
+              } else {
+                innerActiveApprovals.push(approval);
+              }
             } else {
               innerHistoryApprovals.push(approval);
             }
