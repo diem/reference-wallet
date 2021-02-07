@@ -37,12 +37,7 @@ def reduce_role(
         existing_status_as_payee=existing_status_as_payee,
         existing_status_as_payer=existing_status_as_payer,
     )
-    logger.info(f"~~~~~~ {state}")
-    role = _reduce_role(state)
-
-    logger.info(f"role: {role}")
-
-    return role
+    return _reduce_role(state)
 
 
 @dataclass(frozen=True)
