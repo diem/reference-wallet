@@ -68,16 +68,9 @@ function FundsPullPreApproval({
           {displayRevokeButton && (
             <Col sm="4" className="p-0 d-flex align-items-end">
               <div className="mt-5 ml-auto">
-                <Button
-                  className="mr-1"
-                  color="black"
-                  size="sm"
-                  disabled={!onRevokeClick}
-                  onClick={onAnyClick(onRevokeClick)}
-                >
-                  <i className="fa fa-times mr-1" />
+                <a href="#" onClick={onAnyClick(onRevokeClick)} aria-disabled={!onRevokeClick}>
                   Revoke
-                </Button>
+                </a>
               </div>
             </Col>
           )}
