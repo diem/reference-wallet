@@ -64,36 +64,37 @@ function FundsPullPreApprovals() {
 
       <Breadcrumbs pageName={"All Funds Pull Pre Approvals"} />
       <Container className="py-5">
-        <section>
-          <h2 className="pl-1 h5 font-weight-normal text-body">New Requests</h2>
-          {!!newApprovals.length && (
+        {!!newApprovals.length && (
+          <section>
+            <h2 className="pl-1 h5 font-weight-normal text-body">New Requests</h2>
             <FundsPullPreApprovalsList
               approvals={newApprovals}
               displayApproveRejectButtons={true}
               displayRevokeButton={false}
             />
-          )}
-        </section>
-        <section className="pt-4">
-          <h2 className="pl-1 h5 font-weight-normal text-body">Active Requests</h2>
-          {!!activeApprovals.length && (
+          </section>
+        )}
+        {!!activeApprovals.length && (
+          <section className="pt-4">
+            <h2 className="pl-1 h5 font-weight-normal text-body">Active Requests</h2>
             <FundsPullPreApprovalsList
               approvals={activeApprovals}
               displayApproveRejectButtons={false}
               displayRevokeButton={true}
             />
-          )}
-        </section>
-        <section className="pt-4">
-          <h2 className="pl-1 h5 font-weight-normal text-body">History</h2>
-          {!!historyApprovals.length && (
+          </section>
+        )}
+        {!!historyApprovals.length && (
+          <section className="pt-4">
+            <h2 className="pl-1 h5 font-weight-normal text-body">History</h2>
+
             <FundsPullPreApprovalsList
               approvals={historyApprovals}
               displayApproveRejectButtons={false}
               displayRevokeButton={false}
             />
-          )}
-        </section>
+          </section>
+        )}
       </Container>
     </>
   );
