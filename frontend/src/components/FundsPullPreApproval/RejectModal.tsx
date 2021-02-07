@@ -1,9 +1,7 @@
-//RejectModal
 import React from "react";
 import { Button, Modal, ModalBody } from "reactstrap";
 import CloseButton from "../CloseButton";
 import { Approval } from "../../interfaces/approval";
-import ApprovalDetails from "./ApprovalDetails";
 import BackendClient from "../../services/backendClient";
 
 interface RejectModalProps {

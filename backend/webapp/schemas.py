@@ -235,7 +235,7 @@ class ScopedCumulativeAmount(Schema):
 
 class Scope(Schema):
     type = fields.Str(required=True, validate=OneOf(["consent", "save_sub_account"]))
-    expiration_timestamp = fields.Integer(required=True)
+    expiration_timestamp = fields.Int(required=True)
     max_cumulative_amount = fields.Nested(ScopedCumulativeAmount, required=False)
     max_transaction_amount = fields.Nested(Currency, required=False)
 
