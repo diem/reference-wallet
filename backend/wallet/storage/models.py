@@ -179,6 +179,7 @@ class FundsPullPreApprovalCommand(Base):
     biller_name = Column(String, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    approved_at = Column(DateTime, nullable=True)
 
     def update(self, updated_command):
         new_command_attributes = [

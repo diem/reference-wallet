@@ -26,12 +26,18 @@ function ApprovalDetails({ approval }: RequestDetailsProps) {
       return dateToDisplay("rejected on", approval!.updated_at);
     }
     if (approval!.status === "closed") {
-      return dateToDisplay("revoked on", approval!.updated_at);
+      return dateToDisplay(
+        `approved on ${approval!.approved_at}, revoked on`,
+        approval!.updated_at
+      );
     }
     if (approval!.status === "valid") {
       const now = new Date().toISOString();
       if (Date.parse(approval!.scope.expiration_timestamp) < Date.parse(now)) {
-        return dateToDisplay("expired at", approval!.scope.expiration_timestamp);
+        return dateToDisplay(
+          `approved on ${approval!.approved_at}, expired at`,
+          approval!.scope.expiration_timestamp
+        );
       }
 
       return dateToDisplay("approved on", approval!.updated_at);

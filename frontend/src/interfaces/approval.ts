@@ -19,6 +19,7 @@ export interface Approval {
   biller_name: string;
   created_at: string;
   updated_at: string;
+  approved_at: string;
 }
 
 interface Scope {

@@ -43,6 +43,7 @@ class FPPAObject(offchain.FundsPullPreApprovalCommand):
     biller_name: str = None
     created_timestamp: int = None
     updated_at: int = None
+    approved_at: int = None
 
 
 def create_and_approve(
@@ -141,6 +142,10 @@ def update_status(
         if command.status in valid_statuses:
             command.status = new_status
             command.offchain_sent = False
+
+            if operation_name == "approve":
+                command.approved_at = datetime.utcnow()
+
             update_command(command)
         else:
             raise FundsPullPreApprovalError(
@@ -309,6 +314,7 @@ def preapproval_model_to_command(
         biller_name=command.biller_name,
         created_timestamp=command.created_at,
         updated_at=command.updated_at,
+        approved_at=command.approved_at
     )
 
 
@@ -378,7 +384,12 @@ def handle_fund_pull_pre_approval_command(
     if command_in_db:
         validate_addresses(approval, command_in_db, role)
         validate_status(approval, command_in_db)
-        update_command(preapproval_command_to_model(command, role))
+        update_command(
+            preapproval_command_to_model(command, role),
+            approved_at=datetime.utcnow()
+            if command.funds_pull_pre_approval.status == FundPullPreApprovalStatus.valid
+            else None,
+        )
     else:
         biller_name = get_biller_name(command)
         commit_command(
