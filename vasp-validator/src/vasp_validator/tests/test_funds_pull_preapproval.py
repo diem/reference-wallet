@@ -41,7 +41,7 @@ def create_preapproval_validator(vasp: VaspProxy, fppa_id: str):
     return get_and_assert_one_preapproval
 
 
-def test_request_approve_cancel(validator, vasp_proxy: VaspProxy):
+def test_request_approve_close(validator, vasp_proxy: VaspProxy):
     """
     The VASP receives a funds pull pre-approval request, approves and then closes it.
     """
@@ -68,7 +68,7 @@ def test_request_approve_cancel(validator, vasp_proxy: VaspProxy):
     assert_validator_preapproval(FundPullPreApprovalStatus.valid)
     assert_vasp_preapproval(FundPullPreApprovalStatus.valid)
 
-    # Step 3: Cancel the approved request
+    # Step 3: Close the approved request and validate it is "closed" on both sides
     vasp_proxy.close_funds_pull_preapproval(actual_id)
     assert_validator_preapproval(FundPullPreApprovalStatus.closed)
     assert_vasp_preapproval(FundPullPreApprovalStatus.closed)
@@ -100,3 +100,40 @@ def test_request_and_reject(validator, vasp_proxy: VaspProxy):
     vasp_proxy.reject_funds_pull_request(actual_id)
     assert_validator_preapproval(FundPullPreApprovalStatus.rejected)
     assert_vasp_preapproval(FundPullPreApprovalStatus.rejected)
+
+
+def test_approve_request_by_payer(validator, vasp_proxy: VaspProxy):
+    """
+    The VASP receives a funds pull pre-approval request details and approve it
+    """
+    # Step 1: Trigger the request creation in the validator and validate it's been created with "pending" status
+    # and validate that no request was created in vasp_proxy
+    scope = FundPullPreApprovalScope(
+        type=FundPullPreApprovalType.consent,
+        expiration_timestamp=int(time.time()) + ONE_YEAR_SECONDS,
+    )
+    description = "test_approve_request_by_payer"
+    (
+        actual_id,
+        validator_address,
+    ) = validator.create_preapproval_for_unknown_payer(
+        description=description,
+        scope=scope,
+    )
+
+    assert len(vasp_proxy.get_all_funds_pull_preapprovals()) == 0
+
+    assert_validator_preapproval = create_preapproval_validator(validator, actual_id)
+
+    assert_validator_preapproval(FundPullPreApprovalStatus.pending)
+
+    # Step 2: Create and approve the request in vasp_proxy and validate it is "valid" on both sides
+    vasp_proxy.create_and_approve_funds_pull_request(
+        biller_address=validator_address,
+        funds_pull_pre_approval_id=actual_id,
+        scope=scope,
+        description=description,
+    )
+    assert_vasp_preapproval = create_preapproval_validator(vasp_proxy, actual_id)
+    assert_vasp_preapproval(FundPullPreApprovalStatus.valid)
+    assert_validator_preapproval(FundPullPreApprovalStatus.valid)

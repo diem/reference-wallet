@@ -198,18 +198,32 @@ class OffchainRoutes:
             scope: dict = params["scope"]
             funds_pull_pre_approval_type: str = scope["type"]
             expiration_timestamp: int = scope["expiration_timestamp"]
-            max_cumulative_amount: dict = scope["max_cumulative_amount"]
-            max_cumulative_unit: str = max_cumulative_amount["unit"]
-            max_cumulative_unit_value: int = max_cumulative_amount["value"]
-            max_cumulative_max_amount: dict = max_cumulative_amount["max_amount"]
-            max_cumulative_amount: int = max_cumulative_max_amount["amount"]
-            max_cumulative_amount_currency: str = max_cumulative_max_amount["currency"]
-            max_transaction_amount_object: dict = scope["max_transaction_amount"]
-            max_transaction_amount: int = max_transaction_amount_object["amount"]
-            max_transaction_amount_currency: str = max_transaction_amount_object[
-                "currency"
-            ]
-            description: str = params["description"]
+
+            max_cumulative_amount = {}
+            if scope.get("max_cumulative_amount") is not None:
+                max_cumulative_amount_object = scope.get("max_cumulative_amount")
+                max_cumulative_amount = dict(
+                    max_cumulative_unit=max_cumulative_amount_object.get("unit"),
+                    max_cumulative_unit_value=max_cumulative_amount_object.get("value"),
+                    max_cumulative_amount=max_cumulative_amount_object.get(
+                        "max_amount"
+                    ).get("amount"),
+                    max_cumulative_amount_currency=max_cumulative_amount_object.get(
+                        "max_amount"
+                    ).get("currency"),
+                )
+
+            max_transaction_amount = {}
+            if scope.get("max_transaction_amount") is not None:
+                max_transaction_amount_object = scope.get("max_transaction_amount")
+                max_transaction_amount = dict(
+                    max_transaction_amount=max_transaction_amount_object.get("amount"),
+                    max_transaction_amount_currency=max_transaction_amount_object.get(
+                        "currency"
+                    ),
+                )
+
+            description: str = params.get("description")
 
             fppa_service.create_and_approve(
                 account_id=account_id,
@@ -217,13 +231,9 @@ class OffchainRoutes:
                 funds_pull_pre_approval_id=funds_pull_pre_approval_id,
                 funds_pull_pre_approval_type=funds_pull_pre_approval_type,
                 expiration_timestamp=expiration_timestamp,
-                max_cumulative_unit=max_cumulative_unit,
-                max_cumulative_unit_value=max_cumulative_unit_value,
-                max_cumulative_amount=max_cumulative_amount,
-                max_cumulative_amount_currency=max_cumulative_amount_currency,
-                max_transaction_amount=max_transaction_amount,
-                max_transaction_amount_currency=max_transaction_amount_currency,
                 description=description,
+                **max_cumulative_amount,
+                **max_transaction_amount,
             )
 
             return "OK", HTTPStatus.OK

@@ -359,6 +359,47 @@ def test_create_and_approve_while_command_already_exist_in_db():
         )
 
 
+def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_exist_with_pending_status_and_no_address(
+    mock_method,
+):
+    address = generate_address()
+    biller_user = generate_mock_user()
+    biller_address = generate_my_address(biller_user)
+
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        account_id=biller_user.account_id,
+        address=None,
+        biller_address=biller_address,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.pending,
+        role=Role.PAYEE,
+    )
+
+    cmd = generate_funds_pull_pre_approval_command(
+        address=address,
+        biller_address=biller_address,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.valid,
+    )
+    mock_method(
+        context.get().offchain_client,
+        "process_inbound_request",
+        will_return=cmd,
+    )
+
+    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
+    assert command_in_db.address is None
+
+    code, resp = process_inbound_command(address, cmd)
+    assert code == 200
+    assert resp
+    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
+    assert command_in_db.address == address
+    assert command_in_db.biller_address == biller_address
+    assert command_in_db.status == FundPullPreApprovalStatus.valid
+
+
 def test_process_inbound_command_as_both__happy_flow(mock_method):
     payer_user = generate_mock_user(user_name="payer_user")
     payer_bech32 = generate_my_address(payer_user)
@@ -774,5 +815,31 @@ def test_outgoing_commands(mock_method):
     assert command_in_db.offchain_sent
 
     # No commands to send this time
+    process_funds_pull_pre_approvals_requests()
+    assert len(send_command_calls) == 0
+
+
+def test_outgoing_command_offchain_sent_true(mock_method):
+    offchain_client = context.get().offchain_client
+    send_command_calls = mock_method(offchain_client, "send_command")
+
+    payer_user = generate_mock_user(user_name="payer_user")
+    address = generate_my_address(payer_user)
+    payee_user = generate_mock_user(user_name="payee_user")
+    biller_address = generate_my_address(payee_user)
+
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        address=address,
+        biller_address=biller_address,
+        status=FundPullPreApprovalStatus.valid,
+        offchain_sent=True,
+    )
+
+    command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
+    assert command_in_db.offchain_sent
+
+    # One command should be sent
     process_funds_pull_pre_approvals_requests()
     assert len(send_command_calls) == 0

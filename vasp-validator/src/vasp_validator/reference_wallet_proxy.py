@@ -159,6 +159,18 @@ class ReferenceWalletProxyFPPA:
         )
         return r.json()["funds_pull_pre_approval_id"]
 
+    def create_funds_pull_pre_approval_request_for_unknown_payer(
+        self,
+        scope: FundPullPreApprovalScope,
+        description: str = None,
+    ) -> (str, str):
+        r = self._request_authorized(
+            "POST",
+            "validation/funds_pull_pre_approvals",
+            {"description": description, "scope": scope.to_dict()},
+        )
+        return r.json()["funds_pull_pre_approval_id"], r.json()["address"]
+
     def update_preapproval_status(
         self, fppa_id: str, status: FundPullPreApprovalStatus
     ):
@@ -166,4 +178,22 @@ class ReferenceWalletProxyFPPA:
             "PUT",
             f"offchain/funds_pull_pre_approvals/{fppa_id}",
             {"status": status.value},
+        )
+
+    def create_and_approve(
+        self,
+        biller_address: str,
+        funds_pull_pre_approval_id: str,
+        scope: FundPullPreApprovalScope,
+        description: str,
+    ):
+        self._request_authorized(
+            "POST",
+            f"offchain/funds_pull_pre_approvals",
+            {
+                "biller_address": biller_address,
+                "funds_pull_pre_approval_id": funds_pull_pre_approval_id,
+                "scope": scope.to_dict(),
+                "description": description,
+            },
         )
