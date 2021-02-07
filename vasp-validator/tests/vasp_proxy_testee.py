@@ -38,8 +38,17 @@ class VaspProxyTestee(VaspProxy):
         description: str = None,
     ) -> str:
         return self.vasp.request_funds_pull_preapproval_from_another(
-            payer_addr_bech32, scope, description
+            payer_addr_bech32=payer_addr_bech32,
+            scope=scope,
+            description=description,
         )
+
+    def create_funds_pull_pre_approval_request_for_unknown_payer(
+        self,
+        scope: FundPullPreApprovalScope,
+        description: str = None,
+    ) -> (str, str):
+        return self.vasp.create_and_approve_funds_pull_request(scope, description)
 
     def get_all_funds_pull_preapprovals(self):
         return self.vasp.get_all_funds_pull_preapprovals()
@@ -52,3 +61,17 @@ class VaspProxyTestee(VaspProxy):
 
     def close_funds_pull_preapproval(self, funds_pre_approval_id: str):
         return self.vasp.close_funds_pull_preapproval(funds_pre_approval_id)
+
+    def create_and_approve_funds_pull_request(
+        self,
+        biller_address: str,
+        funds_pull_pre_approval_id: str,
+        scope: FundPullPreApprovalScope,
+        description: str,
+    ):
+        return self.vasp.create_and_approve_funds_pull_request(
+            biller_address=biller_address,
+            funds_pull_pre_approval_id=funds_pull_pre_approval_id,
+            scope=scope,
+            description=description,
+        )

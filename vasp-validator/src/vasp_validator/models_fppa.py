@@ -49,8 +49,8 @@ class FundPullPreApprovalScope:
 @dataclass_json
 @dataclass
 class FundsPullPreApprovalRequest:
-    payer_address: str
     scope: FundPullPreApprovalScope
+    payer_address: Optional[str] = None
     description: Optional[str] = None
 
 
