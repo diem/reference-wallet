@@ -69,7 +69,7 @@ function FundsPullPreApproval({
             <Col sm="4" className="p-0 d-flex align-items-end">
               <div className="mt-5 ml-auto">
                 <a href="#" onClick={onAnyClick(onRevokeClick)} aria-disabled={!onRevokeClick}>
-                  Revoke
+                  Revoke this request
                 </a>
               </div>
             </Col>
