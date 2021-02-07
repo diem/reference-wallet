@@ -13,25 +13,27 @@ def request_funds_pull_pre_approval_from_another(
     payer_address: str,
     scope: offchain.FundPullPreApprovalScopeObject,
     description: str = None,
-) -> str:
+) -> (str, str):
+    return commit_funds_pull_pre_approval(account_id, description, payer_address, scope)
+
+
+def create_preapproval_for_unknown_payer(
+    account_id: int,
+    scope: offchain.FundPullPreApprovalScopeObject,
+    description: str = None,
+) -> (str, str):
+    return commit_funds_pull_pre_approval(account_id, description, None, scope, True)
+
+
+def commit_funds_pull_pre_approval(
+    account_id, description, payer_address, scope, offchain_sent
+) -> (str, str):
     biller_address = get_biller_address(account_id)
+
     funds_pull_pre_approval_id = generate_funds_pull_pre_approval_id(biller_address)
 
-    max_cumulative_amount = {}
-    if scope.max_cumulative_amount is not None:
-        max_cumulative_amount = dict(
-            max_cumulative_unit=scope.max_cumulative_amount.unit,
-            max_cumulative_unit_value=scope.max_cumulative_amount.value,
-            max_cumulative_amount=scope.max_cumulative_amount.max_amount.amount,
-            max_cumulative_amount_currency=scope.max_cumulative_amount.max_amount.currency,
-        )
-
-    max_transaction_amount = {}
-    if scope.max_transaction_amount is not None:
-        max_transaction_amount = dict(
-            max_transaction_amount=scope.max_transaction_amount.amount,
-            max_transaction_amount_currency=scope.max_transaction_amount.currency,
-        )
+    max_cumulative_amount = get_max_cumulative_amount_from_scope(scope)
+    max_transaction_amount = get_max_transaction_amount_from_scope(scope)
 
     fppa_storage.commit_command(
         fppa_storage.models.FundsPullPreApprovalCommand(
@@ -44,14 +46,37 @@ def request_funds_pull_pre_approval_from_another(
             description=description,
             status=offchain.FundPullPreApprovalStatus.pending,
             role=Role.PAYEE,
+            offchain_sent=offchain_sent,
             **max_cumulative_amount,
             **max_transaction_amount,
         )
     )
 
-    # TODO send to offchain client
+    return funds_pull_pre_approval_id, biller_address
 
-    return funds_pull_pre_approval_id
+
+def get_max_transaction_amount_from_scope(scope):
+    max_transaction_amount = {}
+    if scope.max_transaction_amount is not None:
+        max_transaction_amount = dict(
+            max_transaction_amount=scope.max_transaction_amount.amount,
+            max_transaction_amount_currency=scope.max_transaction_amount.currency,
+        )
+
+    return max_transaction_amount
+
+
+def get_max_cumulative_amount_from_scope(scope):
+    max_cumulative_amount = {}
+    if scope.max_cumulative_amount is not None:
+        max_cumulative_amount = dict(
+            max_cumulative_unit=scope.max_cumulative_amount.unit,
+            max_cumulative_unit_value=scope.max_cumulative_amount.value,
+            max_cumulative_amount=scope.max_cumulative_amount.max_amount.amount,
+            max_cumulative_amount_currency=scope.max_cumulative_amount.max_amount.currency,
+        )
+
+    return max_cumulative_amount
 
 
 def get_biller_address(user_account_id):

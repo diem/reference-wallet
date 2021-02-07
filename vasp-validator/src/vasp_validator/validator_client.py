@@ -143,7 +143,19 @@ class ValidatorClient(VaspProxy):
         description: str = None,
     ) -> str:
         return self.wallet.funds_pull_preapproval.request_preapproval_from_another(
-            payer_addr_bech32, scope, description
+            payer_addr_bech32=payer_addr_bech32,
+            scope=scope,
+            description=description,
+        )
+
+    def create_funds_pull_pre_approval_request_for_unknown_payer(
+        self,
+        scope: FundPullPreApprovalScope,
+        description: str = None,
+    ) -> (str, str):
+        return self.wallet.funds_pull_preapproval.create_preapproval_for_unknown_payer(
+            scope=scope,
+            description=description,
         )
 
     def get_all_funds_pull_preapprovals(self) -> List[FundsPullPreApproval]:
@@ -169,6 +181,20 @@ class ValidatorClient(VaspProxy):
     def close_funds_pull_preapproval(self, funds_pre_approval_id: str):
         self.wallet.funds_pull_preapproval.update_preapproval_status(
             funds_pre_approval_id, FundPullPreApprovalStatus.closed
+        )
+
+    def create_and_approve_funds_pull_request(
+        self,
+        biller_address: str,
+        funds_pull_pre_approval_id: str,
+        scope: FundPullPreApprovalScope,
+        description: str,
+    ):
+        self.wallet.funds_pull_preapproval.create_and_approve(
+            biller_address=biller_address,
+            funds_pull_pre_approval_id=funds_pull_pre_approval_id,
+            scope=scope,
+            description=description,
         )
 
     def _create_approved_user(self, username, first_name, last_name, password):

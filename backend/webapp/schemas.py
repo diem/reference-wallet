@@ -291,8 +291,9 @@ class FundsPullPreApprovalList(Schema):
     funds_pull_pre_approval_list = fields.List(fields.Nested(FundsPullPreApproval))
 
 
-class FundsPullPreApprovalId(Schema):
+class FundsPullPreApprovalRequestCreationResponse(Schema):
     funds_pull_pre_approval_id = fields.Str(required=True)
+    address = fields.Str(required=False)
 
 
 class FundsTransfer(Schema):
@@ -312,6 +313,6 @@ class CreateAndApproveFundPullPreApproval(Schema):
 
 
 class FundsPullPreApprovalRequest(Schema):
-    payer_address = fields.Str(required=True)
+    payer_address = fields.Str(required=False, allow_none=True)
     scope = fields.Nested(Scope)
     description = fields.Str(required=False)

@@ -5,6 +5,7 @@ import pytest
 from diem import offchain
 from flask import Response
 from flask.testing import Client
+from tests.webapp_tests.routes.test_fund_pull_pre_approval import ADDRESS
 from wallet.services import validation_tool as validation_tool_service
 
 FUNDS_PULL_PRE_APPROVAL_ID = str(uuid.uuid4())
@@ -60,7 +61,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
 
         calls = mock_validation_tool_service(
             "request_funds_pull_pre_approval_from_another",
-            will_return=FUNDS_PULL_PRE_APPROVAL_ID,
+            will_return=(FUNDS_PULL_PRE_APPROVAL_ID, ADDRESS),
         )
 
         rv: Response = authorized_client.post(
@@ -128,7 +129,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
 
         calls = mock_validation_tool_service(
             "request_funds_pull_pre_approval_from_another",
-            will_return=FUNDS_PULL_PRE_APPROVAL_ID,
+            will_return=(FUNDS_PULL_PRE_APPROVAL_ID, ADDRESS),
         )
 
         rv: Response = authorized_client.post(
@@ -136,7 +137,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
             json=request_body,
         )
 
-        assert rv.status_code == 200
+        assert rv.status_code == 200, rv.get_data()
         assert rv.get_data() is not None
         funds_pull_pre_approval_id = rv.get_json()["funds_pull_pre_approval_id"]
         assert funds_pull_pre_approval_id == FUNDS_PULL_PRE_APPROVAL_ID
@@ -172,7 +173,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
 
         calls = mock_validation_tool_service(
             "request_funds_pull_pre_approval_from_another",
-            will_return=FUNDS_PULL_PRE_APPROVAL_ID,
+            will_return=(FUNDS_PULL_PRE_APPROVAL_ID, ADDRESS),
         )
 
         rv: Response = authorized_client.post(

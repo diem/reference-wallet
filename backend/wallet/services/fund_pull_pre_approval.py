@@ -93,7 +93,6 @@ def approve(funds_pull_pre_approval_id: str) -> None:
         ],
         FundPullPreApprovalStatus.valid,
         "approve",
-        should_send=True,
     )
 
 
@@ -105,7 +104,6 @@ def reject(funds_pull_pre_approval_id):
         ],
         FundPullPreApprovalStatus.rejected,
         "reject",
-        should_send=True,
     )
 
 
@@ -118,7 +116,6 @@ def close(funds_pull_pre_approval_id):
         ],
         FundPullPreApprovalStatus.closed,
         "close",
-        should_send=True,
     )
 
 
@@ -127,14 +124,13 @@ def update_status(
     valid_statuses,
     new_status,
     operation_name,
-    should_send=False,
 ):
     command = get_command_by_id(funds_pull_pre_approval_id)
 
     if command:
         if command.status in valid_statuses:
             command.status = new_status
-            command.offchain_sent = not should_send
+            command.offchain_sent = False
             update_command(command)
         else:
             raise FundsPullPreApprovalError(
@@ -341,7 +337,7 @@ def handle_fund_pull_pre_approval_command(
         approval.funds_pull_pre_approval_id, role
     )
     if command_in_db:
-        validate_addresses(approval, command_in_db)
+        validate_addresses(approval, command_in_db, role)
         validate_status(approval, command_in_db)
         update_command(preapproval_command_to_model(command, role))
     else:
@@ -368,9 +364,14 @@ def validate_status(approval, command_in_db):
         raise FundsPullPreApprovalInvalidStatus
 
 
-def validate_addresses(approval, command_in_db):
-    if (
-        approval.address != command_in_db.address
-        or approval.biller_address != command_in_db.biller_address
-    ):
-        raise ValueError("address and biller_addres values are immutable")
+def validate_addresses(approval, command_in_db, role):
+    if command_in_db.address is None and role != Role.PAYEE:
+        raise FundsPullPreApprovalError("Not payee but address is none")
+    if command_in_db.address is not None and approval.address != command_in_db.address:
+        raise FundsPullPreApprovalError(
+            f"Address is immutable; approval address: {approval.address}, db address: {command_in_db.address}"
+        )
+    if approval.biller_address != command_in_db.biller_address:
+        raise FundsPullPreApprovalError(
+            f"Biller address is immutable; approval address: {approval.biller_address}, db address: {command_in_db.biller_address}"
+        )
