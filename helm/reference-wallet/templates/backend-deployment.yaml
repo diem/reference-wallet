@@ -34,6 +34,7 @@ spec:
       - name: init-wait
         image: "{{ .Values.images.backend }}"
         command: ["sh", "-c", '/wait.sh {{ include "reference-wallet.fullname" . }}-liquidity {{ .Values.service.port }} || exit 1']
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
       containers:
       - command:
           - /wallet/run_web.sh
@@ -118,6 +119,7 @@ spec:
       - name: init-wait
         image: "{{ .Values.images.backend }}"
         command: ["sh", "-c", '/wait.sh {{ include "reference-wallet.fullname" . }}-web {{ .Values.service.port }} || exit 1']
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
       containers:
       - command:
           - /wallet/run_worker.sh
@@ -202,6 +204,7 @@ spec:
       - name: init-wait
         image: "{{ .Values.images.backend }}"
         command: ["sh", "-c", '/wait.sh {{ include "reference-wallet.fullname" . }}-web {{ .Values.service.port }} || exit 1']
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
       containers:
       - command:
           - /wallet/run_pubsub.sh
