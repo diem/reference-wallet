@@ -58,7 +58,9 @@ class TestRequestFundsPullPreApprovalFromAnother:
         assert db_fppa.status == offchain.FundPullPreApprovalStatus.pending
 
         assert db_fppa.funds_pull_pre_approval_type == expected_scope.type
-        assert db_fppa.expiration_timestamp == datetime.fromtimestamp(expected_scope.expiration_timestamp)
+        assert db_fppa.expiration_timestamp == datetime.fromtimestamp(
+            expected_scope.expiration_timestamp
+        )
 
         assert (
             db_fppa.max_transaction_amount
@@ -112,7 +114,9 @@ class TestRequestFundsPullPreApprovalFromAnother:
         assert db_fppa.status == offchain.FundPullPreApprovalStatus.pending
 
         assert db_fppa.funds_pull_pre_approval_type == expected_scope.type
-        assert db_fppa.expiration_timestamp == datetime.fromtimestamp(expected_scope.expiration_timestamp)
+        assert db_fppa.expiration_timestamp == datetime.fromtimestamp(
+            expected_scope.expiration_timestamp
+        )
 
         assert db_fppa.max_transaction_amount is None
         assert db_fppa.max_transaction_amount_currency is None
