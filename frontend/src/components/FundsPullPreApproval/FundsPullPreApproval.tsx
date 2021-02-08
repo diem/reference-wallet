@@ -9,7 +9,6 @@ interface ApprovalProps {
   onApproveClick: () => void;
   onRejectClick: () => void;
   onRevokeClick: () => void;
-  onAnyClickSetApproval: () => void;
   disableApproveRejectButtons?: boolean;
   disableRevokeButton?: boolean;
 }
@@ -19,21 +18,11 @@ function FundsPullPreApproval({
   onApproveClick,
   onRejectClick,
   onRevokeClick,
-  onAnyClickSetApproval,
   disableApproveRejectButtons,
   disableRevokeButton,
 }: ApprovalProps) {
-  const itemStyles = {
-    "list-group-item": true,
-  };
-
-  const onAnyClick = (method: () => void) => () => {
-    method();
-    onAnyClickSetApproval();
-  };
-
   return (
-    <li className={classNames(itemStyles)} key={approval.funds_pull_pre_approval_id}>
+    <li className="list-group-item">
       <Container>
         <Row>
           <Col sm="8" className="p-0">
@@ -48,17 +37,12 @@ function FundsPullPreApproval({
                   outline
                   size="sm"
                   disabled={!onRejectClick}
-                  onClick={onAnyClick(onRejectClick)}
+                  onClick={onRejectClick}
                 >
                   <i className="fa fa-times mr-1" />
                   Reject
                 </Button>
-                <Button
-                  color="black"
-                  size="sm"
-                  disabled={!onApproveClick}
-                  onClick={onAnyClick(onApproveClick)}
-                >
+                <Button color="black" size="sm" disabled={!onApproveClick} onClick={onApproveClick}>
                   <i className="fa fa-check mr-1" />
                   Approve
                 </Button>
@@ -68,9 +52,17 @@ function FundsPullPreApproval({
           {!disableRevokeButton && (
             <Col sm="4" className="p-0 d-flex align-items-end">
               <div className="mt-5 ml-auto">
-                <a href="#" onClick={onAnyClick(onRevokeClick)} aria-disabled={!onRevokeClick}>
+                <a href="#" onClick={onRevokeClick} aria-disabled={!onRevokeClick}>
                   Revoke this request
                 </a>
+                {/*<Button*/}
+                {/*  className="btn-link"*/}
+                {/*  outline*/}
+                {/*  onClick={onRevokeClick}*/}
+                {/*  disabled={!onRevokeClick}*/}
+                {/*>*/}
+                {/*  Revoke this request*/}
+                {/*</Button>*/}
               </div>
             </Col>
           )}
