@@ -56,7 +56,7 @@ function FundsPullPreApprovals() {
     return () => {
       refreshApprovals = false;
     };
-  }, []);
+  }, [setNewApprovals, setActiveApprovals, setHistoryApprovals]);
 
   return (
     <>
