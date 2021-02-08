@@ -23,7 +23,6 @@ function FundsPullPreApprovalsList({
   const [rejectModalOpen, setRejectModalOpen] = useState<boolean>(false);
   const [revokeModalOpen, setRevokeModalOpen] = useState<boolean>(false);
   const [approvalInModal, setApprovalInModal] = useState<Approval>();
-
   return (
     <>
       {approvals.map((approval) => {
@@ -31,10 +30,18 @@ function FundsPullPreApprovalsList({
           <FundsPullPreApproval
             key={approval.funds_pull_pre_approval_id}
             approval={approval}
-            onApproveClick={() => setApproveModalOpen(true)}
-            onRejectClick={() => setRejectModalOpen(true)}
-            onRevokeClick={() => setRevokeModalOpen(true)}
-            onAnyClickSetApproval={() => setApprovalInModal(approval)}
+            onApproveClick={() => {
+              setApproveModalOpen(true);
+              setApprovalInModal(approval);
+            }}
+            onRejectClick={() => {
+              setRejectModalOpen(true);
+              setApprovalInModal(approval);
+            }}
+            onRevokeClick={() => {
+              setRevokeModalOpen(true);
+              setApprovalInModal(approval);
+            }}
             disableApproveRejectButtons={disableApproveRejectButtons}
             disableRevokeButton={disableRevokeButton}
           />

@@ -12,9 +12,7 @@ import FundsPullPreApprovalsList from "../components/FundsPullPreApproval/FundsP
 const REFRESH_APPROVALS_INTERVAL = 3000;
 
 function FundsPullPreApprovals() {
-  const [newApprovals, setNewApprovals] = useState<Approval[]>([]);
-  const [activeApprovals, setActiveApprovals] = useState<Approval[]>([]);
-  const [historyApprovals, setHistoryApprovals] = useState<Approval[]>([]);
+  const [approvals, setApprovals] = useState<Approval[]>([]);
 
   let refreshApprovals = true;
 
@@ -22,28 +20,7 @@ function FundsPullPreApprovals() {
     const fetchApprovals = async () => {
       try {
         if (refreshApprovals) {
-          let innerNewApprovals: Approval[] = [];
-          let innerActiveApprovals: Approval[] = [];
-          let innerHistoryApprovals: Approval[] = [];
-          const approvals = await new BackendClient().getAllFundsPullPreApprovals();
-
-          for (const approval of approvals) {
-            if (approval.status === "pending") {
-              innerNewApprovals.push(approval);
-            } else if (approval.status === "valid") {
-              const now = Date.now();
-              if (Date.parse(approval!.scope.expiration_timestamp) < now) {
-                innerHistoryApprovals.push(approval);
-              } else {
-                innerActiveApprovals.push(approval);
-              }
-            } else {
-              innerHistoryApprovals.push(approval);
-            }
-          }
-          setNewApprovals(innerNewApprovals);
-          setActiveApprovals(innerActiveApprovals);
-          setHistoryApprovals(innerHistoryApprovals);
+          setApprovals(await new BackendClient().getAllFundsPullPreApprovals());
         }
         setTimeout(fetchApprovals, REFRESH_APPROVALS_INTERVAL);
       } catch (e) {
@@ -57,7 +34,27 @@ function FundsPullPreApprovals() {
     return () => {
       refreshApprovals = false;
     };
-  }, [setNewApprovals, setActiveApprovals, setHistoryApprovals]);
+  }, [setApprovals]);
+
+  let newApprovals: Approval[] = [];
+  let activeApprovals: Approval[] = [];
+  let historyApprovals: Approval[] = [];
+
+  for (const approval of approvals) {
+    if (approval.status === "pending") {
+      newApprovals.push(approval);
+    } else if (approval.status === "valid") {
+      const expiration_timestamp = new Date(approval.scope.expiration_timestamp * 1000);
+      const now = new Date();
+      if (expiration_timestamp < now) {
+        historyApprovals.push(approval);
+      } else {
+        activeApprovals.push(approval);
+      }
+    } else {
+      historyApprovals.push(approval);
+    }
+  }
 
   return (
     <>
@@ -86,6 +83,13 @@ function FundsPullPreApprovals() {
               disableApproveRejectButtons
               disableRevokeButton
             />
+          </section>
+        )}
+        {!approvals.length && (
+          <section className="pt-4">
+            <h2 className="pl-1 h5 font-weight-normal text-body">
+              You don't have any approval requests yet
+            </h2>
           </section>
         )}
       </Container>
