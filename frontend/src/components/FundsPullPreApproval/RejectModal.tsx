@@ -28,22 +28,20 @@ function RejectModal({ approval, open, onClose }: RejectModalProps) {
     <Modal className="modal-dialog-centered" isOpen={open} onClosed={onClose}>
       <ModalBody>
         <CloseButton onClick={onClose} />
-        <>
-          <h3>Reject Request</h3>
-          <div className="text-black  pb-5">
-            Are you sure you want to reject the request from {approval?.biller_name}?
+        <h3>Reject Request</h3>
+        <div className="text-black  pb-5">
+          Are you sure you want to reject the request from {approval?.biller_name}?
+        </div>
+        <span>
+          <div className="float-right">
+            <Button color="black" outline onClick={onClose} className="mr-1">
+              Cancel
+            </Button>
+            <Button color="black" onClick={updateApproval}>
+              Reject
+            </Button>
           </div>
-          <span>
-            <div className="float-right">
-              <Button color="black" outline onClick={onClose} className="mr-1">
-                Cancel
-              </Button>
-              <Button color="black" onClick={updateApproval}>
-                Reject
-              </Button>
-            </div>
-          </span>
-        </>
+        </span>
       </ModalBody>
     </Modal>
   );

@@ -26,22 +26,20 @@ function ApproveModal({ approval, open, onClose }: ApproveModalProps) {
     <Modal className="modal-dialog-centered" isOpen={open} onClosed={onClose}>
       <ModalBody>
         <CloseButton onClick={onClose} />
-        <>
-          <h3>Approve Request</h3>
-          <div className="text-black pb-5">
-            Are you sure you want to approve the request from {approval?.biller_name}?
+        <h3>Approve Request</h3>
+        <div className="text-black pb-5">
+          Are you sure you want to approve the request from {approval?.biller_name}?
+        </div>
+        <span>
+          <div className="float-right">
+            <Button onClick={onClose} color="black" outline className="mr-1">
+              Cancel
+            </Button>
+            <Button onClick={updateApproval} color="black">
+              Approve
+            </Button>
           </div>
-          <span>
-            <div className="float-right">
-              <Button onClick={onClose} color="black" outline className="mr-1">
-                Cancel
-              </Button>
-              <Button onClick={updateApproval} color="black">
-                Approve
-              </Button>
-            </div>
-          </span>
-        </>
+        </span>
       </ModalBody>
     </Modal>
   );
