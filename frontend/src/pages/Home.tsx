@@ -83,7 +83,7 @@ function Home() {
     return () => {
       refreshTransactions = false;
     };
-  }, []);
+  }, [setTransactions]);
 
   let refreshApprovals = true;
 
@@ -105,16 +105,11 @@ function Home() {
     return () => {
       refreshApprovals = false;
     };
-  }, []);
+  }, [setApprovals]);
 
   if (!user) {
     return <WalletLoader />;
   }
-
-  const bottomStyles = {
-    "list-group-item": true,
-    "text-center": true,
-  };
 
   return (
     <>
@@ -185,10 +180,10 @@ function Home() {
               <ul className="list-group my-4">
                 <FundsPullPreApprovalsList
                   approvals={approvals}
-                  displayApproveRejectButtons={true}
-                  displayRevokeButton={false}
+                  disableApproveRejectButtons={true}
+                  disableRevokeButton={false}
                 />
-                <li className={classNames(bottomStyles)}>
+                <li className="list-group-item text-center">
                   <Link to="/fundsPullPreApprovals" className="text-black font-weight-bold">
                     See All Approvals
                   </Link>

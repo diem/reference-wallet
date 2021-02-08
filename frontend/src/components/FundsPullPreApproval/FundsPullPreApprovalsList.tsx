@@ -10,14 +10,14 @@ import RevokeModal from "./RevokeModal";
 
 interface ApprovalsListProps {
   approvals: Approval[];
-  displayApproveRejectButtons: boolean;
-  displayRevokeButton: boolean;
+  disableApproveRejectButtons?: boolean;
+  disableRevokeButton?: boolean;
 }
 
 function FundsPullPreApprovalsList({
   approvals,
-  displayApproveRejectButtons,
-  displayRevokeButton,
+  disableApproveRejectButtons,
+  disableRevokeButton,
 }: ApprovalsListProps) {
   const [approveModalOpen, setApproveModalOpen] = useState<boolean>(false);
   const [rejectModalOpen, setRejectModalOpen] = useState<boolean>(false);
@@ -35,27 +35,31 @@ function FundsPullPreApprovalsList({
             onRejectClick={() => setRejectModalOpen(true)}
             onRevokeClick={() => setRevokeModalOpen(true)}
             onAnyClickSetApproval={() => setApprovalInModal(approval)}
-            displayApproveRejectButtons={displayApproveRejectButtons}
-            displayRevokeButton={displayRevokeButton}
+            disableApproveRejectButtons={disableApproveRejectButtons}
+            disableRevokeButton={disableRevokeButton}
           />
         );
       })}
 
-      <ApproveModal
-        approval={approvalInModal}
-        open={approveModalOpen}
-        onClose={() => setApproveModalOpen(false)}
-      />
-      <RejectModal
-        approval={approvalInModal}
-        open={rejectModalOpen}
-        onClose={() => setRejectModalOpen(false)}
-      />
-      <RevokeModal
-        approval={approvalInModal}
-        open={revokeModalOpen}
-        onClose={() => setRevokeModalOpen(false)}
-      />
+      {approvalInModal && (
+        <>
+          <ApproveModal
+            approval={approvalInModal}
+            open={approveModalOpen}
+            onClose={() => setApproveModalOpen(false)}
+          />
+          <RejectModal
+            approval={approvalInModal}
+            open={rejectModalOpen}
+            onClose={() => setRejectModalOpen(false)}
+          />
+          <RevokeModal
+            approval={approvalInModal}
+            open={revokeModalOpen}
+            onClose={() => setRevokeModalOpen(false)}
+          />
+        </>
+      )}
     </>
   );
 }

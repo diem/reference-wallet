@@ -5,7 +5,7 @@ import { Approval } from "../../interfaces/approval";
 import BackendClient from "../../services/backendClient";
 
 interface RejectModalProps {
-  approval: Approval | undefined;
+  approval: Approval;
   open: boolean;
   onClose: () => void;
 }
@@ -14,7 +14,7 @@ function RejectModal({ approval, open, onClose }: RejectModalProps) {
   const updateApproval = async () => {
     try {
       await new BackendClient().updateApprovalStatus(
-        approval!.funds_pull_pre_approval_id,
+        approval.funds_pull_pre_approval_id,
         "rejected"
       );
     } catch (e) {

@@ -6,7 +6,7 @@ import ApprovalDetails from "./ApprovalDetails";
 import BackendClient from "../../services/backendClient";
 
 interface ApproveModalProps {
-  approval: Approval | undefined;
+  approval: Approval;
   open: boolean;
   onClose: () => void;
 }
@@ -14,7 +14,7 @@ interface ApproveModalProps {
 function ApproveModal({ approval, open, onClose }: ApproveModalProps) {
   const updateApproval = async () => {
     try {
-      await new BackendClient().updateApprovalStatus(approval!.funds_pull_pre_approval_id, "valid");
+      await new BackendClient().updateApprovalStatus(approval.funds_pull_pre_approval_id, "valid");
     } catch (e) {
       console.error(e);
     }

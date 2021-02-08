@@ -5,7 +5,7 @@ import { Approval } from "../../interfaces/approval";
 import BackendClient from "../../services/backendClient";
 
 interface RevokeModalProps {
-  approval: Approval | undefined;
+  approval: Approval;
   open: boolean;
   onClose: () => void;
 }
@@ -13,10 +13,7 @@ interface RevokeModalProps {
 function RevokeModal({ approval, open, onClose }: RevokeModalProps) {
   const updateApproval = async () => {
     try {
-      await new BackendClient().updateApprovalStatus(
-        approval!.funds_pull_pre_approval_id,
-        "closed"
-      );
+      await new BackendClient().updateApprovalStatus(approval.funds_pull_pre_approval_id, "closed");
     } catch (e) {
       console.error(e);
     }

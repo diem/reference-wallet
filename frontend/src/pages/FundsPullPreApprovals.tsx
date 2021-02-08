@@ -26,12 +26,13 @@ function FundsPullPreApprovals() {
           let innerActiveApprovals: Approval[] = [];
           let innerHistoryApprovals: Approval[] = [];
           const approvals = await new BackendClient().getAllFundsPullPreApprovals();
+
           for (const approval of approvals) {
             if (approval.status === "pending") {
               innerNewApprovals.push(approval);
             } else if (approval.status === "valid") {
-              const now = new Date().toISOString();
-              if (Date.parse(approval!.scope.expiration_timestamp) < Date.parse(now)) {
+              const now = Date.now();
+              if (Date.parse(approval!.scope.expiration_timestamp) < now) {
                 innerHistoryApprovals.push(approval);
               } else {
                 innerActiveApprovals.push(approval);
@@ -67,21 +68,13 @@ function FundsPullPreApprovals() {
         {!!newApprovals.length && (
           <section>
             <h2 className="pl-1 h5 font-weight-normal text-body">New Requests</h2>
-            <FundsPullPreApprovalsList
-              approvals={newApprovals}
-              displayApproveRejectButtons={true}
-              displayRevokeButton={false}
-            />
+            <FundsPullPreApprovalsList approvals={newApprovals} disableRevokeButton />
           </section>
         )}
         {!!activeApprovals.length && (
           <section className="pt-4">
             <h2 className="pl-1 h5 font-weight-normal text-body">Active Requests</h2>
-            <FundsPullPreApprovalsList
-              approvals={activeApprovals}
-              displayApproveRejectButtons={false}
-              displayRevokeButton={true}
-            />
+            <FundsPullPreApprovalsList approvals={activeApprovals} disableApproveRejectButtons />
           </section>
         )}
         {!!historyApprovals.length && (
@@ -90,8 +83,8 @@ function FundsPullPreApprovals() {
 
             <FundsPullPreApprovalsList
               approvals={historyApprovals}
-              displayApproveRejectButtons={false}
-              displayRevokeButton={false}
+              disableApproveRejectButtons
+              disableRevokeButton
             />
           </section>
         )}

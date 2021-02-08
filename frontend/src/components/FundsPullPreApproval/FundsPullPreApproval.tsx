@@ -10,8 +10,8 @@ interface ApprovalProps {
   onRejectClick: () => void;
   onRevokeClick: () => void;
   onAnyClickSetApproval: () => void;
-  displayApproveRejectButtons: boolean;
-  displayRevokeButton: boolean;
+  disableApproveRejectButtons?: boolean;
+  disableRevokeButton?: boolean;
 }
 
 function FundsPullPreApproval({
@@ -20,8 +20,8 @@ function FundsPullPreApproval({
   onRejectClick,
   onRevokeClick,
   onAnyClickSetApproval,
-  displayApproveRejectButtons,
-  displayRevokeButton,
+  disableApproveRejectButtons,
+  disableRevokeButton,
 }: ApprovalProps) {
   const itemStyles = {
     "list-group-item": true,
@@ -39,7 +39,7 @@ function FundsPullPreApproval({
           <Col sm="8" className="p-0">
             <ApprovalDetails approval={approval} />
           </Col>
-          {displayApproveRejectButtons && (
+          {!disableApproveRejectButtons && (
             <Col sm="4" className="p-0 d-flex align-items-end">
               <div className="mt-5 ml-auto">
                 <Button
@@ -65,7 +65,7 @@ function FundsPullPreApproval({
               </div>
             </Col>
           )}
-          {displayRevokeButton && (
+          {!disableRevokeButton && (
             <Col sm="4" className="p-0 d-flex align-items-end">
               <div className="mt-5 ml-auto">
                 <a href="#" onClick={onAnyClick(onRevokeClick)} aria-disabled={!onRevokeClick}>
