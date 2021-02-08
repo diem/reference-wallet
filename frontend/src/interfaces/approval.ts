@@ -24,7 +24,7 @@ export interface Approval {
 
 interface Scope {
   type: ScopeType;
-  expiration_timestamp: string;
+  expiration_timestamp: number;
   max_cumulative_amount: ScopedCumulativeAmount;
   max_transaction_amount: Currency;
 }

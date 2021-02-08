@@ -38,16 +38,16 @@ function ApprovalDetails({ approval }: RequestDetailsProps) {
       );
     }
     if (approval.status === "valid") {
-      const now = new Date().toISOString();
-      if (Date.parse(approval.scope.expiration_timestamp) < Date.parse(now)) {
+      const expiration_timestamp = new Date(approval.scope.expiration_timestamp * 1000);
+      const now = new Date();
+      if (expiration_timestamp < now) {
         return (
           <>
             <div>
               {"Approved on"} <span>{new Date(approval.approved_at).toLocaleString()}</span>
             </div>
             <div>
-              {"Expired on"}{" "}
-              <span>{new Date(approval.scope.expiration_timestamp).toLocaleString()}</span>
+              {"Expired on"} <span>{expiration_timestamp.toLocaleString()}</span>
             </div>
           </>
         );
@@ -99,7 +99,7 @@ function ApprovalDetails({ approval }: RequestDetailsProps) {
         </div>
         <div>
           {"Last payment allowed on "}
-          {new Date(approval.scope.expiration_timestamp).toLocaleString()}
+          {new Date(approval.scope.expiration_timestamp * 1000).toLocaleString()}
         </div>
       </div>
     </span>
