@@ -178,11 +178,7 @@ function Home() {
             <section className="my-5">
               <h2 className="h5 font-weight-normal text-body">Funds Pull Pre Approvals Requests</h2>
               <ul className="list-group my-4">
-                <FundsPullPreApprovalsList
-                  approvals={approvals}
-                  disableApproveRejectButtons={true}
-                  disableRevokeButton={false}
-                />
+                <FundsPullPreApprovalsList approvals={approvals} disableRevokeButton />
                 <li className="list-group-item text-center">
                   <Link to="/fundsPullPreApprovals" className="text-black font-weight-bold">
                     See All Approvals
