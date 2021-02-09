@@ -1,7 +1,6 @@
 import { Approval } from "../../interfaces/approval";
 import React from "react";
-import { classNames } from "../../utils/class-names";
-import { Button, Col, Container, Row } from "reactstrap";
+import { Button, Col, Row } from "reactstrap";
 import ApprovalDetails from "./ApprovalDetails";
 
 interface ApprovalProps {
