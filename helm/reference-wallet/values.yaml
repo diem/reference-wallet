@@ -1,8 +1,12 @@
 
+# Address of the wallet VASP account. This value cannot be empty
 vaspAddr:
+# Private key of the wallet VASP account. This value cannot be empty
 vaspPrivateKey:
+# Wallet VASP compliance private key. This value cannot be empty
 vaspComplianceKey:
 
+# Host name of the liquidity provider service
 liquidityProviderHost: liquidity-emulator
 liquidityProviderPort: 8080
 
@@ -10,11 +14,13 @@ custodyWalletAccountName: wallet1
 
 walletAdminUsername: "admin@diem"
 
-chainId: 2
-
 gasCurrencyCode: "XUS"
 
+# Diem chain ID. Should be modified if deploying not for testnet
+chainId: 2
+
 sdk:
+  # Diem JSON-RPC API URL. Should be modified if deploying not for testnet
   jsonRpc: "https://testnet.diem.com/v1"
   faucet: "http://testnet.diem.com/mint"
 
@@ -34,26 +40,28 @@ workers:
 
 peripherals:
   redis:
+    # Should a database service be created?
+    # If false, host:port should point to an existing DB instance
     create: false
     image: "redis:5"
     # if redis is created by this helm chart, there is no need to fill the following
     host: ""
     port: 6379
     persistence: {}
-      # claimSize: 20Gi
-      # pvSize: 20Gi
+
   database:
+    # Should a database service be created?
+    # If false, host:port should point to an existing DB instance
     create: false
     image: "lrw_db"
     # if database is created by this helm chart, there is no need to fill the following
     protocol: "postgresql"
     username: "backenduser"
     password: "backendpassword"
+    host:
     port: 5432
     dbName: "backend_db"
     persistence: {}
-      # claimSize: 20Gi
-      # pvSize: 20Gi
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -67,15 +75,8 @@ serviceAccount:
 podAnnotations: {}
 
 podSecurityContext: {}
-  # fsGroup: 2000
 
 securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
 
 service:
   type: ClusterIP
@@ -87,18 +88,6 @@ ingress:
   host: lrw.demo
   annotations: {}
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
 replicaCount: 1
 
 autoscaling:
@@ -106,7 +95,6 @@ autoscaling:
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
 
