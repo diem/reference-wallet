@@ -24,11 +24,13 @@ function FundsPullPreApproval({
     <li className="list-group-item">
       <Row>
         <Col sm="8" className="p-0">
-          <ApprovalDetails approval={approval} />
+          <div className="ml-2">
+            <ApprovalDetails approval={approval} />
+          </div>
         </Col>
         {!disableApproveRejectButtons && (
           <Col sm="4" className="p-0 d-flex align-items-end">
-            <div className="mt-5 ml-auto">
+            <div className="mt-5 mr-2 ml-auto">
               <Button
                 className="mr-1"
                 color="black"
@@ -49,7 +51,7 @@ function FundsPullPreApproval({
         )}
         {!disableRevokeButton && (
           <Col sm="4" className="p-0 d-flex align-items-end">
-            <div className="mt-5 ml-auto">
+            <div className="mt-5 mr-2 ml-auto">
               <a href="#" onClick={onRevokeClick} aria-disabled={!onRevokeClick}>
                 Revoke this request
               </a>
