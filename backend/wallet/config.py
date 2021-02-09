@@ -28,6 +28,7 @@ logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
 
 REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT: int = int(os.getenv("REDIS_PORT", 6379))
+REDIS_DB: int = int(os.getenv("REDIS_DB", 0))
 REDIS_PASSWORD: str = os.getenv("REDIS_PASSWORD", "")
 DB_URL: str = os.getenv("DB_URL", "sqlite:////tmp/test.db")
 ADMIN_USERNAME: str = os.getenv("ADMIN_USERNAME", "admin@lrw")
@@ -42,7 +43,7 @@ SESSION_TYPE: str = "redis"
 # init redis and dramatiq broker
 def setup_redis_broker() -> None:
     _connection_pool: redis.BlockingConnectionPool = redis.BlockingConnectionPool(
-        host=REDIS_HOST, port=REDIS_PORT, db=0, password=REDIS_PASSWORD
+        host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, password=REDIS_PASSWORD
     )
     _redis_db: redis.StrictRedis = redis.StrictRedis(connection_pool=_connection_pool)
     _result_backend = RedisBackend(encoder=PickleEncoder(), client=_redis_db)

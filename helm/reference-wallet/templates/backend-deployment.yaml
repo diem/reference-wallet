@@ -63,15 +63,15 @@ spec:
         - name: VASP_ADDR
           value: {{ .Values.vaspAddr }}
         - name: VASP_COMPLIANCE_KEY
-          value: {{ .Values.vaspComplianceKey | toJson | quote }}
+          value: {{ .Values.vaspComplianceKey | quote }}
         - name: JSON_RPC_URL
           value: {{ .Values.sdk.jsonRpc }}
-        - name: OFFCHAIN_SERVICE_PORT
-          value: {{ .Values.service.targetOffchainPort | quote }}
         - name: VASP_BASE_URL
-          value: http://{{ .Values.ingress.host }}/offchain
+          value: http://{{ .Values.ingress.host }}/api/offchain
         - name: CHAIN_ID
           value: {{ .Values.chainId | quote }}
+        - name: BLOCKCHAIN
+          value: {{ .Values.blockchain }}
         - name: GAS_CURRENCY_CODE
           value: {{ .Values.gasCurrencyCode }}
         image: "{{ .Values.images.backend }}"
@@ -80,9 +80,6 @@ spec:
         ports:
           - name: http
             containerPort: {{.Values.service.targetPort}}
-            protocol: TCP
-          - name: offchain
-            containerPort: {{ .Values.service.targetOffchainPort }}
             protocol: TCP
 ---
 apiVersion: apps/v1
@@ -153,12 +150,12 @@ spec:
           value: {{ .Values.vaspComplianceKey | toJson | quote }}
         - name: JSON_RPC_URL
           value: {{ .Values.sdk.jsonRpc }}
-        - name: OFFCHAIN_SERVICE_PORT
-          value: {{ .Values.service.targetOffchainPort | quote }}
         - name: VASP_BASE_URL
-          value: http://{{ .Values.ingress.host }}/offchain
+          value: http://{{ .Values.ingress.host }}/api/offchain
         - name: CHAIN_ID
           value: {{ .Values.chainId | quote }}
+        - name: BLOCKCHAIN
+          value: {{ .Values.blockchain }}
         - name: GAS_CURRENCY_CODE
           value: {{ .Values.gasCurrencyCode }}
         image: "{{ .Values.images.backend }}"
@@ -229,12 +226,12 @@ spec:
           value: {{ .Values.vaspComplianceKey | toJson | quote }}
         - name: JSON_RPC_URL
           value: {{ .Values.sdk.jsonRpc }}
-        - name: OFFCHAIN_SERVICE_PORT
-          value: {{ .Values.service.targetOffchainPort | quote }}
         - name: VASP_BASE_URL
-          value: http://{{ .Values.ingress.host }}/offchain
+          value: http://{{ .Values.ingress.host }}/api/offchain
         - name: CHAIN_ID
           value: {{ .Values.chainId | quote }}
+        - name: BLOCKCHAIN
+          value: {{ .Values.blockchain }}
         - name: GAS_CURRENCY_CODE
           value: {{ .Values.gasCurrencyCode }}
         image: "{{ .Values.images.backend }}"

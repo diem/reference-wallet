@@ -24,7 +24,7 @@ class Config:
         return utils.account_address(self.vasp_address)
 
     def diem_address_hrp(self) -> str:
-        return identifier.HRPS[self.chain_id]
+        return identifier.HRPS.get(self.chain_id, identifier.PDM)
 
     def compliance_private_key(self) -> Ed25519PrivateKey:
         return Ed25519PrivateKey.from_private_bytes(
@@ -49,7 +49,7 @@ def from_env() -> Config:
 
 def generate(index: int) -> typing.Tuple[LocalAccount, Config]:
     port = 5000 + index
-    base_url = f"http://localhost:{port}/offchain"
+    base_url = f"http://localhost:{port}/api/offchain"
     account = LocalAccount.generate()
     conf = Config(
         wallet_custody_account_name=f"wallet{index}",

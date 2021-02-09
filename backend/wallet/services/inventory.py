@@ -36,10 +36,12 @@ def wait_for_trade_to_complete(trade_id):
     retries = 10
     polling_interval_s = 2
     for _ in range(retries):
+        logger.info(f"wait for trade to complete {trade_id}")
         trade_info = LpClient().trade_info(trade_id)
         if trade_info.status == TradeStatus.Complete:
             return True
         else:
+            logger.info(f"status: {trade_info.status}")
             time.sleep(polling_interval_s)
 
     return False
@@ -50,7 +52,9 @@ def setup_inventory_account():
     if inventory_account:
         return
 
+    logger.info(f"setup inventory_account")
     create_account(account_name=INVENTORY_ACCOUNT_NAME)
+    logger.info(f"account created: {INVENTORY_ACCOUNT_NAME}")
 
     currency_pairs = [
         CurrencyPairs[f"{Currency.XUS}_{INVENTORY_COVER_CURRENCY}"],
@@ -63,7 +67,7 @@ def setup_inventory_account():
         for _ in range(retries):
             try:
                 buy_funds(currency_pair)
-
+                return
             except Exception as e:
                 logger.exception("trade and execute quote failed")
                 time.sleep(polling_interval_s)
