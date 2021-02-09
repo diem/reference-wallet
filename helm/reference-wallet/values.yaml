@@ -17,6 +17,8 @@ custodyPrivateKeysLiquidity:
 # accountWatcherAuthKey: "<ACCOUNT_WATCHER_AUTH_KEY>"
 # accountWatcherPrivKey: null
 
+walletAdminUsername: "admin@diem"
+
 chainId: 2
 blockchain: "testnet"
 gasCurrencyCode: "XUS"
@@ -56,7 +58,6 @@ peripherals:
     image: "lrw_db"
     # if database is created by this helm chart, there is no need to fill the following
     protocol: "postgresql"
-    adminUsername: "admin@lrw"
     username: "backenduser"
     password: "backendpassword"
     port: 5432

@@ -50,7 +50,7 @@ spec:
         - name: LP_DB_URL
           value: {{ include "reference-wallet.peripherals.database.liquidityUrl" . }}
         - name: ADMIN_USERNAME
-          value: {{ .Values.peripherals.database.adminUsername }}
+          value: {{ .Values.walletAdminUsername }}
         - name: WALLET_CUSTODY_ACCOUNT_NAME
           value: {{ .Values.custodyWalletAccountName | quote }}
         - name: CUSTODY_PRIVATE_KEYS
@@ -131,7 +131,7 @@ spec:
         - name: LP_DB_URL
           value: {{ include "reference-wallet.peripherals.database.liquidityUrl" . }}
         - name: ADMIN_USERNAME
-          value: {{ .Values.peripherals.database.adminUsername }}
+          value: {{ .Values.walletAdminUsername }}
         - name: CUSTODY_PRIVATE_KEYS
           value: {{ .Values.custodyPrivateKeysWallet | toJson | quote }}
         - name: LIQUIDITY_SERVICE_PORT
