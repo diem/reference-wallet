@@ -53,14 +53,6 @@ function FundsPullPreApproval({
               <a href="#" onClick={onRevokeClick} aria-disabled={!onRevokeClick}>
                 Revoke this request
               </a>
-              {/*<Button*/}
-              {/*  className="btn-link"*/}
-              {/*  outline*/}
-              {/*  onClick={onRevokeClick}*/}
-              {/*  disabled={!onRevokeClick}*/}
-              {/*>*/}
-              {/*  Revoke this request*/}
-              {/*</Button>*/}
             </div>
           </Col>
         )}
