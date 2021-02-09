@@ -91,3 +91,11 @@ Create the name of the service account to use
 {{- .Values.peripherals.database.host }}
 {{- end }}
 {{- end }}
+
+
+{{/*
+*/}}
+{{- define "reference-wallet.custodyPrivateKeys" }}
+{{-     $privateKey := required "Wallet VASP account private key must be set in .Values.vaspPrivateKey" .Values.vaspPrivateKey }}
+{{-     dict .Values.custodyWalletAccountName $privateKey | toJson | quote }}
+{{- end }}

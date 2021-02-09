@@ -1,14 +1,9 @@
-# Default values for reference-wallet.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
 
-replicaCount: 1
+vaspAddr:
+vaspPrivateKey:
+vaspComplianceKey:
 
-# XXX: fill these out
-vaspAddr: "<VASP_ADDR>"
 custodyWalletAccountName: wallet1
-custodyPrivateKeysWallet:
-  wallet1: "<WALLET_KEY>"
 
 # liquidity account not necessary for Testnet, as faucet is used
 custodyLiquidityAccountName: liquidity1
@@ -22,7 +17,6 @@ walletAdminUsername: "admin@diem"
 chainId: 2
 blockchain: "testnet"
 gasCurrencyCode: "XUS"
-vaspComplianceKey:
 
 sdk:
   jsonRpc: "https://testnet.diem.com/v1"
@@ -110,6 +104,8 @@ resources: {}
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
+
+replicaCount: 1
 
 autoscaling:
   enabled: false

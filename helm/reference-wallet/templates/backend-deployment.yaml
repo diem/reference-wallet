@@ -54,7 +54,7 @@ spec:
         - name: WALLET_CUSTODY_ACCOUNT_NAME
           value: {{ .Values.custodyWalletAccountName | quote }}
         - name: CUSTODY_PRIVATE_KEYS
-          value: {{ .Values.custodyPrivateKeysWallet | toJson | quote }}
+          value: {{ include "reference-wallet.custodyPrivateKeys" . }}
         - name: LIQUIDITY_SERVICE_PORT
           value: {{ .Values.service.targetPort | quote }}
         - name: LIQUIDITY_SERVICE_HOST
@@ -62,9 +62,9 @@ spec:
         - name: FAUCET_URL
           value: {{ .Values.sdk.faucet }}
         - name: VASP_ADDR
-          value: {{ .Values.vaspAddr }}
+          value: {{ required "Wallet VASP account address must be set in .Values.vaspAddr" .Values.vaspAddr | quote }}
         - name: VASP_COMPLIANCE_KEY
-          value: {{ .Values.vaspComplianceKey | quote }}
+          value: {{ required "Wallet VASP compliance key must be set in .Values.vaspAddr" .Values.vaspComplianceKey | quote }}
         - name: JSON_RPC_URL
           value: {{ .Values.sdk.jsonRpc }}
         - name: VASP_BASE_URL
@@ -133,7 +133,7 @@ spec:
         - name: ADMIN_USERNAME
           value: {{ .Values.walletAdminUsername }}
         - name: CUSTODY_PRIVATE_KEYS
-          value: {{ .Values.custodyPrivateKeysWallet | toJson | quote }}
+          value: {{ include "reference-wallet.custodyPrivateKeys" . }}
         - name: LIQUIDITY_SERVICE_PORT
           value: {{ .Values.service.targetPort | quote }}
         - name: LIQUIDITY_SERVICE_HOST
@@ -149,7 +149,7 @@ spec:
         - name: WALLET_CUSTODY_ACCOUNT_NAME
           value: {{ .Values.custodyWalletAccountName | quote }}
         - name: VASP_COMPLIANCE_KEY
-          value: {{ .Values.vaspComplianceKey | toJson | quote }}
+          value: {{ required "Wallet VASP compliance key must be set in .Values.vaspAddr" .Values.vaspComplianceKey | quote }}
         - name: JSON_RPC_URL
           value: {{ .Values.sdk.jsonRpc }}
         - name: VASP_BASE_URL
@@ -214,7 +214,7 @@ spec:
         - name: DB_URL
           value: {{ include "reference-wallet.peripherals.database.url" . }}
         - name: CUSTODY_PRIVATE_KEYS
-          value: {{ .Values.custodyPrivateKeysWallet | toJson | quote }}
+          value: {{ include "reference-wallet.custodyPrivateKeys" . }}
         - name: LIQUIDITY_SERVICE_PORT
           value: {{ .Values.service.targetPort | quote }}
         - name: LIQUIDITY_SERVICE_HOST
@@ -226,7 +226,7 @@ spec:
         - name: WALLET_CUSTODY_ACCOUNT_NAME
           value: {{ .Values.custodyWalletAccountName | quote }}
         - name: VASP_COMPLIANCE_KEY
-          value: {{ .Values.vaspComplianceKey | toJson | quote }}
+          value: {{ required "Wallet VASP compliance key must be set in .Values.vaspAddr" .Values.vaspComplianceKey | quote }}
         - name: JSON_RPC_URL
           value: {{ .Values.sdk.jsonRpc }}
         - name: VASP_BASE_URL
