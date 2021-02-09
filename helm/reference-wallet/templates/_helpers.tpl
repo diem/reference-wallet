@@ -94,6 +94,7 @@ Create the name of the service account to use
 
 
 {{/*
+Returns proper value for the wallet's CUSTODY_PRIVATE_KEYS environment variable
 */}}
 {{- define "reference-wallet.custodyPrivateKeys" }}
 {{-     $privateKey := required "Wallet VASP account private key must be set in .Values.vaspPrivateKey" .Values.vaspPrivateKey }}
