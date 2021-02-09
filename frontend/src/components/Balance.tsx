@@ -4,7 +4,7 @@
 import React, { useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../contexts/app";
-import { Currency } from "../interfaces/currencies";
+import { DiemCurrency } from "../interfaces/currencies";
 import {
   fiatToDiemHumanFriendly,
   diemAmountToFloat,
@@ -12,7 +12,7 @@ import {
 } from "../utils/amount-precision";
 
 interface BalanceProps {
-  currencyCode: Currency;
+  currencyCode: DiemCurrency;
 }
 
 function Balance({ currencyCode }: BalanceProps) {

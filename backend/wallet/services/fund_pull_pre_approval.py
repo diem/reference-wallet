@@ -1,8 +1,9 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
-
+import dataclasses
 import logging
-import time
+from datetime import datetime
+from operator import attrgetter
 from typing import List, Optional
 
 import context
@@ -20,6 +21,7 @@ from wallet.storage.funds_pull_pre_approval_command import (
     get_command_by_id,
     update_command,
     get_account_command_by_id,
+    get_account_commands_by_status,
 )
 
 from .fund_pull_pre_approval_sm import (
@@ -33,6 +35,14 @@ logger = logging.getLogger(__name__)
 
 class FundsPullPreApprovalInvalidStatus(FundsPullPreApprovalError):
     ...
+
+
+@dataclasses.dataclass(frozen=True)
+class FPPAObject(offchain.FundsPullPreApprovalCommand):
+    biller_name: str = None
+    created_timestamp: int = None
+    updated_at: int = None
+    approved_at: int = None
 
 
 def create_and_approve(
@@ -71,7 +81,7 @@ def create_and_approve(
             biller_address=biller_address,
             funds_pull_pre_approval_id=funds_pull_pre_approval_id,
             funds_pull_pre_approval_type=funds_pull_pre_approval_type,
-            expiration_timestamp=expiration_timestamp,
+            expiration_timestamp=datetime.fromtimestamp(expiration_timestamp),
             max_cumulative_unit=max_cumulative_unit,
             max_cumulative_unit_value=max_cumulative_unit_value,
             max_cumulative_amount=max_cumulative_amount,
@@ -131,6 +141,10 @@ def update_status(
         if command.status in valid_statuses:
             command.status = new_status
             command.offchain_sent = False
+
+            if operation_name == "approve":
+                command.approved_at = datetime.utcnow()
+
             update_command(command)
         else:
             raise FundsPullPreApprovalError(
@@ -144,14 +158,36 @@ def update_status(
 
 def get_funds_pull_pre_approvals(
     account_id: int,
-) -> List[offchain.FundsPullPreApprovalCommand]:
-    return [
+) -> List[FPPAObject]:
+    approvals = [
         preapproval_model_to_command(fppa) for fppa in get_account_commands(account_id)
     ]
 
+    _sort_approvals(approvals)
+
+    return approvals
+
+
+def _sort_approvals(approvals) -> List[FPPAObject]:
+    return approvals.sort(key=attrgetter("created_timestamp"))
+
+
+def get_funds_pull_pre_approvals_by_status(
+    account_id: int,
+    status: str,
+) -> List[FPPAObject]:
+    approvals = [
+        preapproval_model_to_command(fppa)
+        for fppa in get_account_commands_by_status(account_id, status)
+    ]
+
+    _sort_approvals(approvals)
+
+    return approvals
+
 
 def validate_expiration_timestamp(expiration_timestamp):
-    if expiration_timestamp < time.time():
+    if datetime.fromtimestamp(expiration_timestamp) < datetime.now():
         raise ValueError("expiration timestamp must be in the future")
 
 
@@ -184,6 +220,7 @@ def preapproval_command_to_model(
     command: offchain.FundsPullPreApprovalCommand,
     role: Role,
     offchain_sent: Optional[bool] = None,
+    biller_name: Optional[str] = None,
 ) -> models.FundsPullPreApprovalCommand:
     account_id = get_account_id_from_command(command, role)
     preapproval_object = command.funds_pull_pre_approval
@@ -197,7 +234,9 @@ def preapproval_command_to_model(
         address=preapproval_object.address,
         biller_address=preapproval_object.biller_address,
         funds_pull_pre_approval_type=preapproval_object.scope.type,
-        expiration_timestamp=preapproval_object.scope.expiration_timestamp,
+        expiration_timestamp=datetime.fromtimestamp(
+            preapproval_object.scope.expiration_timestamp
+        ),
         max_cumulative_unit=max_cumulative_amount.unit
         if max_cumulative_amount
         else None,
@@ -224,12 +263,15 @@ def preapproval_command_to_model(
     if offchain_sent is not None:
         model.offchain_sent = offchain_sent
 
+    if biller_name is not None:
+        model.biller_name = biller_name
+
     return model
 
 
 def preapproval_model_to_command(
     command: models.FundsPullPreApprovalCommand,
-) -> offchain.FundsPullPreApprovalCommand:
+) -> FPPAObject:
     if command.role == Role.PAYER:
         my_address = command.address
     else:
@@ -259,7 +301,7 @@ def preapproval_model_to_command(
         biller_address=command.biller_address,
         scope=offchain.FundPullPreApprovalScopeObject(
             type=offchain.FundPullPreApprovalType.consent,
-            expiration_timestamp=command.expiration_timestamp,
+            expiration_timestamp=int(datetime.timestamp(command.expiration_timestamp)),
             max_cumulative_amount=max_cumulative_amount,
             max_transaction_amount=max_transaction_amount,
         ),
@@ -267,9 +309,13 @@ def preapproval_model_to_command(
         description=command.description,
     )
 
-    return offchain.FundsPullPreApprovalCommand(
+    return FPPAObject(
         my_actor_address=my_address,
         funds_pull_pre_approval=funds_pull_pre_approval,
+        biller_name=command.biller_name,
+        created_timestamp=command.created_at,
+        updated_at=command.updated_at,
+        approved_at=command.approved_at,
     )
 
 
@@ -292,7 +338,7 @@ def get_account_id_from_command(
 
 def get_command_from_bech32(
     address_bech32: str, funds_pull_pre_approval_id: str
-) -> Optional[models.FundsPullPreApprovalCommand]:
+) -> Optional[FPPAObject]:
     address, sub_address = identifier.decode_account(
         address_bech32, context.get().config.diem_address_hrp()
     )
@@ -339,9 +385,30 @@ def handle_fund_pull_pre_approval_command(
     if command_in_db:
         validate_addresses(approval, command_in_db, role)
         validate_status(approval, command_in_db)
-        update_command(preapproval_command_to_model(command, role))
+        update_command(
+            preapproval_command_to_model(command, role),
+            approved_at=datetime.utcnow()
+            if command.funds_pull_pre_approval.status == FundPullPreApprovalStatus.valid
+            else None,
+        )
     else:
-        commit_command(preapproval_command_to_model(command, role))
+        biller_name = get_biller_name(command)
+        commit_command(
+            preapproval_command_to_model(command, role, biller_name=biller_name)
+        )
+
+
+def get_biller_name(command):
+    address, _ = identifier.decode_account(
+        command.funds_pull_pre_approval.biller_address,
+        context.get().config.diem_address_hrp(),
+    )
+    biller_account = context.get().jsonrpc_client.get_account(address)
+
+    if biller_account:
+        return biller_account.role.human_name
+    else:
+        return None
 
 
 def get_existing_command_status(address_bech32: str, fppa_id: str) -> Optional[str]:

@@ -5,7 +5,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { Col, Container, Row } from "reactstrap";
 import { settingsContext } from "../contexts/app";
 import BackendClient from "../services/backendClient";
-import { Currency } from "../interfaces/currencies";
+import { DiemCurrency } from "../interfaces/currencies";
 import { Transaction, TransactionDirection } from "../interfaces/transaction";
 import TransactionsList from "../components/TransactionsList";
 import TransactionModal from "../components/TransactionModal";
@@ -27,7 +27,7 @@ function Transactions() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [transactionModal, setTransactionModal] = useState<Transaction>();
 
-  const [currency, setCurrency] = useState<Currency>();
+  const [currency, setCurrency] = useState<DiemCurrency>();
   const [direction, setDirection] = useState<TransactionDirection>();
   const [sorting, setSorting] = useState<string>("date_desc");
 

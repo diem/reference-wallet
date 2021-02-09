@@ -116,7 +116,7 @@ def test_approve_request_by_payer(validator, vasp_proxy: VaspProxy):
     (
         actual_id,
         validator_address,
-    ) = validator.create_preapproval_for_unknown_payer(
+    ) = validator.create_funds_pull_pre_approval_request_for_unknown_payer(
         description=description,
         scope=scope,
     )

@@ -37,7 +37,6 @@ def reduce_role(
         existing_status_as_payee=existing_status_as_payee,
         existing_status_as_payer=existing_status_as_payer,
     )
-
     return _reduce_role(state)
 
 

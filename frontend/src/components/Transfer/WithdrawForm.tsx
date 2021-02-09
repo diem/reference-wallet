@@ -18,7 +18,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import { settingsContext } from "../../contexts/app";
-import { FiatCurrency, Currency } from "../../interfaces/currencies";
+import { FiatCurrency, DiemCurrency } from "../../interfaces/currencies";
 import { WithdrawData } from "./interfaces";
 import SelectDropdown from "../select";
 import {
@@ -45,7 +45,9 @@ function WithdrawForm({ value, onSubmit }: WithdrawFormProps) {
   const [settings] = useContext(settingsContext)!;
   const { errors, handleSubmit, control, setValue, watch } = useForm<WithdrawData>();
 
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency | undefined>(value.currency);
+  const [selectedCurrency, setSelectedCurrency] = useState<DiemCurrency | undefined>(
+    value.currency
+  );
   const [selectedFiatCurrency, setSelectedFiatCurrency] = useState<FiatCurrency>(
     value.fiatCurrency
   );

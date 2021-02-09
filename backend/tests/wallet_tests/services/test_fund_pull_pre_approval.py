@@ -1,7 +1,7 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
-import time
 from dataclasses import asdict
+from datetime import datetime
 
 import context
 import pytest
@@ -12,6 +12,8 @@ from diem.offchain import (
 from diem_utils.types.currencies import FiatCurrency, DiemCurrency
 from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import (
     OneFundsPullPreApproval,
+    TIMESTAMP,
+    EXPIRED_TIMESTAMP,
 )
 from wallet.services.account import (
     generate_new_subaddress,
@@ -26,6 +28,7 @@ from wallet.services.fund_pull_pre_approval import (
     process_funds_pull_pre_approvals_requests,
     preapproval_command_to_model,
     get_command_from_bech32,
+    get_funds_pull_pre_approvals,
 )
 from wallet.services.fund_pull_pre_approval_sm import FundsPullPreApprovalStateError
 from wallet.services.fund_pull_pre_approval_sm import (
@@ -46,7 +49,29 @@ from wallet.types import RegistrationStatus
 
 CID = "35a1b548-3170-438f-bf3a-6ca0fef85d15"
 FUNDS_PULL_PRE_APPROVAL_ID = "5fc49fa0-5f2a-4faa-b391-ac1652c57e4d"
+FUNDS_PULL_PRE_APPROVAL_ID_2 = "e1f7f846-f9e6-46f9-b184-c949f8d6b197"
+
 currency = DiemCurrency.XUS
+
+
+def test_get_funds_pull_pre_approvals():
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
+        status=FundPullPreApprovalStatus.pending,
+        account_id=1,
+    )
+
+    OneFundsPullPreApproval.run(
+        db_session=db_session,
+        funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID_2,
+        status=FundPullPreApprovalStatus.pending,
+        account_id=1,
+    )
+
+    approvals = get_funds_pull_pre_approvals(1)
+
+    assert len(approvals) == 2
 
 
 def test_approve_but_no_command_in_db():
@@ -290,7 +315,7 @@ def test_create_and_approve_happy_flow():
         biller_address=generate_my_address(user),
         funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
         funds_pull_pre_approval_type="consent",
-        expiration_timestamp=int(time.time() + 30),
+        expiration_timestamp=TIMESTAMP,
         max_cumulative_unit="week",
         max_cumulative_unit_value=1,
         max_cumulative_amount=10_000_000_000,
@@ -320,7 +345,7 @@ def test_create_and_approve_with_expired_expiration_timestamp():
             biller_address=generate_address(),
             funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
             funds_pull_pre_approval_type="consent",
-            expiration_timestamp=int(time.time() - 30),
+            expiration_timestamp=EXPIRED_TIMESTAMP,
             max_cumulative_unit="week",
             max_cumulative_unit_value=1,
             max_cumulative_amount=10_000_000_000,
@@ -347,7 +372,7 @@ def test_create_and_approve_while_command_already_exist_in_db():
             biller_address=generate_address(),
             funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
             funds_pull_pre_approval_type="consent",
-            expiration_timestamp=int(time.time() + 30),
+            expiration_timestamp=TIMESTAMP,
             max_cumulative_unit="week",
             max_cumulative_unit_value=1,
             max_cumulative_amount=10_000_000_000,
@@ -748,7 +773,7 @@ def generate_fund_pull_pre_approval_object(
         biller_address=biller_address,
         scope=offchain.FundPullPreApprovalScopeObject(
             type=offchain.FundPullPreApprovalType.consent,
-            expiration_timestamp=int(time.time()) + 30,
+            expiration_timestamp=TIMESTAMP,
             max_cumulative_amount=offchain.ScopedCumulativeAmountObject(
                 unit=max_cumulative_unit,
                 value=max_cumulative_unit_value,

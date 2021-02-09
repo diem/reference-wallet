@@ -1,7 +1,9 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
+from datetime import datetime
 
 from diem import offchain
+from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import TIMESTAMP
 
 from wallet.services.account import get_account_id_from_bech32
 from wallet.services.fund_pull_pre_approval import Role
@@ -19,7 +21,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
 
         expected_scope = offchain.FundPullPreApprovalScopeObject(
             type=offchain.FundPullPreApprovalType.consent,
-            expiration_timestamp=12345,
+            expiration_timestamp=TIMESTAMP,
             max_cumulative_amount=offchain.ScopedCumulativeAmountObject(
                 unit=offchain.TimeUnit.month,
                 value=3,
@@ -56,7 +58,9 @@ class TestRequestFundsPullPreApprovalFromAnother:
         assert db_fppa.status == offchain.FundPullPreApprovalStatus.pending
 
         assert db_fppa.funds_pull_pre_approval_type == expected_scope.type
-        assert db_fppa.expiration_timestamp == expected_scope.expiration_timestamp
+        assert db_fppa.expiration_timestamp == datetime.fromtimestamp(
+            expected_scope.expiration_timestamp
+        )
 
         assert (
             db_fppa.max_transaction_amount
@@ -86,7 +90,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
 
         expected_scope = offchain.FundPullPreApprovalScopeObject(
             type=offchain.FundPullPreApprovalType.consent,
-            expiration_timestamp=12345,
+            expiration_timestamp=TIMESTAMP,
         )
 
         fppa_id, _ = request_funds_pull_pre_approval_from_another(
@@ -110,7 +114,9 @@ class TestRequestFundsPullPreApprovalFromAnother:
         assert db_fppa.status == offchain.FundPullPreApprovalStatus.pending
 
         assert db_fppa.funds_pull_pre_approval_type == expected_scope.type
-        assert db_fppa.expiration_timestamp == expected_scope.expiration_timestamp
+        assert db_fppa.expiration_timestamp == datetime.fromtimestamp(
+            expected_scope.expiration_timestamp
+        )
 
         assert db_fppa.max_transaction_amount is None
         assert db_fppa.max_transaction_amount_currency is None
