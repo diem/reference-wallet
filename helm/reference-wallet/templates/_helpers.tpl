@@ -81,18 +81,6 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
-{{- define "reference-wallet.peripherals.database.liquidityUrl" -}}
-{{- if .Values.peripherals.database.create }}
-{{- $host := printf "%s-db" (include "reference-wallet.fullname" .) }}
-{{- with .Values.peripherals.database }}
-{{- .protocol }}://{{ .username }}:{{ .password }}@{{ $host }}:{{ .port }}/{{ .liquidityDbName }}
-{{- end }}
-{{- else }}
-{{- .Values.peripherals.database.host }}
-{{- end }}
-{{- end }}
-
-
 {{/*
 Returns proper value for the wallet's CUSTODY_PRIVATE_KEYS environment variable
 */}}

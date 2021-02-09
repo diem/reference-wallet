@@ -3,14 +3,10 @@ vaspAddr:
 vaspPrivateKey:
 vaspComplianceKey:
 
-custodyWalletAccountName: wallet1
+liquidityProviderHost: liquidity-emulator
+liquidityProviderPort: 8080
 
-# liquidity account not necessary for Testnet, as faucet is used
-custodyLiquidityAccountName: liquidity1
-custodyPrivateKeysLiquidity:
-  # liquidity1: "<LIQUIDITY_KEY>""
-# accountWatcherAuthKey: "<ACCOUNT_WATCHER_AUTH_KEY>"
-# accountWatcherPrivKey: null
+custodyWalletAccountName: wallet1
 
 walletAdminUsername: "admin@diem"
 
@@ -26,7 +22,6 @@ images:
   pullPolicy: Never
   backend: lrw_backend
   frontend: lrw_gateway
-  liquidity: lrw_liquidity
 
 imagePullSecrets: []
 nameOverride: ""
@@ -56,7 +51,6 @@ peripherals:
     password: "backendpassword"
     port: 5432
     dbName: "backend_db"
-    liquidityDbName: "liquidity_provider_db"
     persistence: {}
       # claimSize: 20Gi
       # pvSize: 20Gi
