@@ -69,8 +69,6 @@ spec:
           value: http://{{ .Values.ingress.host }}/api/offchain
         - name: CHAIN_ID
           value: {{ .Values.chainId | quote }}
-        - name: BLOCKCHAIN
-          value: {{ .Values.blockchain }}
         - name: GAS_CURRENCY_CODE
           value: {{ .Values.gasCurrencyCode }}
         image: "{{ .Values.images.backend }}"
@@ -152,8 +150,6 @@ spec:
           value: http://{{ .Values.ingress.host }}/api/offchain
         - name: CHAIN_ID
           value: {{ .Values.chainId | quote }}
-        - name: BLOCKCHAIN
-          value: {{ .Values.blockchain }}
         - name: GAS_CURRENCY_CODE
           value: {{ .Values.gasCurrencyCode }}
         image: "{{ .Values.images.backend }}"
@@ -229,8 +225,6 @@ spec:
           value: http://{{ .Values.ingress.host }}/api/offchain
         - name: CHAIN_ID
           value: {{ .Values.chainId | quote }}
-        - name: BLOCKCHAIN
-          value: {{ .Values.blockchain }}
         - name: GAS_CURRENCY_CODE
           value: {{ .Values.gasCurrencyCode }}
         image: "{{ .Values.images.backend }}"

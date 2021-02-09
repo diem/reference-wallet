@@ -11,7 +11,7 @@ custodyWalletAccountName: wallet1
 walletAdminUsername: "admin@diem"
 
 chainId: 2
-blockchain: "testnet"
+
 gasCurrencyCode: "XUS"
 
 sdk:
