@@ -165,7 +165,7 @@ class FundsPullPreApprovalCommand(Base):
     address = Column(String, nullable=True)
     biller_address = Column(String, nullable=False)
     funds_pull_pre_approval_type = Column(String, nullable=False)
-    expiration_timestamp = Column(Integer, nullable=False)
+    expiration_timestamp = Column(DateTime, nullable=False)
     max_cumulative_unit = Column(String, nullable=True)
     max_cumulative_unit_value = Column(Integer, nullable=True)
     max_cumulative_amount = Column(Integer, nullable=True)
@@ -176,6 +176,10 @@ class FundsPullPreApprovalCommand(Base):
     status = Column(String, nullable=False)
     role = Column(String, nullable=False)
     offchain_sent = Column(Boolean, default=False)
+    biller_name = Column(String, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    approved_at = Column(DateTime, nullable=True)
 
     def update(self, updated_command):
         new_command_attributes = [

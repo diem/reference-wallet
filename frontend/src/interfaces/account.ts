@@ -1,10 +1,10 @@
 // Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Currency } from "./currencies";
+import { DiemCurrency } from "./currencies";
 
 export interface CurrencyBalance {
-  currency: Currency;
+  currency: DiemCurrency;
   balance: number;
 }
 

@@ -7,7 +7,7 @@ import { match as RouterMatch } from "react-router";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../contexts/app";
 import BackendClient from "../services/backendClient";
-import { Currency } from "../interfaces/currencies";
+import { DiemCurrency } from "../interfaces/currencies";
 import { Transaction } from "../interfaces/transaction";
 import TransactionsList from "../components/TransactionsList";
 import Balance from "../components/Balance";
@@ -22,14 +22,14 @@ import TestnetWarning from "../components/TestnetWarning";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
 
-function Account({ match }: { match: RouterMatch<{ currency: Currency }> }) {
+function Account({ match }: { match: RouterMatch<{ currency: DiemCurrency }> }) {
   const { t } = useTranslation("layout");
   const [settings] = useContext(settingsContext)!;
   const user = settings.user;
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  let selectedCurrency: Currency | undefined = match.params.currency;
+  let selectedCurrency: DiemCurrency | undefined = match.params.currency;
 
   const fetchTransactions = async () => {
     try {

@@ -1,7 +1,10 @@
+from datetime import datetime
+
 from diem import offchain
 from diem.offchain import FundPullPreApprovalStatus
 from flask import Response
 from flask.testing import Client
+from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import TIMESTAMP
 from wallet.services import fund_pull_pre_approval as fppa_service
 from wallet.services import offchain as offchain_service
 
@@ -15,7 +18,7 @@ CURRENCY = "XUS"
 
 
 def invent_preapproval(description):
-    return offchain.FundsPullPreApprovalCommand(
+    return fppa_service.FPPAObject(
         my_actor_address=ADDRESS,
         funds_pull_pre_approval=offchain.FundPullPreApprovalObject(
             funds_pull_pre_approval_id=f"{BILLER_ADDRESS}_123",
@@ -23,7 +26,7 @@ def invent_preapproval(description):
             biller_address=BILLER_ADDRESS,
             scope=offchain.FundPullPreApprovalScopeObject(
                 type=offchain.FundPullPreApprovalType.consent,
-                expiration_timestamp=123,
+                expiration_timestamp=TIMESTAMP,
                 max_cumulative_amount=offchain.ScopedCumulativeAmountObject(
                     unit=offchain.TimeUnit.month,
                     value=1,
@@ -40,6 +43,9 @@ def invent_preapproval(description):
             status=offchain.FundPullPreApprovalStatus.pending,
             description=description,
         ),
+        biller_name="Bond",
+        created_timestamp=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
     )
 
 
@@ -148,7 +154,7 @@ class TestCreateAndApprove:
             "funds_pull_pre_approval_id": FUNDS_PULL_PRE_APPROVAL_ID,
             "scope": {
                 "type": "consent",
-                "expiration_timestamp": 1234,
+                "expiration_timestamp": TIMESTAMP,
                 "max_cumulative_amount": {
                     "unit": "week",
                     "value": 1,

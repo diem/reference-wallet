@@ -5,7 +5,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { Modal, ModalBody } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../../contexts/app";
-import { Currency } from "../../interfaces/currencies";
+import { DiemCurrency } from "../../interfaces/currencies";
 import BackendClient from "../../services/backendClient";
 import { Send } from "./interfaces";
 import SendForm from "./SendForm";
@@ -17,7 +17,7 @@ import SuccessMessage from "../Messages/SuccessMessage";
 import { BackendError } from "../../services/errors";
 
 interface SendModalProps {
-  initialCurrency?: Currency;
+  initialCurrency?: DiemCurrency;
   open: boolean;
   onClose: () => void;
 }

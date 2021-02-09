@@ -5,6 +5,7 @@ import pytest
 from diem import offchain
 from flask import Response
 from flask.testing import Client
+from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import TIMESTAMP
 from tests.webapp_tests.routes.test_fund_pull_pre_approval import ADDRESS
 from wallet.services import validation_tool as validation_tool_service
 
@@ -49,7 +50,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
         }
         expected_scope = {
             "type": "consent",
-            "expiration_timestamp": 1234,
+            "expiration_timestamp": TIMESTAMP,
             "max_cumulative_amount": expected_max_cumulative_amount,
             "max_transaction_amount": expected_max_transaction_amount,
         }
@@ -120,7 +121,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
 
         expected_scope = {
             "type": "consent",
-            "expiration_timestamp": 1234,
+            "expiration_timestamp": TIMESTAMP,
         }
         request_body = {
             "payer_address": "tdm1pvjua68j72mhmp3n7jkuthmxlkj0g57gkpegq6qgkjfxwc",
