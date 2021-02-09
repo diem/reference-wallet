@@ -4,14 +4,14 @@
 import { Button, Modal, ModalBody } from "reactstrap";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Currency } from "../interfaces/currencies";
+import { DiemCurrency } from "../interfaces/currencies";
 import Deposit from "./Transfer/Deposit";
 import Withdraw from "./Transfer/Withdraw";
 import Convert from "./Transfer/Convert";
 import CloseButton from "./CloseButton";
 
 interface TransferModalProps {
-  currency?: Currency;
+  currency?: DiemCurrency;
   open: boolean;
   onClose: () => void;
 }

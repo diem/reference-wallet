@@ -52,7 +52,7 @@ class ValidationToolRoutes:
                 (
                     funds_pull_pre_approval_id,
                     address,
-                ) = validation_tool_service.create_preapproval_for_unknown_payer(
+                ) = validation_tool_service.create_funds_pull_pre_approval_request_for_unknown_payer(
                     account_id=user.account_id,
                     scope=scope,
                     description=description,

@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 import context
 from diem import identifier, offchain
@@ -26,7 +27,7 @@ def create_preapproval_for_unknown_payer(
 
 
 def commit_funds_pull_pre_approval(
-    account_id, description, payer_address, scope, offchain_sent
+    account_id, description, payer_address, scope, offchain_sent=False
 ) -> (str, str):
     biller_address = get_biller_address(account_id)
 
@@ -42,7 +43,7 @@ def commit_funds_pull_pre_approval(
             biller_address=biller_address,
             funds_pull_pre_approval_id=funds_pull_pre_approval_id,
             funds_pull_pre_approval_type=scope.type,
-            expiration_timestamp=scope.expiration_timestamp,
+            expiration_timestamp=datetime.fromtimestamp(scope.expiration_timestamp),
             description=description,
             status=offchain.FundPullPreApprovalStatus.pending,
             role=Role.PAYEE,
