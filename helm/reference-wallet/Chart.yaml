@@ -1,9 +1,7 @@
 apiVersion: v2
 name: reference-wallet
-description: A Helm chart for Diem reference wallet
-
+version: 0.1.2
+description: A Helm chart for Diem Reference Wallet
 type: application
-
-version: 0.1.1
-
-appVersion: 0.1.0
+home: https://github.com/diem/reference-wallet
+icon: https://github.com/diem/diem/raw/master/developers.diem.com/static/img/diem-logo.png
