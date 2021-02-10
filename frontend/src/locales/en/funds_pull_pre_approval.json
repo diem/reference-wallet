@@ -1,0 +1,38 @@
+{
+  "approve": "Approve",
+  "reject": "Reject",
+  "revoke": "Revoke",
+  "revoke_link": "Revoke this request",
+  "received_from": "Received from",
+  "on": "on",
+  "rejected_on": "Rejected on",
+  "approved_on": "Approved on",
+  "revoked_on": "Revoked on",
+  "expired_on": "Expired on",
+  "no_limits": "No Limits",
+  "total_payments": "Total payments limit: Up to,",
+  "single_payment": "Single payment limit: Up to ",
+  "every": "every",
+  "plural_suffix": "s",
+  "last_payment": "Last payment allowed on ",
+  "modals": {
+    "internal_error": "Internal Error",
+    "unexpected_error": "Unexpected error",
+    "success_message": "Approval status successfully updated",
+    "done": "Done",
+    "approve_title": "Approve Request",
+    "reject_title": "reject_title",
+    "revoke_title": "Revoke Request",
+    "approve_question": "Are you sure you want to approve the request from",
+    "reject_question": "Are you sure you want to reject the request from",
+    "revoke_question": "Are you sure you want to revoke the request from",
+    "cancel": "Cancel"
+  },
+  "page": {
+    "title": "All Funds Pull Pre Approvals",
+    "new_requests": "New Requests",
+    "active_requests": "Active Requests",
+    "history": "History",
+    "no_approvals": "You don't have any approval requests yet"
+  }
+}

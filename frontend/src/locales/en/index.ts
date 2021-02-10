@@ -12,6 +12,7 @@ import Validations from "./validations.json";
 import Settings from "./settings.json";
 import Admin from "./admin.json";
 import Legal from "./legal.json";
+import FundsPullPreApproval from "./funds_pull_pre_approval.json";
 import Payment from "./payment.json";
 
 export default {
@@ -26,5 +27,6 @@ export default {
   settings: Settings,
   admin: Admin,
   legal: Legal,
+  funds_pull_pre_approval: FundsPullPreApproval,
   payment: Payment,
 };
