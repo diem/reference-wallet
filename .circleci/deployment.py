@@ -383,7 +383,7 @@ class DiemReferenceWallet(Deployment):
         worker_label_selector = WorkerLabelSelector(worker_type_label, [worker_tag])
 
         wallet_hostname = self.get_diem_wallet_hostname(chain)
-        offchain_url = f'{wallet_hostname}/api/offchain'
+        offchain_url = f'https://{wallet_hostname}/api/offchain'
 
         backend_compliance_private_key = secrets.get_backend_compliance_private_key(chain)
         wallet_vasp = Vasp.create(
