@@ -2,6 +2,7 @@ import { Approval } from "../../interfaces/approval";
 import React from "react";
 import { Button, Col, Row } from "reactstrap";
 import ApprovalDetails from "./ApprovalDetails";
+import { useTranslation } from "react-i18next";
 
 interface ApprovalProps {
   approval: Approval;
@@ -20,6 +21,8 @@ function FundsPullPreApproval({
   disableApproveRejectButtons,
   disableRevokeButton,
 }: ApprovalProps) {
+  const { t } = useTranslation("funds_pull_pre_approval");
+
   return (
     <li className="list-group-item">
       <Row>
@@ -40,11 +43,11 @@ function FundsPullPreApproval({
                 onClick={onRejectClick}
               >
                 <i className="fa fa-times mr-1" />
-                Reject
+                {t("reject")}
               </Button>
               <Button color="black" size="sm" disabled={!onApproveClick} onClick={onApproveClick}>
                 <i className="fa fa-check mr-1" />
-                Approve
+                {t("approve")}
               </Button>
             </div>
           </Col>
@@ -53,7 +56,7 @@ function FundsPullPreApproval({
           <Col sm="4" className="p-0 d-flex align-items-end">
             <div className="mt-5 mr-2 ml-auto">
               <a href="#" onClick={onRevokeClick} aria-disabled={!onRevokeClick}>
-                Revoke this request
+                {t("revoke_link")}
               </a>
             </div>
           </Col>

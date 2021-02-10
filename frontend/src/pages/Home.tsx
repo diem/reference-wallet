@@ -24,7 +24,6 @@ import TransactionModal from "../components/TransactionModal";
 import TestnetWarning from "components/TestnetWarning";
 import FundsPullPreApprovalsList from "components/FundsPullPreApproval/FundsPullPreApprovalsList";
 import { Approval } from "../interfaces/approval";
-import { classNames } from "../utils/class-names";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
 const REFRESH_APPROVALS_INTERVAL = 3000;
@@ -176,12 +175,12 @@ function Home() {
             )}
 
             <section className="my-5">
-              <h2 className="h5 font-weight-normal text-body">Funds Pull Pre Approvals Requests</h2>
+              <h2 className="h5 font-weight-normal text-body">{t("approvals")}</h2>
               <ul className="list-group my-4">
                 <FundsPullPreApprovalsList approvals={approvals} disableRevokeButton />
                 <li className="list-group-item text-center">
                   <Link to="/fundsPullPreApprovals" className="text-black font-weight-bold">
-                    See All Approvals
+                    {t("all_approvals")}
                   </Link>
                 </li>
               </ul>
