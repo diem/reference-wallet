@@ -6,6 +6,7 @@ import BackendClient from "../../services/backendClient";
 import { BackendError } from "../../services/errors";
 import ErrorMessage from "../Messages/ErrorMessage";
 import SuccessMessage from "../Messages/SuccessMessage";
+import { useTranslation } from "react-i18next";
 
 interface ApproveModalProps {
   approval: Approval;
@@ -16,6 +17,7 @@ interface ApproveModalProps {
 function ApproveModal({ approval, open, onClose }: ApproveModalProps) {
   const [submitStatus, setSubmitStatus] = useState<"edit" | "fail" | "success">("edit");
   const [errorMessage, setErrorMessage] = useState<string>();
+  const { t } = useTranslation("funds_pull_pre_approval");
 
   useEffect(() => {
     async function refreshUser() {
@@ -44,8 +46,8 @@ function ApproveModal({ approval, open, onClose }: ApproveModalProps) {
       if (e instanceof BackendError) {
         setErrorMessage(e.message);
       } else {
-        setErrorMessage("Internal Error");
-        console.error("Unexpected error", e);
+        setErrorMessage(t("modals.internal_error"));
+        console.error(t("modals.unexpected_error"), e);
       }
     }
   };
@@ -63,26 +65,26 @@ function ApproveModal({ approval, open, onClose }: ApproveModalProps) {
         {errorMessage && <ErrorMessage message={errorMessage} />}
         {submitStatus === "success" && (
           <>
-            <SuccessMessage message={"Approval status successfully updated"} />
+            <SuccessMessage message={t("modals.success_message")} />
             <Button onClick={onModalClose} color="black" outline className="mt-2">
-              Done
+              {t("done")}
             </Button>
           </>
         )}
 
         {submitStatus !== "success" && (
           <>
-            <h3>Approve Request</h3>
+            <h3>{t("modals.approve_title")}</h3>
             <div className="text-black pb-5">
-              Are you sure you want to approve the request from {approval?.biller_name}?
+              {t("modals.approve_question")} {approval?.biller_name}?
             </div>
             <span>
               <div className="float-right">
                 <Button onClick={onModalClose} color="black" outline className="mr-1">
-                  Cancel
+                  {t("modals.cancel")}
                 </Button>
                 <Button onClick={updateApproval} color="black">
-                  Approve
+                  {t("approve")}
                 </Button>
               </div>
             </span>

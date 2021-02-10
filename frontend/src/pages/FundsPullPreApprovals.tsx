@@ -8,10 +8,12 @@ import TestnetWarning from "../components/TestnetWarning";
 import Breadcrumbs from "../components/Breadcrumbs";
 import { Container } from "reactstrap";
 import FundsPullPreApprovalsList from "../components/FundsPullPreApproval/FundsPullPreApprovalsList";
+import { useTranslation } from "react-i18next";
 
 const REFRESH_APPROVALS_INTERVAL = 3000;
 
 function FundsPullPreApprovals() {
+  const { t } = useTranslation("funds_pull_pre_approval");
   const [approvals, setApprovals] = useState<Approval[]>([]);
 
   let refreshApprovals = true;
@@ -60,24 +62,23 @@ function FundsPullPreApprovals() {
     <>
       <TestnetWarning />
 
-      <Breadcrumbs pageName={"All Funds Pull Pre Approvals"} />
+      <Breadcrumbs pageName={t("page.title")} />
       <Container className="py-5">
         {!!newApprovals.length && (
           <section>
-            <h2 className="pl-1 h5 font-weight-normal text-body">New Requests</h2>
+            <h2 className="pl-1 h5 font-weight-normal text-body">{t("page.new_requests")}</h2>
             <FundsPullPreApprovalsList approvals={newApprovals} disableRevokeButton />
           </section>
         )}
         {!!activeApprovals.length && (
           <section className="pt-4">
-            <h2 className="pl-1 h5 font-weight-normal text-body">Active Requests</h2>
+            <h2 className="pl-1 h5 font-weight-normal text-body">{t("page.active_requests")}</h2>
             <FundsPullPreApprovalsList approvals={activeApprovals} disableApproveRejectButtons />
           </section>
         )}
         {!!historyApprovals.length && (
           <section className="pt-4">
-            <h2 className="pl-1 h5 font-weight-normal text-body">History</h2>
-
+            <h2 className="pl-1 h5 font-weight-normal text-body">{t("page.history")}</h2>
             <FundsPullPreApprovalsList
               approvals={historyApprovals}
               disableApproveRejectButtons
@@ -87,9 +88,7 @@ function FundsPullPreApprovals() {
         )}
         {!approvals.length && (
           <section className="pt-4">
-            <h2 className="pl-1 h5 font-weight-normal text-body">
-              You don't have any approval requests yet
-            </h2>
+            <h2 className="pl-1 h5 font-weight-normal text-body">{t("page.no_approvals")}</h2>
           </section>
         )}
       </Container>
