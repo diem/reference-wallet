@@ -1,6 +1,7 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
 import pytest
+
 from ..vasp_proxy import VaspProxy, TxStatus
 
 CURRENCY = "XUS"
@@ -13,6 +14,9 @@ class TestTxSuccessWithTravelRule:
         travel rule approval.
         """
         dest_address = validator.get_receiving_address()
+
+        print(f"~~~~ dest_address: {dest_address}")
+        print(f"~~~~ source_address: {vasp_proxy.get_receiving_address()}")
 
         tx = vasp_proxy.send_transaction(dest_address, 2_000_000_000, CURRENCY)
 
@@ -32,6 +36,9 @@ class TestTxSuccessWithTravelRule:
         travel rule approval.
         """
         dest_address = vasp_proxy.get_receiving_address()
+
+        print(f"~~~~ dest_address: {dest_address}")
+        print(f"~~~~ source_address: {validator.get_receiving_address()}")
 
         tx = validator.send_transaction(dest_address, 2_000_000_000, CURRENCY)
 
