@@ -30,3 +30,4 @@ from .order import *
 from .token import *
 from .transaction import *
 from .logs import *
+from .payment_command import *

@@ -6,15 +6,12 @@
 from datetime import datetime
 from typing import Optional, List, Callable
 
+from diem_utils.types.currencies import DiemCurrency
 from sqlalchemy import func, and_, or_
 
 from . import db_session, get_user
 from .models import Transaction, TransactionLog
 from ..types import TransactionStatus, TransactionType
-from diem_utils.types.currencies import DiemCurrency
-import logging
-
-logger = logging.getLogger(name="wallet-service:storage")
 
 
 def lock_for_update(
@@ -52,7 +49,6 @@ def add_transaction(
     original_txn_id: Optional[int] = None,
     refund_reason: Optional[str] = None,
     reference_id: Optional[str] = None,
-    command_json: Optional[str] = None,
 ) -> Transaction:
     return commit_transaction(
         Transaction(
@@ -72,7 +68,6 @@ def add_transaction(
             original_txn_id=original_txn_id,
             refund_reason=refund_reason,
             reference_id=reference_id,
-            command_json=command_json,
         )
     )
 

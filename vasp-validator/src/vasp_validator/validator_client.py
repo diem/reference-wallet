@@ -6,8 +6,8 @@ import random
 import string
 import time
 
-from .reference_wallet_proxy import ReferenceWalletProxy
 from .models import OffChainSequenceInfo, TransactionStatus, RegistrationStatus
+from .reference_wallet_proxy import ReferenceWalletProxy
 from .vasp_proxy import VaspProxy, TxStatus, TxState
 
 
@@ -50,8 +50,8 @@ class ValidatorClient(VaspProxy):
         for i in range(retries_count):
             tx = self.wallet.get_transaction(tx.id)
             if (
-                tx.status == TransactionStatus.CANCELED
-                or tx.status == TransactionStatus.COMPLETED
+                    tx.status == TransactionStatus.CANCELED
+                    or tx.status == TransactionStatus.COMPLETED
             ):
                 break
             time.sleep(seconds_between_retries)

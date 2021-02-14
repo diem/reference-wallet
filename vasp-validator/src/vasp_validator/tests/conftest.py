@@ -1,11 +1,11 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
 
-import os
 import importlib
 import logging
-import pytest
+import os
 
+import pytest
 from diem import testnet, identifier
 
 from ..validator_client import ValidatorClient
