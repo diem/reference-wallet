@@ -3,26 +3,26 @@
 
 from typing import Optional
 
+import context
+import logging
 from diem import diem_types
 from diem_utils.types.currencies import DiemCurrency
 from wallet.services import (
     account as account_service,
-    kyc,
     offchain as offchain_service,
 )
 from wallet.services.risk import risk_check
+
 from . import INVENTORY_ACCOUNT_NAME
 from .log import add_transaction_log
 from .. import storage, services
 from ..logging import log_execution
-from time import time
 from ..storage import (
     add_transaction,
     Transaction,
     get_transaction_by_details,
     get_total_currency_credits,
     get_total_currency_debits,
-    get_transaction_status,
     get_transaction_by_reference_id,
 )
 from ..storage import get_account_id_from_subaddr, get_account
@@ -33,8 +33,6 @@ from ..types import (
     BalanceError,
     Balance,
 )
-
-import context, logging
 
 logger = logging.getLogger(name="wallet-service:transaction")
 

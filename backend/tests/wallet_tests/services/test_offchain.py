@@ -1,35 +1,29 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
+import context
+import dataclasses
 from diem import identifier, LocalAccount, offchain, jsonrpc
 from diem_utils.types.currencies import DiemCurrency
-
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet.services.account import (
     generate_new_subaddress,
-)
-from wallet.services.transaction import (
-    get_transaction,
-    get_transaction_by_reference_id,
 )
 from wallet.services.offchain import (
     save_outbound_transaction,
     process_offchain_tasks,
     process_inbound_command,
-    _txn_payment_command,
-    _send_kyc_data_and_receipient_signature,
     _user_kyc_data,
+    get_payment_command,
 )
-
+from wallet.services.transaction import (
+    get_transaction_by_reference_id,
+)
 from wallet.storage import (
     get_account_transaction_ids,
-    get_single_transaction,
-    Transaction,
     db_session,
 )
-from wallet.types import TransactionDirection, TransactionType, TransactionStatus
-import context, dataclasses
-
+from wallet.types import TransactionStatus
 
 currency = DiemCurrency.XUS
 
@@ -47,7 +41,9 @@ def test_save_outbound_transaction(monkeypatch):
 
     assert txn.id in get_account_transaction_ids(user.account_id)
     assert txn.reference_id is not None
-    assert txn.command_json is not None
+    print(f"~~~~ {txn.reference_id}")
+    payment_command = get_payment_command(txn.reference_id)
+    assert payment_command is not None
 
     with monkeypatch.context() as m:
         m.setattr(
@@ -95,8 +91,8 @@ def test_process_inbound_command(monkeypatch):
     assert txn
     assert txn.status == TransactionStatus.OFF_CHAIN_INBOUND
 
-    cmd = _txn_payment_command(txn)
-    assert cmd.is_inbound(), str(cmd)
+    cmd = get_payment_command(txn.reference_id)
+    assert cmd.inbound, str(cmd)
 
     with monkeypatch.context() as m:
         m.setattr(
@@ -120,7 +116,7 @@ def test_submit_txn_when_both_ready(monkeypatch):
     txn = save_outbound_transaction(
         user.account_id, receiver.account_address, subaddress, amount, currency
     )
-    cmd = _txn_payment_command(txn)
+    cmd = get_payment_command(txn.reference_id)
     receiver_cmd = dataclasses.replace(
         cmd, my_actor_address=cmd.payment.receiver.address
     )
@@ -146,8 +142,8 @@ def test_submit_txn_when_both_ready(monkeypatch):
     assert txn
     assert txn.status == TransactionStatus.OFF_CHAIN_INBOUND
 
-    cmd = _txn_payment_command(txn)
-    assert cmd.is_inbound(), str(cmd)
+    cmd = get_payment_command(txn.reference_id)
+    assert cmd.inbound, str(cmd)
 
     process_offchain_tasks()
     db_session.refresh(txn)

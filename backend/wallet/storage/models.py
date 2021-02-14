@@ -104,8 +104,55 @@ class Transaction(Base):
         "Account", backref="received_transactions", foreign_keys=[destination_id]
     )
 
-    reference_id = Column(String, nullable=True, unique=True, index=True)
-    command_json = Column(String, nullable=True)
+    reference_id = Column(
+        String,
+        ForeignKey("paymentcommand.reference_id"),
+        nullable=True,
+        unique=True,
+        index=True,
+    )
+
+
+class PaymentCommand(Base):
+    __tablename__ = "paymentcommand"
+
+    reference_id = Column(
+        String, primary_key=True, nullable=False, unique=True, index=True
+    )
+    status = Column(String, nullable=False)
+    my_actor_address = Column(String, nullable=False)
+    inbound = Column(Boolean, nullable=False)
+    cid = Column(String, nullable=False)
+    sender_address = Column(String, nullable=False)
+    sender_status = Column(String, nullable=False, default="none")
+    sender_kyc_data = Column(String, nullable=True)
+    sender_metadata = Column(String, nullable=True)
+    sender_additional_kyc_data = Column(String, nullable=True)
+    receiver_address = Column(String, nullable=False)
+    receiver_status = Column(String, nullable=False, default="none")
+    receiver_kyc_data = Column(String, nullable=True)
+    receiver_metadata = Column(String, nullable=True)
+    receiver_additional_kyc_data = Column(String, nullable=True)
+    amount = Column(Integer, nullable=False)
+    currency = Column(String, nullable=False)
+    action = Column(String, nullable=False, default="charge")
+    created_at = Column(DateTime, nullable=False)
+    original_payment_reference_id = Column(String, nullable=True)
+    recipient_signature = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+
+    def update(self, updated_command):
+        new_command_attributes = [
+            a for a in dir(updated_command) if not a.startswith("_")
+        ]
+        for key in new_command_attributes:
+            try:
+                if getattr(self, key) != getattr(updated_command, key):
+                    setattr(self, key, getattr(updated_command, key))
+            except AttributeError:
+                # An attribute in updated_command does not exist in 'self'
+                # We assume this has nothing to do with us and continue to next attribute
+                ...
 
 
 # Execution log for transaction

@@ -214,8 +214,40 @@ class Chain(Schema):
     display_name = fields.Str(required=True)
 
 
+class StatusObject(Schema):
+    status = fields.Str(required=True)
+
+
+class PaymentActorObject(Schema):
+    address = fields.Str(required=True, allow_none=False)
+    status = fields.Nested(StatusObject)
+    kyc_data = fields.Str(required=False)
+    metadata = fields.Str(required=False)
+    additional_kyc_data = fields.Str(required=False)
+
+
+class PaymentActionObject(Schema):
+    amount = fields.Int(required=True)
+    currency = fields.Str(required=True)
+    action = fields.Str(required=True, validate=OneOf(["charge", "auth", "capture"]))
+    timestamp = fields.Int(required=True)
+
+
+class PaymentObject(Schema):
+    reference_id = fields.Str(required=True, allow_none=False)
+    sender = fields.Nested(PaymentActorObject)
+    receiver = fields.Nested(PaymentActorObject)
+    action = fields.Nested(PaymentActionObject)
+    original_payment_reference_id = fields.Str(required=False)
+    recipient_signature = fields.Str(required=False)
+    description = fields.Str(required=False)
+
+
 class PaymentCommand(Schema):
-    payment_command = fields.Str(required=False, allow_none=True, missing=None)
+    my_actor_address = fields.Str(required=True, allow_none=False)
+    payment = fields.Nested(PaymentObject)
+    inbound = fields.Bool(required=True)
+    cid = fields.Str(required=True)
 
 
 class PaymentCommands(Schema):

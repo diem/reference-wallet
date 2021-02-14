@@ -6,12 +6,12 @@
 from datetime import datetime
 from typing import Optional, List, Callable
 
+from diem_utils.types.currencies import DiemCurrency
 from sqlalchemy import func, and_, or_
 
 from . import db_session, get_user
 from .models import Transaction, TransactionLog
 from ..types import TransactionStatus, TransactionType
-from diem_utils.types.currencies import DiemCurrency
 
 
 def lock_for_update(
@@ -47,7 +47,6 @@ def add_transaction(
     sequence: Optional[int] = None,
     blockchain_version: Optional[int] = None,
     reference_id: Optional[str] = None,
-    command_json: Optional[str] = None,
 ) -> Transaction:
     return commit_transaction(
         Transaction(
@@ -65,7 +64,6 @@ def add_transaction(
             sequence=sequence,
             blockchain_version=blockchain_version,
             reference_id=reference_id,
-            command_json=command_json,
         )
     )
 
