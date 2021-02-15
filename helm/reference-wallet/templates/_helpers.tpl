@@ -81,13 +81,10 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
-{{- define "reference-wallet.peripherals.database.liquidityUrl" -}}
-{{- if .Values.peripherals.database.create }}
-{{- $host := printf "%s-db" (include "reference-wallet.fullname" .) }}
-{{- with .Values.peripherals.database }}
-{{- .protocol }}://{{ .username }}:{{ .password }}@{{ $host }}:{{ .port }}/{{ .liquidityDbName }}
-{{- end }}
-{{- else }}
-{{- .Values.peripherals.database.host }}
-{{- end }}
+{{/*
+Returns proper value for the wallet's CUSTODY_PRIVATE_KEYS environment variable
+*/}}
+{{- define "reference-wallet.custodyPrivateKeys" }}
+{{-     $privateKey := required "Wallet VASP account private key must be set in .Values.vaspPrivateKey" .Values.vaspPrivateKey }}
+{{-     dict .Values.custodyWalletAccountName $privateKey | toJson | quote }}
 {{- end }}
