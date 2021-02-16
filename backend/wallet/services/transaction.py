@@ -207,13 +207,15 @@ def send_transaction(
         )
     else:
         if not risk_check(sender_id, amount):
-            return offchain_service.save_outbound_transaction(
+            payment_command = offchain_service.save_outbound_payment_command(
                 sender_id=sender_id,
                 destination_address=destination_address,
                 destination_subaddress=destination_subaddress,
                 amount=amount,
                 currency=currency,
             )
+            # TODO
+            return None
 
         return _send_transaction_external(
             sender_id=sender_id,
