@@ -130,8 +130,8 @@ def _process_by_status(
         [offchain.PaymentCommand, offchain.Action], Optional[PaymentCommandModel]
     ],
 ) -> None:
-    models = storage.get_payment_commands_by_status(status)
-    for model in models:
+    commands_models = storage.get_payment_commands_by_status(status)
+    for model in commands_models:
         command = model_to_payment_command(model)
         action = command.follow_up_action()
 
