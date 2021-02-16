@@ -175,26 +175,24 @@ def _send_kyc_data_and_receipient_signature(
     )
 
 
-def _lock_and_save_inbound_command(command: offchain.PaymentCommand) -> Transaction:
-    def validate_and_save(txn: Optional[Transaction]) -> Transaction:
-        if txn:
-            prior = get_payment_command(txn.reference_id)
+def _lock_and_save_inbound_command(command: offchain.PaymentCommand) -> models.PaymentCommand:
+    def validate_and_save(model: Optional[models.PaymentCommand]) -> models.PaymentCommand:
+        if model:
+            prior = get_payment_command(model.reference_id)
             if command == prior:
                 return
             command.validate(prior)
-            txn.status = _command_transaction_status(
+            model.status = _command_transaction_status(
                 command, TransactionStatus.OFF_CHAIN_INBOUND
             )
-            model = payment_command_to_model(command, txn.status)
-            update_payment_command(model)
+            model = payment_command_to_model(command, model.status)
         else:
-            txn = _new_payment_command_transaction(
+            model = _new_payment_command_transaction(
                 command, TransactionStatus.OFF_CHAIN_INBOUND
             )
-            model = payment_command_to_model(command, txn.status)
-            commit_payment_command(model)
+            model = payment_command_to_model(command, model.status)
 
-        return txn
+        return model
 
     return lock_for_update(command.reference_id(), validate_and_save)
 

@@ -51,3 +51,26 @@ def get_commands_by_status(status: TransactionStatus) -> List[models.PaymentComm
 
 def get_all() -> List[models.PaymentCommand]:
     return models.PaymentCommand.query.all()
+
+
+def lock_for_update(
+    reference_id: str,
+    callback: Callable[[Optional[models.PaymentCommand]], models.PaymentCommand],
+) -> models.PaymentCommand:
+    try:
+        command = (
+            models.PaymentCommand.query.filter_by(reference_id=reference_id)
+            .populate_existing()
+            .with_for_update(nowait=True)
+            .one_or_none()
+        )
+        new_command = callback(command)
+
+        if command:
+            update_payment_command(new_command)
+        else:
+            commit_payment_command(new_command)
+    except Exception:
+        db_session.rollback()
+        raise
+    return command
