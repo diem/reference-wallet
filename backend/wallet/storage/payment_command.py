@@ -73,4 +73,4 @@ def lock_for_update(
     except Exception:
         db_session.rollback()
         raise
-    return command
+    return new_command
