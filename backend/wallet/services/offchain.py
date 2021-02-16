@@ -90,9 +90,7 @@ def process_offchain_tasks() -> None:
             status = _payment_command_status(
                 new_cmd, TransactionStatus.OFF_CHAIN_OUTBOUND
             )
-            new_model = payment_command_to_model(new_cmd, status)
-
-            return new_model
+            return payment_command_to_model(new_cmd, status)
         else:
             # todo: handle REVIEW_KYC_DATA and CLEAR_SOFT_MATCH
             raise ValueError(f"unsupported offchain action: {action}, command: {cmd}")
