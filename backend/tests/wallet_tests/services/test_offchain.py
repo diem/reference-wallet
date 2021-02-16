@@ -22,6 +22,7 @@ from wallet.services.transaction import (
 from wallet.storage import (
     get_account_transaction_ids,
     db_session,
+    get_account_payment_commands,
 )
 from wallet.types import TransactionStatus
 
@@ -39,7 +40,7 @@ def test_save_outbound_payment_command(monkeypatch):
         user.account_id, receiver.account_address, subaddress, amount, currency
     )
 
-    # assert txn.id in get_account_transaction_ids(user.account_id)
+    assert cmd in get_account_payment_commands(user.account_id)
     assert cmd.reference_id is not None
     print(f"~~~~ {cmd.reference_id}")
     payment_command = get_payment_command(cmd.reference_id)
