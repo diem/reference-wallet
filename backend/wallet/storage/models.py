@@ -123,6 +123,7 @@ class PaymentCommand(Base):
         String, primary_key=True, nullable=False, unique=True, index=True
     )
     status = Column(String, nullable=False)
+    account_id = Column(Integer, ForeignKey("account.id"), nullable=False)
     my_actor_address = Column(String, nullable=False)
     inbound = Column(Boolean, nullable=False)
     cid = Column(String, nullable=False)

@@ -76,3 +76,7 @@ def lock_for_update(
         db_session.rollback()
         raise
     return new_command
+
+
+def get_account_payment_commands(account_id) -> List[models.PaymentCommand]:
+    return models.PaymentCommand.query.filter_by(account_id=account_id).all()

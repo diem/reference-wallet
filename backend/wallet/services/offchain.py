@@ -274,17 +274,11 @@ def get_payment_command(reference_id: int) -> Optional[offchain.PaymentCommand]:
 
 
 def get_account_payment_commands(account_id: int) -> List[offchain.PaymentCommand]:
-    transactions = storage.get_account_transactions(account_id)
+    commands_models = storage.get_account_payment_commands(account_id)
     commands = []
 
-    for transaction in transactions:
-        reference_id = transaction.reference_id
-
-        if reference_id:
-            payment_command = model_to_payment_command(
-                storage.get_payment_command(reference_id)
-            )
-            commands.append(payment_command)
+    for model in commands_models:
+        commands.append(model_to_payment_command(model))
 
     return commands
 
@@ -319,7 +313,35 @@ def payment_command_to_model(
         recipient_signature=command.payment.recipient_signature,
         description=command.payment.description,
         status=status,
+        # TODO
+        account_id=get_command_account_id(command),
     )
+
+
+def get_command_account_id(command: offchain.PaymentCommand) -> int:
+    """ Find the account id for the command """
+    sender_address_bech32 = command.payment.sender.address
+    sender_address, sender_sub_address = identifier.decode_account(
+        sender_address_bech32, context.get().config.diem_address_hrp()
+    )
+
+    if sender_address.to_hex() == context.get().config.vasp_address:
+        account_id = get_account_id_from_subaddr(sender_sub_address.hex())
+        if account_id:
+            return account_id
+
+    receiver_address_bech32 = command.payment.receiver.address
+    receiver_address, receiver_sub_address = identifier.decode_account(
+        receiver_address_bech32, context.get().config.diem_address_hrp()
+    )
+
+    if receiver_address.to_hex() == context.get().config.vasp_address:
+        account_id = get_account_id_from_subaddr(receiver_sub_address.hex())
+        if account_id:
+            return account_id
+
+    # TODO inventory account id? error?
+    return 1
 
 
 def model_to_payment_command(model: PaymentCommandModel) -> offchain.PaymentCommand:
