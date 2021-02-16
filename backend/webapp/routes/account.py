@@ -233,6 +233,7 @@ class AccountRoutes:
                     if dest_subaddress
                     else None,
                 )
+                # TODO tx is None in case of travel rule
                 transaction = AccountRoutes.get_transaction_response_object(
                     user.account_id, tx
                 )

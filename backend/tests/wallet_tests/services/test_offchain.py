@@ -10,7 +10,7 @@ from wallet.services.account import (
     generate_new_subaddress,
 )
 from wallet.services.offchain import (
-    save_outbound_transaction,
+    save_outbound_payment_command,
     process_offchain_tasks,
     process_inbound_command,
     _user_kyc_data,
@@ -28,21 +28,21 @@ from wallet.types import TransactionStatus
 currency = DiemCurrency.XUS
 
 
-def test_save_outbound_transaction(monkeypatch):
+def test_save_outbound_payment_command(monkeypatch):
     user = OneUser.run(
         db_session, account_amount=100_000_000_000, account_currency=currency
     )
     amount = 10_000_000_000
     receiver = LocalAccount.generate()
     subaddress = identifier.gen_subaddress()
-    txn = save_outbound_transaction(
+    cmd = save_outbound_payment_command(
         user.account_id, receiver.account_address, subaddress, amount, currency
     )
 
-    assert txn.id in get_account_transaction_ids(user.account_id)
-    assert txn.reference_id is not None
-    print(f"~~~~ {txn.reference_id}")
-    payment_command = get_payment_command(txn.reference_id)
+    # assert txn.id in get_account_transaction_ids(user.account_id)
+    assert cmd.reference_id is not None
+    print(f"~~~~ {cmd.reference_id}")
+    payment_command = get_payment_command(cmd.reference_id)
     assert payment_command is not None
 
     with monkeypatch.context() as m:
@@ -53,8 +53,8 @@ def test_save_outbound_transaction(monkeypatch):
         )
         process_offchain_tasks()
 
-        db_session.refresh(txn)
-        assert txn.status == TransactionStatus.OFF_CHAIN_WAIT
+        db_session.refresh(cmd)
+        assert cmd.status == TransactionStatus.OFF_CHAIN_WAIT
 
 
 def test_process_inbound_command(monkeypatch):
@@ -113,7 +113,7 @@ def test_submit_txn_when_both_ready(monkeypatch):
     amount = 10_000_000_000
     receiver = LocalAccount.generate()
     subaddress = identifier.gen_subaddress()
-    txn = save_outbound_transaction(
+    txn = save_outbound_payment_command(
         user.account_id, receiver.account_address, subaddress, amount, currency
     )
     cmd = get_payment_command(txn.reference_id)
