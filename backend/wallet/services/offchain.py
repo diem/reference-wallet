@@ -76,7 +76,7 @@ def _jws(cid: Optional[str], err: Optional[offchain.OffChainErrorObject] = None)
 def process_offchain_tasks() -> None:
     def send_command(cmd, _) -> PaymentCommandModel:
         assert not cmd.is_inbound()
-        model = storage.get_payment_command(cmd.reference_id)
+        model = storage.get_payment_command(cmd.reference_id())
         model.status = TransactionStatus.OFF_CHAIN_WAIT
         _offchain_client().send_command(cmd, _compliance_private_key().sign)
         return model
