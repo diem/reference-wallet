@@ -192,6 +192,7 @@ def _transfer_funds_to_lp(order: Order) -> int:
         destination_address=lp_details.vasp,
         destination_subaddress=lp_details.sub_address,
     )
+    # TODO tx is None in case of travel rule
     return _wait_for_lp_deposit_transaction_to_complete(tx.id)
 
 

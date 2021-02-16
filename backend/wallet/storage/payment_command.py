@@ -45,7 +45,9 @@ def get_payment_command(reference_id: str) -> models.PaymentCommand:
     return models.PaymentCommand.query.filter_by(reference_id=reference_id).first()
 
 
-def get_commands_by_status(status: TransactionStatus) -> List[models.PaymentCommand]:
+def get_payment_commands_by_status(
+    status: TransactionStatus,
+) -> List[models.PaymentCommand]:
     return models.PaymentCommand.query.filter_by(status=status).all()
 
 
