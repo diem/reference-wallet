@@ -14,25 +14,6 @@ from .models import Transaction, TransactionLog
 from ..types import TransactionStatus, TransactionType
 
 
-def lock_for_update(
-    reference_id: str,
-    callback: Callable[[Optional[Transaction]], Transaction],
-) -> Transaction:
-    try:
-        txn = (
-            Transaction.query.filter_by(reference_id=reference_id)
-            .populate_existing()
-            .with_for_update(nowait=True)
-            .one_or_none()
-        )
-        txn = callback(txn)
-        commit_transaction(txn)
-    except Exception:
-        db_session.rollback()
-        raise
-    return txn
-
-
 def add_transaction(
     amount: int,
     currency: DiemCurrency,
