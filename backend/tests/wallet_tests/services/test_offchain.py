@@ -9,21 +9,10 @@ from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet.services.account import (
     generate_new_subaddress,
 )
-from wallet.services.offchain import (
-    save_outbound_payment_command,
-    process_offchain_tasks,
-    process_inbound_command,
-    _user_kyc_data,
-    get_payment_command,
-)
-from wallet.services.transaction import (
-    get_transaction_by_reference_id,
-)
-from wallet.storage import (
-    get_account_transaction_ids,
-    db_session,
-    get_account_payment_commands,
-)
+from wallet.services import offchain as offchain_service
+from wallet.storage import db_session
+
+from wallet import storage
 from wallet.types import TransactionStatus
 
 currency = DiemCurrency.XUS
@@ -35,16 +24,17 @@ def test_save_outbound_payment_command(monkeypatch):
     )
     amount = 10_000_000_000
     receiver = LocalAccount.generate()
-    subaddress = identifier.gen_subaddress()
-    cmd = save_outbound_payment_command(
-        user.account_id, receiver.account_address, subaddress, amount, currency
+    sub_address = identifier.gen_subaddress()
+    cmd = offchain_service.save_outbound_payment_command(
+        user.account_id, receiver.account_address, sub_address, amount, currency
     )
 
-    assert cmd in get_account_payment_commands(user.account_id)
-    assert cmd.reference_id is not None
-    print(f"~~~~ {cmd.reference_id}")
-    payment_command = get_payment_command(cmd.reference_id)
-    assert payment_command is not None
+    assert cmd is not None
+    assert cmd.reference_id() is not None
+
+    model = storage.get_payment_command(cmd.reference_id())
+    assert model is not None
+    assert model.reference_id is not None
 
     with monkeypatch.context() as m:
         m.setattr(
@@ -52,10 +42,10 @@ def test_save_outbound_payment_command(monkeypatch):
             "send_command",
             lambda cmd, _: offchain.reply_request(cmd.cid),
         )
-        process_offchain_tasks()
+        offchain_service.process_offchain_tasks()
 
-        db_session.refresh(cmd)
-        assert cmd.status == TransactionStatus.OFF_CHAIN_WAIT
+        db_session.refresh(model)
+        assert model.status == TransactionStatus.OFF_CHAIN_WAIT
 
 
 def test_process_inbound_command(monkeypatch):
@@ -65,13 +55,13 @@ def test_process_inbound_command(monkeypatch):
     )
     amount = 10_000_000_000
     sender = LocalAccount.generate()
-    sender_subaddress = identifier.gen_subaddress()
-    receiver_subaddress = generate_new_subaddress(user.account_id)
+    sender_sub_address = identifier.gen_subaddress()
+    receiver_sub_address = generate_new_subaddress(user.account_id)
     cmd = offchain.PaymentCommand.init(
-        identifier.encode_account(sender.account_address, sender_subaddress, hrp),
-        _user_kyc_data(user.account_id),
+        identifier.encode_account(sender.account_address, sender_sub_address, hrp),
+        offchain_service._user_kyc_data(user.account_id),
         identifier.encode_account(
-            context.get().config.vasp_address, receiver_subaddress, hrp
+            context.get().config.vasp_address, receiver_sub_address, hrp
         ),
         amount,
         currency.value,
@@ -84,16 +74,16 @@ def test_process_inbound_command(monkeypatch):
             "process_inbound_request",
             lambda _, cmd: client.create_inbound_payment_command(cmd.cid, cmd.payment),
         )
-        code, resp = process_inbound_command(cmd.payment.sender.address, cmd)
+        code, resp = offchain_service.process_inbound_command(
+            cmd.payment.sender.address, cmd
+        )
         assert code == 200
         assert resp
 
-    txn = get_transaction_by_reference_id(cmd.reference_id())
-    assert txn
-    assert txn.status == TransactionStatus.OFF_CHAIN_INBOUND
-
-    cmd = get_payment_command(txn.reference_id)
-    assert cmd.inbound, str(cmd)
+    model = storage.get_payment_command(cmd.reference_id())
+    assert model
+    assert model.status == TransactionStatus.OFF_CHAIN_INBOUND
+    assert model.inbound, str(cmd)
 
     with monkeypatch.context() as m:
         m.setattr(
@@ -101,10 +91,10 @@ def test_process_inbound_command(monkeypatch):
             "send_command",
             lambda cmd, _: offchain.reply_request(cmd.cid),
         )
-        process_offchain_tasks()
+        offchain_service.process_offchain_tasks()
 
-        db_session.refresh(txn)
-        assert txn.status == TransactionStatus.OFF_CHAIN_OUTBOUND
+        db_session.refresh(model)
+        assert model.status == TransactionStatus.OFF_CHAIN_OUTBOUND
 
 
 def test_submit_txn_when_both_ready(monkeypatch):
