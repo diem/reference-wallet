@@ -33,7 +33,8 @@ spec:
       initContainers:
       - name: init-wait
         image: "{{ .Values.images.backend }}"
-        command: ["sh", "-c", '/wait.sh {{ include "reference-wallet.fullname" . }}-liquidity {{ .Values.service.port }} || exit 1']
+        command: ["sh", "-c", '/wait.sh {{ .Values.liquidityProviderHost }} {{ .Values.liquidityProviderPort }} || exit 1']
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
       containers:
       - command:
           - /wallet/run_web.sh
@@ -46,30 +47,26 @@ spec:
           value: {{ include "reference-wallet.peripherals.redis.url" . }}
         - name: DB_URL
           value: {{ include "reference-wallet.peripherals.database.url" . }}
-        - name: LP_DB_URL
-          value: {{ include "reference-wallet.peripherals.database.liquidityUrl" . }}
         - name: ADMIN_USERNAME
-          value: {{ .Values.peripherals.database.adminUsername }}
+          value: {{ .Values.walletAdminUsername }}
         - name: WALLET_CUSTODY_ACCOUNT_NAME
           value: {{ .Values.custodyWalletAccountName | quote }}
         - name: CUSTODY_PRIVATE_KEYS
-          value: {{ .Values.custodyPrivateKeysWallet | toJson | quote }}
+          value: {{ include "reference-wallet.custodyPrivateKeys" . }}
         - name: LIQUIDITY_SERVICE_PORT
-          value: {{ .Values.service.targetPort | quote }}
+          value: {{ .Values.liquidityProviderPort | quote }}
         - name: LIQUIDITY_SERVICE_HOST
-          value: {{ include "reference-wallet.fullname" . }}-liquidity
+          value: {{ .Values.liquidityProviderHost | quote }}
         - name: FAUCET_URL
           value: {{ .Values.sdk.faucet }}
         - name: VASP_ADDR
-          value: {{ .Values.vaspAddr }}
+          value: {{ required "Wallet VASP account address must be set in .Values.vaspAddr" .Values.vaspAddr | quote }}
         - name: VASP_COMPLIANCE_KEY
-          value: {{ .Values.vaspComplianceKey | toJson | quote }}
+          value: {{ required "Wallet VASP compliance key must be set in .Values.vaspComplianceKey" .Values.vaspComplianceKey | quote }}
         - name: JSON_RPC_URL
           value: {{ .Values.sdk.jsonRpc }}
-        - name: OFFCHAIN_SERVICE_PORT
-          value: {{ .Values.service.targetOffchainPort | quote }}
         - name: VASP_BASE_URL
-          value: http://{{ .Values.ingress.host }}/offchain
+          value: http://{{ .Values.ingress.host }}/api/offchain
         - name: CHAIN_ID
           value: {{ .Values.chainId | quote }}
         - name: GAS_CURRENCY_CODE
@@ -80,9 +77,6 @@ spec:
         ports:
           - name: http
             containerPort: {{.Values.service.targetPort}}
-            protocol: TCP
-          - name: offchain
-            containerPort: {{ .Values.service.targetOffchainPort }}
             protocol: TCP
 ---
 apiVersion: apps/v1
@@ -121,6 +115,7 @@ spec:
       - name: init-wait
         image: "{{ .Values.images.backend }}"
         command: ["sh", "-c", '/wait.sh {{ include "reference-wallet.fullname" . }}-web {{ .Values.service.port }} || exit 1']
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
       containers:
       - command:
           - /wallet/run_worker.sh
@@ -129,16 +124,14 @@ spec:
           value: {{ include "reference-wallet.peripherals.redis.url" . }}
         - name: DB_URL
           value: {{ include "reference-wallet.peripherals.database.url" . }}
-        - name: LP_DB_URL
-          value: {{ include "reference-wallet.peripherals.database.liquidityUrl" . }}
         - name: ADMIN_USERNAME
-          value: {{ .Values.peripherals.database.adminUsername }}
+          value: {{ .Values.walletAdminUsername }}
         - name: CUSTODY_PRIVATE_KEYS
-          value: {{ .Values.custodyPrivateKeysWallet | toJson | quote }}
+          value: {{ include "reference-wallet.custodyPrivateKeys" . }}
         - name: LIQUIDITY_SERVICE_PORT
-          value: {{ .Values.service.targetPort | quote }}
+          value: {{ .Values.liquidityProviderPort | quote }}
         - name: LIQUIDITY_SERVICE_HOST
-          value: {{ include "reference-wallet.fullname" . }}-liquidity
+          value: {{ .Values.liquidityProviderHost | quote }}
         - name: PROCS
           value: {{ .Values.workers.numProcs | quote }}
         - name: THREADS
@@ -150,13 +143,11 @@ spec:
         - name: WALLET_CUSTODY_ACCOUNT_NAME
           value: {{ .Values.custodyWalletAccountName | quote }}
         - name: VASP_COMPLIANCE_KEY
-          value: {{ .Values.vaspComplianceKey | toJson | quote }}
+          value: {{ required "Wallet VASP compliance key must be set in .Values.vaspComplianceKey" .Values.vaspComplianceKey | quote }}
         - name: JSON_RPC_URL
           value: {{ .Values.sdk.jsonRpc }}
-        - name: OFFCHAIN_SERVICE_PORT
-          value: {{ .Values.service.targetOffchainPort | quote }}
         - name: VASP_BASE_URL
-          value: http://{{ .Values.ingress.host }}/offchain
+          value: http://{{ .Values.ingress.host }}/api/offchain
         - name: CHAIN_ID
           value: {{ .Values.chainId | quote }}
         - name: GAS_CURRENCY_CODE
@@ -205,6 +196,7 @@ spec:
       - name: init-wait
         image: "{{ .Values.images.backend }}"
         command: ["sh", "-c", '/wait.sh {{ include "reference-wallet.fullname" . }}-web {{ .Values.service.port }} || exit 1']
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
       containers:
       - command:
           - /wallet/run_pubsub.sh
@@ -214,11 +206,11 @@ spec:
         - name: DB_URL
           value: {{ include "reference-wallet.peripherals.database.url" . }}
         - name: CUSTODY_PRIVATE_KEYS
-          value: {{ .Values.custodyPrivateKeysWallet | toJson | quote }}
+          value: {{ include "reference-wallet.custodyPrivateKeys" . }}
         - name: LIQUIDITY_SERVICE_PORT
-          value: {{ .Values.service.targetPort | quote }}
+          value: {{ .Values.liquidityProviderPort | quote }}
         - name: LIQUIDITY_SERVICE_HOST
-          value: {{ include "reference-wallet.fullname" . }}-liquidity
+          value: {{ .Values.liquidityProviderHost | quote }}
         - name: FAUCET_URL
           value: {{ .Values.sdk.faucet }}
         - name: VASP_ADDR
@@ -226,13 +218,11 @@ spec:
         - name: WALLET_CUSTODY_ACCOUNT_NAME
           value: {{ .Values.custodyWalletAccountName | quote }}
         - name: VASP_COMPLIANCE_KEY
-          value: {{ .Values.vaspComplianceKey | toJson | quote }}
+          value: {{ required "Wallet VASP compliance key must be set in .Values.vaspComplianceKey" .Values.vaspComplianceKey | quote }}
         - name: JSON_RPC_URL
           value: {{ .Values.sdk.jsonRpc }}
-        - name: OFFCHAIN_SERVICE_PORT
-          value: {{ .Values.service.targetOffchainPort | quote }}
         - name: VASP_BASE_URL
-          value: http://{{ .Values.ingress.host }}/offchain
+          value: http://{{ .Values.ingress.host }}/api/offchain
         - name: CHAIN_ID
           value: {{ .Values.chainId | quote }}
         - name: GAS_CURRENCY_CODE

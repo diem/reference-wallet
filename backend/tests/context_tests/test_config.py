@@ -36,7 +36,7 @@ def test_generate_config():
     assert conf.compliance_private_key()
     assert conf.compliance_public_key_bytes()
     assert conf.json_rpc_url == config.testnet.JSON_RPC_URL
-    assert conf.base_url == "http://localhost:5001/offchain"
+    assert conf.base_url == "http://localhost:5001/api/offchain"
     assert conf.chain_id == 2
     assert conf.gas_currency_code == "XUS"
 
@@ -53,3 +53,5 @@ def test_diem_address_hrp():
     assert conf.diem_address_hrp() == "dm"
     conf.chain_id = 2
     assert conf.diem_address_hrp() == "tdm"
+    conf.chain_id = 222
+    assert conf.diem_address_hrp() == "pdm"

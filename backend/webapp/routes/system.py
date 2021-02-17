@@ -34,16 +34,15 @@ class SystemRoutes:
                     {"chain_id": chain_ids.DEVNET.to_int(), "display_name": "devnet"},
                     HTTPStatus.OK,
                 )
-            if chain_id == chain_ids.PREMAINNET.to_int():
-                return (
-                    {
-                        "chain_id": chain_ids.PREMAINNET.to_int(),
-                        "display_name": "premainnet",
-                    },
-                    HTTPStatus.OK,
-                )
             if chain_id == chain_ids.TESTNET.to_int():
                 return (
                     {"chain_id": chain_ids.TESTNET.to_int(), "display_name": "testnet"},
                     HTTPStatus.OK,
                 )
+            return (
+                {
+                    "chain_id": chain_id,
+                    "display_name": "premainnet",
+                },
+                HTTPStatus.OK,
+            )

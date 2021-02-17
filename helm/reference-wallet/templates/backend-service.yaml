@@ -12,10 +12,6 @@ spec:
       targetPort: {{ .Values.service.targetPort }}
       protocol: TCP
       name: http
-    - port: {{ .Values.service.offchainPort }}
-      targetPort: {{ .Values.service.targetOffchainPort }}
-      protocol: TCP
-      name: offchain
   selector:
     {{- include "reference-wallet.selectorLabels" . | nindent 4 }}
     app: {{ include "reference-wallet.fullname" . }}-web
