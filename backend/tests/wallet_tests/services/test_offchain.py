@@ -35,12 +35,13 @@ def test_save_outbound_payment_command(monkeypatch):
     model = storage.get_payment_command(cmd.reference_id())
     assert model is not None
     assert model.reference_id is not None
+    assert model.status == TransactionStatus.OFF_CHAIN_OUTBOUND
 
     with monkeypatch.context() as m:
         m.setattr(
             context.get().offchain_client,
             "send_command",
-            lambda cmd, _: offchain.reply_request(cmd.cid),
+            lambda c, _: offchain.reply_request(c.cid),
         )
         offchain_service.process_offchain_tasks()
 
@@ -72,7 +73,7 @@ def test_process_inbound_command(monkeypatch):
         m.setattr(
             client,
             "process_inbound_request",
-            lambda _, cmd: client.create_inbound_payment_command(cmd.cid, cmd.payment),
+            lambda _, c: client.create_inbound_payment_command(c.cid, c.payment),
         )
         code, resp = offchain_service.process_inbound_command(
             cmd.payment.sender.address, cmd
@@ -89,7 +90,7 @@ def test_process_inbound_command(monkeypatch):
         m.setattr(
             context.get().offchain_client,
             "send_command",
-            lambda cmd, _: offchain.reply_request(cmd.cid),
+            lambda c, _: offchain.reply_request(c.cid),
         )
         offchain_service.process_offchain_tasks()
 
@@ -103,18 +104,17 @@ def test_submit_txn_when_both_ready(monkeypatch):
     )
     amount = 10_000_000_000
     receiver = LocalAccount.generate()
-    subaddress = identifier.gen_subaddress()
-    txn = save_outbound_payment_command(
-        user.account_id, receiver.account_address, subaddress, amount, currency
+    sub_address = identifier.gen_subaddress()
+    cmd = offchain_service.save_outbound_payment_command(
+        user.account_id, receiver.account_address, sub_address, amount, currency
     )
-    cmd = get_payment_command(txn.reference_id)
     receiver_cmd = dataclasses.replace(
         cmd, my_actor_address=cmd.payment.receiver.address
     )
     receiver_ready_cmd = receiver_cmd.new_command(
         recipient_signature=b"recipient_signature".hex(),
         status=offchain.Status.ready_for_settlement,
-        kyc_data=_user_kyc_data(user.account_id),
+        kyc_data=offchain_service._user_kyc_data(user.account_id),
     )
 
     with monkeypatch.context() as m:
@@ -124,40 +124,37 @@ def test_submit_txn_when_both_ready(monkeypatch):
             "process_inbound_request",
             lambda _, c: client.create_inbound_payment_command(c.cid, c.payment),
         )
-        code, resp = process_inbound_command(
+        code, resp = offchain_service.process_inbound_command(
             cmd.payment.receiver.address, receiver_ready_cmd
         )
         assert code == 200
         assert resp
-    txn = get_transaction_by_reference_id(cmd.reference_id())
-    assert txn
-    assert txn.status == TransactionStatus.OFF_CHAIN_INBOUND
 
-    cmd = get_payment_command(txn.reference_id)
-    assert cmd.inbound, str(cmd)
-
-    process_offchain_tasks()
-    db_session.refresh(txn)
-    assert txn.status == TransactionStatus.OFF_CHAIN_READY
+    model = storage.get_payment_command(cmd.reference_id())
+    assert model
+    assert model.status == TransactionStatus.OFF_CHAIN_INBOUND
+    assert model.inbound, str(model)
 
     # sync command and submit
     with monkeypatch.context() as m:
         m.setattr(
             context.get().offchain_client,
             "send_command",
-            lambda cmd, _: offchain.reply_request(cmd.cid),
+            lambda c, _: offchain.reply_request(c.cid),
         )
         m.setattr(
             context.get(),
             "p2p_by_travel_rule",
             jsonrpc_txn_sample,
         )
-        process_offchain_tasks()
+        offchain_service.process_offchain_tasks()
 
-    db_session.refresh(txn)
-    assert txn.status == TransactionStatus.COMPLETED
-    assert txn.sequence == 5
-    assert txn.blockchain_version == 3232
+    model = storage.get_payment_command(cmd.reference_id())
+    assert model.status == TransactionStatus.COMPLETED, model.reference_id
+    tx = storage.get_transaction_by_reference_id(model.reference_id)
+    assert tx.status == TransactionStatus.COMPLETED
+    assert tx.sequence == 5
+    assert tx.blockchain_version == 3232
 
 
 def jsonrpc_txn_sample(*args):
