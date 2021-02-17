@@ -34,7 +34,7 @@ def save_outbound_payment_command(
     destination_subaddress: str,
     amount: int,
     currency: DiemCurrency,
-) -> PaymentCommandModel:
+) -> offchain.PaymentCommand:
     sender_onchain_address = context.get().config.vasp_address
     sender_subaddress = account.generate_new_subaddress(account_id=sender_id)
 
@@ -46,9 +46,11 @@ def save_outbound_payment_command(
         currency.value,
     )
 
-    return commit_payment_command(
+    commit_payment_command(
         payment_command_to_model(payment_command, TransactionStatus.OFF_CHAIN_OUTBOUND)
     )
+
+    return payment_command
 
 
 def process_inbound_command(
@@ -168,7 +170,7 @@ def _send_kyc_data_and_receipient_signature(
 
 def _lock_and_save_inbound_command(
     command: offchain.PaymentCommand,
-) -> PaymentCommandModel:
+) -> offchain.PaymentCommand:
     def validate_and_save(model: Optional[PaymentCommandModel]) -> PaymentCommandModel:
         if model:
             prior = get_payment_command(model.reference_id)
@@ -184,7 +186,9 @@ def _lock_and_save_inbound_command(
                 command, TransactionStatus.OFF_CHAIN_INBOUND
             )
 
-    return lock_for_update(command.reference_id(), validate_and_save)
+    return model_to_payment_command(
+        lock_for_update(command.reference_id(), validate_and_save)
+    )
 
 
 def _payment_command_status(

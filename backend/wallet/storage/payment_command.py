@@ -34,6 +34,8 @@ def update_payment_command(command: models.PaymentCommand):
             f"Command not found for reference id {command.reference_id}"
         )
 
+    return command_in_db
+
 
 def commit_payment_command(command: models.PaymentCommand):
     db_session.add(command)
