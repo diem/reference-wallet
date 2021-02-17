@@ -268,7 +268,8 @@ def _account_address_and_subaddress(account_id: str) -> Tuple[str, Optional[str]
 
 def _user_kyc_data(user_id: int) -> offchain.KycDataObject:
     return offchain.types.from_dict(
-        kyc.get_user_kyc_info(user_id), offchain.KycDataObject, ""
+        kyc.get_user_kyc_info(user_id),
+        offchain.KycDataObject,
     )
 
 
