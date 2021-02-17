@@ -317,6 +317,7 @@ def preapproval_model_to_command(
         created_timestamp=command.created_at,
         updated_at=command.updated_at,
         approved_at=command.approved_at,
+        inbound=False,
     )
 
 

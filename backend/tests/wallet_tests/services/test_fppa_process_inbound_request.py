@@ -90,7 +90,9 @@ class ProcessInboundCommand:
         )
 
         return offchain.FundsPullPreApprovalCommand(
-            my_actor_address=address, funds_pull_pre_approval=funds_pull_pre_approval
+            my_actor_address=address,
+            funds_pull_pre_approval=funds_pull_pre_approval,
+            inbound=False,
         )
 
     @staticmethod
