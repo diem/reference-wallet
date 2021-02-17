@@ -36,10 +36,10 @@ def save_outbound_payment_command(
     currency: DiemCurrency,
 ) -> offchain.PaymentCommand:
     sender_onchain_address = context.get().config.vasp_address
-    sender_subaddress = account.generate_new_subaddress(account_id=sender_id)
+    sender_sub_address = account.generate_new_subaddress(account_id=sender_id)
 
-    payment_command = offchain.PaymentCommand.init(
-        identifier.encode_account(sender_onchain_address, sender_subaddress, _hrp()),
+    command = offchain.PaymentCommand.init(
+        identifier.encode_account(sender_onchain_address, sender_sub_address, _hrp()),
         _user_kyc_data(sender_id),
         identifier.encode_account(destination_address, destination_subaddress, _hrp()),
         amount,
@@ -47,10 +47,10 @@ def save_outbound_payment_command(
     )
 
     commit_payment_command(
-        payment_command_to_model(payment_command, TransactionStatus.OFF_CHAIN_OUTBOUND)
+        payment_command_to_model(command, TransactionStatus.OFF_CHAIN_OUTBOUND)
     )
 
-    return payment_command
+    return command
 
 
 def process_inbound_command(
@@ -100,9 +100,11 @@ def process_offchain_tasks() -> None:
     def submit_txn(cmd, _) -> PaymentCommandModel:
         if cmd.is_sender():
             _offchain_client().send_command(cmd, _compliance_private_key().sign)
-            txn = _new_payment_command_transaction(cmd, TransactionStatus.COMPLETED)
+            transaction = _new_transaction_base_on_payment_command(
+                cmd, TransactionStatus.COMPLETED
+            )
             logger.info(
-                f"Submitting transaction ID:{txn.id} {txn.amount} {txn.currency}"
+                f"Submitting transaction ID:{transaction.id} {transaction.amount} {transaction.currency}"
             )
             rpc_txn = context.get().p2p_by_travel_rule(
                 cmd.receiver_account_address(_hrp()),
@@ -111,12 +113,13 @@ def process_offchain_tasks() -> None:
                 cmd.travel_rule_metadata(_hrp()),
                 bytes.fromhex(cmd.payment.recipient_signature),
             )
-            txn.sequence = rpc_txn.transaction.sequence_number
-            txn.blockchain_version = rpc_txn.version
-            txn.status = TransactionStatus.COMPLETED
+            transaction.sequence = rpc_txn.transaction.sequence_number
+            transaction.blockchain_version = rpc_txn.version
+            transaction.status = TransactionStatus.COMPLETED
             logger.info(
-                f"Submitted transaction ID:{txn.id} V:{txn.blockchain_version} {txn.amount} {txn.currency}"
+                f"Submitted transaction ID:{transaction.id} V:{transaction.blockchain_version} {transaction.amount} {transaction.currency}"
             )
+            storage.commit_transaction(transaction)
             return payment_command_to_model(cmd, TransactionStatus.COMPLETED)
 
     _process_by_status(TransactionStatus.OFF_CHAIN_OUTBOUND, send_command)
@@ -201,7 +204,7 @@ def _payment_command_status(
     return default
 
 
-def _new_payment_command_transaction(
+def _new_transaction_base_on_payment_command(
     command: offchain.PaymentCommand, status: TransactionStatus
 ) -> Transaction:
     payment = command.payment
