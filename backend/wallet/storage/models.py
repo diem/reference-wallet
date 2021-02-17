@@ -151,8 +151,9 @@ class PaymentCommand(Base):
         ]
         for key in new_command_attributes:
             try:
-                if getattr(self, key) != getattr(updated_command, key):
-                    setattr(self, key, getattr(updated_command, key))
+                updated_value = getattr(updated_command, key)
+                if not callable(updated_value) and getattr(self, key) != updated_value:
+                    setattr(self, key, updated_value)
             except AttributeError:
                 # An attribute in updated_command does not exist in 'self'
                 # We assume this has nothing to do with us and continue to next attribute
