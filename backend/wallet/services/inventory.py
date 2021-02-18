@@ -29,7 +29,7 @@ from wallet.types import (
 logger = logging.getLogger(__name__)
 
 INVENTORY_COVER_CURRENCY = Currency.USD
-INVENTORY_AMOUNT = 950_000_000
+INVENTORY_AMOUNT = 100_000_000_000
 
 
 def wait_for_trade_to_complete(trade_id):
