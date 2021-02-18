@@ -122,7 +122,7 @@ def process_incoming_transaction(
             return
 
         raise InvalidTravelRuleMetadata(
-            f"Travel Rule metadata decode failed: Transaction {transaction_id} with reference ID {reference_id} "
+            f"Travel Rule metadata decode failed: Transaction {transaction.id} with reference ID {reference_id} "
             f"should have amount: {transaction.amount}, status: {TransactionStatus.OFF_CHAIN_READY}, "
             f"source address: {transaction.source_address}, destination address: {transaction.destination_address},"
             f" but received transaction has amount: {amount}, status: {transaction.status}, "
