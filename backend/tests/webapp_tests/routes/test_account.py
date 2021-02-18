@@ -93,7 +93,7 @@ def get_transaction_by_id_mock(monkeypatch):
         transaction_id: Optional[int] = None, blockchain_version: Optional[int] = None
     ) -> Transaction:
         saved["transaction_id"] = transaction_id
-        if transaction_id == 1:
+        if transaction_id == "1":
             return INTERNAL_TX
         tx = deepcopy(INTERNAL_TX)
         tx.source_id = 3
@@ -114,7 +114,7 @@ def send_transaction_mock(monkeypatch):
         destination_address: str,
         destination_subaddress: Optional[str] = None,
         payment_type: Optional[TransactionType] = None,
-    ) -> Optional[Transaction]:
+    ) -> Optional[int]:
         saved.update(
             {
                 "sender_id": sender_id,
@@ -125,22 +125,7 @@ def send_transaction_mock(monkeypatch):
                 "payment_type": payment_type,
             }
         )
-        tx = Transaction(
-            id=5,
-            type=TransactionType.EXTERNAL.value,
-            amount=amount,
-            currency=currency.value,
-            status=TransactionStatus.PENDING.value,
-            source_id=sender_id,
-            source_subaddress="122ce7420f15bec5",
-            source_address="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            destination_address=destination_address,
-            destination_subaddress=destination_subaddress,
-            created_timestamp=datetime.fromisoformat("2020-06-23T19:50:26.989849"),
-            blockchain_version=55,
-            sequence=10,
-        )
-        return tx
+        return 5
 
     monkeypatch.setattr(transaction_service, "send_transaction", send_mock)
     yield saved
@@ -182,7 +167,7 @@ class TestAccountTransactions:
         )
         assert rv.status_code == 200
         transaction = rv.get_json()
-        assert get_transaction_by_id_mock["transaction_id"] == 1
+        assert get_transaction_by_id_mock["transaction_id"] == "1"
         assert transaction == {
             "id": 1,
             "amount": 100,
@@ -213,7 +198,7 @@ class TestAccountTransactions:
         rv: Response = authorized_client.get(
             "/account/transactions/2",
         )
-        assert get_transaction_by_id_mock["transaction_id"] == 2
+        assert get_transaction_by_id_mock["transaction_id"] == "2"
         assert rv.status_code == 404
 
     def test_get_account_transactions(
@@ -288,35 +273,7 @@ class TestSendTransaction:
             "/account/transactions", json=TestSendTransaction.tx_data
         )
         assert rv.status_code == 200
-        transaction = rv.get_json()
-        assert transaction == {
-            "id": 5,
-            "amount": 100,
-            "currency": DiemCurrency.XUS.value,
-            "direction": TransactionDirection.SENT.value,
-            "status": TransactionStatus.PENDING.value,
-            "timestamp": "2020-06-23T19:50:26.989849",
-            "source": {
-                "full_addr": "tdm1p4242424242424242424242424gfzee6zpu2ma3g3765hu",
-                "user_id": "122ce7420f15bec5",
-                "vasp_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            },
-            "destination": {
-                "user_id": TestSendTransaction.receiver_subaddress,
-                "vasp_name": TestSendTransaction.receiver_address,
-                "full_addr": "tdm1pztdjx2z8wp0q25jakqeklk0nxj2wmk2kg9whu8c3fdm9u",
-            },
-            "blockchain_tx": {
-                "amount": TestSendTransaction.amount,
-                "destination": TestSendTransaction.receiver_address,
-                "expirationTime": "",
-                "sequenceNumber": 10,
-                "source": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-                "status": "pending",
-                "version": 55,
-            },
-            "is_internal": False,
-        }
+        assert rv.get_json()["id"] == 5
 
     def test_send_transaction_risk_error(self, authorized_client: Client, monkeypatch):
         def send_transaction_mock_risk_failure(

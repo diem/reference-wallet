@@ -172,8 +172,12 @@ class BlockchainTransaction(Schema):
     version = fields.Int(allow_none=True)
 
 
+class TransactionId(Schema):
+    id = fields.Str(required=True)
+
+
 class Transaction(Schema):
-    id = fields.Int(required=True)
+    id = fields.Str(required=True)
     amount = diem_amount_field(required=True)
     currency = diem_currency_code_field(required=True)
     direction = transaction_direction_field(required=True)

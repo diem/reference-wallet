@@ -91,6 +91,12 @@ class Transaction:
 
 @dataclass_json
 @dataclass
+class TransactionId:
+    id: str
+
+
+@dataclass_json
+@dataclass
 class Transactions:
     transaction_list: List[Transaction]
 

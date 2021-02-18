@@ -85,7 +85,7 @@ def get_transaction_by_reference_id(reference_id: str) -> Transaction:
     return Transaction.query.filter_by(reference_id=reference_id).first()
 
 
-def get_transaction(transaction_id: int) -> Transaction:
+def get_transaction(transaction_id: str) -> Transaction:
     return Transaction.query.filter_by(id=transaction_id).first()
 
 

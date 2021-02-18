@@ -83,7 +83,7 @@ class PaymentMethod(Base):
 class Transaction(Base):
     __tablename__ = "transaction"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     type = Column(String, nullable=False)
     amount = Column(BigInteger, nullable=False)
     currency = Column(String, nullable=False)
@@ -164,7 +164,7 @@ class PaymentCommand(Base):
 class TransactionLog(Base):
     __tablename__ = "transactionlog"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    tx_id = Column(Integer, ForeignKey("transaction.id"), nullable=False)
+    tx_id = Column(String, ForeignKey("transaction.id"), nullable=False)
     log = Column(String, nullable=False)
     timestamp = Column(DateTime, nullable=False)
 
@@ -191,14 +191,14 @@ class Order(Base):
     quote_expiration = Column(DateTime, nullable=True)
     order_expiration = Column(DateTime, nullable=False)
     rate = Column(Integer, nullable=True)
-    internal_ledger_tx = Column(Integer, ForeignKey("transaction.id"), nullable=True)
+    internal_ledger_tx = Column(String, ForeignKey("transaction.id"), nullable=True)
     last_update = Column(DateTime, nullable=True)
     order_status = Column(String, nullable=False)
     cover_status = Column(String, nullable=False)
     payment_method = Column(String, nullable=True)
     charge_token = Column(String, nullable=True)
     order_type = Column(String, nullable=False)
-    correlated_tx = Column(Integer, ForeignKey("transaction.id"), nullable=True)
+    correlated_tx = Column(String, ForeignKey("transaction.id"), nullable=True)
 
 
 class Token(Base):
