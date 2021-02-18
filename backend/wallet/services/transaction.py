@@ -172,7 +172,7 @@ def send_transaction(
     destination_address: str,
     destination_subaddress: Optional[str] = None,
     payment_type: Optional[TransactionType] = None,
-) -> Optional[Transaction]:
+) -> Optional[int]:
     log_execution(
         f"transfer from sender {sender_id} to receiver ({destination_subaddress} {destination_address})"
     )
@@ -204,7 +204,7 @@ def send_transaction(
             payment_type=payment_type,
             amount=amount,
             currency=currency,
-        )
+        ).id
     else:
         if not risk_check(sender_id, amount):
             payment_command = offchain_service.save_outbound_payment_command(
@@ -224,7 +224,7 @@ def send_transaction(
             payment_type=payment_type,
             amount=amount,
             currency=currency,
-        )
+        ).id
 
 
 def _unhosted_wallet_transfer(sender_id, destination_address):
@@ -277,7 +277,7 @@ def _send_transaction_internal(
 
 
 def update_transaction(
-    transaction_id: int,
+    transaction_id: str,
     status: Optional[TransactionStatus] = None,
     sequence: Optional[int] = None,
     blockchain_tx_version: Optional[int] = None,
@@ -291,7 +291,7 @@ def update_transaction(
 
 
 def get_transaction(
-    transaction_id: Optional[int] = None, blockchain_version: Optional[int] = None
+    transaction_id: Optional[str] = None, blockchain_version: Optional[int] = None
 ) -> Transaction:
     if transaction_id:
         return storage.get_transaction(transaction_id)
@@ -401,7 +401,7 @@ def external_transaction(
     return transaction
 
 
-def submit_onchain(transaction_id: int) -> None:
+def submit_onchain(transaction_id: str) -> None:
     transaction = get_transaction(transaction_id)
     if transaction.status == TransactionStatus.PENDING:
         try:

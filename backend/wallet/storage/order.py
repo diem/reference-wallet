@@ -59,12 +59,12 @@ def update_order(
     quote_id: Optional[str] = None,
     quote_expiration: Optional[datetime] = None,
     rate: Optional[int] = None,
-    internal_ledger_tx: Optional[int] = None,
+    internal_ledger_tx: Optional[str] = None,
     order_status: Optional[OrderStatus] = None,
     cover_status: Optional[CoverStatus] = None,
     charge_token: Optional[str] = None,
     payment_method: Optional[str] = None,
-    correlated_tx: Optional[int] = None,
+    correlated_tx: Optional[str] = None,
 ):
     order = Order.query.get(str(order_id))
     values = locals()

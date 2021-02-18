@@ -43,12 +43,12 @@ class ValidatorClient(VaspProxy):
 
     def send_transaction(self, address, amount, currency) -> TxState:
         # TBD: LRW should return the offchain refid, if applicable
-        tx = self.wallet.send_transaction(address, amount, currency)
+        tx_id = self.wallet.send_transaction(address, amount, currency)
 
         retries_count = 20
         seconds_between_retries = 1
         for i in range(retries_count):
-            tx = self.wallet.get_transaction(tx.id)
+            tx = self.wallet.get_transaction(tx_id.id)
             if (
                     tx.status == TransactionStatus.CANCELED
                     or tx.status == TransactionStatus.COMPLETED
@@ -59,14 +59,12 @@ class ValidatorClient(VaspProxy):
             return TxState(
                 status=TxStatus.PENDING,
                 status_description="Timeout waiting for pending transaction",
-                # offchain_refid=tx.offchain_refid,
             )
 
         if tx.status != TransactionStatus.COMPLETED:
             return TxState(
                 status=TxStatus.FAILED,
                 status_description=f"Send transaction was not successful ({tx})",
-                # offchain_refid=tx.offchain_refid,
             )
 
         self.log.info(

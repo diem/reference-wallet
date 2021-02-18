@@ -30,6 +30,7 @@ from webapp.schemas import (
     Balances as AccountInfoSchema,
     FullAddress as FullAddressSchema,
     Error,
+    TransactionId,
 )
 from webapp.schemas import Transaction as TransactionSchema
 
@@ -93,7 +94,7 @@ class AccountRoutes:
             user = self.user
             account_id = user.account_id
             transaction = transaction_service.get_transaction(
-                transaction_id=int(transaction_id)
+                transaction_id=transaction_id
             )
             if transaction is None or not (
                 transaction.source_id == account_id
@@ -200,7 +201,7 @@ class AccountRoutes:
         parameters = [body_parameter(CreateTransaction)]
         responses = {
             HTTPStatus.OK: response_definition(
-                "Created transaction", schema=TransactionSchema
+                "Created transaction", schema=TransactionId
             ),
             HTTPStatus.FAILED_DEPENDENCY: response_definition(
                 "Risk check failed", Error
@@ -224,7 +225,7 @@ class AccountRoutes:
                     recv_address, context.get().config.diem_address_hrp()
                 )
 
-                tx = transaction_service.send_transaction(
+                tx_id = transaction_service.send_transaction(
                     sender_id=account_id,
                     amount=amount,
                     currency=currency,
@@ -233,11 +234,7 @@ class AccountRoutes:
                     if dest_subaddress
                     else None,
                 )
-                # TODO tx is None in case of travel rule
-                transaction = AccountRoutes.get_transaction_response_object(
-                    user.account_id, tx
-                )
-                return transaction, HTTPStatus.OK
+                return {"id": tx_id}, HTTPStatus.OK
             except transaction_service.RiskCheckError as risk_check_failed_error:
                 return self.respond_with_error(
                     HTTPStatus.FAILED_DEPENDENCY, str(risk_check_failed_error)
