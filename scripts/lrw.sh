@@ -139,6 +139,7 @@ build() {
   echo "build mode is ${build_mode}"
 
   if [ "$build_mode" = "helm" ]; then
+    build_frontend_for_gateway
     docker-compose -f ${COMPOSE_YAML} -f ${COMPOSE_STATIC_YAML} build  || fail 'docker-compose build failed!'
   elif [ "$build_mode" = "e2e" ]; then
     mkdir -p gateway/tmp/frontend
@@ -146,6 +147,12 @@ build() {
   elif [ "$build_mode" = "dev" ]; then
     docker-compose -f ${COMPOSE_YAML} -f ${COMPOSE_DEV_YAML} build || fail 'docker-compose build failed!'
   else
+    build_frontend_for_gateway
+    docker-compose -f ${COMPOSE_YAML} build || fail 'docker-compose build failed!'
+  fi
+}
+
+build_frontend_for_gateway() {
     warn "removing old build artifacts..."
     rm -fr "${project_dir}/gateway/tmp/frontend/"
 
@@ -160,8 +167,6 @@ build() {
     docker rm tmp_reference_frontend
 
     info "frontend build completed"
-    docker-compose -f ${COMPOSE_YAML} build || fail 'docker-compose build failed!'
-  fi
 }
 
 start() {
