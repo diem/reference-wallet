@@ -21,6 +21,8 @@ class TransactionStatus(str, Enum):
     PENDING = "pending"
     COMPLETED = "completed"
     CANCELED = "canceled"
+    PROCESS_FAILED = "process_failed"
+    NEED_REFUND = "need_refund"
     # both ready for settlement, sender submits onchain txn
     OFF_CHAIN_READY = "off_chain_ready"
     # outbound command needs to send to opponent VASP
@@ -193,3 +195,10 @@ class Balance:
 
 class UserNotFoundError(Exception):
     pass
+
+
+class RefundReason(str, Enum):
+    INVALID_SUBADDRESS = "invalid_subaddress"
+    USER_INITIATED_FULL_REFUND = "user_initiated_full_refund"
+    USER_INITIATED_PARTIAL_REFUND = "user_initiated_partial_refund"
+    OTHER = "other"

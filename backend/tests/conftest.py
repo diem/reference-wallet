@@ -12,7 +12,7 @@ from uuid import uuid4
 import context
 import pytest
 from diem import diem_types, identifier
-from diem.jsonrpc import Client as DiemClient, Transaction, TransactionData, Event
+from diem.jsonrpc import Client as DiemClient, Transaction, TransactionData
 from diem.testnet import Faucet
 from diem.txnmetadata import general_metadata
 from diem_utils.sdks.liquidity import LpClient

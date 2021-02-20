@@ -24,7 +24,7 @@ from ..storage import (
     get_total_currency_debits,
     get_transaction_status,
     get_transaction_by_reference_id,
-    get_transaction_by_referenced_event,
+    get_transaction_by_blockchain_version,
 )
 from ..storage import get_account_id_from_subaddr, get_account
 from ..types import (
@@ -33,6 +33,7 @@ from ..types import (
     TransactionStatus,
     BalanceError,
     Balance,
+    RefundReason,
 )
 
 import context, logging
@@ -52,7 +53,7 @@ class InvalidTravelRuleMetadata(Exception):
     pass
 
 
-class InvalidRefund(Exception):
+class InvalidRefundMetadata(Exception):
     pass
 
 
@@ -86,11 +87,21 @@ def process_incoming_transaction(
     receiver_id = None
     sender_subaddress = None
     receiver_subaddr = None
-    referenced_event = None
+    original_txn_id = None
+    refund_reason = None
+    payment_type = None
+
+    logger.info(f"METADATA {metadata}")
 
     if isinstance(metadata, diem_types.Metadata__GeneralMetadata) and isinstance(
         metadata.value, diem_types.GeneralMetadata__GeneralMetadataVersion0
     ):
+        logger.info(
+            f"process_incoming_transaction general metadata [{blockchain_version}]: "
+            f"sender: {sender_address}, receiver: {receiver_address}, "
+            f"seq: {sequence}, amount: {amount}"
+        )
+        payment_type = TransactionType.EXTERNAL
         logger.info("general metadata")
         general_v0 = metadata.value.value
 
@@ -98,20 +109,23 @@ def process_incoming_transaction(
             receiver_subaddr = general_v0.to_subaddress.hex()
             receiver_id = get_account_id_from_subaddr(receiver_subaddr)
         else:
+            # Subaddress was not specified, so route the fund to inventory account
             receiver_id = get_account(account_name=INVENTORY_ACCOUNT_NAME).id
 
         if general_v0.from_subaddress:
             sender_subaddress = general_v0.from_subaddress.hex()
 
-        if general_v0.referenced_event:
-            referenced_event = int(general_v0.referenced_event)
-
     if isinstance(metadata, diem_types.Metadata__TravelRuleMetadata) and isinstance(
         metadata.value, diem_types.TravelRuleMetadata__TravelRuleMetadataVersion0
     ):
+        logger.info(
+            f"process_incoming_transaction travel rule metadata [{blockchain_version}]: "
+            f"sender: {sender_address}, receiver: {receiver_address}, "
+            f"seq: {sequence}, amount: {amount}"
+        )
         travel_rule_v0 = metadata.value.value
         reference_id = travel_rule_v0.off_chain_reference_id
-        logger.info(f"travel rule metadata: {reference_id}")
+        logger.info(f"travel rule metadata reference id: {reference_id}")
 
         if reference_id is None:
             raise InvalidTravelRuleMetadata(
@@ -143,34 +157,87 @@ def process_incoming_transaction(
             f"source address: {sender_address}, destination address: {receiver_address}"
         )
 
-    # Could not find receiver for the transaction, so send back a refund from inventory account
+    if isinstance(metadata, diem_types.Metadata__RefundMetadata) and isinstance(
+        metadata.value, diem_types.RefundMetadata__RefundMetadataV0
+    ):
+        logger.info(
+            f"process_incoming_transaction refund metadata [{blockchain_version}]: "
+            f"sender: {sender_address}, receiver: {receiver_address}, "
+            f"seq: {sequence}, amount: {amount}"
+        )
+        txn_version = metadata.value.value.transaction_version
+        reason = metadata.value.value.reason
+        payment_type = TransactionType.REFUND
+
+        original_txn = get_transaction_by_blockchain_version(txn_version)
+
+        logger.info(f"Refund metadata: txn version: {txn_version}, reason: {reason}")
+
+        # Cannot find the referred original transaction
+        if original_txn is None:
+            logger.info(
+                f"Refund metadata invalid: txn version: {txn_version} does not exist"
+            )
+            # Record the received transaction as a regular transaction to inventory account
+            inventory_account_id = get_account(account_name=INVENTORY_ACCOUNT_NAME).id
+            add_transaction(
+                amount=amount,
+                currency=currency,
+                payment_type=TransactionType.EXTERNAL,
+                status=TransactionStatus.FAILED,
+                source_address=sender_address,
+                destination_id=inventory_account_id,
+                destination_address=receiver_address,
+                sequence=sequence,
+                blockchain_version=blockchain_version,
+            )
+            return
+
+        if isinstance(reason, diem_types.RefundReason__InvalidSubaddress):
+            refund_reason = RefundReason.INVALID_SUBADDRESS
+        elif isinstance(reason, diem_types.RefundReason__UserInitiatedPartialRefund):
+            refund_reason = RefundReason.USER_INITIATED_PARTIAL_REFUND
+        elif isinstance(reason, diem_types.RefundReason__UserInitiatedFullRefund):
+            refund_reason = RefundReason.USER_INITIATED_FULL_REFUND
+        else:
+            refund_reason = RefundReason.OTHER
+
+        original_txn = get_transaction_by_blockchain_version(txn_version)
+        receiver_id = original_txn.source_id
+        receiver_subaddr = original_txn.source_subaddress
+        sender_subaddress = original_txn.destination_subaddress
+        original_txn_id = original_txn.id
+
+    # Could not find receiver for the given subaddress, so send back a refund from inventory account
     if receiver_id is None:
-        sender_id = get_account(account_name=INVENTORY_ACCOUNT_NAME).id
+        logger.info(
+            f"Could not find receiver for the given subaddress {receiver_subaddr}, sending back refund to "
+            f"sender address: {sender_address} and sender_subaddress: {sender_subaddress}, amount {amount}"
+        )
+        # Record the received transaction as a regular transaction to inventory account
+        inventory_account_id = get_account(account_name=INVENTORY_ACCOUNT_NAME).id
+        tx = add_transaction(
+            amount=amount,
+            currency=currency,
+            payment_type=TransactionType.EXTERNAL,
+            status=TransactionStatus.NEED_REFUND,
+            source_address=sender_address,
+            source_subaddress=sender_subaddress,
+            destination_id=inventory_account_id,
+            destination_address=receiver_address,
+            sequence=sequence,
+            blockchain_version=blockchain_version,
+        )
         send_transaction(
-            sender_id=sender_id,
+            sender_id=inventory_account_id,
             amount=amount,
             currency=currency,
             destination_address=sender_address,
             destination_subaddress=sender_subaddress,
             payment_type=TransactionType.REFUND,
-            referenced_event=referenced_event,
+            original_txn_id=tx.id,
         )
-
-    if referenced_event:
-        add_transaction(
-            amount=amount,
-            currency=currency,
-            payment_type=TransactionType.REFUND,
-            status=TransactionStatus.COMPLETED,
-            source_address=sender_address,
-            source_subaddress=sender_subaddress,
-            destination_id=receiver_id,
-            destination_address=receiver_address,
-            destination_subaddress=receiver_subaddr,
-            sequence=sequence,
-            blockchain_version=blockchain_version,
-            referenced_event=referenced_event,
-        )
+        return
 
     if get_transaction_by_details(
         source_address=sender_address,
@@ -185,7 +252,7 @@ def process_incoming_transaction(
     tx = add_transaction(
         amount=amount,
         currency=currency,
-        payment_type=TransactionType.EXTERNAL,
+        payment_type=payment_type,
         status=TransactionStatus.COMPLETED,
         source_address=sender_address,
         source_subaddress=sender_subaddress,
@@ -194,7 +261,8 @@ def process_incoming_transaction(
         destination_subaddress=receiver_subaddr,
         sequence=sequence,
         blockchain_version=blockchain_version,
-        referenced_event=referenced_event,
+        original_txn_id=original_txn_id,
+        refund_reason=refund_reason,
     )
 
     logger.info(
@@ -212,7 +280,7 @@ def send_transaction(
     destination_address: str,
     destination_subaddress: Optional[str] = None,
     payment_type: Optional[TransactionType] = None,
-    referenced_event: Optional[int] = None,
+    original_txn_id: Optional[int] = None,
 ) -> Optional[Transaction]:
     log_execution(
         f"transfer from sender {sender_id} to receiver (dest addr: {destination_address} subaddr: {destination_subaddress})"
@@ -227,10 +295,10 @@ def send_transaction(
             "It is not possible to send transaction to your own wallet."
         )
 
-    # if destination_subaddress is None:
-    #     return _unhosted_wallet_transfer(
-    #         sender_id=sender_id, destination_address=destination_address
-    #     )
+    if destination_subaddress is None:
+        return _unhosted_wallet_transfer(
+            sender_id=sender_id, destination_address=destination_address
+        )
 
     if not validate_balance(sender_id, amount, currency):
         raise BalanceError(
@@ -263,7 +331,7 @@ def send_transaction(
             payment_type=payment_type,
             amount=amount,
             currency=currency,
-            referenced_event=referenced_event,
+            original_txn_id=original_txn_id,
         )
 
 
@@ -282,7 +350,7 @@ def _send_transaction_external(
     payment_type,
     amount,
     currency,
-    referenced_event: Optional[int] = None,
+    original_txn_id,
 ) -> Optional[Transaction]:
     log_execution(
         f"external transfer type {payment_type} from {sender_id} to receiver {destination_address}, "
@@ -296,7 +364,7 @@ def _send_transaction_external(
         amount=amount,
         currency=currency,
         payment_type=payment_type,
-        referenced_event=referenced_event,
+        original_txn_id=original_txn_id,
     )
 
 
@@ -323,14 +391,12 @@ def update_transaction(
     status: Optional[TransactionStatus] = None,
     sequence: Optional[int] = None,
     blockchain_tx_version: Optional[int] = None,
-    referenced_event: Optional[int] = None,
 ) -> None:
     storage.update_transaction(
         transaction_id=transaction_id,
         sequence=sequence,
         status=status,
         blockchain_version=blockchain_tx_version,
-        referenced_event=referenced_event,
     )
 
 
@@ -408,7 +474,7 @@ def external_transaction(
     amount: int,
     currency: DiemCurrency,
     payment_type: TransactionType,
-    referenced_event: Optional[int] = None,
+    original_txn_id: int,
 ) -> Transaction:
     logger.info(
         f"external_transaction {sender_id} to receiver {receiver_address}, "
@@ -423,7 +489,10 @@ def external_transaction(
     sender_onchain_address = context.get().config.vasp_address
 
     sender_subaddress = None
-    if payment_type == TransactionType.EXTERNAL:
+    if (
+        payment_type == TransactionType.EXTERNAL
+        or payment_type == TransactionType.REFUND
+    ):
         sender_subaddress = account_service.generate_new_subaddress(
             account_id=sender_id
         )
@@ -439,7 +508,7 @@ def external_transaction(
         destination_id=None,
         destination_address=receiver_address,
         destination_subaddress=receiver_subaddress,
-        referenced_event=referenced_event,
+        original_txn_id=original_txn_id,
     )
 
     if services.run_bg_tasks():
@@ -458,37 +527,52 @@ def submit_onchain(transaction_id: int) -> None:
         try:
             diem_currency = DiemCurrency[transaction.currency]
 
-            jsonrpc_txn = context.get().p2p_by_general(
-                currency=diem_currency.value,
-                amount=transaction.amount,
-                receiver_vasp_address=transaction.destination_address,
-                receiver_sub_address=transaction.destination_subaddress,
-                sender_sub_address=transaction.source_subaddress,
-                referenced_event=transaction.referenced_event,
-            )
-            referenced_event = None
-            # Update referenced event sequence number once transaction has been committed
             if transaction.type == TransactionType.EXTERNAL:
-                event = txnmetadata.find_refund_reference_event(
-                    jsonrpc_txn, transaction.destination_address
+                jsonrpc_txn = context.get().p2p_by_general(
+                    currency=diem_currency.value,
+                    amount=transaction.amount,
+                    receiver_vasp_address=transaction.destination_address,
+                    receiver_sub_address=transaction.destination_subaddress,
+                    sender_sub_address=transaction.source_subaddress,
                 )
-                if event:
-                    referenced_event = event.sequence_number
 
-            update_transaction(
-                transaction_id=transaction_id,
-                status=TransactionStatus.COMPLETED,
-                sequence=jsonrpc_txn.transaction.sequence_number,
-                blockchain_tx_version=jsonrpc_txn.version,
-                referenced_event=referenced_event,
-            )
-            add_transaction_log(transaction_id, "On Chain Transfer Complete")
-            log_execution(
-                "On chain transfer complete "
-                f"txid: {transaction_id} "
-                f"v: {jsonrpc_txn.version} "
-                f"event version: {referenced_event}"
-            )
+                update_transaction(
+                    transaction_id=transaction_id,
+                    status=TransactionStatus.COMPLETED,
+                    sequence=jsonrpc_txn.transaction.sequence_number,
+                    blockchain_tx_version=jsonrpc_txn.version,
+                )
+                add_transaction_log(
+                    transaction_id, "On Chain Transfer of General Txn Complete"
+                )
+                log_execution(
+                    "On chain transfer complete "
+                    f"txid: {transaction_id} "
+                    f"v: {jsonrpc_txn.version} "
+                )
+
+            if transaction.type == TransactionType.REFUND:
+                jsonrpc_txn = context.get().p2p_by_refund(
+                    currency=diem_currency.value,
+                    amount=transaction.amount,
+                    receiver_vasp_address=transaction.destination_address,
+                    txn_version=transaction.original_txn_id,
+                )
+                update_transaction(
+                    transaction_id=transaction_id,
+                    status=TransactionStatus.COMPLETED,
+                    sequence=jsonrpc_txn.transaction.sequence_number,
+                    blockchain_tx_version=jsonrpc_txn.version,
+                )
+                add_transaction_log(
+                    transaction_id, "On Chain Transfer of Refund Txn Complete"
+                )
+                log_execution(
+                    "On chain transfer complete "
+                    f"txid: {transaction_id} "
+                    f"v: {jsonrpc_txn.version} "
+                )
+
         except Exception:
             logger.exception(f"Error in _async_start_onchain_transfer")
             add_transaction_log(transaction_id, "On Chain Transfer Failed")

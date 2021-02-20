@@ -9,7 +9,7 @@ import context
 import diem_utils.types.currencies
 import pytest
 from diem import diem_types
-from diem.txnmetadata import general_metadata, travel_rule
+from diem.txnmetadata import general_metadata, travel_rule, refund_metadata
 from diem.utils import sub_address, account_address_hex, account_address
 from diem_utils.types.currencies import DiemCurrency
 
@@ -153,6 +153,51 @@ def test_process_incoming_travel_rule_txn() -> None:
     assert tx is not None
     assert tx.sequence == sequence
     assert tx.blockchain_version == blockchain_version
+
+
+def test_process_incoming_refund_txn() -> None:
+    initial_sender_account = create_account("fake_account")
+    initial_sender_subaddr = generate_new_subaddress(initial_sender_account.id)
+    initial_sender_addr = "lrw_vasp"
+    initial_receiver_addr = "46db232847705e05525db0336fd9f337"
+
+    meta = refund_metadata(
+        original_transaction_version=1,
+        reason=diem_types.RefundReason__InvalidSubaddress(),
+    )
+
+    initial_tx = storage.add_transaction(
+        amount=500,
+        currency=DiemCurrency.XUS,
+        payment_type=TransactionType.EXTERNAL,
+        status=TransactionStatus.COMPLETED,
+        source_id=initial_sender_account.id,
+        source_address=initial_sender_addr,
+        source_subaddress=initial_sender_subaddr,
+        destination_address=initial_receiver_addr,
+        blockchain_version=1,
+    )
+
+    assert initial_tx is not None
+    assert initial_tx.blockchain_version == 1
+    assert storage.get_transaction_by_blockchain_version(1) is not None
+
+    process_incoming_transaction(
+        sender_address=initial_receiver_addr,
+        receiver_address=initial_sender_addr,
+        sequence=1,
+        amount=500,
+        currency=DiemCurrency.XUS,
+        metadata=diem_types.Metadata__RefundMetadata.bcs_deserialize(meta),
+        blockchain_version=2,
+    )
+
+    # successfully parse meta and sequence
+    # tx = storage.get_transaction_by_details(
+    #     source_address=sender_addr, source_subaddress=None, sequence=1
+    # )
+    tx = storage.get_transaction_by_blockchain_version(2)
+    assert tx is not None
 
 
 def test_balance_calculation_simple_income() -> None:
