@@ -8,6 +8,9 @@ from typing import Optional
 from . import db_session, get_user
 from .models import Account, SubAddress
 
+import logging
+logger = logging.getLogger(name="wallet-storage:account")
+
 
 def create_account(account_name: str, user_id: Optional[int] = None) -> Account:
     account = Account(name=account_name)
@@ -33,6 +36,8 @@ def get_account(
 
 
 def get_account_id_from_subaddr(subaddr: str) -> Optional[int]:
+    subaddr_records = SubAddress.query.filter_by(address=subaddr)
+    logger.info(f"-====subaddress records {subaddr_records}")
     subaddr_record = SubAddress.query.filter_by(address=subaddr).first()
     return subaddr_record.account_id if subaddr_record else None
 

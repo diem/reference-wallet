@@ -90,10 +90,13 @@ def process_incoming_transaction(
         if general_v0.to_subaddress:
             receiver_subaddr = general_v0.to_subaddress.hex()
             receiver_id = get_account_id_from_subaddr(receiver_subaddr)
+            logger.info(f"general metadata has to subaddress {general_v0.to_subaddress}, {receiver_subaddr}, {receiver_id}")
 
         if general_v0.from_subaddress:
             sender_subaddress = general_v0.from_subaddress.hex()
+            logger.info(f"general metadata has from subaddress {general_v0.from_subaddress}, {sender_subaddress}")
 
+        logger.info("general metadata")
     if isinstance(metadata, diem_types.Metadata__TravelRuleMetadata) and isinstance(
         metadata.value, diem_types.TravelRuleMetadata__TravelRuleMetadataVersion0
     ):
