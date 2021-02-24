@@ -109,6 +109,7 @@ def process_offchain_tasks() -> None:
             logger.info(
                 f"Submitting transaction base on command ref id:{model.reference_id} {model.amount} {model.currency}"
             )
+            transaction.id = model.reference_id
             rpc_txn = context.get().p2p_by_travel_rule(
                 cmd.receiver_account_address(_hrp()),
                 cmd.payment.action.currency,
