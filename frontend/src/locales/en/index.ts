@@ -12,6 +12,7 @@ import Validations from "./validations.json";
 import Settings from "./settings.json";
 import Admin from "./admin.json";
 import Legal from "./legal.json";
+import Payment from "./payment.json";
 
 export default {
   layout: Layout,
@@ -25,4 +26,5 @@ export default {
   settings: Settings,
   admin: Admin,
   legal: Legal,
+  payment: Payment,
 };

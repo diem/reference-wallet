@@ -19,7 +19,7 @@ interface PaymentConfirmationProps {
 }
 
 function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfirmationProps) {
-  const { t } = useTranslation("send");
+  const { t } = useTranslation("payment");
 
   const [settings] = useContext(settingsContext)!;
 
@@ -43,6 +43,8 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
   const onConfirm = () => setSubmitStatus("success");
   const onReject = () => setSubmitStatus("success");
 
+  const humanFriendlyAmount = diemAmountToHumanFriendly(paymentParams.amount, true);
+
   return (
     <Modal className="modal-dialog-centered" isOpen={open} onClosed={onClose}>
       <ModalBody>
@@ -50,32 +52,41 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
 
         {errorMessage && <ErrorMessage message={errorMessage} />}
 
-        <h3>{t("review.title")}</h3>
+        <h3>{t("confirmation.title")}</h3>
+        <p>
+          {t("confirmation.summary", {
+            replace: {
+              amount: humanFriendlyAmount,
+              currency: currency.sign,
+              merchant: paymentParams.merchantName,
+            },
+          })}
+        </p>
 
         <div>
-          <small>{t("review.amount")}</small>
+          <small>{t("confirmation.amount")}</small>
           <p className="text-black">
-            {diemAmountToHumanFriendly(paymentParams.amount, true)} {currency.sign}
+            {humanFriendlyAmount} {currency.sign}
           </p>
         </div>
 
         <div>
-          <small>{t("review.amount")}</small>
+          <small>{t("confirmation.merchant")}</small>
           <p className="text-black">{paymentParams.merchantName}</p>
         </div>
 
         <div>
-          <small>{t("review.amount")}</small>
+          <small>Reference ID</small>
           <p className="text-black">{paymentParams.referenceId}</p>
         </div>
 
         <div>
-          <small>{t("review.amount")}</small>
+          <small>{t("confirmation.receiver")}</small>
           <p className="text-black">{paymentParams.vaspAddress}</p>
         </div>
 
         <div>
-          <small>{t("review.amount")}</small>
+          <small>{t("confirmation.expiration")}</small>
           <p className="text-black">{paymentParams.expiration.toLocaleString()}</p>
         </div>
 
@@ -85,7 +96,7 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
               {submitStatus === "sending" ? (
                 <i className="fa fa-spin fa-spinner" />
               ) : (
-                t("review.confirm")
+                t("confirmation.approve")
               )}
             </Button>
             <Button
@@ -95,13 +106,13 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
               onClick={onReject}
               disabled={submitStatus === "sending"}
             >
-              {t("review.back")}
+              {t("confirmation.reject")}
             </Button>
           </>
         )}
         {submitStatus === "success" && (
           <Button outline color="black" block onClick={onClose}>
-            {t("review.done")}
+            {t("confirmation.close")}
           </Button>
         )}
       </ModalBody>
