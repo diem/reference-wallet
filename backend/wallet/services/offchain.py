@@ -72,7 +72,7 @@ def process_inbound_command(
 def _jws(cid: Optional[str], err: Optional[offchain.OffChainErrorObject] = None):
     code = 400 if err else 200
     resp = offchain.reply_request(cid)
-    return (code, offchain.jws.serialize(resp, _compliance_private_key().sign))
+    return code, offchain.jws.serialize(resp, _compliance_private_key().sign)
 
 
 def process_offchain_tasks() -> None:
@@ -345,7 +345,6 @@ def payment_command_to_model(
         recipient_signature=command.payment.recipient_signature,
         description=command.payment.description,
         status=status,
-        # TODO
         account_id=get_command_account_id(command),
     )
 

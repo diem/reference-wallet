@@ -2,7 +2,7 @@ import logging
 
 from wallet.types import TransactionStatus
 
-from . import db_session, models, datetime
+from . import db_session, models
 from typing import Optional, List, Callable
 
 
