@@ -268,7 +268,7 @@ def get_all() -> List[offchain.PaymentCommand]:
     return commands
 
 
-def get_payment_command(reference_id: int) -> Optional[offchain.PaymentCommand]:
+def get_payment_command(reference_id: str) -> Optional[offchain.PaymentCommand]:
     payment_command = storage.get_payment_command(reference_id)
 
     if payment_command:
