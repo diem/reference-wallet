@@ -1,11 +1,11 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
-
+from dataclasses import dataclass
 from typing import Optional
 
 import context
 import logging
-from diem import diem_types
+from diem import diem_types, offchain
 from diem_utils.types.currencies import DiemCurrency
 from wallet.services import (
     account as account_service,
@@ -286,6 +286,19 @@ def update_transaction(
         sequence=sequence,
         status=status,
         blockchain_version=blockchain_tx_version,
+    )
+
+
+@dataclass
+class FundsTransfer:
+    transaction: Transaction
+    payment_command: offchain.PaymentCommand
+
+
+def get_funds_transfer(reference_id: str) -> FundsTransfer:
+    return FundsTransfer(
+        transaction=storage.get_transaction(reference_id),
+        payment_command=storage.get_payment_command(reference_id=reference_id),
     )
 
 
