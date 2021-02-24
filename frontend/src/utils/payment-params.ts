@@ -8,13 +8,18 @@ export enum CheckoutDataType {
   PAYMENT_REQUEST = "PAYMENT_REQUEST",
 }
 
+export enum PaymentAction {
+  AUTHORIZATION = "AUTHORIZATION",
+  CHARGE = "CHARGE",
+}
+
 export class PaymentParams {
   constructor(
     readonly vaspAddress: string,
     readonly referenceId: string,
     readonly merchantName: string,
     readonly checkoutDataType: CheckoutDataType,
-    readonly action: string,
+    readonly action: PaymentAction,
     readonly currency: string,
     readonly amount: number,
     readonly expiration: Date,
@@ -27,7 +32,7 @@ export class PaymentParams {
     const vaspAddress = PaymentParams.getParam(params, "vaspAddress");
     const merchantName = PaymentParams.getParam(params, "merchantName");
     const checkoutDataType = CheckoutDataType[PaymentParams.getParam(params, "checkoutDataType")];
-    const action = PaymentParams.getParam(params, "action");
+    const action = PaymentAction[PaymentParams.getParam(params, "action")];
     const currency = PaymentParams.getParam(params, "currency");
     const amountTxt = PaymentParams.getParam(params, "amount");
     const expirationTxt = PaymentParams.getParam(params, "expiration");
@@ -53,6 +58,10 @@ export class PaymentParams {
 
     if (checkoutDataType !== CheckoutDataType.PAYMENT_REQUEST) {
       throw new PaymentParamError("checkoutDataType contains invalid value");
+    }
+
+    if (action !== PaymentAction.CHARGE) {
+      throw new PaymentParamError("action contains invalid value");
     }
 
     const expiration = new Date(expirationTxt);
