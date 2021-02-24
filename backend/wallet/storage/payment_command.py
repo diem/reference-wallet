@@ -10,19 +10,6 @@ class PaymentCommandNotFound(Exception):
     ...
 
 
-def update_status(reference_id: str, new_status):
-    command_in_db = get_payment_command(reference_id)
-
-    if command_in_db:
-        command_in_db.status = new_status
-        command_in_db.update(command_in_db)
-        db_session.commit()
-    else:
-        raise PaymentCommandNotFound(
-            f"Command not found for reference id {reference_id}"
-        )
-
-
 def update_payment_command(command: models.PaymentCommand):
     command_in_db = get_payment_command(command.reference_id)
 
