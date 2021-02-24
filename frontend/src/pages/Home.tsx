@@ -4,7 +4,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Container } from "reactstrap";
 import { Redirect } from "react-router";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../contexts/app";
 import { Currency } from "../interfaces/currencies";
@@ -40,6 +40,11 @@ function Home() {
   const user = settings.user;
 
   const paymentParams = usePaymentParams();
+  const history = useHistory();
+
+  const onPaymentRequestHandled = () => {
+    history.push("/");
+  };
 
   const userVerificationRequired =
     user &&
@@ -163,9 +168,13 @@ function Home() {
             <ReceiveModal open={receiveModalOpen} onClose={() => setReceiveModalOpen(false)} />
             <TransferModal open={transferModalOpen} onClose={() => setTransferModalOpen(false)} />
 
-            {!!paymentParams &&
-              <PaymentConfirmationModal open={!!paymentParams} paymentParams={paymentParams} onClose={() => {}} />
-            }
+            {!!paymentParams && (
+              <PaymentConfirmationModal
+                open={!!paymentParams}
+                paymentParams={paymentParams}
+                onClose={onPaymentRequestHandled}
+              />
+            )}
           </>
         )}
       </Container>

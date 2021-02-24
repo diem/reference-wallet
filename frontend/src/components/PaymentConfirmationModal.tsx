@@ -40,9 +40,8 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
     refreshUser();
   }, []);
 
-  const onConfirm = () => {};
-  const onReject = () => {};
-  const onComplete = () => {};
+  const onConfirm = () => setSubmitStatus("success");
+  const onReject = () => setSubmitStatus("success");
 
   return (
     <Modal className="modal-dialog-centered" isOpen={open} onClosed={onClose}>
@@ -101,7 +100,7 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
           </>
         )}
         {submitStatus === "success" && (
-          <Button outline color="black" block onClick={onComplete}>
+          <Button outline color="black" block onClick={onClose}>
             {t("review.done")}
           </Button>
         )}
