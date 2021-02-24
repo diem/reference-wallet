@@ -90,7 +90,7 @@ class AccountRoutes:
             ),
         }
 
-        def get(self, transaction_id: int):
+        def get(self, transaction_id: str):
             user = self.user
             account_id = user.account_id
             transaction = transaction_service.get_transaction(

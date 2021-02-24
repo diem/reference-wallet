@@ -172,7 +172,7 @@ def send_transaction(
     destination_address: str,
     destination_subaddress: Optional[str] = None,
     payment_type: Optional[TransactionType] = None,
-) -> Optional[int]:
+) -> Optional[str]:
     log_execution(
         f"transfer from sender {sender_id} to receiver ({destination_subaddress} {destination_address})"
     )
@@ -214,8 +214,7 @@ def send_transaction(
                 amount=amount,
                 currency=currency,
             )
-            # TODO
-            return None
+            return payment_command.reference_id()
 
         return _send_transaction_external(
             sender_id=sender_id,
