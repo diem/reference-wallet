@@ -6,7 +6,8 @@ import { PaymentParams, PaymentParamError, CheckoutDataType } from "./payment-pa
 describe("Payment params from URL query string", () => {
   describe("All fields are present and have correct values", () => {
     it("should parse successfully", () => {
-      const queryString = "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
+      const queryString =
+        "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
         "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&" +
         "merchantName=merchant-name&" +
         "checkoutDataType=PAYMENT_REQUEST&" +
@@ -14,7 +15,7 @@ describe("Payment params from URL query string", () => {
         "amount=1000000000&" +
         "currency=XUS&" +
         "expiration=2020-01-21T00%3A00%3A00.000Z&" +
-        "redirectUrl=https%3A%2F%2Fmerchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete"
+        "redirectUrl=https%3A%2F%2Fmerchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete";
 
       const params = PaymentParams.fromUrlQueryString(queryString);
 
@@ -26,13 +27,16 @@ describe("Payment params from URL query string", () => {
       expect(params.amount).toBe(1000000000);
       expect(params.currency).toBe("XUS");
       expect(params.expiration.toISOString()).toBe("2020-01-21T00:00:00.000Z");
-      expect(params.redirectUrl).toBe("https://merchant.com/order/93c4963f-7f9e-4f9d-983e-7080ef782534/checkout/complete");
+      expect(params.redirectUrl).toBe(
+        "https://merchant.com/order/93c4963f-7f9e-4f9d-983e-7080ef782534/checkout/complete"
+      );
     });
   });
 
   describe("referenceId is not a proper UUID", () => {
     it("should throw PaymentParamError", () => {
-      const queryString = "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
+      const queryString =
+        "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
         "referenceId=ce74d678-d014-48fc-b61d--2c36683feb29&" +
         "merchantName=merchant-name&" +
         "checkoutDataType=PAYMENT_REQUEST&" +
@@ -40,7 +44,7 @@ describe("Payment params from URL query string", () => {
         "amount=1000000000&" +
         "currency=XUS&" +
         "expiration=2020-01-21T00%3A00%3A00.000Z&" +
-        "redirectUrl=https%3A%2F%2Fmerchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete"
+        "redirectUrl=https%3A%2F%2Fmerchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete";
 
       expect(() => PaymentParams.fromUrlQueryString(queryString)).toThrow("referenceId");
     });
@@ -48,7 +52,8 @@ describe("Payment params from URL query string", () => {
 
   describe("amount is not a number", () => {
     it("should throw PaymentParamError", () => {
-      const queryString = "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
+      const queryString =
+        "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
         "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&" +
         "merchantName=merchant-name&" +
         "checkoutDataType=PAYMENT_REQUEST&" +
@@ -56,7 +61,7 @@ describe("Payment params from URL query string", () => {
         "amount=rrr100000xxx0000&" +
         "currency=XUS&" +
         "expiration=2020-01-21T00%3A00%3A00.000Z&" +
-        "redirectUrl=https%3A%2F%2Fmerchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete"
+        "redirectUrl=https%3A%2F%2Fmerchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete";
 
       expect(() => PaymentParams.fromUrlQueryString(queryString)).toThrow("amount");
     });
@@ -64,7 +69,8 @@ describe("Payment params from URL query string", () => {
 
   describe("redirectUrl is wrongly encoded", () => {
     it("should throw PaymentParamError", () => {
-      const queryString = "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
+      const queryString =
+        "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
         "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&" +
         "merchantName=merchant-name&" +
         "checkoutDataType=PAYMENT_REQUEST&" +
@@ -72,7 +78,7 @@ describe("Payment params from URL query string", () => {
         "amount=1000000000&" +
         "currency=XUS&" +
         "expiration=2020-01-21T00%3A00%3A00.000Z&" +
-        "redirectUrl=https%!3A%2F%2Fmerchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete"
+        "redirectUrl=https%!3A%2F%2Fmerchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete";
 
       expect(() => PaymentParams.fromUrlQueryString(queryString)).toThrow("redirectUrl");
     });
@@ -80,7 +86,8 @@ describe("Payment params from URL query string", () => {
 
   describe("redirectUrl contains malformed URL", () => {
     it("should throw PaymentParamError", () => {
-      const queryString = "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
+      const queryString =
+        "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
         "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&" +
         "merchantName=merchant-name&" +
         "checkoutDataType=PAYMENT_REQUEST&" +
@@ -88,7 +95,7 @@ describe("Payment params from URL query string", () => {
         "amount=1000000000&" +
         "currency=XUS&" +
         "expiration=2020-01-21T00%3A00%3A00.000Z&" +
-        "redirectUrl=merchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete"
+        "redirectUrl=merchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete";
 
       expect(() => PaymentParams.fromUrlQueryString(queryString)).toThrow("redirectUrl");
     });
@@ -96,7 +103,8 @@ describe("Payment params from URL query string", () => {
 
   describe("checkoutDataType contains wrong value", () => {
     it("should throw PaymentParamError", () => {
-      const queryString = "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
+      const queryString =
+        "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
         "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&" +
         "merchantName=merchant-name&" +
         "checkoutDataType=__PAYMENT__&" +
@@ -104,16 +112,16 @@ describe("Payment params from URL query string", () => {
         "amount=1000000000&" +
         "currency=XUS&" +
         "expiration=2020-01-21T00%3A00%3A00.000Z&" +
-        "redirectUrl=https%3A%2F%2Fmerchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete"
+        "redirectUrl=https%3A%2F%2Fmerchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete";
 
       expect(() => PaymentParams.fromUrlQueryString(queryString)).toThrow("checkoutDataType");
     });
   });
 
-
   describe("expiration is a number", () => {
     it("should throw PaymentParamError", () => {
-      const queryString = "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
+      const queryString =
+        "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
         "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&" +
         "merchantName=merchant-name&" +
         "checkoutDataType=PAYMENT_REQUEST&" +
@@ -121,7 +129,7 @@ describe("Payment params from URL query string", () => {
         "amount=1000000000&" +
         "currency=XUS&" +
         "expiration=20000000&" +
-        "redirectUrl=https%3A%2F%2Fmerchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete"
+        "redirectUrl=https%3A%2F%2Fmerchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete";
 
       expect(() => PaymentParams.fromUrlQueryString(queryString)).toThrow("expiration");
     });
@@ -129,7 +137,8 @@ describe("Payment params from URL query string", () => {
 
   describe("expiration is not an ISO 8601 date", () => {
     it("should throw PaymentParamError", () => {
-      const queryString = "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
+      const queryString =
+        "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
         "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&" +
         "merchantName=merchant-name&" +
         "checkoutDataType=PAYMENT_REQUEST&" +
@@ -137,7 +146,7 @@ describe("Payment params from URL query string", () => {
         "amount=1000000000&" +
         "currency=XUS&" +
         "expiration=01/01/2020&" +
-        "redirectUrl=https%3A%2F%2Fmerchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete"
+        "redirectUrl=https%3A%2F%2Fmerchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete";
 
       expect(() => PaymentParams.fromUrlQueryString(queryString)).toThrow("expiration");
     });
@@ -145,7 +154,8 @@ describe("Payment params from URL query string", () => {
 
   describe("expiration is not in UTC", () => {
     it("should throw PaymentParamError", () => {
-      const queryString = "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
+      const queryString =
+        "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
         "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&" +
         "merchantName=merchant-name&" +
         "checkoutDataType=PAYMENT_REQUEST&" +
@@ -153,7 +163,7 @@ describe("Payment params from URL query string", () => {
         "amount=1000000000&" +
         "currency=XUS&" +
         "expiration=2020-01-21T00%3A00%3A00.000%2B0200&" +
-        "redirectUrl=https%3A%2F%2Fmerchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete"
+        "redirectUrl=https%3A%2F%2Fmerchant.com%2Forder%2F93c4963f-7f9e-4f9d-983e-7080ef782534%2Fcheckout%2Fcomplete";
 
       expect(() => PaymentParams.fromUrlQueryString(queryString)).toThrow("expiration");
     });

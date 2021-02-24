@@ -62,38 +62,40 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
 
         <div>
           <small>{t("review.amount")}</small>
-          <p className="text-black">
-            {paymentParams.merchantName}
-          </p>
+          <p className="text-black">{paymentParams.merchantName}</p>
         </div>
 
         <div>
           <small>{t("review.amount")}</small>
-          <p className="text-black">
-            {paymentParams.referenceId}
-          </p>
+          <p className="text-black">{paymentParams.referenceId}</p>
         </div>
 
         <div>
           <small>{t("review.amount")}</small>
-          <p className="text-black">
-            {paymentParams.vaspAddress}
-          </p>
+          <p className="text-black">{paymentParams.vaspAddress}</p>
         </div>
 
         <div>
           <small>{t("review.amount")}</small>
-          <p className="text-black">
-            {paymentParams.expiration.toLocaleString()}
-          </p>
+          <p className="text-black">{paymentParams.expiration.toLocaleString()}</p>
         </div>
 
         {submitStatus !== "success" && (
           <>
             <Button color="black" block onClick={onConfirm} disabled={submitStatus === "sending"}>
-              {submitStatus === "sending" ? <i className="fa fa-spin fa-spinner" /> : t("review.confirm")}
+              {submitStatus === "sending" ? (
+                <i className="fa fa-spin fa-spinner" />
+              ) : (
+                t("review.confirm")
+              )}
             </Button>
-            <Button outline color="black" block onClick={onReject} disabled={submitStatus === "sending"}>
+            <Button
+              outline
+              color="black"
+              block
+              onClick={onReject}
+              disabled={submitStatus === "sending"}
+            >
               {t("review.back")}
             </Button>
           </>
@@ -103,7 +105,6 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
             {t("review.done")}
           </Button>
         )}
-
       </ModalBody>
     </Modal>
   );
