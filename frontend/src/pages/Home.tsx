@@ -4,12 +4,13 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Container } from "reactstrap";
 import { Redirect } from "react-router";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../contexts/app";
 import { Currency } from "../interfaces/currencies";
 import { RegistrationStatus } from "../interfaces/user";
 import { Transaction } from "../interfaces/transaction";
+import { PaymentParams } from "../utils/payment-params";
 import VerifyingMessage from "../components/VerifyingMessage";
 import TotalBalance from "../components/TotalBalance";
 import Actions from "../components/Actions";
@@ -21,14 +22,24 @@ import WalletLoader from "../components/WalletLoader";
 import TransactionsList from "../components/TransactionsList";
 import BackendClient from "../services/backendClient";
 import TransactionModal from "../components/TransactionModal";
-import TestnetWarning from "components/TestnetWarning";
+import TestnetWarning from "../components/TestnetWarning";
+import PaymentConfirmationModal from "../components/PaymentConfirmationModal";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
+
+function usePaymentParams(): PaymentParams | undefined {
+  const queryString = useLocation().search;
+  if (queryString) {
+    return PaymentParams.fromUrlQueryString(queryString);
+  }
+}
 
 function Home() {
   const { t } = useTranslation("layout");
   const [settings] = useContext(settingsContext)!;
   const user = settings.user;
+
+  const paymentParams = usePaymentParams();
 
   const userVerificationRequired =
     user &&
@@ -151,6 +162,10 @@ function Home() {
             <SendModal open={sendModalOpen} onClose={() => setSendModalOpen(false)} />
             <ReceiveModal open={receiveModalOpen} onClose={() => setReceiveModalOpen(false)} />
             <TransferModal open={transferModalOpen} onClose={() => setTransferModalOpen(false)} />
+
+            {!!paymentParams &&
+              <PaymentConfirmationModal open={!!paymentParams} paymentParams={paymentParams} onClose={() => {}} />
+            }
           </>
         )}
       </Container>
