@@ -257,17 +257,6 @@ def _hrp() -> str:
     return context.get().config.diem_address_hrp()
 
 
-def get_all() -> List[offchain.PaymentCommand]:
-    all_ = storage.get_all()
-    commands = []
-
-    for payment in all_:
-        payment_command = model_to_payment_command(payment)
-        commands.append(payment_command)
-
-    return commands
-
-
 def get_payment_command(reference_id: str) -> Optional[offchain.PaymentCommand]:
     payment_command = storage.get_payment_command(reference_id)
 
