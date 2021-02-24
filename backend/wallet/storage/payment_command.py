@@ -62,22 +62,18 @@ def lock_for_update(
     callback: Callable[[Optional[models.PaymentCommand]], models.PaymentCommand],
 ) -> models.PaymentCommand:
     try:
-        command = (
+        model = (
             models.PaymentCommand.query.filter_by(reference_id=reference_id)
             .populate_existing()
             .with_for_update(nowait=True)
             .one_or_none()
         )
-        new_command = callback(command)
-
-        if command:
-            update_payment_command(new_command)
-        else:
-            commit_payment_command(new_command)
+        model = callback(model)
+        commit_payment_command(model)
     except Exception:
         db_session.rollback()
         raise
-    return new_command
+    return model
 
 
 def get_account_payment_commands(account_id) -> List[models.PaymentCommand]:
