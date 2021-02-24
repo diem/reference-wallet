@@ -13,9 +13,10 @@ from diem import identifier, utils
 from diem_utils.types.currencies import DiemCurrency
 from wallet.services import account as account_service
 from wallet.services import transaction as transaction_service
-from wallet.services.transaction import get_transaction_direction
+from wallet.services.transaction import get_transaction_direction, FundsTransfer
 from wallet.storage import Transaction
 from wallet.types import TransactionType, TransactionDirection, TransactionSortOption
+from webapp.routes.offchain import payment_command_to_dict
 from webapp.routes.strict_schema_view import (
     response_definition,
     path_string_param,
@@ -31,8 +32,8 @@ from webapp.schemas import (
     FullAddress as FullAddressSchema,
     Error,
     TransactionId,
+    FundsTransfer as FundsTransferSchema,
 )
-from webapp.schemas import Transaction as TransactionSchema
 
 account = Blueprint("account/v1", __name__, url_prefix="/")
 
@@ -83,7 +84,7 @@ class AccountRoutes:
         ]
         responses = {
             HTTPStatus.OK: response_definition(
-                "A single transaction", schema=TransactionSchema
+                "A single transaction", schema=FundsTransferSchema
             ),
             HTTPStatus.NOT_FOUND: response_definition(
                 "Transaction not found", schema=Error
@@ -93,23 +94,32 @@ class AccountRoutes:
         def get(self, transaction_id: str):
             user = self.user
             account_id = user.account_id
-            transaction = transaction_service.get_transaction(
-                transaction_id=transaction_id
+            funds_transfer = transaction_service.get_funds_transfer(
+                reference_id=transaction_id
             )
-            if transaction is None or not (
-                transaction.source_id == account_id
-                or transaction.destination_id == account_id
+            if (
+                funds_transfer.transaction is None
+                and funds_transfer.payment_command is None
+            ):
+                return self.respond_with_error(
+                    HTTPStatus.NOT_FOUND,
+                    f"Funds transfer details for reference id {transaction_id} was not found.",
+                )
+
+            if funds_transfer.transaction is None or not (
+                funds_transfer.transaction.source_id == account_id
+                or funds_transfer.transaction.destination_id == account_id
             ):
                 return self.respond_with_error(
                     HTTPStatus.NOT_FOUND,
                     f"Transaction id {transaction_id} was not found.",
                 )
 
-            transaction = AccountRoutes.get_transaction_response_object(
-                user.account_id, transaction
+            funds_transfer = AccountRoutes.get_funds_transfer_response_object(
+                user.account_id, funds_transfer
             )
 
-            return transaction, HTTPStatus.OK
+            return funds_transfer, HTTPStatus.OK
 
     class GetAllTransactions(AccountView):
         summary = "Get an account transactions"
@@ -311,3 +321,19 @@ class AccountRoutes:
             "is_internal": transaction.type == TransactionType.INTERNAL,
             "blockchain_tx": blockchain_tx,
         }
+
+    @classmethod
+    def get_funds_transfer_response_object(
+        cls, account_id: int, funds_transfer: FundsTransfer
+    ) -> Dict[str, str]:
+        tx_ = None
+        pc_ = None
+        if funds_transfer.transaction:
+            tx_ = cls.get_transaction_response_object(
+                account_id, funds_transfer.transaction
+            )
+
+        if funds_transfer.payment_command:
+            pc_ = payment_command_to_dict(funds_transfer.payment_command)
+
+        return {"transaction": tx_, "payment_command": pc_}
