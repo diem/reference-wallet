@@ -76,15 +76,17 @@ def _jws(cid: Optional[str], err: Optional[offchain.OffChainErrorObject] = None)
 
 
 def process_offchain_tasks() -> None:
-    def send_command(cmd, _) -> PaymentCommandModel:
-        assert not cmd.is_inbound()
-        model = storage.get_payment_command(cmd.reference_id())
+    def send_command(model) -> None:
+        assert not model.inbound
         model.status = TransactionStatus.OFF_CHAIN_WAIT
+        cmd = model_to_payment_command(model)
         _offchain_client().send_command(cmd, _compliance_private_key().sign)
-        return model
 
-    def offchain_action(cmd, action) -> PaymentCommandModel:
-        assert cmd.is_inbound()
+    def offchain_action(model) -> None:
+        assert model.inbound
+        cmd = model_to_payment_command(model)
+        action = cmd.follow_up_action()
+
         if action is None:
             return
         if action == offchain.Action.EVALUATE_KYC_DATA:
@@ -92,19 +94,20 @@ def process_offchain_tasks() -> None:
             status = _payment_command_status(
                 new_cmd, TransactionStatus.OFF_CHAIN_OUTBOUND
             )
-            return payment_command_to_model(new_cmd, status)
+            update_model_base_on_payment_command(model, new_cmd, status)
         else:
             # todo: handle REVIEW_KYC_DATA and CLEAR_SOFT_MATCH
             raise ValueError(f"unsupported offchain action: {action}, command: {cmd}")
 
-    def submit_txn(cmd, _) -> PaymentCommandModel:
-        if cmd.is_sender():
+    def submit_txn(model) -> None:
+        if model.sender_address == model.my_actor_address:
+            cmd = model_to_payment_command(model)
             _offchain_client().send_command(cmd, _compliance_private_key().sign)
             transaction = _new_transaction_base_on_payment_command(
                 cmd, TransactionStatus.COMPLETED
             )
             logger.info(
-                f"Submitting transaction ID:{transaction.id} {transaction.amount} {transaction.currency}"
+                f"Submitting transaction base on command ref id:{model.reference_id} {model.amount} {model.currency}"
             )
             rpc_txn = context.get().p2p_by_travel_rule(
                 cmd.receiver_account_address(_hrp()),
@@ -120,7 +123,7 @@ def process_offchain_tasks() -> None:
                 f"Submitted transaction ID:{transaction.id} V:{transaction.blockchain_version} {transaction.amount} {transaction.currency}"
             )
             storage.commit_transaction(transaction)
-            return payment_command_to_model(cmd, TransactionStatus.COMPLETED)
+            model.status = TransactionStatus.COMPLETED
 
     _process_by_status(TransactionStatus.OFF_CHAIN_OUTBOUND, send_command)
     _process_by_status(TransactionStatus.OFF_CHAIN_INBOUND, offchain_action)
@@ -129,21 +132,17 @@ def process_offchain_tasks() -> None:
 
 def _process_by_status(
     status: TransactionStatus,
-    callback: Callable[
-        [offchain.PaymentCommand, offchain.Action], Optional[PaymentCommandModel]
-    ],
+    callback: Callable[[PaymentCommandModel], Optional[PaymentCommandModel]],
 ) -> None:
     commands_models = storage.get_payment_commands_by_status(status)
     for model in commands_models:
-        command = model_to_payment_command(model)
-        action = command.follow_up_action()
 
         def callback_with_status_check(model):
             if model.status == status:
-                return callback(command, action)
+                callback(model)
             return model
 
-        logger.info(f"lock for update: {action} {command}")
+        logger.info(f"lock for update: {model}")
         try:
             lock_for_update(model.reference_id, callback_with_status_check)
         except Exception:
@@ -173,25 +172,24 @@ def _send_kyc_data_and_receipient_signature(
 
 def _lock_and_save_inbound_command(
     command: offchain.PaymentCommand,
-) -> offchain.PaymentCommand:
+) -> None:
     def validate_and_save(model: Optional[PaymentCommandModel]) -> PaymentCommandModel:
         if model:
             prior = get_payment_command(model.reference_id)
             if command == prior:
                 return
             command.validate(prior)
-            model.status = _payment_command_status(
+            status = _payment_command_status(
                 command, TransactionStatus.OFF_CHAIN_INBOUND
             )
-            return payment_command_to_model(command, model.status)
+            update_model_base_on_payment_command(model, command, status)
         else:
-            return payment_command_to_model(
+            model = payment_command_to_model(
                 command, TransactionStatus.OFF_CHAIN_INBOUND
             )
+        return model
 
-    return model_to_payment_command(
-        lock_for_update(command.reference_id(), validate_and_save)
-    )
+    lock_for_update(command.reference_id(), validate_and_save)
 
 
 def _payment_command_status(
@@ -286,6 +284,35 @@ def get_account_payment_commands(account_id: int) -> List[offchain.PaymentComman
         commands.append(model_to_payment_command(model))
 
     return commands
+
+
+def update_model_base_on_payment_command(
+    model: PaymentCommandModel, command: offchain.PaymentCommand, status
+):
+    model.my_actor_address = command.my_actor_address
+    model.inbound = command.is_inbound()
+    model.sender_address = command.payment.sender.address
+    model.sender_status = command.payment.sender.status.status
+    model.sender_kyc_data = (
+        offchain.to_json(command.payment.sender.kyc_data)
+        if command.payment.sender.kyc_data
+        else None
+    )
+    model.sender_metadata = command.payment.sender.metadata
+    model.sender_additional_kyc_data = command.payment.sender.additional_kyc_data
+    model.receiver_address = command.payment.receiver.address
+    model.receiver_status = command.payment.receiver.status.status
+    model.receiver_kyc_data = (
+        offchain.to_json(command.payment.receiver.kyc_data)
+        if command.payment.receiver.kyc_data
+        else None
+    )
+    model.receiver_metadata = command.payment.receiver.metadata
+    model.receiver_additional_kyc_data = command.payment.receiver.additional_kyc_data
+    model.action = command.payment.action.action
+    model.recipient_signature = command.payment.recipient_signature
+    if status:
+        model.status = status
 
 
 def payment_command_to_model(

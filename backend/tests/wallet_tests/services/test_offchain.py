@@ -117,6 +117,11 @@ def test_submit_txn_when_both_ready(monkeypatch):
         kyc_data=offchain_service._user_kyc_data(user.account_id),
     )
 
+    model = storage.get_payment_command(cmd.reference_id())
+    assert model
+    assert model.status == TransactionStatus.OFF_CHAIN_OUTBOUND
+    assert not model.inbound, str(model)
+
     with monkeypatch.context() as m:
         client = context.get().offchain_client
         m.setattr(
@@ -129,7 +134,6 @@ def test_submit_txn_when_both_ready(monkeypatch):
         )
         assert code == 200
         assert resp
-
     model = storage.get_payment_command(cmd.reference_id())
     assert model
     assert model.status == TransactionStatus.OFF_CHAIN_INBOUND
