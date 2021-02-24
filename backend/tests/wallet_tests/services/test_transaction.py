@@ -339,7 +339,7 @@ def send_fake_tx(amount=100, send_to_self=False) -> Tuple[int, Transaction]:
         destination_address = account_address_hex(context.get().config.vasp_address)
         destination_subaddress = generate_new_subaddress(account_id)
 
-    send_tx = send_transaction(
+    tx_id = send_transaction(
         sender_id=account_id,
         amount=amount,
         currency=currency,
@@ -348,4 +348,4 @@ def send_fake_tx(amount=100, send_to_self=False) -> Tuple[int, Transaction]:
         destination_subaddress=destination_subaddress,
     )
 
-    return account_id, get_transaction(send_tx.id) if send_tx else None
+    return account_id, get_transaction(tx_id) if tx_id else None
