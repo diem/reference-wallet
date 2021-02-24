@@ -1,8 +1,8 @@
 // Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useContext, useEffect, useState } from "react";
-import { Container } from "reactstrap";
+import React, { useContext, useEffect, useState, useMemo } from "react";
+import { Alert, Container } from "reactstrap";
 import { Redirect } from "react-router";
 import { Link, useLocation, useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -27,24 +27,10 @@ import PaymentConfirmationModal from "../components/PaymentConfirmationModal";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
 
-function usePaymentParams(): PaymentParams | undefined {
-  const queryString = useLocation().search;
-  if (queryString) {
-    return PaymentParams.fromUrlQueryString(queryString);
-  }
-}
-
 function Home() {
   const { t } = useTranslation("layout");
   const [settings] = useContext(settingsContext)!;
   const user = settings.user;
-
-  const paymentParams = usePaymentParams();
-  const history = useHistory();
-
-  const onPaymentRequestHandled = () => {
-    history.push("/");
-  };
 
   const userVerificationRequired =
     user &&
@@ -59,6 +45,25 @@ function Home() {
   const [transferModalOpen, setTransferModalOpen] = useState<boolean>(false);
   const [sendModalOpen, setSendModalOpen] = useState<boolean>(false);
   const [receiveModalOpen, setReceiveModalOpen] = useState<boolean>(false);
+  const [showPaymentRequestError, setShowPaymentRequestError] = useState<boolean>(false);
+
+  const queryString = useLocation().search;
+  const paymentParams: PaymentParams | undefined = useMemo(() => {
+    try {
+      if (queryString) {
+        return PaymentParams.fromUrlQueryString(queryString);
+      }
+    } catch (e) {
+      setShowPaymentRequestError(true);
+    }
+  }, [queryString]);
+
+  const history = useHistory();
+
+  const onPaymentRequestHandled = () => {
+    setShowPaymentRequestError(false);
+    history.push("/");
+  };
 
   useEffect(() => {
     async function refreshUser() {
@@ -111,6 +116,10 @@ function Home() {
           <VerifyingMessage />
         ) : (
           <>
+            <Alert color="danger" isOpen={showPaymentRequestError} toggle={onPaymentRequestHandled} fade={false} className="my-5">
+              Invalid payment request.
+            </Alert>
+
             <h1 className="h5 font-weight-normal text-body text-center">
               {user.first_name} {user.last_name}
             </h1>
