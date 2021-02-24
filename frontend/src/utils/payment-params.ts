@@ -1,6 +1,6 @@
 // Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
-import { parse as uuidParse, stringify as uuidStringify } from 'uuid';
+import { parse as uuidParse, stringify as uuidStringify } from "uuid";
 
 export class PaymentParamError extends Error {}
 
@@ -18,9 +18,8 @@ export class PaymentParams {
     readonly currency: string,
     readonly amount: number,
     readonly expiration: Date,
-    readonly redirectUrl: string,
-  ) {
-  }
+    readonly redirectUrl: string
+  ) {}
 
   public static fromUrlQueryString(queryString: string): PaymentParams {
     const params = new URLSearchParams(queryString);
@@ -75,7 +74,7 @@ export class PaymentParams {
       currency,
       amount,
       new Date(expiration),
-      redirectUrl,
+      redirectUrl
     );
   }
 
