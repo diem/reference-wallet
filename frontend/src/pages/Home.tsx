@@ -116,7 +116,13 @@ function Home() {
           <VerifyingMessage />
         ) : (
           <>
-            <Alert color="danger" isOpen={showPaymentRequestError} toggle={onPaymentRequestHandled} fade={false} className="my-5">
+            <Alert
+              color="danger"
+              isOpen={showPaymentRequestError}
+              toggle={onPaymentRequestHandled}
+              fade={false}
+              className="my-5"
+            >
               Invalid payment request.
             </Alert>
 
