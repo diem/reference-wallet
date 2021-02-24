@@ -1,0 +1,13 @@
+{
+  "confirmation": {
+    "title": "Payment Awaiting Approval",
+    "summary": "Do you approve payment of {{amount}} {{currency}} to {{merchant}}?",
+    "amount": "Amount",
+    "merchant": "Merchant",
+    "receiver": "Receiver address",
+    "expiration": "Expiration",
+    "approve": "Approve",
+    "reject": "Reject",
+    "close": "Close"
+  }
+}
