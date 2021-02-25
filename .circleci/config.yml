@@ -75,7 +75,7 @@ jobs:
               -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
               --name deployer_container deployer:latest \
               -b ${ENVIRONMENT} \
-              -e $ENV_PREFIX \
+              -e $PIKAIA_ENV_PREFIXES \
               --set DiemReferenceWallet.build_tag << pipeline.number >>
 
             docker cp /tmp/workspace/frontend deployer_container:/
@@ -103,7 +103,6 @@ jobs:
             echo VERSION_CODE == ${BUILD_NUM}
             VERSION_CODE=${BUILD_NUM} ./publish.sh
 
-
 workflows:
   staging:
     jobs:
@@ -129,3 +128,20 @@ workflows:
               only:
                 - master
 
+  p2m:
+    jobs:
+      - build_and_push:
+          context: production
+          filters:
+            branches:
+              only:
+                - p2m
+      - deploy:
+          context: production
+          nirops_tag: master
+          requires:
+            - build_and_push
+          filters:
+            branches:
+              only:
+                - p2m
