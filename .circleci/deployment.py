@@ -38,6 +38,10 @@ def get_account_from_private_key(private_key) -> LocalAccount:
     return LocalAccount(Ed25519PrivateKey.from_private_bytes(bytes.fromhex(private_key)))
 
 
+class VaspAccountMissingError(Exception):
+    ...
+
+
 @unique
 class ChainType(IntEnum):
     TESTNET = testnet.CHAIN_ID.to_int()
@@ -147,7 +151,10 @@ class Vasp:
         logger.info(f'Creating and initialize the blockchain account {self.account_address_hex}')
         account_info = self.api.get_account(self.account.account_address)
         if not account_info:
-            self.mint(1_000_000, CURRENCY)
+            if self.chain == ChainType.TESTNET:
+                self.mint(1_000_000, CURRENCY)
+            else:
+                raise VaspAccountMissingError(f'Account {self.account_address_hex} must exist')
 
     def mint(self, amount, currency):
         logger.info(f'Minting {amount} {currency} to account {self.account_address_hex}')
