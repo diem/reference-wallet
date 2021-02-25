@@ -4,7 +4,7 @@
     "summary": "Do you approve payment of {{amount}} {{currency}} to {{merchant}}?",
     "amount": "Amount",
     "merchant": "Merchant",
-    "receiver": "Receiver address",
+    "receiver": "Receiver",
     "expiration": "Expiration",
     "approve": "Approve",
     "reject": "Reject",
