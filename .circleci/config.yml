@@ -75,7 +75,7 @@ jobs:
               -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
               --name deployer_container deployer:latest \
               -b ${ENVIRONMENT} \
-              -e $PIKAIA_ENV_PREFIXES \
+              -e $ENV_PREFIX \
               --set DiemReferenceWallet.build_tag << pipeline.number >>
 
             docker cp /tmp/workspace/frontend deployer_container:/
