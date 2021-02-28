@@ -259,5 +259,5 @@ class PaymentCommands(Schema):
 
 
 class FundsTransfer(Schema):
-    transaction = fields.Nested(Transaction)
-    payment_command = fields.Nested(PaymentCommand)
+    transaction = fields.Nested(Transaction, required=False, allow_none=True)
+    payment_command = fields.Nested(PaymentCommand, required=False, allow_none=True)
