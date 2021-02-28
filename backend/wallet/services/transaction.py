@@ -11,6 +11,7 @@ from wallet.services import (
     account as account_service,
     offchain as offchain_service,
 )
+from wallet.services.offchain import get_payment_command
 from wallet.services.risk import risk_check
 
 from . import INVENTORY_ACCOUNT_NAME
@@ -443,7 +444,7 @@ class FundsTransfer:
 def get_funds_transfer(reference_id: str) -> FundsTransfer:
     return FundsTransfer(
         transaction=storage.get_transaction(reference_id),
-        payment_command=storage.get_payment_command(reference_id=reference_id),
+        payment_command=get_payment_command(reference_id=reference_id),
     )
 
 
