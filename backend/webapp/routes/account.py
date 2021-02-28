@@ -106,7 +106,7 @@ class AccountRoutes:
                     f"Funds transfer details for reference id {transaction_id} was not found.",
                 )
 
-            if funds_transfer.transaction is None or not (
+            if funds_transfer.transaction and not (
                 funds_transfer.transaction.source_id == account_id
                 or funds_transfer.transaction.destination_id == account_id
             ):
