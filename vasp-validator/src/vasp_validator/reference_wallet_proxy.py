@@ -15,7 +15,8 @@ from .models import (
     CreateTransaction,
     AccountInfo,
     OffChainSequenceInfo,
-    TransactionId
+    TransactionId,
+    FundsTransfer,
 )
 
 
@@ -94,9 +95,9 @@ class ReferenceWalletProxy:
         )
         return TransactionId.from_json(send_transaction_response.text)
 
-    def get_transaction(self, tx_id) -> Transaction:
+    def get_transaction(self, tx_id) -> FundsTransfer:
         response = self._request_authorized("GET", f"account/transactions/{tx_id}")
-        return Transaction.from_json(response.text)
+        return FundsTransfer.from_json(response.text)
 
     def _set_authorization_token(self, token):
         self.authorization_header = {"Authorization": "Bearer " + token}
