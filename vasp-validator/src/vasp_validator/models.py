@@ -91,6 +91,19 @@ class Transaction:
 
 @dataclass_json
 @dataclass
+class PaymentCommand:
+    ...
+
+
+@dataclass_json
+@dataclass
+class FundsTransfer:
+    transaction: Transaction
+    payment_command: PaymentCommand
+
+
+@dataclass_json
+@dataclass
 class TransactionId:
     id: str
 
