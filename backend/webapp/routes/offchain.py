@@ -22,62 +22,61 @@ offchain = Blueprint("offchain", __name__)
 
 def payment_command_to_dict(command: diem_offchain.PaymentCommand):
     payment = command.payment
-    sender = payment.sender
-    sender_kyc_data = sender.kyc_data
-    receiver = payment.receiver
-    receiver_kyc_data = receiver.kyc_data
-    action = payment.action
-    return {
+    payment_dict = {
+        "reference_id": command.reference_id(),
+        "sender": actor_to_dict(payment.sender),
+        "receiver": actor_to_dict(payment.receiver),
+        "action": action_to_dict(payment.action),
+    }
+    if payment.original_payment_reference_id:
+        payment_dict[
+            "original_payment_reference_id"
+        ] = payment.original_payment_reference_id
+    if payment.recipient_signature:
+        payment_dict["recipient_signature"] = payment.recipient_signature
+    if payment.description:
+        payment_dict["description"] = payment.description
+    payment_command_dict = {
         "my_actor_address": command.my_actor_address,
         "inbound": command.inbound,
         "cid": command.cid,
-        "payment": {
-            "reference_id": command.reference_id(),
-            "sender": {
-                "address": sender.address,
-                "status": {"status": sender.status.status},
-                "kyc_data": {
-                    "type": sender_kyc_data.type,
-                    "payload_version": sender_kyc_data.payload_version,
-                    "given_name": sender_kyc_data.given_name,
-                    "surname": sender_kyc_data.surname,
-                    "address": sender_kyc_data.address,
-                    "dob": sender_kyc_data.dob,
-                    "place_of_birth": sender_kyc_data.place_of_birth,
-                    "national_id": sender_kyc_data.national_id,
-                    "legal_entity_name": sender_kyc_data.legal_entity_name,
-                },
-                "metadata": sender.metadata,
-                "additional_kyc_data": sender.additional_kyc_data,
-            },
-            "receiver": {
-                "address": receiver.address,
-                "status": {"status": receiver.status.status},
-                "kyc_data": {
-                    "type": receiver_kyc_data.type,
-                    "payload_version": receiver_kyc_data.payload_version,
-                    "given_name": receiver_kyc_data.given_name,
-                    "surname": receiver_kyc_data.surname,
-                    "address": receiver_kyc_data.address,
-                    "dob": receiver_kyc_data.dob,
-                    "place_of_birth": receiver_kyc_data.place_of_birth,
-                    "national_id": receiver_kyc_data.national_id,
-                    "legal_entity_name": receiver_kyc_data.legal_entity_name,
-                },
-                "metadata": receiver.metadata,
-                "additional_kyc_data": receiver.additional_kyc_data,
-            },
-            "action": {
-                "amount": action.amount,
-                "currency": action.currency,
-                "action": action.action,
-                "timestamp": action.timestamp,
-            },
-            "original_payment_reference_id": payment.original_payment_reference_id,
-            "recipient_signature": payment.recipient_signature,
-            "description": payment.description,
-        },
+        "payment": payment_dict,
     }
+    return payment_command_dict
+
+
+def action_to_dict(action):
+    return {
+        "amount": action.amount,
+        "currency": action.currency,
+        "action": action.action,
+        "timestamp": action.timestamp,
+    }
+
+
+def actor_to_dict(actor):
+    actor_dict = {
+        "address": actor.address,
+        "status": {"status": actor.status.status},
+    }
+    if actor.metadata:
+        actor_dict["metadata"] = actor.metadata
+    if actor.additional_kyc_data:
+        actor_dict["additional_kyc_data"] = actor.additional_kyc_data
+    kyc_data = actor.kyc_data
+    if kyc_data:
+        actor_dict["kyc_data"] = {
+            "type": kyc_data.type,
+            "payload_version": kyc_data.payload_version,
+            "given_name": kyc_data.given_name,
+            "surname": kyc_data.surname,
+            "address": kyc_data.address,
+            "dob": kyc_data.dob,
+            "place_of_birth": kyc_data.place_of_birth,
+            "national_id": kyc_data.national_id,
+            "legal_entity_name": kyc_data.legal_entity_name,
+        }
+    return actor_dict
 
 
 class OffchainRoutes:
