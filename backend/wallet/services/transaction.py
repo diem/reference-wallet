@@ -5,13 +5,17 @@ from typing import Optional
 
 import context
 import logging
-from diem import diem_types, offchain
+from diem import diem_types, offchain, identifier
 from diem_utils.types.currencies import DiemCurrency
 from wallet.services import (
     account as account_service,
     offchain as offchain_service,
 )
-from wallet.services.offchain import get_payment_command
+from wallet.services.offchain import (
+    get_payment_command,
+    new_transaction_base_on_payment_command,
+    model_to_payment_command,
+)
 from wallet.services.risk import risk_check
 
 from . import INVENTORY_ACCOUNT_NAME
@@ -105,29 +109,38 @@ def process_incoming_transaction(
                 f"Invalid Travel Rule metadata : reference_id None"
             )
 
-        transaction = get_transaction_by_reference_id(reference_id)
+        payment_command = storage.get_payment_command(reference_id)
+
+        payment_command_sender_address_hex, _ = identifier.decode_account(
+            payment_command.sender_address, context.get().config.diem_address_hrp()
+        )
+        payment_command_receiver_address_hex, _ = identifier.decode_account(
+            payment_command.receiver_address, context.get().config.diem_address_hrp()
+        )
+        payment_command_receiver_address = payment_command_receiver_address_hex.to_hex()
+        payment_command_sender_address = payment_command_sender_address_hex.to_hex()
         if (
-            transaction.amount == amount
-            and transaction.status == TransactionStatus.OFF_CHAIN_READY
-            and transaction.source_address == sender_address
-            and transaction.destination_address == receiver_address
+            payment_command.amount == amount
+            and payment_command.status == TransactionStatus.OFF_CHAIN_READY
+            and payment_command_sender_address == sender_address
+            and payment_command_receiver_address == receiver_address
         ):
-            logger.info(f"transaction completed: {transaction.id}")
-            update_transaction(
-                transaction_id=transaction.id,
-                status=TransactionStatus.COMPLETED,
-                sequence=sequence,
-                blockchain_tx_version=blockchain_version,
+            transaction = new_transaction_base_on_payment_command(
+                model_to_payment_command(payment_command), TransactionStatus.COMPLETED
             )
+            transaction.sequence = sequence
+            transaction.blockchain_version = blockchain_version
+            storage.commit_transaction(transaction)
+            logger.info(f"transaction completed: {transaction.id}")
 
             return
 
         raise InvalidTravelRuleMetadata(
-            f"Travel Rule metadata decode failed: Transaction {transaction.id} with reference ID {reference_id} "
-            f"should have amount: {transaction.amount}, status: {TransactionStatus.OFF_CHAIN_READY}, "
-            f"source address: {transaction.source_address}, destination address: {transaction.destination_address},"
-            f" but received transaction has amount: {amount}, status: {transaction.status}, "
-            f"source address: {sender_address}, destination address: {receiver_address}"
+            f"Travel Rule metadata decode failed: PaymentCommand {payment_command} "
+            f"with reference ID {reference_id} should have amount: {payment_command.amount}, "
+            f"status: {TransactionStatus.OFF_CHAIN_READY}, sender address: {payment_command.sender_address}, "
+            f"receiver address: {payment_command.receiver_address}, but received transaction has amount: {amount}, "
+            f"status: {payment_command.status}, sender address: {sender_address}, receiver address: {receiver_address}"
         )
 
     if not receiver_id:
