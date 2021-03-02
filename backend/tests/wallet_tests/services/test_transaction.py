@@ -36,7 +36,10 @@ from wallet.storage import (
     Transaction,
     db_session,
 )
+from wallet.storage import models
 from wallet.types import TransactionDirection, TransactionType, TransactionStatus
+import time
+from datetime import datetime
 
 
 def test_send_transaction() -> None:
@@ -112,33 +115,43 @@ def test_process_incoming_general_txn() -> None:
 
 def test_process_incoming_travel_rule_txn() -> None:
     account = create_account("fake_account")
-    sender_addr = "46db232847705e05525db0336fd9f337"
-    receiver_addr = "lrw_vasp"
-    sender_subaddr = generate_new_subaddress(account.id)
+    sender_address = "20ff2d6367f3f7df39d8eecc0fd50e38"
+    receiver_address = "ac37b93b94ebeff3157d96d27fa1f5b6"
+    sender_sub_address = "69ec5a7e45554780"
     amount = 1000 * 1_000_000
-    sender = account_address(sender_addr)
+    sender = account_address(sender_address)
     sequence = 1
     currency = DiemCurrency.XUS
     blockchain_version = 1
 
-    off_chain_reference_id = "off_chain_reference_id"
+    off_chain_reference_id = "2fec2d23-807a-4d99-84de-04a556fc0345"
     metadata, _ = travel_rule(off_chain_reference_id, sender, amount)
 
-    storage.add_transaction(
-        amount=amount,
-        currency=currency,
-        payment_type=TransactionType.OFFCHAIN,
-        status=TransactionStatus.OFF_CHAIN_READY,
-        source_id=account.id,
-        source_address=sender_addr,
-        source_subaddress=sender_subaddr,
-        destination_address=receiver_addr,
-        reference_id=off_chain_reference_id,
+    storage.commit_payment_command(
+        models.PaymentCommand(
+            my_actor_address="tdm1p4smmjwu5a0hlx9tajmf8lg04km94y8ygchn6rgqxtrysg",
+            inbound=True,
+            cid="a7881456-e480-4e64-b1e3-f8a9fc106c72",
+            reference_id=off_chain_reference_id,
+            sender_address="tdm1pyrlj6cm870ma7wwcamxql4gw8p57ckn7g4250qqctzku5",
+            sender_status="ready_for_settlement",
+            sender_kyc_data=None,
+            receiver_address="tdm1p4smmjwu5a0hlx9tajmf8lg04km94y8ygchn6rgqxtrysg",
+            receiver_status="ready_for_settlement",
+            receiver_kyc_data=None,
+            amount=amount,
+            currency=currency,
+            action="charge",
+            created_at=datetime.fromtimestamp(int(time.time())),
+            status=TransactionStatus.OFF_CHAIN_READY,
+            account_id=account.id,
+            recipient_signature=b"recipient_signature".hex(),
+        )
     )
 
     process_incoming_transaction(
-        sender_address=sender_addr,
-        receiver_address=receiver_addr,
+        sender_address=sender_address,
+        receiver_address=receiver_address,
         sequence=sequence,
         amount=amount,
         currency=currency,
@@ -148,7 +161,7 @@ def test_process_incoming_travel_rule_txn() -> None:
 
     # successfully parse meta and sequence
     tx = storage.get_transaction_by_details(
-        source_address=sender_addr, source_subaddress=sender_subaddr, sequence=sequence
+        source_address=sender_address, source_subaddress=sender_sub_address, sequence=sequence
     )
     assert tx is not None
     assert tx.sequence == sequence
