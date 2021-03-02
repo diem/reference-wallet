@@ -161,7 +161,9 @@ def test_process_incoming_travel_rule_txn() -> None:
 
     # successfully parse meta and sequence
     tx = storage.get_transaction_by_details(
-        source_address=sender_address, source_subaddress=sender_sub_address, sequence=sequence
+        source_address=sender_address,
+        source_subaddress=sender_sub_address,
+        sequence=sequence,
     )
     assert tx is not None
     assert tx.sequence == sequence
