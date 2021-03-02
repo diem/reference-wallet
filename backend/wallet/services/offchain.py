@@ -103,7 +103,7 @@ def process_offchain_tasks() -> None:
         if model.sender_address == model.my_actor_address:
             cmd = model_to_payment_command(model)
             _offchain_client().send_command(cmd, _compliance_private_key().sign)
-            transaction = _new_transaction_base_on_payment_command(
+            transaction = new_transaction_base_on_payment_command(
                 cmd, TransactionStatus.COMPLETED
             )
             logger.info(
@@ -119,7 +119,6 @@ def process_offchain_tasks() -> None:
             )
             transaction.sequence = rpc_txn.transaction.sequence_number
             transaction.blockchain_version = rpc_txn.version
-            transaction.status = TransactionStatus.COMPLETED
             logger.info(
                 f"Submitted transaction ID:{transaction.id} V:{transaction.blockchain_version} {transaction.amount} {transaction.currency}"
             )
@@ -203,7 +202,7 @@ def _payment_command_status(
     return default
 
 
-def _new_transaction_base_on_payment_command(
+def new_transaction_base_on_payment_command(
     command: offchain.PaymentCommand, status: TransactionStatus
 ) -> Transaction:
     payment = command.payment
