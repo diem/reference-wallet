@@ -104,16 +104,16 @@ jobs:
             VERSION_CODE=${BUILD_NUM} ./publish.sh
 
 workflows:
-  staging:
+  master:
     jobs:
       - build_and_push:
-          context: staging
+          context: production
           filters:
             branches:
               only:
                 - master
       - deploy:
-          context: staging
+          context: production
           nirops_tag: master
           requires:
             - build_and_push
@@ -122,7 +122,7 @@ workflows:
               only:
                 - master
       - android_build:
-          context: staging
+          context: production
           filters:
             branches:
               only:
@@ -131,13 +131,13 @@ workflows:
   p2m:
     jobs:
       - build_and_push:
-          context: production
+          context: staging
           filters:
             branches:
               only:
                 - p2m
       - deploy:
-          context: production
+          context: staging
           nirops_tag: master
           requires:
             - build_and_push
