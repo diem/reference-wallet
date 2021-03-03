@@ -12,6 +12,9 @@ from . import db_session, get_user
 from .models import Transaction, TransactionLog
 from ..types import TransactionStatus, TransactionType
 from diem_utils.types.currencies import DiemCurrency
+import logging
+
+logger = logging.getLogger(name="wallet-service:storage")
 
 
 def lock_for_update(

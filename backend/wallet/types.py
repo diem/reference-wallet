@@ -6,6 +6,7 @@ from datetime import date
 from enum import Enum
 from typing import Optional, Dict, NewType
 from uuid import UUID
+from diem import diem_types
 
 from diem_utils.types.currencies import DiemCurrency, FiatCurrency
 
@@ -202,3 +203,14 @@ class RefundReason(str, Enum):
     USER_INITIATED_FULL_REFUND = "user_initiated_full_refund"
     USER_INITIATED_PARTIAL_REFUND = "user_initiated_partial_refund"
     OTHER = "other"
+
+
+def to_refund_reason(reason: diem_types.RefundReason):
+    if isinstance(reason, diem_types.RefundReason__InvalidSubaddress):
+        return RefundReason.INVALID_SUBADDRESS
+    elif isinstance(reason, diem_types.RefundReason__UserInitiatedPartialRefund):
+        return RefundReason.USER_INITIATED_PARTIAL_REFUND
+    elif isinstance(reason, diem_types.RefundReason__UserInitiatedFullRefund):
+        return RefundReason.USER_INITIATED_FULL_REFUND
+    else:
+        return RefundReason.OTHER

@@ -192,12 +192,10 @@ def test_process_incoming_refund_txn() -> None:
         blockchain_version=2,
     )
 
-    # successfully parse meta and sequence
-    # tx = storage.get_transaction_by_details(
-    #     source_address=sender_addr, source_subaddress=None, sequence=1
-    # )
     tx = storage.get_transaction_by_blockchain_version(2)
     assert tx is not None
+    assert tx.type == TransactionType.REFUND
+    assert tx.original_txn_id == initial_tx.id
 
 
 def test_balance_calculation_simple_income() -> None:

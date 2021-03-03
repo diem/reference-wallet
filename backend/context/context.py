@@ -87,10 +87,10 @@ class Context:
         currency: str,
         amount: int,
         receiver_vasp_address: str,
-        txn_version: int,
+        original_txn_version: int,
     ) -> jsonrpc.Transaction:
         metadata = txnmetadata.refund_metadata(
-            txn_version, diem_types.RefundReason__InvalidSubaddress()
+            original_txn_version, diem_types.RefundReason__InvalidSubaddress()
         )
         return self._p2p_transfer(
             currency, amount, receiver_vasp_address, metadata, b""
