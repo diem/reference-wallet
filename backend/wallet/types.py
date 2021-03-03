@@ -6,6 +6,7 @@ from datetime import date
 from enum import Enum
 from typing import Optional, Dict, NewType
 from uuid import UUID
+from diem import diem_types
 
 from diem_utils.types.currencies import DiemCurrency, FiatCurrency
 
@@ -21,6 +22,8 @@ class TransactionStatus(str, Enum):
     PENDING = "pending"
     COMPLETED = "completed"
     CANCELED = "canceled"
+    PROCESS_FAILED = "process_failed"
+    NEED_REFUND = "need_refund"
     # both ready for settlement, sender submits onchain txn
     OFF_CHAIN_READY = "off_chain_ready"
     # outbound command needs to send to opponent VASP
@@ -35,6 +38,7 @@ class TransactionType(str, Enum):
     EXTERNAL = "external"
     INTERNAL = "internal"
     OFFCHAIN = "offchain"
+    REFUND = "refund"
 
 
 class TransactionSortOption(str, Enum):
@@ -192,3 +196,21 @@ class Balance:
 
 class UserNotFoundError(Exception):
     pass
+
+
+class RefundReason(str, Enum):
+    INVALID_SUBADDRESS = "invalid_subaddress"
+    USER_INITIATED_FULL_REFUND = "user_initiated_full_refund"
+    USER_INITIATED_PARTIAL_REFUND = "user_initiated_partial_refund"
+    OTHER = "other"
+
+
+def to_refund_reason(reason: diem_types.RefundReason):
+    if isinstance(reason, diem_types.RefundReason__InvalidSubaddress):
+        return RefundReason.INVALID_SUBADDRESS
+    elif isinstance(reason, diem_types.RefundReason__UserInitiatedPartialRefund):
+        return RefundReason.USER_INITIATED_PARTIAL_REFUND
+    elif isinstance(reason, diem_types.RefundReason__UserInitiatedFullRefund):
+        return RefundReason.USER_INITIATED_FULL_REFUND
+    else:
+        return RefundReason.OTHER
