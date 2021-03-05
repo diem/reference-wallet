@@ -23,41 +23,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install pipenv
-        run: |
-          pip install --upgrade pipenv
+        run: pip install --upgrade pipenv
       - name: Fetch liquidity submodule
-        run: |
-          git submodule update --init --recursive
+        run: git submodule update --init --recursive
       - name: Setup Environment
         run: |
-          ./scripts/lrw.sh setup_environment false
+            VASP_BASE_URL=http://localhost:8080 ./scripts/lrw.sh setup_environment false
       - name: Launch tests against it
-        run: |
-          set +e
-
-          mkdir -p output
-
-          # Launch DRW
-          ./scripts/lrw.sh develop 8080 false
-          sleep 15
-
-          # Launch Proxy
-          cd backend
-          DRW_URL_PREFIX=http://localhost:8080 MW_DRW_PROXY_PORT=3130 pipenv run python3 ./tests/mw_drw_proxy/proxy.py > ../output/proxy.txt 2>&1 &
-          sleep 5
-
-          # Write pre output
-          docker-compose -f ../docker/docker-compose.yaml -f ../docker/dev.docker-compose.yaml logs > ../output/pre_test_docker.txt
-
-          # Start testing!
-          pipenv run dmw -- test --verbose --target http://127.0.0.1:3130 2>&1 > ../output/test.txt || true
-
-          cat ../output/test.txt
-
-          # Write outputs
-          cd ../
-          docker-compose -f docker/docker-compose.yaml -f docker/dev.docker-compose.yaml logs > output/docker.txt
-
+        run: ./scripts/run_dmw_test.sh
       - name: Save results
         uses: actions/upload-artifact@v2
         if: ${{ always() }}
