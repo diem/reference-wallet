@@ -50,7 +50,7 @@ jobs:
           docker-compose -f ../docker/docker-compose.yaml -f ../docker/dev.docker-compose.yaml logs > ../output/pre_test_docker.txt
 
           # Start testing!
-          pipenv run dmw -- test --verbose=true --target http://127.0.0.1:3130 2>&1 > ../output/test.txt || true
+          pipenv run dmw -- test --verbose --target http://127.0.0.1:3130 2>&1 > ../output/test.txt || true
 
           cat ../output/test.txt
 
