@@ -36,6 +36,8 @@ from ..types import (
     TransactionStatus,
     BalanceError,
     Balance,
+    RefundReason,
+    to_refund_reason,
 )
 
 import context, logging
