@@ -13,7 +13,7 @@ from wallet.services import (
 )
 from wallet.services.offchain import (
     get_payment_command,
-    new_transaction_base_on_payment_command,
+    add_transaction_based_on_payment_command,
     model_to_payment_command,
 )
 from wallet.services.risk import risk_check
@@ -211,26 +211,26 @@ def process_incoming_transaction(
 
         payment_command = storage.get_payment_command(reference_id)
 
-        payment_command_sender_address_hex, _ = identifier.decode_account(
+        payment_command_sender_address, _ = identifier.decode_account(
             payment_command.sender_address, context.get().config.diem_address_hrp()
         )
-        payment_command_receiver_address_hex, _ = identifier.decode_account(
+        payment_command_receiver_address, _ = identifier.decode_account(
             payment_command.receiver_address, context.get().config.diem_address_hrp()
         )
-        payment_command_receiver_address = payment_command_receiver_address_hex.to_hex()
-        payment_command_sender_address = payment_command_sender_address_hex.to_hex()
+        payment_command_receiver_address_hex = payment_command_receiver_address.to_hex()
+        payment_command_sender_address_hex = payment_command_sender_address.to_hex()
         if (
             payment_command.amount == amount
             and payment_command.status == TransactionStatus.OFF_CHAIN_READY
-            and payment_command_sender_address == sender_address
-            and payment_command_receiver_address == receiver_address
+            and payment_command_sender_address_hex == sender_address
+            and payment_command_receiver_address_hex == receiver_address
         ):
-            transaction = new_transaction_base_on_payment_command(
-                model_to_payment_command(payment_command), TransactionStatus.COMPLETED
+            transaction = add_transaction_based_on_payment_command(
+                command=model_to_payment_command(payment_command),
+                status=TransactionStatus.COMPLETED,
+                sequence=sequence,
+                blockchain_version=blockchain_version,
             )
-            transaction.sequence = sequence
-            transaction.blockchain_version = blockchain_version
-            storage.commit_transaction(transaction)
             logger.info(f"transaction completed: {transaction.id}")
 
             return
@@ -399,7 +399,7 @@ def _send_transaction_external(
     original_txn_id,
 ) -> Optional[Transaction]:
     log_execution(
-        f"external transfer type {payment_type} from {sender_id} to receiver {destination_address}, "
+        f"external transfer from {sender_id} to receiver {destination_address}, "
         f"receiver subaddress {destination_subaddress}"
     )
     payment_type = TransactionType.EXTERNAL if payment_type is None else payment_type

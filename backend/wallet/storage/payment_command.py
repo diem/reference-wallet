@@ -10,21 +10,7 @@ class PaymentCommandNotFound(Exception):
     ...
 
 
-def update_payment_command(command: models.PaymentCommand):
-    command_in_db = get_payment_command(command.reference_id)
-
-    if command_in_db:
-        command_in_db.update(command)
-        db_session.commit()
-    else:
-        raise PaymentCommandNotFound(
-            f"Command not found for reference id {command.reference_id}"
-        )
-
-    return command_in_db
-
-
-def commit_payment_command(command: models.PaymentCommand):
+def save_payment_command(command: models.PaymentCommand):
     db_session.add(command)
     db_session.commit()
     return command
@@ -40,10 +26,6 @@ def get_payment_commands_by_status(
     return models.PaymentCommand.query.filter_by(status=status).all()
 
 
-def get_all() -> List[models.PaymentCommand]:
-    return models.PaymentCommand.query.all()
-
-
 def lock_for_update(
     reference_id: str,
     callback: Callable[[Optional[models.PaymentCommand]], models.PaymentCommand],
@@ -56,7 +38,7 @@ def lock_for_update(
             .one_or_none()
         )
         model = callback(model)
-        commit_payment_command(model)
+        save_payment_command(model)
     except Exception:
         db_session.rollback()
         raise

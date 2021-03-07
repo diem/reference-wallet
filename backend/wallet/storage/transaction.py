@@ -33,6 +33,7 @@ def add_transaction(
 ) -> Transaction:
     return commit_transaction(
         Transaction(
+            id=reference_id,
             amount=amount,
             currency=currency,
             type=payment_type,
