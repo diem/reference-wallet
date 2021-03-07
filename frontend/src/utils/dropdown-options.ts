@@ -3,15 +3,15 @@
 
 import { diemAmountToHumanFriendly } from "./amount-precision";
 import { CurrencyBalance } from "../interfaces/account";
-import { Currency, FiatCurrency } from "../interfaces/currencies";
+import { DiemCurrency, FiatCurrency } from "../interfaces/currencies";
 import { CurrencySettings, FiatCurrencySettings } from "../interfaces/settings";
 import { PaymentMethod } from "../interfaces/user";
 import { TransactionDirection } from "../interfaces/transaction";
 
 export function currenciesWithBalanceOptions(
-  currencies: { [key in Currency]: CurrencySettings },
+  currencies: { [key in DiemCurrency]: CurrencySettings },
   balances: CurrencyBalance[]
-): { [key in Currency]?: string } {
+): { [key in DiemCurrency]?: string } {
   return balances.reduce((options, balance) => {
     const currency = currencies[balance.currency];
     const balanceAmount = diemAmountToHumanFriendly(balance.balance, true);
@@ -21,8 +21,8 @@ export function currenciesWithBalanceOptions(
 }
 
 export function getCurrenciesOptionsMap(
-  currencies: { [key in Currency]: CurrencySettings }
-): { [key in Currency]?: string } {
+  currencies: { [key in DiemCurrency]: CurrencySettings }
+): { [key in DiemCurrency]?: string } {
   return Object.keys(currencies).reduce((map, c) => {
     map[c] = currencies[c].name;
     return map;

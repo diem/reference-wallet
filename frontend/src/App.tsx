@@ -30,6 +30,7 @@ import { diemAmountToFloat } from "./utils/amount-precision";
 import i18next from "./i18n";
 import "./assets/scss/main.scss";
 import LegalDisclaimer from "./components/LegalDisclaimer";
+import FundsPullPreApprovals from "./pages/FundsPullPreApprovals";
 
 const REFRESH_USER_INTERVAL = 5000;
 
@@ -161,6 +162,11 @@ const App = () => {
               )}
               <LoggedInRoute path="/account/:currency" exact component={Account} />
               <LoggedInRoute path="/transactions" exact component={Transactions} />
+              <LoggedInRoute
+                path="/fundsPullPreApprovals"
+                exact
+                component={FundsPullPreApprovals}
+              />
               <LoggedInRoute path="/verify" exact component={Verify} />
               <LoggedInRoute path="/settings" exact component={Settings} />
 

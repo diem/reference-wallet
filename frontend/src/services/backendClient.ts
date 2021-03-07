@@ -7,10 +7,11 @@ import { BackendError, ErrorMessage, UsernameAlreadyExistsError } from "./errors
 import { PaymentMethod, User, UserInfo } from "../interfaces/user";
 import { Account, CurrencyBalance } from "../interfaces/account";
 import { Transaction, TransactionDirection } from "../interfaces/transaction";
-import { FiatCurrency, Currency } from "../interfaces/currencies";
+import { DiemCurrency, FiatCurrency } from "../interfaces/currencies";
 import { Quote, QuoteAction, Rate } from "../interfaces/cico";
 import { Debt } from "../interfaces/settlement";
 import { Chain } from "../interfaces/system";
+import { Approval } from "../interfaces/approval";
 
 export default class BackendClient {
   private client: AxiosInstance;
@@ -201,7 +202,7 @@ export default class BackendClient {
   }
 
   async getTransactions(
-    currency?: Currency,
+    currency?: DiemCurrency,
     direction?: TransactionDirection,
     sort?: string,
     limit?: number
@@ -218,7 +219,7 @@ export default class BackendClient {
   }
 
   async createTransaction(
-    currency: Currency,
+    currency: DiemCurrency,
     amount: number,
     receiver_address: string
   ): Promise<Transaction> {
@@ -239,14 +240,14 @@ export default class BackendClient {
 
   async requestDepositQuote(
     fromFiatCurrency: FiatCurrency,
-    toCurrency: Currency,
+    toCurrency: DiemCurrency,
     amount: number
   ): Promise<Quote> {
     return this.requestQuote("buy", toCurrency, fromFiatCurrency, amount);
   }
 
   async requestWithdrawQuote(
-    fromCurrency: Currency,
+    fromCurrency: DiemCurrency,
     toFiatCurrency: FiatCurrency,
     amount: number
   ): Promise<Quote> {
@@ -254,8 +255,8 @@ export default class BackendClient {
   }
 
   async requestConvertQuote(
-    fromCurrency: Currency,
-    toCurrency: Currency,
+    fromCurrency: DiemCurrency,
+    toCurrency: DiemCurrency,
     amount: number
   ): Promise<Quote> {
     return this.requestQuote("sell", fromCurrency, toCurrency, amount);
@@ -263,8 +264,8 @@ export default class BackendClient {
 
   private async requestQuote(
     action: QuoteAction,
-    baseCurrency: Currency,
-    quoteCurrency: Currency | FiatCurrency,
+    baseCurrency: DiemCurrency,
+    quoteCurrency: DiemCurrency | FiatCurrency,
     amount: number
   ): Promise<Quote> {
     try {
@@ -398,6 +399,39 @@ export default class BackendClient {
       const response = await this.client.get("/network");
 
       return response.data;
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async getNewFundsPullPreApprovals(): Promise<Approval[]> {
+    try {
+      const response = await this.client.get("/offchain/funds_pull_pre_approvals?status=pending");
+
+      return response.data.funds_pull_pre_approvals;
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async getAllFundsPullPreApprovals(): Promise<Approval[]> {
+    try {
+      const response = await this.client.get("/offchain/funds_pull_pre_approvals");
+
+      return response.data.funds_pull_pre_approvals;
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async updateApprovalStatus(funds_pull_pre_approval_id, status): Promise<void> {
+    try {
+      await this.client.put(`/offchain/funds_pull_pre_approvals/${funds_pull_pre_approval_id}`, {
+        status,
+      });
     } catch (e) {
       BackendClient.handleError(e);
       throw e;

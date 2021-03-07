@@ -4,7 +4,7 @@
 import React, { useContext, useEffect, useReducer } from "react";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../../contexts/app";
-import { Currency } from "../../interfaces/currencies";
+import { DiemCurrency } from "../../interfaces/currencies";
 import { ConvertData } from "./interfaces";
 import ConvertReview from "./ConvertReview";
 import ConvertForm from "./ConvertForm";
@@ -59,7 +59,7 @@ function reducer(state: State, action: Action): State {
 }
 
 interface ConvertProps {
-  initialCurrency?: Currency;
+  initialCurrency?: DiemCurrency;
   onComplete: () => void;
 }
 

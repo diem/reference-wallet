@@ -11,6 +11,7 @@ import Transfer from "./transfer.json";
 import Validations from "./validations.json";
 import Settings from "./settings.json";
 import Admin from "./admin.json";
+import FundsPullPreApproval from "./funds_pull_pre_approval.json";
 
 export default {
   layout: Layout,
@@ -23,4 +24,5 @@ export default {
   validations: Validations,
   settings: Settings,
   admin: Admin,
+  funds_pull_pre_approval: FundsPullPreApproval,
 };

@@ -261,3 +261,61 @@ class PaymentCommands(Schema):
 class FundsTransfer(Schema):
     transaction = fields.Nested(Transaction, required=False, allow_none=True)
     payment_command = fields.Nested(PaymentCommand, required=False, allow_none=True)
+
+
+class Currency(Schema):
+    amount = fields.Int(required=True)
+    currency = diem_currency_code_field(required=True)
+
+
+class ScopedCumulativeAmount(Schema):
+    unit = fields.Str(required=True, validate=OneOf(["day", "week", "month", "year"]))
+    value = fields.Int(required=True)
+    max_amount = fields.Nested(Currency)
+
+
+class Scope(Schema):
+    type = fields.Str(required=True, validate=OneOf(["consent", "save_sub_account"]))
+    expiration_timestamp = fields.Int(required=True)
+    max_cumulative_amount = fields.Nested(ScopedCumulativeAmount, required=False)
+    max_transaction_amount = fields.Nested(Currency, required=False)
+
+
+class FundsPullPreApproval(Schema):
+    address = fields.Str(required=True)
+    biller_address = fields.Str(required=True)
+    funds_pull_pre_approval_id = fields.Str(required=True)
+    scope = fields.Nested(Scope)
+    description = fields.Str(required=False)
+    status = fields.Str(
+        required=True, validate=OneOf(["pending", "valid", "rejected", "closed"])
+    )
+    biller_name = fields.Str(required=False)
+    created_timestamp = fields.DateTime(required=True)
+    updated_at = fields.DateTime(required=True)
+
+
+class FundsPullPreApprovalList(Schema):
+    funds_pull_pre_approval_list = fields.List(fields.Nested(FundsPullPreApproval))
+
+
+class FundsPullPreApprovalRequestCreationResponse(Schema):
+    funds_pull_pre_approval_id = fields.Str(required=True)
+    address = fields.Str(required=False)
+
+
+class UpdateFundsPullPreApproval(Schema):
+    status = fields.Str(required=True, validate=OneOf(["valid", "rejected", "closed"]))
+
+
+class CreateAndApproveFundPullPreApproval(Schema):
+    biller_address = fields.Str(required=True)
+    funds_pull_pre_approval_id = fields.Str(required=True)
+    scope = fields.Nested(Scope)
+    description = fields.Str(required=False)
+
+
+class FundsPullPreApprovalRequest(Schema):
+    payer_address = fields.Str(required=False, allow_none=True)
+    scope = fields.Nested(Scope)
+    description = fields.Str(required=False)

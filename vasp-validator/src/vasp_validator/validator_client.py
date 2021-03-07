@@ -2,19 +2,32 @@
 #  SPDX-License-Identifier: Apache-2.0
 
 import logging
+import os
 import random
 import string
+from typing import List
+
 import time
 
 from .models import OffChainSequenceInfo, TransactionStatus, RegistrationStatus
 from .reference_wallet_proxy import ReferenceWalletProxy
+from .models_fppa import (
+    FundPullPreApprovalScope,
+    FundsPullPreApproval,
+    FundPullPreApprovalStatus,
+)
 from .vasp_proxy import VaspProxy, TxStatus, TxState
 
 
+RETRIES_COUNT = os.getenv("RETRIES_COUNT", 20)
+SECONDS_BETWEEN_RETRIES = os.getenv("SECONDS_BETWEEN_RETRIES", 1)
+
+
 class ValidatorClient(VaspProxy):
-    def __init__(self, wallet: ReferenceWalletProxy, logger_name: str):
+    def __init__(self, wallet: ReferenceWalletProxy, instance_name: str):
         self.wallet = wallet
-        self.log = logging.getLogger(logger_name)
+        self.instance_name = instance_name
+        self.log = logging.getLogger(instance_name)
 
     @classmethod
     def create(cls, wallet_url, logger_name: str) -> "ValidatorClient":
@@ -45,9 +58,7 @@ class ValidatorClient(VaspProxy):
         # TBD: LRW should return the offchain refid, if applicable
         tx_id = self.wallet.send_transaction(address, amount, currency)
 
-        retries_count = 20
-        seconds_between_retries = 1
-        for i in range(retries_count):
+        for i in range(RETRIES_COUNT):
             funds_transfer = self.wallet.get_transaction(tx_id.id)
             tx = funds_transfer.transaction
             if tx and (
@@ -55,7 +66,7 @@ class ValidatorClient(VaspProxy):
                 or tx.status == TransactionStatus.COMPLETED
             ):
                 break
-            time.sleep(seconds_between_retries)
+            time.sleep(SECONDS_BETWEEN_RETRIES)
         else:
             return TxState(
                 status=TxStatus.PENDING,
@@ -85,15 +96,13 @@ class ValidatorClient(VaspProxy):
         Note: Consider checking other transaction properties too;
         e.g., amount, currency etc.
         """
-        retries_count = 10
-        seconds_between_retries = 1
-        for i in range(retries_count):
+        for i in range(RETRIES_COUNT):
             txs = self.wallet.get_transaction_list()
             if txs and version in [
                 tx.blockchain_tx.version for tx in txs if tx.blockchain_tx
             ]:
                 return True
-            time.sleep(seconds_between_retries)
+            time.sleep(SECONDS_BETWEEN_RETRIES)
 
         return False
 
@@ -117,17 +126,79 @@ class ValidatorClient(VaspProxy):
         self.wallet.execute_quote(quote_id)
 
         if not self.wait_for_balance(amount, "XUS"):
-            raise VaspValidatorError("Failed to add funds to account")
+            raise VaspValidatorError(
+                f"Failed to validate funds in {self.instance_name}. "
+                "It might be a network problem or the blockchain is inaccessible"
+            )
 
     def wait_for_balance(self, amount, currency):
-        retries_count = 10
-        seconds_between_retries = 1
-        for i in range(retries_count):
+        for i in range(RETRIES_COUNT):
             if self.wallet.get_balance(currency) >= amount:
                 return True
-            time.sleep(seconds_between_retries)
+            time.sleep(SECONDS_BETWEEN_RETRIES)
 
         return False
+
+    def request_funds_pull_preapproval_from_another(
+        self,
+        payer_addr_bech32: str,
+        scope: FundPullPreApprovalScope,
+        description: str = None,
+    ) -> str:
+        return self.wallet.funds_pull_preapproval.request_preapproval_from_another(
+            payer_addr_bech32=payer_addr_bech32,
+            scope=scope,
+            description=description,
+        )
+
+    def create_funds_pull_pre_approval_request_for_unknown_payer(
+        self,
+        scope: FundPullPreApprovalScope,
+        description: str = None,
+    ):
+        return self.wallet.funds_pull_preapproval.create_funds_pull_pre_approval_request_for_unknown_payer(
+            scope=scope,
+            description=description,
+        )
+
+    def get_all_funds_pull_preapprovals(self) -> List[FundsPullPreApproval]:
+        for i in range(RETRIES_COUNT):
+            preapprovals = self.wallet.funds_pull_preapproval.get_all_preapprovals()
+            if preapprovals:
+                return preapprovals
+
+            time.sleep(SECONDS_BETWEEN_RETRIES)
+
+        return self.wallet.funds_pull_preapproval.get_all_preapprovals()
+
+    def approve_funds_pull_request(self, funds_pre_approval_id: str):
+        self.wallet.funds_pull_preapproval.update_preapproval_status(
+            funds_pre_approval_id, FundPullPreApprovalStatus.valid
+        )
+
+    def reject_funds_pull_request(self, funds_pre_approval_id: str):
+        self.wallet.funds_pull_preapproval.update_preapproval_status(
+            funds_pre_approval_id, FundPullPreApprovalStatus.rejected
+        )
+
+    def close_funds_pull_preapproval(self, funds_pre_approval_id: str):
+        self.wallet.funds_pull_preapproval.update_preapproval_status(
+            funds_pre_approval_id, FundPullPreApprovalStatus.closed
+        )
+
+    def create_and_approve_funds_pull_request(
+        self,
+        biller_address: str,
+        funds_pull_pre_approval_id: str,
+        scope: FundPullPreApprovalScope,
+        description: str,
+    ):
+        self.wallet.funds_pull_preapproval.create_and_approve(
+            biller_address=biller_address,
+            funds_pull_pre_approval_id=funds_pull_pre_approval_id,
+            scope=scope,
+            description=description,
+        )
 
     def _create_approved_user(self, username, first_name, last_name, password):
         self.wallet.create_new_user(username, password)
@@ -148,12 +219,10 @@ class ValidatorClient(VaspProxy):
 
         user = self.wallet.update_user(user)
 
-        retries_count = 10
-        seconds_between_retries = 1
-        for i in range(retries_count):
+        for i in range(RETRIES_COUNT):
             if user.registration_status == RegistrationStatus.Approved:
                 break
-            time.sleep(seconds_between_retries)
+            time.sleep(SECONDS_BETWEEN_RETRIES)
             user = self.wallet.get_user()
         else:
             raise VaspValidatorError("Filed to create an approved user")

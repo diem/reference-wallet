@@ -6,7 +6,7 @@ import { Button, FormGroup, FormText, Modal, ModalBody } from "reactstrap";
 import QRCode from "qrcode.react";
 import { Trans, useTranslation } from "react-i18next";
 import { settingsContext } from "../contexts/app";
-import { Currency } from "../interfaces/currencies";
+import { DiemCurrency } from "../interfaces/currencies";
 import SelectDropdown from "./select";
 import CloseButton from "./CloseButton";
 import BackendClient from "../services/backendClient";
@@ -18,7 +18,7 @@ import { ADDR_PROTOCOL_PREFIX } from "../interfaces/blockchain";
 interface ReceiveModalProps {
   open: boolean;
   onClose: () => void;
-  currency?: Currency;
+  currency?: DiemCurrency;
 }
 
 function ReceiveModal({ open, onClose, currency }: ReceiveModalProps) {
@@ -26,7 +26,7 @@ function ReceiveModal({ open, onClose, currency }: ReceiveModalProps) {
 
   const [settings] = useContext(settingsContext)!;
 
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency | undefined>(currency);
+  const [selectedCurrency, setSelectedCurrency] = useState<DiemCurrency | undefined>(currency);
   const [submitStatus, setSubmitStatus] = useState<"edit" | "sending" | "fail" | "success">("edit");
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [receivingAddress, setReceivingAddress] = useState<string | undefined>();
@@ -47,7 +47,7 @@ function ReceiveModal({ open, onClose, currency }: ReceiveModalProps) {
     refreshUser();
   }, []);
 
-  async function fetchReceivingAddress(currency: Currency) {
+  async function fetchReceivingAddress(currency: DiemCurrency) {
     try {
       setErrorMessage(undefined);
       setSubmitStatus("sending");

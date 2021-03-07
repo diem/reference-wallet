@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useContext, useEffect, useReducer } from "react";
-import { Currency } from "../../interfaces/currencies";
+import { DiemCurrency } from "../../interfaces/currencies";
 import { settingsContext } from "../../contexts/app";
 import WithdrawReview from "./WithdrawReview";
 import WithdrawForm from "./WithdrawForm";
@@ -59,7 +59,7 @@ function reducer(state: State, action: Action): State {
 }
 
 interface WithdrawProps {
-  initialCurrency?: Currency;
+  initialCurrency?: DiemCurrency;
   onComplete: () => void;
 }
 
