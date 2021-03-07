@@ -1,10 +1,10 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
+import logging
 from dataclasses import dataclass
 from typing import Optional
 
 import context
-import logging
 from diem import diem_types, offchain, identifier
 from diem_utils.types.currencies import DiemCurrency
 from wallet.services import (
@@ -28,7 +28,6 @@ from ..storage import (
     get_transaction_by_details,
     get_total_currency_credits,
     get_total_currency_debits,
-    get_transaction_by_reference_id,
     get_transaction_by_blockchain_version,
 )
 from ..storage import get_account_id_from_subaddr, get_account
@@ -38,7 +37,6 @@ from ..types import (
     TransactionStatus,
     BalanceError,
     Balance,
-    RefundReason,
     to_refund_reason,
 )
 
