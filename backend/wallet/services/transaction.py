@@ -1,6 +1,6 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
-
+from dataclasses import dataclass
 from typing import Optional
 
 import context
@@ -10,6 +10,11 @@ from diem_utils.types.currencies import DiemCurrency
 from wallet.services import (
     account as account_service,
     offchain as offchain_service,
+)
+from wallet.services.offchain import (
+    new_transaction_base_on_payment_command,
+    model_to_payment_command,
+    get_payment_command,
 )
 from wallet.services.risk import risk_check
 
