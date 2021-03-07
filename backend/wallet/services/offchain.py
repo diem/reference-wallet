@@ -1,16 +1,33 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 import logging
+import typing
 from datetime import datetime
 from typing import Optional, Tuple, Callable, List
 
 import context
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import offchain, identifier
+from diem.offchain import CommandType
 from diem_utils.types.currencies import DiemCurrency
 from wallet import storage
 from wallet.services import account, kyc
 from wallet.storage import models
+from wallet.services.fund_pull_pre_approval import (
+    process_funds_pull_pre_approvals_requests,
+    handle_fund_pull_pre_approval_command,
+)
+
+# noinspection PyUnresolvedReferences
+from wallet.storage.funds_pull_pre_approval_command import (
+    get_account_commands,
+    FundsPullPreApprovalCommandNotFound,
+    commit_command,
+    get_commands_by_sent_status,
+    get_command_by_id,
+    update_command,
+    get_account_command_by_id,
+)
 
 from ..storage import (
     lock_for_update,
@@ -62,8 +79,17 @@ def process_inbound_command(
             request_sender_address, request_body_bytes
         )
         logger.info(f"process inbound command: {offchain.to_json(command)}")
-        _lock_and_save_inbound_command(command)
-        return _jws(command.cid)
+
+        if command.command_type() == CommandType.PaymentCommand:
+            payment_command = typing.cast(offchain.PaymentCommand, command)
+            _lock_and_save_inbound_command(payment_command)
+        elif command.command_type() == CommandType.FundPullPreApprovalCommand:
+            preapproval_command = typing.cast(
+                offchain.FundsPullPreApprovalCommand, command
+            )
+            handle_fund_pull_pre_approval_command(preapproval_command)
+
+        return _jws(command.id())
     except offchain.Error as e:
         logger.exception(e)
         return _jws(command.cid if command else None, e.obj)
@@ -124,12 +150,13 @@ def process_offchain_tasks() -> None:
             )
             model.status = TransactionStatus.COMPLETED
 
-    _process_by_status(TransactionStatus.OFF_CHAIN_OUTBOUND, send_command)
-    _process_by_status(TransactionStatus.OFF_CHAIN_INBOUND, offchain_action)
-    _process_by_status(TransactionStatus.OFF_CHAIN_READY, submit_txn)
+    _process_payment_by_status(TransactionStatus.OFF_CHAIN_OUTBOUND, send_command)
+    _process_payment_by_status(TransactionStatus.OFF_CHAIN_INBOUND, offchain_action)
+    _process_payment_by_status(TransactionStatus.OFF_CHAIN_READY, submit_txn)
+    process_funds_pull_pre_approvals_requests()
 
 
-def _process_by_status(
+def _process_payment_by_status(
     status: TransactionStatus,
     callback: Callable[[PaymentCommandModel], Optional[PaymentCommandModel]],
 ) -> None:

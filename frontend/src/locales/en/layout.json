@@ -9,6 +9,8 @@
   "all_currencies": "All Currencies",
   "price": "Currently equal to",
   "close": "Close",
+  "approvals": "Funds Pull Pre Approvals Requests",
+  "all_approvals": "See All Approvals",
   "actions": {
     "send": "Send",
     "request": "Request",

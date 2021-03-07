@@ -228,3 +228,13 @@ def is_user_allowed_for_account(user: User, account_name: str) -> bool:
         return False
 
     return user.account.name == account_name
+
+
+def get_account_id_from_bech32(address_bech32: str) -> Optional[int]:
+    address, sub_address = identifier.decode_account(
+        address_bech32, context.get().config.diem_address_hrp()
+    )
+    if address.to_hex() == context.get().config.vasp_address:
+        return get_account_id_from_subaddr(sub_address.hex())
+
+    return None

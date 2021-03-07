@@ -19,7 +19,7 @@ import { Controller, useForm } from "react-hook-form";
 import NumberInput from "react-number-format";
 import SelectDropdown from "../select";
 import { settingsContext } from "../../contexts/app";
-import { FiatCurrency, Currency } from "../../interfaces/currencies";
+import { FiatCurrency, DiemCurrency } from "../../interfaces/currencies";
 import { Send } from "./interfaces";
 import {
   fiatFromDiemFloat,
@@ -34,13 +34,13 @@ import { ADDR_PROTOCOL_PREFIX, VALID_VASP_ADDRESS_REGEX } from "../../interfaces
 
 interface AddressWithIntents {
   address: string;
-  currency?: Currency;
+  currency?: DiemCurrency;
   amount?: number;
 }
 
 function parseAddressIntents(address: string): AddressWithIntents {
   let amount: number | undefined = undefined;
-  let currency: Currency | undefined = undefined;
+  let currency: DiemCurrency | undefined = undefined;
   if (address.startsWith(ADDR_PROTOCOL_PREFIX)) {
     address = address.substring(ADDR_PROTOCOL_PREFIX.length);
   }
@@ -52,7 +52,7 @@ function parseAddressIntents(address: string): AddressWithIntents {
       const [key, value] = intent.split("=", 2);
       switch (key) {
         case "c":
-          currency = decodeURIComponent(value) as Currency;
+          currency = decodeURIComponent(value) as DiemCurrency;
           break;
         case "am":
           amount = diemAmountToFloat(parseInt(decodeURIComponent(value)));
@@ -79,7 +79,9 @@ function SendForm({ value, onSubmit }: SendFormProps) {
   const [settings] = useContext(settingsContext)!;
   const { register, errors, handleSubmit, control, setValue, watch } = useForm<Send>();
 
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency | undefined>(value.currency);
+  const [selectedCurrency, setSelectedCurrency] = useState<DiemCurrency | undefined>(
+    value.currency
+  );
   const [selectedFiatCurrency, setSelectedFiatCurrency] = useState<FiatCurrency>(
     value.fiatCurrency
   );

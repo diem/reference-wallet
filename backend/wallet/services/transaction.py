@@ -7,7 +7,6 @@ from diem import diem_types, jsonrpc, txnmetadata, offchain, identifier
 from diem_utils.types.currencies import DiemCurrency
 from wallet.services import (
     account as account_service,
-    kyc,
     offchain as offchain_service,
 )
 from wallet.services.offchain import (
@@ -54,6 +53,10 @@ class SelfAsDestinationError(Exception):
 
 
 class InvalidTravelRuleMetadata(Exception):
+    pass
+
+
+class InvalidRefundMetadata(Exception):
     pass
 
 
@@ -230,12 +233,6 @@ def process_incoming_transaction(
                 blockchain_version=blockchain_version,
             )
             logger.info(f"transaction completed: {transaction.id}")
-            update_transaction(
-                transaction_id=transaction.id,
-                status=TransactionStatus.COMPLETED,
-                sequence=sequence,
-                blockchain_tx_version=blockchain_version,
-            )
 
             return
 

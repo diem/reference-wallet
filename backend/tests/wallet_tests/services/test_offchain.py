@@ -49,7 +49,7 @@ def test_save_outbound_payment_command(monkeypatch):
         assert model.status == TransactionStatus.OFF_CHAIN_WAIT
 
 
-def test_process_inbound_command(monkeypatch):
+def test_process_inbound_payment_command(monkeypatch):
     hrp = context.get().config.diem_address_hrp()
     user = OneUser.run(
         db_session, account_amount=100_000_000_000, account_currency=currency

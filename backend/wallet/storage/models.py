@@ -205,3 +205,42 @@ class Token(Base):
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid1()))
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     expiration_time = Column(Float, nullable=False)
+
+
+class FundsPullPreApprovalCommand(Base):
+    __tablename__ = "fundspullpreapprovalcommands"
+    funds_pull_pre_approval_id = Column(String, primary_key=True, nullable=False)
+    account_id = Column(
+        Integer, ForeignKey("account.id"), primary_key=True, nullable=True
+    )
+    address = Column(String, nullable=True)
+    biller_address = Column(String, nullable=False)
+    funds_pull_pre_approval_type = Column(String, nullable=False)
+    expiration_timestamp = Column(DateTime, nullable=False)
+    max_cumulative_unit = Column(String, nullable=True)
+    max_cumulative_unit_value = Column(Integer, nullable=True)
+    max_cumulative_amount = Column(Integer, nullable=True)
+    max_cumulative_amount_currency = Column(String, nullable=True)
+    max_transaction_amount = Column(Integer, nullable=True)
+    max_transaction_amount_currency = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    status = Column(String, nullable=False)
+    role = Column(String, nullable=False)
+    offchain_sent = Column(Boolean, default=False)
+    biller_name = Column(String, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    approved_at = Column(DateTime, nullable=True)
+
+    def update(self, updated_command):
+        new_command_attributes = [
+            a for a in dir(updated_command) if not a.startswith("_")
+        ]
+        for key in new_command_attributes:
+            try:
+                if getattr(self, key) != getattr(updated_command, key):
+                    setattr(self, key, getattr(updated_command, key))
+            except AttributeError:
+                # An attribute in updated_command does not exist in 'self'
+                # We assume this has nothing to do with us and continue to next attribute
+                ...

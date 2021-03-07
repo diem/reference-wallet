@@ -8,6 +8,7 @@ from wallet.services import offchain as offchain_service
 from diem import offchain
 
 CURRENCY = "XUS"
+ADDRESS = "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
 
 
 @pytest.fixture

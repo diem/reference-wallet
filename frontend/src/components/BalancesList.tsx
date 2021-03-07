@@ -3,7 +3,7 @@
 
 import React, { useContext } from "react";
 import { settingsContext } from "../contexts/app";
-import { Currency } from "../interfaces/currencies";
+import { DiemCurrency } from "../interfaces/currencies";
 import {
   fiatToDiemHumanFriendly,
   diemAmountToFloat,
@@ -13,13 +13,13 @@ import { CurrencyBalance } from "../interfaces/account";
 
 interface BalancesListProps {
   balances: CurrencyBalance[];
-  onSelect: (currency: Currency) => void;
+  onSelect: (currency: DiemCurrency) => void;
 }
 
 function BalancesList({ balances, onSelect }: BalancesListProps) {
   const [settings] = useContext(settingsContext)!;
 
-  const setActiveCurrency = (activeCurrency: Currency) => () => {
+  const setActiveCurrency = (activeCurrency: DiemCurrency) => () => {
     onSelect(activeCurrency);
   };
 

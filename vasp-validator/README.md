@@ -90,8 +90,7 @@ The general steps are:
 
 1. Boot two local instances of Reference Wallet. The fastest way is to run
  `make run-double` in the repository root directory.
-2. Configure the correct ports in `.env`.
-3. Run `./test.sh` 
+2. Run `./test.sh` in the vasp-validator directory.
 
 `test.sh` runs all the tests. It accepts all the usual pytest arguments;
 for example this command:
@@ -106,7 +105,7 @@ The first argument can be a test selection string to filter tests found in
 `vasp_validator/tests`:
 
 ```shell script
-./test.sh test_send_tx_no_travel_rule::test_send_tx_no_travel_rule --tb=no -r A
+./test.sh test_send_tx_no_travel_rule::test_send_tx_no_travel_rule
 ```
 
 The command will run only the test `test_send_tx_no_travel_rule` found in

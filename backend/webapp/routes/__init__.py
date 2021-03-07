@@ -6,9 +6,10 @@
 from .account import account, AccountRoutes
 from .admin import admin, AdminRoutes
 from .cico import cico, CicoRoutes
+from .offchain import offchain, OffchainRoutes
 from .system import system, SystemRoutes
 from .user import user, UserRoutes
-from .offchain import offchain, OffchainRoutes
+from .validation_tool import validation_tool, ValidationToolRoutes
 
 
 def account_routes():
@@ -181,6 +182,35 @@ def offchain_api_routes():
         ),
         methods=["GET"],
     )
+    offchain.add_url_rule(
+        rule="/offchain/funds_pull_pre_approvals",
+        view_func=OffchainRoutes.GetFundsPullPreApprovals.as_view(
+            "get_funds_pull_pre_approval"
+        ),
+        methods=["GET"],
+    )
+    offchain.add_url_rule(
+        rule="/offchain/funds_pull_pre_approvals/<funds_pull_pre_approval_id>",
+        view_func=OffchainRoutes.UpdateFundPullPreApprovalStatus.as_view(
+            "approve_funds_pull_pre_approval"
+        ),
+        methods=["PUT"],
+    )
+    offchain.add_url_rule(
+        rule="/offchain/funds_pull_pre_approvals",
+        view_func=OffchainRoutes.CreateAndApprove.as_view("create_and_approve"),
+        methods=["POST"],
+    )
+
+
+def validation_tool_routes():
+    validation_tool.add_url_rule(
+        rule="/validation/funds_pull_pre_approvals",
+        view_func=ValidationToolRoutes.CreateFundsPullPreApprovalRequest.as_view(
+            "create_funds_pull_pre_approval_request"
+        ),
+        methods=["POST"],
+    )
 
 
 account_routes()
@@ -189,3 +219,4 @@ admin_routes()
 user_routes()
 system_routes()
 offchain_api_routes()
+validation_tool_routes()
