@@ -1,16 +1,15 @@
 // Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useContext, useEffect, useState, useMemo } from "react";
-import { Alert, Container } from "reactstrap";
+import React, { useContext, useEffect, useState } from "react";
+import { Container } from "reactstrap";
 import { Redirect } from "react-router";
-import { Link, useLocation, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../contexts/app";
 import { DiemCurrency } from "../interfaces/currencies";
 import { RegistrationStatus } from "../interfaces/user";
 import { Transaction } from "../interfaces/transaction";
-import { PaymentParams } from "../utils/payment-params";
 import VerifyingMessage from "../components/VerifyingMessage";
 import TotalBalance from "../components/TotalBalance";
 import Actions from "../components/Actions";
@@ -23,8 +22,8 @@ import TransactionsList from "../components/TransactionsList";
 import BackendClient from "../services/backendClient";
 import TransactionModal from "../components/TransactionModal";
 import TestnetWarning from "../components/TestnetWarning";
-import PaymentConfirmationModal from "../components/PaymentConfirmationModal";
-import FundsPullPreApprovalsList from "components/FundsPullPreApproval/FundsPullPreApprovalsList";
+import PaymentConfirmation from "../components/PaymentConfirmation";
+import FundsPullPreApprovalsList from "../components/FundsPullPreApproval/FundsPullPreApprovalsList";
 import { Approval } from "../interfaces/approval";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
@@ -49,25 +48,6 @@ function Home() {
   const [transferModalOpen, setTransferModalOpen] = useState<boolean>(false);
   const [sendModalOpen, setSendModalOpen] = useState<boolean>(false);
   const [receiveModalOpen, setReceiveModalOpen] = useState<boolean>(false);
-  const [showPaymentRequestError, setShowPaymentRequestError] = useState<boolean>(false);
-
-  const queryString = useLocation().search;
-  const paymentParams: PaymentParams | undefined = useMemo(() => {
-    try {
-      if (queryString) {
-        return PaymentParams.fromUrlQueryString(queryString);
-      }
-    } catch (e) {
-      setShowPaymentRequestError(true);
-    }
-  }, [queryString]);
-
-  const history = useHistory();
-
-  const onPaymentRequestHandled = () => {
-    setShowPaymentRequestError(false);
-    history.push("/");
-  };
 
   useEffect(() => {
     async function refreshUser() {
@@ -142,15 +122,7 @@ function Home() {
           <VerifyingMessage />
         ) : (
           <>
-            <Alert
-              color="danger"
-              isOpen={showPaymentRequestError}
-              toggle={onPaymentRequestHandled}
-              fade={false}
-              className="my-5"
-            >
-              Invalid payment request.
-            </Alert>
+            <PaymentConfirmation />
 
             <h1 className="h5 font-weight-normal text-body text-center">
               {user.first_name} {user.last_name}
@@ -220,14 +192,6 @@ function Home() {
             <SendModal open={sendModalOpen} onClose={() => setSendModalOpen(false)} />
             <ReceiveModal open={receiveModalOpen} onClose={() => setReceiveModalOpen(false)} />
             <TransferModal open={transferModalOpen} onClose={() => setTransferModalOpen(false)} />
-
-            {!!paymentParams && (
-              <PaymentConfirmationModal
-                open={!!paymentParams}
-                paymentParams={paymentParams}
-                onClose={onPaymentRequestHandled}
-              />
-            )}
           </>
         )}
       </Container>
