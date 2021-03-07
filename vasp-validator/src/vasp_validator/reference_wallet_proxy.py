@@ -15,6 +15,8 @@ from .models import (
     CreateTransaction,
     AccountInfo,
     OffChainSequenceInfo,
+    TransactionId,
+    FundsTransfer,
 )
 
 
@@ -82,7 +84,7 @@ class ReferenceWalletProxy:
         #      state. Should be implemented.
         return OffChainSequenceInfo()
 
-    def send_transaction(self, address, amount, currency) -> Transaction:
+    def send_transaction(self, address, amount, currency) -> TransactionId:
         tx_request = CreateTransaction(
             currency=currency,
             amount=amount,
@@ -91,11 +93,11 @@ class ReferenceWalletProxy:
         send_transaction_response = self._request_authorized(
             "POST", "account/transactions", json=tx_request.to_dict()
         )
-        return Transaction.from_json(send_transaction_response.text)
+        return TransactionId.from_json(send_transaction_response.text)
 
-    def get_transaction(self, tx_id) -> Transaction:
+    def get_transaction(self, tx_id) -> FundsTransfer:
         response = self._request_authorized("GET", f"account/transactions/{tx_id}")
-        return Transaction.from_json(response.text)
+        return FundsTransfer.from_json(response.text)
 
     def _set_authorization_token(self, token):
         self.authorization_header = {"Authorization": "Bearer " + token}

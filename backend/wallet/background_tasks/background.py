@@ -1,7 +1,6 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-import os
 import sys
 from time import sleep
 
