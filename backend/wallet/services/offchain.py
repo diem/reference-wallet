@@ -16,7 +16,7 @@ from ..storage import (
     lock_for_update,
     get_account_id_from_subaddr,
     Transaction,
-    commit_payment_command,
+    save_payment_command,
 )
 from ..types import (
     TransactionType,
@@ -46,7 +46,7 @@ def save_outbound_payment_command(
         currency.value,
     )
 
-    commit_payment_command(
+    save_payment_command(
         payment_command_to_model(command, TransactionStatus.OFF_CHAIN_OUTBOUND)
     )
 
@@ -103,13 +103,9 @@ def process_offchain_tasks() -> None:
         if model.sender_address == model.my_actor_address:
             cmd = model_to_payment_command(model)
             _offchain_client().send_command(cmd, _compliance_private_key().sign)
-            transaction = new_transaction_base_on_payment_command(
-                cmd, TransactionStatus.COMPLETED
-            )
             logger.info(
                 f"Submitting transaction base on command ref id:{model.reference_id} {model.amount} {model.currency}"
             )
-            transaction.id = model.reference_id
             rpc_txn = context.get().p2p_by_travel_rule(
                 cmd.receiver_account_address(_hrp()),
                 cmd.payment.action.currency,
@@ -117,12 +113,15 @@ def process_offchain_tasks() -> None:
                 cmd.travel_rule_metadata(_hrp()),
                 bytes.fromhex(cmd.payment.recipient_signature),
             )
-            transaction.sequence = rpc_txn.transaction.sequence_number
-            transaction.blockchain_version = rpc_txn.version
+            transaction = add_transaction_based_on_payment_command(
+                command=cmd,
+                status=TransactionStatus.COMPLETED,
+                sequence=rpc_txn.transaction.sequence_number,
+                blockchain_version=rpc_txn.version,
+            )
             logger.info(
                 f"Submitted transaction ID:{transaction.id} V:{transaction.blockchain_version} {transaction.amount} {transaction.currency}"
             )
-            storage.commit_transaction(transaction)
             model.status = TransactionStatus.COMPLETED
 
     _process_by_status(TransactionStatus.OFF_CHAIN_OUTBOUND, send_command)
@@ -202,8 +201,11 @@ def _payment_command_status(
     return default
 
 
-def new_transaction_base_on_payment_command(
-    command: offchain.PaymentCommand, status: TransactionStatus
+def add_transaction_based_on_payment_command(
+    command: offchain.PaymentCommand,
+    status: TransactionStatus,
+    sequence: int,
+    blockchain_version: int,
 ) -> Transaction:
     payment = command.payment
     sender_address, source_subaddress = _account_address_and_subaddress(
@@ -215,19 +217,23 @@ def new_transaction_base_on_payment_command(
     source_id = get_account_id_from_subaddr(source_subaddress)
     destination_id = get_account_id_from_subaddr(destination_subaddress)
 
-    return Transaction(
-        type=TransactionType.OFFCHAIN,
-        status=status,
+    reference_id = command.reference_id()
+
+    return storage.add_transaction(
+        id=reference_id,
         amount=payment.action.amount,
         currency=payment.action.currency,
-        created_timestamp=datetime.utcnow(),
+        payment_type=TransactionType.OFFCHAIN,
+        status=status,
         source_id=source_id,
         source_address=sender_address,
         source_subaddress=source_subaddress,
         destination_id=destination_id,
         destination_address=destination_address,
         destination_subaddress=destination_subaddress,
-        reference_id=command.reference_id(),
+        sequence=sequence,
+        blockchain_version=blockchain_version,
+        reference_id=reference_id,
     )
 
 
