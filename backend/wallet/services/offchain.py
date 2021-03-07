@@ -247,7 +247,6 @@ def add_transaction_based_on_payment_command(
     reference_id = command.reference_id()
 
     return storage.add_transaction(
-        id=reference_id,
         amount=payment.action.amount,
         currency=payment.action.currency,
         payment_type=TransactionType.OFFCHAIN,
