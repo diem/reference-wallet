@@ -1,15 +1,14 @@
 // Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React, {useContext, useEffect, useState} from "react";
-import {Button, Modal, ModalBody} from "reactstrap";
-import {useTranslation} from "react-i18next";
-import {settingsContext} from "../contexts/app";
-import {diemAmountToHumanFriendly} from "../utils/amount-precision";
-import {PaymentParams} from "../utils/payment-params";
+import React, { useContext, useEffect, useState } from "react";
+import { Button, Modal, ModalBody } from "reactstrap";
+import { useTranslation } from "react-i18next";
+import { settingsContext } from "../contexts/app";
+import { diemAmountToHumanFriendly } from "../utils/amount-precision";
+import { PaymentParams } from "../utils/payment-params";
 import CloseButton from "./CloseButton";
 import BackendClient from "../services/backendClient";
-import ErrorMessage from "./Messages/ErrorMessage";
 
 interface PaymentConfirmationProps {
   open: boolean;
@@ -23,7 +22,6 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
   const [settings] = useContext(settingsContext)!;
 
   const [submitStatus, setSubmitStatus] = useState<"edit" | "sending" | "fail" | "success">("edit");
-  const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
   const currency = settings.currencies[paymentParams.currency];
 
@@ -48,8 +46,6 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
     <Modal className="modal-dialog-centered" isOpen={open} onClosed={onClose}>
       <ModalBody>
         <CloseButton onClick={onClose} />
-
-        {errorMessage && <ErrorMessage message={errorMessage} />}
 
         <h3>{t("confirmation.title")}</h3>
         <p>
