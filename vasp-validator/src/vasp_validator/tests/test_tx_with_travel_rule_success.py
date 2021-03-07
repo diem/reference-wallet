@@ -1,6 +1,7 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
 import pytest
+
 from ..vasp_proxy import VaspProxy, TxStatus
 
 CURRENCY = "XUS"

@@ -82,7 +82,7 @@ class PaymentMethod(Base):
 class Transaction(Base):
     __tablename__ = "transaction"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     type = Column(String, nullable=False)
     amount = Column(BigInteger, nullable=False)
     currency = Column(String, nullable=False)
@@ -106,15 +106,64 @@ class Transaction(Base):
         "Account", backref="received_transactions", foreign_keys=[destination_id]
     )
 
-    reference_id = Column(String, nullable=True, unique=True, index=True)
-    command_json = Column(String, nullable=True)
+    reference_id = Column(
+        String,
+        ForeignKey("paymentcommand.reference_id"),
+        nullable=True,
+        unique=True,
+        index=True,
+    )
+
+
+class PaymentCommand(Base):
+    __tablename__ = "paymentcommand"
+
+    reference_id = Column(
+        String, primary_key=True, nullable=False, unique=True, index=True
+    )
+    status = Column(String, nullable=False)
+    account_id = Column(Integer, ForeignKey("account.id"), nullable=False)
+    my_actor_address = Column(String, nullable=False)
+    inbound = Column(Boolean, nullable=False)
+    cid = Column(String, nullable=False)
+    sender_address = Column(String, nullable=False)
+    sender_status = Column(String, nullable=False, default="none")
+    sender_kyc_data = Column(String, nullable=True)
+    sender_metadata = Column(String, nullable=True)
+    sender_additional_kyc_data = Column(String, nullable=True)
+    receiver_address = Column(String, nullable=False)
+    receiver_status = Column(String, nullable=False, default="none")
+    receiver_kyc_data = Column(String, nullable=True)
+    receiver_metadata = Column(String, nullable=True)
+    receiver_additional_kyc_data = Column(String, nullable=True)
+    amount = Column(Integer, nullable=False)
+    currency = Column(String, nullable=False)
+    action = Column(String, nullable=False, default="charge")
+    created_at = Column(DateTime, nullable=False)
+    original_payment_reference_id = Column(String, nullable=True)
+    recipient_signature = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+
+    def update(self, updated_command):
+        new_command_attributes = [
+            a for a in dir(updated_command) if not a.startswith("_")
+        ]
+        for key in new_command_attributes:
+            try:
+                updated_value = getattr(updated_command, key)
+                if not callable(updated_value) and getattr(self, key) != updated_value:
+                    setattr(self, key, updated_value)
+            except AttributeError:
+                # An attribute in updated_command does not exist in 'self'
+                # We assume this has nothing to do with us and continue to next attribute
+                ...
 
 
 # Execution log for transaction
 class TransactionLog(Base):
     __tablename__ = "transactionlog"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    tx_id = Column(Integer, ForeignKey("transaction.id"), nullable=False)
+    tx_id = Column(String, ForeignKey("transaction.id"), nullable=False)
     log = Column(String, nullable=False)
     timestamp = Column(DateTime, nullable=False)
 
@@ -141,14 +190,14 @@ class Order(Base):
     quote_expiration = Column(DateTime, nullable=True)
     order_expiration = Column(DateTime, nullable=False)
     rate = Column(Integer, nullable=True)
-    internal_ledger_tx = Column(Integer, ForeignKey("transaction.id"), nullable=True)
+    internal_ledger_tx = Column(String, ForeignKey("transaction.id"), nullable=True)
     last_update = Column(DateTime, nullable=True)
     order_status = Column(String, nullable=False)
     cover_status = Column(String, nullable=False)
     payment_method = Column(String, nullable=True)
     charge_token = Column(String, nullable=True)
     order_type = Column(String, nullable=False)
-    correlated_tx = Column(Integer, ForeignKey("transaction.id"), nullable=True)
+    correlated_tx = Column(String, ForeignKey("transaction.id"), nullable=True)
 
 
 class Token(Base):

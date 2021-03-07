@@ -91,6 +91,65 @@ class Transaction:
 
 @dataclass_json
 @dataclass
+class StatusObject:
+    status: str
+
+
+@dataclass_json
+@dataclass
+class PaymentActorObject:
+    address: str
+    status: StatusObject
+    kyc_data: Optional[str] = None
+    metadata: Optional[str] = None
+    additional_kyc_data: Optional[str] = None
+
+
+@dataclass_json
+@dataclass
+class PaymentActionObject:
+    amount: int
+    currency: str
+    action: str
+    timestamp: int
+
+
+@dataclass_json
+@dataclass
+class PaymentObject:
+    reference_id: str
+    sender: PaymentActorObject
+    receiver: PaymentActorObject
+    action: PaymentActionObject
+    original_payment_reference_id: Optional[str] = None
+    recipient_signature: Optional[str] = None
+    description: Optional[str] = None
+
+
+@dataclass_json
+@dataclass
+class PaymentCommand:
+    my_actor_address: str
+    payment: PaymentObject
+    inbound: bool
+    cid: str
+
+
+@dataclass_json
+@dataclass
+class FundsTransfer:
+    transaction: Transaction
+    payment_command: PaymentCommand
+
+
+@dataclass_json
+@dataclass
+class TransactionId:
+    id: str
+
+
+@dataclass_json
+@dataclass
 class Transactions:
     transaction_list: List[Transaction]
 

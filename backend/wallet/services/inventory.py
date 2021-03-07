@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-import os
 import time
 from typing import Optional
 from uuid import UUID
@@ -185,17 +184,17 @@ def _transfer_funds_to_lp(order: Order) -> int:
     lp_details = LpClient().lp_details()
     inventory_account = get_account(account_name=INVENTORY_ACCOUNT_NAME).id
 
-    tx = send_transaction(
+    tx_id = send_transaction(
         sender_id=inventory_account,
         amount=order.amount,
         currency=DiemCurrency[order.base_currency],
         destination_address=lp_details.vasp,
         destination_subaddress=lp_details.sub_address,
     )
-    return _wait_for_lp_deposit_transaction_to_complete(tx.id)
+    return _wait_for_lp_deposit_transaction_to_complete(tx_id)
 
 
-def _wait_for_lp_deposit_transaction_to_complete(tx_id: int) -> int:
+def _wait_for_lp_deposit_transaction_to_complete(tx_id: str) -> int:
     retries = 10
     interval_s = 2
     for _ in range(retries):
