@@ -5,7 +5,11 @@ import logging
 from http import HTTPStatus
 
 from diem import offchain as diem_offchain
-from diem.offchain import X_REQUEST_ID, X_REQUEST_SENDER_ADDRESS, FundPullPreApprovalStatus
+from diem.offchain import (
+    X_REQUEST_ID,
+    X_REQUEST_SENDER_ADDRESS,
+    FundPullPreApprovalStatus,
+)
 from flask import Blueprint, request
 from flask.views import MethodView
 from wallet.services import fund_pull_pre_approval as fppa_service
