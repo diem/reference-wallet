@@ -127,7 +127,7 @@ def test_process_incoming_travel_rule_txn() -> None:
     off_chain_reference_id = "2fec2d23-807a-4d99-84de-04a556fc0345"
     metadata, _ = travel_rule(off_chain_reference_id, sender, amount)
 
-    storage.commit_payment_command(
+    storage.save_payment_command(
         models.PaymentCommand(
             my_actor_address="tdm1p4smmjwu5a0hlx9tajmf8lg04km94y8ygchn6rgqxtrysg",
             inbound=True,
