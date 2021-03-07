@@ -12,6 +12,9 @@ from . import db_session, get_user
 from .models import Transaction, TransactionLog
 from ..types import TransactionStatus, TransactionType
 from diem_utils.types.currencies import DiemCurrency
+import logging
+
+logger = logging.getLogger(name="wallet-service:storage")
 
 
 def lock_for_update(
@@ -46,6 +49,8 @@ def add_transaction(
     destination_subaddress: str = None,
     sequence: Optional[int] = None,
     blockchain_version: Optional[int] = None,
+    original_txn_id: Optional[int] = None,
+    refund_reason: Optional[str] = None,
     reference_id: Optional[str] = None,
     command_json: Optional[str] = None,
 ) -> Transaction:
@@ -64,6 +69,8 @@ def add_transaction(
             destination_subaddress=destination_subaddress,
             sequence=sequence,
             blockchain_version=blockchain_version,
+            original_txn_id=original_txn_id,
+            refund_reason=refund_reason,
             reference_id=reference_id,
             command_json=command_json,
         )
