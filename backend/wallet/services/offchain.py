@@ -247,9 +247,8 @@ def add_transaction_based_on_payment_command(
     reference_id = command.reference_id()
 
     return storage.add_transaction(
-        id=reference_id,
         amount=payment.action.amount,
-        currency=payment.action.currency,
+        currency=DiemCurrency[payment.action.currency],
         payment_type=TransactionType.OFFCHAIN,
         status=status,
         source_id=source_id,
@@ -268,7 +267,7 @@ def _account_address_and_subaddress(account_id: str) -> Tuple[str, Optional[str]
     account_address, sub = identifier.decode_account(
         account_id, context.get().config.diem_address_hrp()
     )
-    return (account_address.to_hex(), sub.hex() if sub else None)
+    return account_address.to_hex(), sub.hex() if sub else None
 
 
 def _user_kyc_data(user_id: int) -> offchain.KycDataObject:
