@@ -437,4 +437,26 @@ export default class BackendClient {
       throw e;
     }
   }
+
+  async addPaymentComand(paymentParams): Promise<void> {
+    try {
+      await this.client.post(`/offchain/payment_command`, {
+        paymentParams,
+      });
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async updatePaymentCommandStatus(reference_id, status): Promise<void> {
+    try {
+      await this.client.post(`/offchain/payment_command/${reference_id}`, {
+        status,
+      });
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
 }
