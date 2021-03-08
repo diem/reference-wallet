@@ -308,6 +308,10 @@ class UpdateFundsPullPreApproval(Schema):
     status = fields.Str(required=True, validate=OneOf(["valid", "rejected", "closed"]))
 
 
+class UpdatePaymentCommand(Schema):
+    status = fields.Str(required=True, validate=OneOf(["needs_kyc_data", "abort"]))
+
+
 class CreateAndApproveFundPullPreApproval(Schema):
     biller_address = fields.Str(required=True)
     funds_pull_pre_approval_id = fields.Str(required=True)
@@ -319,3 +323,14 @@ class FundsPullPreApprovalRequest(Schema):
     payer_address = fields.Str(required=False, allow_none=True)
     scope = fields.Nested(Scope)
     description = fields.Str(required=False)
+
+
+class CreatePaymentCommand(Schema):
+    vasp_address = fields.Str(required=True)
+    reference_id = fields.Str(required=True)
+    merchant_name = fields.Str(required=True)
+    action = fields.Str(required=True, validate=OneOf(["charge", "auth", "capture"]))
+    currency = fields.Str(required=True)
+    amount = fields.Int(required=True)
+    expiration = fields.Int(required=True)
+    redirect_url = fields.Str(required=True)

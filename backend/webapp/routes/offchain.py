@@ -28,6 +28,8 @@ from webapp.schemas import (
     UpdateFundsPullPreApproval,
     Error,
     CreateAndApproveFundPullPreApproval,
+    CreatePaymentCommand as CreatePaymentCommandSchema,
+    UpdatePaymentCommand,
 )
 
 logger = logging.getLogger(__name__)
@@ -183,6 +185,60 @@ class OffchainRoutes:
                 {"payment_commands": payments},
                 HTTPStatus.OK,
             )
+
+    class AddPaymentCommand(OffchainView):
+        summary = "Create New Payment Command"
+
+        parameters = [body_parameter(CreatePaymentCommandSchema)]
+
+        responses = {
+            HTTPStatus.NO_CONTENT: response_definition(
+                "Request accepted. You should poll for status updates."
+            )
+        }
+
+        def post(self):
+            params = request.json
+
+            offchain_service.add_payment_command(
+                self.user.account_id,
+                params["reference_id"],
+                params["vasp_address"],
+                params["merchant_name"],
+                params["action"],
+                params["currency"],
+                int(params["amount"]),
+                int(params["expiration"]),
+            )
+
+            return "OK", HTTPStatus.NO_CONTENT
+
+    class UpdatePaymentCommandStatus(OffchainView):
+        summary = "Update Payment Command"
+
+        parameters = [
+            body_parameter(UpdatePaymentCommand),
+            path_string_param(
+                name="reference_id",
+                description="command reference id",
+            ),
+        ]
+
+        responses = {
+            HTTPStatus.NO_CONTENT: response_definition("Request accepted"),
+            HTTPStatus.NOT_FOUND: response_definition(
+                "Command not found", schema=Error
+            ),
+        }
+
+        def put(self, reference_id: str):
+            params = request.json
+
+            offchain_service.update_payment_command_status(
+                reference_id, params["status"]
+            )
+
+            return "OK", HTTPStatus.NO_CONTENT
 
     class GetFundsPullPreApprovals(OffchainView):
         summary = "Get funds pull pre approvals of a user"
