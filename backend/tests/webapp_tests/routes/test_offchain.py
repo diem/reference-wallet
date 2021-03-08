@@ -1,4 +1,7 @@
+import json
+import uuid
 from typing import Optional, List
+from datetime import datetime
 
 import pytest
 from diem import offchain
@@ -217,6 +220,49 @@ def mock_get_account_payment_commands(monkeypatch):
     monkeypatch.setattr(offchain_service, "get_account_payment_commands", mock)
 
 
+@pytest.fixture()
+def mock_add_payment_command(monkeypatch):
+    def mock(
+        account_id,
+        reference_id,
+        vasp_address,
+        merchant_name,
+        action,
+        currency,
+        amount,
+        expiration,
+    ) -> None:
+        return
+
+    monkeypatch.setattr(offchain_service, "add_payment_command", mock)
+
+
+@pytest.fixture()
+def mock_update_payment_command_status(monkeypatch):
+    def mock(reference_id, status) -> None:
+        return
+
+    monkeypatch.setattr(offchain_service, "update_payment_command_status", mock)
+
+
+class TestGetPaymentCommand:
+    def test_get_payment_command_json(
+        self, authorized_client: Client, mock_get_payment_command_json
+    ) -> None:
+        rv: Response = authorized_client.get(
+            "/offchain/query/payment_command/22",
+        )
+
+        assert rv.status_code == 200
+        assert rv.get_data() is not None
+        payment_object = rv.get_json()["payment"]
+        assert payment_object is not None
+        assert (
+            rv.get_json()["my_actor_address"]
+            == "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
+        )
+
+
 class TestGetAccountPaymentCommands:
     def test_get_account_payment_commands(
         self, authorized_client: Client, mock_get_account_payment_commands
@@ -231,3 +277,38 @@ class TestGetAccountPaymentCommands:
         assert payment_commands is not None
         assert len(payment_commands) == 2
         assert payment_commands[0]["my_actor_address"] == ADDRESS
+
+
+class TestAddPaymentCommand:
+    def test_add_payment_command(
+        self, authorized_client: Client, mock_add_payment_command
+    ) -> None:
+        rv: Response = authorized_client.post(
+            "/offchain/payment_command",
+            json={
+                "vasp_address": "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
+                "reference_id": str(uuid.uuid4()),
+                "merchant_name": "Bond & Gurki Pet Store",
+                "action": "charge",
+                "currency": "XUS",
+                "amount": 1000,
+                "expiration": int(datetime.timestamp(datetime.now())),
+                "redirect_url": "https://bondandgurki.com/order/93c4963f-7f9e-4f9d-983e-7080ef782534/checkout/complete",
+            },
+        )
+
+        assert rv.status_code == 204, rv.get_data()
+
+
+class TestUpdatePaymentCommandStatus:
+    def test_update_payment_command_status(
+        self, authorized_client: Client, mock_update_payment_command_status
+    ) -> None:
+        rv: Response = authorized_client.put(
+            "/offchain/payment_command/1234",
+            json={
+                "status": "needs_kyc_data",
+            },
+        )
+
+        assert rv.status_code == 204, rv.get_data()
