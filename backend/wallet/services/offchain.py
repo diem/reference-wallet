@@ -1,9 +1,7 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
-import json
 import logging
 import typing
-import uuid
 from datetime import datetime
 from typing import Optional, Tuple, Callable, List
 
@@ -313,43 +311,6 @@ def get_account_payment_commands(account_id: int) -> List[offchain.PaymentComman
         commands.append(model_to_payment_command(model))
 
     return commands
-
-
-def add_payment_command(
-    account_id,
-    reference_id,
-    vasp_address,
-    merchant_name,
-    action,
-    currency,
-    amount,
-    expiration,
-) -> None:
-    commit_command(
-        models.PaymentCommand(
-            my_actor_address=context.get().config.vasp_address,
-            inbound=True,
-            cid=str(uuid.uuid4()),
-            reference_id=reference_id,
-            sender_address=context.get().config.vasp_address,
-            sender_status="none",
-            sender_kyc_data=json.dumps(_user_kyc_data(account_id)),
-            receiver_address=vasp_address,
-            receiver_status="none",
-            amount=amount,
-            currency=currency,
-            action=action,
-            created_at=datetime.now(),
-            status=TransactionStatus.OFF_CHAIN_OUTBOUND,
-            account_id=account_id,
-            merchant_name=merchant_name,
-            expiration=expiration,
-        )
-    )
-
-
-def update_payment_command_status(reference_id, status):
-    storage.update_payment_command_status(reference_id, status)
 
 
 def update_model_base_on_payment_command(
