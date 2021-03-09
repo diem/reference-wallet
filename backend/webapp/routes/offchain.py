@@ -14,6 +14,7 @@ from flask import Blueprint, request
 from flask.views import MethodView
 from wallet.services import fund_pull_pre_approval as fppa_service
 from wallet.services import offchain as offchain_service
+from wallet.services import payment_command as pc_service
 from webapp.routes.strict_schema_view import (
     StrictSchemaView,
     response_definition,
@@ -200,7 +201,7 @@ class OffchainRoutes:
         def post(self):
             params = request.json
 
-            offchain_service.add_payment_command(
+            pc_service.add_payment_command(
                 self.user.account_id,
                 params["reference_id"],
                 params["vasp_address"],
@@ -234,9 +235,7 @@ class OffchainRoutes:
         def put(self, reference_id: str):
             params = request.json
 
-            offchain_service.update_payment_command_status(
-                reference_id, params["status"]
-            )
+            pc_service.update_payment_command_status(reference_id, params["status"])
 
             return "OK", HTTPStatus.NO_CONTENT
 
