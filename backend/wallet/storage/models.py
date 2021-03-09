@@ -144,6 +144,8 @@ class PaymentCommand(Base):
     original_payment_reference_id = Column(String, nullable=True)
     recipient_signature = Column(String, nullable=True)
     description = Column(String, nullable=True)
+    merchant_name = Column(String, nullable=True)
+    expiration = Column(DateTime, nullable=True)
 
     def update(self, updated_command):
         new_command_attributes = [
