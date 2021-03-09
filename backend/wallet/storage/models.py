@@ -139,7 +139,11 @@ class PaymentCommand(Base):
     amount = Column(Integer, nullable=False)
     currency = Column(String, nullable=False)
     action = Column(String, nullable=False, default="charge")
-    created_at = Column(DateTime, nullable=False)
+    created_at = Column(
+        DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+    )
     original_payment_reference_id = Column(String, nullable=True)
     recipient_signature = Column(String, nullable=True)
     description = Column(String, nullable=True)
