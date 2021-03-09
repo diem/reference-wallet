@@ -1,7 +1,7 @@
 from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import (
     OneFundsPullPreApproval,
 )
-from wallet.services.fund_pull_pre_approval_sm import Role
+from wallet.services.offchain.fund_pull_pre_approval_sm import Role
 from wallet.storage import (
     db_session,
     get_command_by_id,

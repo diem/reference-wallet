@@ -4,6 +4,7 @@
 import logging
 from http import HTTPStatus
 
+import wallet.services.offchain.payment_command
 from diem import offchain as diem_offchain
 from diem.offchain import (
     X_REQUEST_ID,
@@ -12,9 +13,11 @@ from diem.offchain import (
 )
 from flask import Blueprint, request
 from flask.views import MethodView
-from wallet.services import fund_pull_pre_approval as fppa_service
-from wallet.services import offchain as offchain_service
-from wallet.services import payment_command as pc_service
+from wallet.services.offchain import (
+    payment_command as pc_service,
+    offchain as offchain_service,
+    fund_pull_pre_approval as fppa_service,
+)
 from webapp.routes.strict_schema_view import (
     StrictSchemaView,
     response_definition,
@@ -157,7 +160,7 @@ class OffchainRoutes:
         }
 
         def get(self, transaction_id: int):
-            payment_command = offchain_service.get_payment_command(transaction_id)
+            payment_command = pc_service.get_payment_command(transaction_id)
 
             return (
                 payment_command_to_dict(payment_command),
@@ -174,7 +177,7 @@ class OffchainRoutes:
         }
 
         def get(self):
-            payment_commands = offchain_service.get_account_payment_commands(
+            payment_commands = pc_service.get_account_payment_commands(
                 self.user.account_id
             )
 
