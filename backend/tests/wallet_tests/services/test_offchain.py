@@ -3,13 +3,16 @@
 
 import context
 import dataclasses
+
+import wallet.services.offchain.payment_command as pc_service
+import wallet.services.offchain.utils as utils
 from diem import identifier, LocalAccount, offchain, jsonrpc
 from diem_utils.types.currencies import DiemCurrency
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet.services.account import (
     generate_new_subaddress,
 )
-from wallet.services import offchain as offchain_service
+from wallet.services.offchain import offchain as offchain_service
 from wallet.storage import db_session
 
 from wallet import storage
@@ -25,7 +28,7 @@ def test_save_outbound_payment_command(monkeypatch):
     amount = 10_000_000_000
     receiver = LocalAccount.generate()
     sub_address = identifier.gen_subaddress()
-    cmd = offchain_service.save_outbound_payment_command(
+    cmd = pc_service.save_outbound_payment_command(
         user.account_id, receiver.account_address, sub_address, amount, currency
     )
 
@@ -60,7 +63,7 @@ def test_process_inbound_payment_command(monkeypatch):
     receiver_sub_address = generate_new_subaddress(user.account_id)
     cmd = offchain.PaymentCommand.init(
         identifier.encode_account(sender.account_address, sender_sub_address, hrp),
-        offchain_service._user_kyc_data(user.account_id),
+        utils._user_kyc_data(user.account_id),
         identifier.encode_account(
             context.get().config.vasp_address, receiver_sub_address, hrp
         ),
@@ -105,7 +108,7 @@ def test_submit_txn_when_both_ready(monkeypatch):
     amount = 10_000_000_000
     receiver = LocalAccount.generate()
     sub_address = identifier.gen_subaddress()
-    cmd = offchain_service.save_outbound_payment_command(
+    cmd = pc_service.save_outbound_payment_command(
         user.account_id, receiver.account_address, sub_address, amount, currency
     )
     receiver_cmd = dataclasses.replace(
@@ -114,7 +117,7 @@ def test_submit_txn_when_both_ready(monkeypatch):
     receiver_ready_cmd = receiver_cmd.new_command(
         recipient_signature=b"recipient_signature".hex(),
         status=offchain.Status.ready_for_settlement,
-        kyc_data=offchain_service._user_kyc_data(user.account_id),
+        kyc_data=utils._user_kyc_data(user.account_id),
     )
 
     model = storage.get_payment_command(cmd.reference_id())

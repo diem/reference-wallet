@@ -1,4 +1,3 @@
-import json
 import uuid
 from typing import Optional, List
 from datetime import datetime
@@ -6,8 +5,7 @@ from datetime import datetime
 import pytest
 from flask import Response
 from flask.testing import Client
-from wallet.services import offchain as offchain_service
-from wallet.services import payment_command as pc_service
+from wallet.services.offchain import payment_command as pc_service
 from diem import offchain
 
 CURRENCY = "XUS"
@@ -77,7 +75,7 @@ def mock_get_payment_command_json(monkeypatch):
             cid="1cea3243-4ea6-44b2-8590-ec5bf4a101b1",
         )
 
-    monkeypatch.setattr(offchain_service, "get_payment_command", mock)
+    monkeypatch.setattr(pc_service, "get_payment_command", mock)
 
 
 @pytest.fixture
@@ -204,7 +202,7 @@ def mock_get_account_payment_commands(monkeypatch):
             ),
         ]
 
-    monkeypatch.setattr(offchain_service, "get_account_payment_commands", mock)
+    monkeypatch.setattr(pc_service, "get_account_payment_commands", mock)
 
 
 @pytest.fixture()

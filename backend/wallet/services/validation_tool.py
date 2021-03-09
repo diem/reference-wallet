@@ -6,7 +6,7 @@ from diem import identifier, offchain
 from wallet.services.account import generate_new_subaddress
 from wallet.storage import funds_pull_pre_approval_command as fppa_storage
 
-from .fund_pull_pre_approval import Role
+from wallet.services.offchain.fund_pull_pre_approval import Role
 
 
 def request_funds_pull_pre_approval_from_another(

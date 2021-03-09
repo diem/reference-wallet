@@ -6,7 +6,7 @@ from diem import offchain
 from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import TIMESTAMP
 
 from wallet.services.account import get_account_id_from_bech32
-from wallet.services.fund_pull_pre_approval import Role
+from wallet.services.offchain.fund_pull_pre_approval import Role
 from wallet.services.validation_tool import request_funds_pull_pre_approval_from_another
 from wallet.storage import db_session, funds_pull_pre_approval_command as fppa_storage
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
