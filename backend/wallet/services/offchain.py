@@ -349,7 +349,7 @@ def add_payment_command(
 
 
 def update_payment_command_status(reference_id, status):
-    storage.update_sender_status(reference_id, status)
+    storage.update_payment_command_status(reference_id, status)
 
 
 def update_model_base_on_payment_command(
