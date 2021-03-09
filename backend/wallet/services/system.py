@@ -29,20 +29,21 @@ logger = logging.getLogger("sync-db")
 
 def sync_db():
     client = jsonrpc.Client(JSON_RPC_URL)
+    up_to_version = client.get_metadata().version
+
     onchain_account = client.get_account(VASP_ADDRESS)
 
     transactions_in_db = Transaction.query.filter_by(type=TransactionType.EXTERNAL)
     count = transactions_in_db.count()
 
     if count > 0:
-        up_to_version = (
+        db_latest_version = (
             transactions_in_db.order_by(desc(Transaction.blockchain_version))
             .first()
             .blockchain_version
         )
-    else:
-        metadata = client.get_metadata()
-        up_to_version = metadata.version
+        if db_latest_version is not None:
+            up_to_version = db_latest_version
 
     if sync_required(onchain_account, up_to_version):
         sync(client, onchain_account, up_to_version)
