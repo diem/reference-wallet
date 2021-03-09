@@ -5,6 +5,7 @@ from typing import Optional, Callable, List
 
 import context
 from diem import offchain, identifier
+from diem.offchain import Status
 from diem_utils.types.currencies import DiemCurrency
 from wallet import storage
 from wallet.services import account
@@ -46,10 +47,10 @@ def add_payment_command(
         cid=str(uuid.uuid4()),
         reference_id=reference_id,
         sender_address=my_address,
-        sender_status="none",
+        sender_status=Status.none,
         sender_kyc_data=offchain.to_json(_user_kyc_data(account_id)),
         receiver_address=vasp_address,
-        receiver_status="none",
+        receiver_status=Status.none,
         amount=amount,
         currency=currency,
         action=action,
