@@ -64,7 +64,7 @@ def add_payment_command(
 
 
 def update_payment_command_status(reference_id, status):
-    storage.update_payment_command_status(reference_id, status)
+    storage.update_payment_command_sender_status(reference_id, status)
 
 
 def get_payment_command(reference_id: str) -> Optional[offchain.PaymentCommand]:
