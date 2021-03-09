@@ -3,7 +3,7 @@ from typing import Optional, List
 from datetime import datetime
 
 import pytest
-from diem import offchain
+from diem.offchain import Status
 from flask import Response
 from flask.testing import Client
 from wallet.services.offchain import payment_command as pc_service
@@ -21,7 +21,7 @@ def mock_get_payment_command_json(monkeypatch):
                 reference_id="c6f7e351-e1c3-4da7-9310-4e87296febf2",
                 sender=offchain.PaymentActorObject(
                     address="tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
-                    status=offchain.StatusObject(status="ready_for_settlement"),
+                    status=offchain.StatusObject(status=Status.ready_for_settlement),
                     kyc_data=offchain.KycDataObject(
                         type="individual",
                         payload_version=1,
@@ -42,7 +42,7 @@ def mock_get_payment_command_json(monkeypatch):
                 ),
                 receiver=offchain.PaymentActorObject(
                     address="tdm1pwm5m35ayknjr0s67pk9xdf5mwqft4rvgxplmckcxr9lwd",
-                    status=offchain.StatusObject(status="ready_for_settlement"),
+                    status=offchain.StatusObject(status=Status.ready_for_settlement),
                     kyc_data=offchain.KycDataObject(
                         type="individual",
                         payload_version=1,
@@ -103,7 +103,9 @@ def mock_get_account_payment_commands(monkeypatch):
                     reference_id="c6f7e351-e1c3-4da7-9310-4e87296febf2",
                     sender=offchain.PaymentActorObject(
                         address="tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
-                        status=offchain.StatusObject(status="ready_for_settlement"),
+                        status=offchain.StatusObject(
+                            status=Status.ready_for_settlement
+                        ),
                         kyc_data=offchain.KycDataObject(
                             type="individual",
                             payload_version=1,
@@ -124,7 +126,9 @@ def mock_get_account_payment_commands(monkeypatch):
                     ),
                     receiver=offchain.PaymentActorObject(
                         address="tdm1pwm5m35ayknjr0s67pk9xdf5mwqft4rvgxplmckcxr9lwd",
-                        status=offchain.StatusObject(status="ready_for_settlement"),
+                        status=offchain.StatusObject(
+                            status=Status.ready_for_settlement
+                        ),
                         kyc_data=offchain.KycDataObject(
                             type="individual",
                             payload_version=1,
@@ -162,7 +166,9 @@ def mock_get_account_payment_commands(monkeypatch):
                     reference_id="dbcb698a-22a8-4dac-8710-668cdfdd045e",
                     sender=offchain.PaymentActorObject(
                         address="tdm1pzmhcxpnyns7m035ctdqmexxadxjjalh3xckacksflqvx5",
-                        status=offchain.StatusObject(status="ready_for_settlement"),
+                        status=offchain.StatusObject(
+                            status=Status.ready_for_settlement
+                        ),
                         kyc_data=offchain.KycDataObject(
                             type="individual",
                             payload_version=1,
@@ -183,7 +189,9 @@ def mock_get_account_payment_commands(monkeypatch):
                     ),
                     receiver=offchain.PaymentActorObject(
                         address="tdm1pzmhcxpnyns7m035ctdqmexxadxjjalh3xckacksflqvx5",
-                        status=offchain.StatusObject(status="ready_for_settlement"),
+                        status=offchain.StatusObject(
+                            status=Status.ready_for_settlement
+                        ),
                         kyc_data=offchain.KycDataObject(
                             type="individual",
                             payload_version=1,
@@ -307,7 +315,7 @@ class TestUpdatePaymentCommandStatus:
         rv: Response = authorized_client.put(
             "/offchain/payment_command/1234",
             json={
-                "status": "needs_kyc_data",
+                "status": Status.needs_kyc_data,
             },
         )
 
