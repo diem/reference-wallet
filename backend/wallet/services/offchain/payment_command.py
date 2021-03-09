@@ -4,34 +4,26 @@ from typing import Optional, Callable, List
 
 import context
 from diem import offchain, identifier
-from diem.offchain import (
-    CommandType,
-)
 from diem_utils.types.currencies import DiemCurrency
 from wallet import storage
-from wallet.services import account, kyc
-from wallet.services.fund_pull_pre_approval import (
-    handle_fund_pull_pre_approval_command,
-)
+from wallet.services import account
 from wallet.services.offchain.utils import (
     _hrp,
     _account_address_and_subaddress,
     _user_kyc_data,
     _compliance_private_key,
-
+    generate_my_address,
+)
 from wallet.storage import models
 from wallet.storage import (
     save_payment_command,
 
-    # noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences
 from wallet.storage.funds_pull_pre_approval_command import (
     get_account_commands,
     FundsPullPreApprovalCommandNotFound,
     commit_command,
-    get_commands_by_sent_status,
-    get_command_by_id,
     update_command,
-    get_account_command_by_id,
 )
 from wallet.types import TransactionStatus, TransactionType
 
@@ -55,12 +47,14 @@ def add_payment_command(
     amount,
     expiration: int,
 ) -> None:
+    my_address = generate_my_address(account_id)
+
     payment_command = models.PaymentCommand(
-        my_actor_address=context.get().config.vasp_address,
+        my_actor_address=my_address,
         inbound=True,
         cid=str(uuid.uuid4()),
         reference_id=reference_id,
-        sender_address=context.get().config.vasp_address,
+        sender_address=my_address,
         sender_status="none",
         sender_kyc_data=offchain.to_json(_user_kyc_data(account_id)),
         receiver_address=vasp_address,

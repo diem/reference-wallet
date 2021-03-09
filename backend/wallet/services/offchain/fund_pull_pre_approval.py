@@ -9,7 +9,7 @@ from typing import List, Optional
 import context
 from diem import offchain, identifier
 from diem.offchain import FundPullPreApprovalStatus
-from wallet.services import account
+from wallet.services.offchain.utils import generate_my_address
 
 # noinspection PyUnresolvedReferences
 from wallet.storage import get_account_id_from_subaddr, FundsPullPreApprovalCommandNotFound, get_command_by_id_and_role
@@ -69,10 +69,7 @@ def create_and_approve(
             f"Command with id {funds_pull_pre_approval_id} already exist in db"
         )
 
-    vasp_address = context.get().config.vasp_address
-    sub_address = account.generate_new_subaddress(account_id)
-    hrp = context.get().config.diem_address_hrp()
-    address = identifier.encode_account(vasp_address, sub_address, hrp)
+    address = generate_my_address(account_id)
 
     commit_command(
         models.FundsPullPreApprovalCommand(
