@@ -7,6 +7,7 @@ import pytest
 from flask import Response
 from flask.testing import Client
 from wallet.services import offchain as offchain_service
+from wallet.services import payment_command as pc_service
 from diem import offchain
 
 CURRENCY = "XUS"
@@ -220,7 +221,7 @@ def mock_add_payment_command(monkeypatch):
     ) -> None:
         return
 
-    monkeypatch.setattr(offchain_service, "add_payment_command", mock)
+    monkeypatch.setattr(pc_service, "add_payment_command", mock)
 
 
 @pytest.fixture()
@@ -228,7 +229,7 @@ def mock_update_payment_command_status(monkeypatch):
     def mock(reference_id, status) -> None:
         return
 
-    monkeypatch.setattr(offchain_service, "update_payment_command_status", mock)
+    monkeypatch.setattr(pc_service, "update_payment_command_status", mock)
 
 
 class TestGetPaymentCommand:
