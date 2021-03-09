@@ -1,7 +1,6 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 from dataclasses import asdict
-from datetime import datetime
 
 import context
 import pytest
@@ -18,7 +17,7 @@ from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import (
 from wallet.services.account import (
     generate_new_subaddress,
 )
-from wallet.services.fund_pull_pre_approval import (
+from wallet.services.offchain.fund_pull_pre_approval import (
     create_and_approve,
     approve,
     Role,
@@ -30,12 +29,14 @@ from wallet.services.fund_pull_pre_approval import (
     get_command_from_bech32,
     get_funds_pull_pre_approvals,
 )
-from wallet.services.fund_pull_pre_approval_sm import FundsPullPreApprovalStateError
-from wallet.services.fund_pull_pre_approval_sm import (
+from wallet.services.offchain.fund_pull_pre_approval_sm import (
+    FundsPullPreApprovalStateError,
+)
+from wallet.services.offchain.fund_pull_pre_approval_sm import (
     reduce_role,
     all_possible_states,
 )
-from wallet.services.offchain import (
+from wallet.services.offchain.offchain import (
     process_inbound_command,
 )
 from wallet.storage import (

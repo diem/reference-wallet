@@ -3,8 +3,7 @@ import uuid
 import context
 from diem_utils.types.currencies import DiemCurrency
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
-from wallet.services import offchain as offchain_service
-from wallet.services import payment_command as pc_service
+from wallet.services.offchain import payment_command as pc_service
 from wallet.storage import db_session
 
 
@@ -30,7 +29,7 @@ def test_add_payment_command(monkeypatch):
         expiration=expiration,
     )
 
-    payment_command = offchain_service.get_payment_command(reference_id)
+    payment_command = pc_service.get_payment_command(reference_id)
 
     assert payment_command
     assert payment_command.reference_id() == reference_id

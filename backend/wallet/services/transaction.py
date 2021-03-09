@@ -5,16 +5,11 @@ from dataclasses import dataclass
 from typing import Optional
 
 import context
+import wallet.services.offchain.payment_command as pc_service
 from diem import diem_types, offchain, identifier
 from diem_utils.types.currencies import DiemCurrency
 from wallet.services import (
     account as account_service,
-    offchain as offchain_service,
-)
-from wallet.services.offchain import (
-    get_payment_command,
-    add_transaction_based_on_payment_command,
-    model_to_payment_command,
 )
 from wallet.services.risk import risk_check
 
@@ -225,8 +220,8 @@ def process_incoming_transaction(
             and payment_command_sender_address_hex == sender_address
             and payment_command_receiver_address_hex == receiver_address
         ):
-            transaction = add_transaction_based_on_payment_command(
-                command=model_to_payment_command(payment_command),
+            transaction = pc_service.add_transaction_based_on_payment_command(
+                command=pc_service.model_to_payment_command(payment_command),
                 status=TransactionStatus.COMPLETED,
                 sequence=sequence,
                 blockchain_version=blockchain_version,
@@ -361,7 +356,7 @@ def send_transaction(
         ).id
     else:
         if not risk_check(sender_id, amount):
-            payment_command = offchain_service.save_outbound_payment_command(
+            payment_command = pc_service.save_outbound_payment_command(
                 sender_id=sender_id,
                 destination_address=destination_address,
                 destination_subaddress=destination_subaddress,
@@ -455,7 +450,7 @@ class FundsTransfer:
 def get_funds_transfer(reference_id: str) -> FundsTransfer:
     return FundsTransfer(
         transaction=storage.get_transaction(reference_id),
-        payment_command=get_payment_command(reference_id=reference_id),
+        payment_command=pc_service.get_payment_command(reference_id=reference_id),
     )
 
 

@@ -17,7 +17,7 @@ from wallet.config import ADMIN_USERNAME
 from wallet.services.fx.fx import update_rates
 from wallet.services.inventory import setup_inventory_account
 from wallet.services.user import create_new_user
-from wallet.services.offchain import process_offchain_tasks
+from wallet.services.offchain.offchain import process_offchain_tasks
 from wallet.storage import db_session
 from wallet.storage.setup import setup_wallet_storage
 from wallet.types import UsernameExistsError
