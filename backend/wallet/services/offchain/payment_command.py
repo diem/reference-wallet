@@ -13,6 +13,7 @@ from wallet.services.offchain.utils import (
     _account_address_and_subaddress,
     _user_kyc_data,
     _compliance_private_key,
+    generate_my_address,
 )
 from wallet.storage import (
     save_payment_command,
@@ -37,12 +38,14 @@ def add_payment_command(
     amount,
     expiration: int,
 ) -> None:
+    my_address = generate_my_address(account_id)
+
     payment_command = models.PaymentCommand(
-        my_actor_address=context.get().config.vasp_address,
+        my_actor_address=my_address,
         inbound=True,
         cid=str(uuid.uuid4()),
         reference_id=reference_id,
-        sender_address=context.get().config.vasp_address,
+        sender_address=my_address,
         sender_status="none",
         sender_kyc_data=offchain.to_json(_user_kyc_data(account_id)),
         receiver_address=vasp_address,
