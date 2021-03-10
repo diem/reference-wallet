@@ -12,7 +12,9 @@ export const LoggedInRoute = ({ component: Component, ...rest }) => {
   return (
     <Route
       {...rest}
-      render={(props) => (loggedIn ? <Component {...rest} {...props} /> : <Redirect to={`/login${queryString}`} />)}
+      render={(props) =>
+        loggedIn ? <Component {...rest} {...props} /> : <Redirect to={`/login${queryString}`} />
+      }
     />
   );
 };
