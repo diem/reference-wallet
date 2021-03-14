@@ -49,6 +49,9 @@ alltest: test e2e
 
 e2e: clean-docker build-e2e double-env e2e-test
 
+dmw-test: clean-docker
+	./scripts/run_dmw_test.sh
+
 run-double: clean-docker build-e2e double-env
 	./scripts/wait_for_server_ready.sh 12 # 12 services should have log, 2 gateways has no log
 	cat double.vars
