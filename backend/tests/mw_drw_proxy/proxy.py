@@ -22,7 +22,7 @@ APP_NAME = __name__.split(".")[0]
 LOG = logging.getLogger(APP_NAME)
 logging.basicConfig(level=logging.INFO)
 
-app = Flask(APP_NAME)
+app: Flask = Flask(APP_NAME)
 
 STATE: typing.Dict[str, UserClient] = {}
 
@@ -158,8 +158,9 @@ def kyc_sample():
 
 
 if __name__ == "__main__":
-    port = os.getenv("MW_DRW_PROXY_PORT", 5001)
+    port = os.getenv("MW_DRW_PROXY_PORT", 3150)
+    host = os.getenv("MW_DRW_PROXY_HOST", "localhost")
     LOG.info(
-        f"Launching server on http://127.0.0.1:{port}  -  proxying to {DRW_URL_PREFIX}"
+        f"Launching server on http://{host}:{port}  -  proxying to {DRW_URL_PREFIX}"
     )
-    app.run(port=port)
+    app.run(host=host, port=port)
