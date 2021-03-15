@@ -16,11 +16,7 @@ from wallet.services.offchain.payment_command import (
     _payment_command_status,
     _evaluate_kyc_data,
 )
-from wallet.services.offchain.utils import (
-    _hrp,
-    _compliance_private_key,
-    _offchain_client,
-)
+from wallet.services.offchain import utils
 from wallet.services.offchain.fund_pull_pre_approval import (
     process_funds_pull_pre_approvals_requests,
     handle_fund_pull_pre_approval_command,
@@ -49,7 +45,7 @@ def process_inbound_command(
 ) -> (int, bytes):
     command = None
     try:
-        command = _offchain_client().process_inbound_request(
+        command = utils.offchain_client().process_inbound_request(
             request_sender_address, request_body_bytes
         )
         logger.info(f"process inbound command: {offchain.to_json(command)}")
@@ -72,7 +68,7 @@ def process_inbound_command(
 def _jws(cid: Optional[str], err: Optional[offchain.OffChainErrorObject] = None):
     code = 400 if err else 200
     resp = offchain.reply_request(cid)
-    return code, offchain.jws.serialize(resp, _compliance_private_key().sign)
+    return code, offchain.jws.serialize(resp, utils.compliance_private_key().sign)
 
 
 def process_offchain_tasks() -> None:
@@ -80,7 +76,7 @@ def process_offchain_tasks() -> None:
         assert not model.inbound
         model.status = TransactionStatus.OFF_CHAIN_WAIT
         cmd = model_to_payment_command(model)
-        _offchain_client().send_command(cmd, _compliance_private_key().sign)
+        utils.offchain_client().send_command(cmd, utils.compliance_private_key().sign)
 
     def offchain_action(model) -> None:
         assert model.inbound
@@ -102,15 +98,15 @@ def process_offchain_tasks() -> None:
     def submit_txn(model) -> None:
         if model.sender_address == model.my_actor_address:
             cmd = model_to_payment_command(model)
-            _offchain_client().send_command(cmd, _compliance_private_key().sign)
+            utils.offchain_client().send_command(cmd, utils.compliance_private_key().sign)
             logger.info(
                 f"Submitting transaction base on command ref id:{model.reference_id} {model.amount} {model.currency}"
             )
             rpc_txn = context.get().p2p_by_travel_rule(
-                cmd.receiver_account_address(_hrp()),
+                cmd.receiver_account_address(utils.hrp()),
                 cmd.payment.action.currency,
                 cmd.payment.action.amount,
-                cmd.travel_rule_metadata(_hrp()),
+                cmd.travel_rule_metadata(utils.hrp()),
                 bytes.fromhex(cmd.payment.recipient_signature),
             )
             transaction = add_transaction_based_on_payment_command(
