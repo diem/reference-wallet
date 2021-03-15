@@ -33,7 +33,7 @@ def test_add_payment_command():
 
     expiration = 1802010490
 
-    pc_service.add_payment_command(
+    pc_service.add_payment_command_as_sender(
         account_id=user.account_id,
         reference_id=REFERENCE_ID,
         vasp_address=OTHER_ADDRESS,

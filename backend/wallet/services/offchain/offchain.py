@@ -98,7 +98,9 @@ def process_offchain_tasks() -> None:
     def submit_txn(model) -> None:
         if model.sender_address == model.my_actor_address:
             cmd = model_to_payment_command(model)
-            utils.offchain_client().send_command(cmd, utils.compliance_private_key().sign)
+            utils.offchain_client().send_command(
+                cmd, utils.compliance_private_key().sign
+            )
             logger.info(
                 f"Submitting transaction base on command ref id:{model.reference_id} {model.amount} {model.currency}"
             )

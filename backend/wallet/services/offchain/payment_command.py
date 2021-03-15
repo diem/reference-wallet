@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 PaymentCommandModel = models.PaymentCommand
 
 
-def add_payment_command(
+def add_payment_command_as_sender(
     account_id,
     reference_id,
     vasp_address,
@@ -68,7 +68,7 @@ def add_payment_command(
     save_payment_command(payment_command)
 
 
-def update_payment_command_status(reference_id, status):
+def update_payment_command_sender_status(reference_id, status):
     storage.update_payment_command_sender_status(reference_id, status)
 
 

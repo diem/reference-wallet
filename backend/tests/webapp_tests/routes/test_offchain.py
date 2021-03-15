@@ -228,15 +228,15 @@ def mock_add_payment_command(monkeypatch):
     ) -> None:
         return
 
-    monkeypatch.setattr(pc_service, "add_payment_command", mock)
+    monkeypatch.setattr(pc_service, "add_payment_command_as_sender", mock)
 
 
 @pytest.fixture()
 def mock_update_payment_command_status(monkeypatch):
-    def mock(reference_id, status) -> None:
+    def mock(reference_id, _) -> None:
         return
 
-    monkeypatch.setattr(pc_service, "update_payment_command_status", mock)
+    monkeypatch.setattr(pc_service, "update_payment_command_sender_status", mock)
 
 
 class TestGetPaymentCommand:
@@ -298,14 +298,11 @@ class TestAddPaymentCommand:
 
 
 class TestUpdatePaymentCommandStatus:
-    def test_update_payment_command_status(
+    def test_update_payment_command_status_approve(
         self, authorized_client: Client, mock_update_payment_command_status
     ) -> None:
-        rv: Response = authorized_client.put(
-            "/offchain/payment_command/1234",
-            json={
-                "status": Status.needs_kyc_data,
-            },
+        rv: Response = authorized_client.post(
+            "/offchain/payment_command/1234/actions/approve"
         )
 
         assert rv.status_code == 204, rv.get_data()
