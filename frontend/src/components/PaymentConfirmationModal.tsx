@@ -37,8 +37,18 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
     refreshUser();
   }, []);
 
-  const onConfirm = () => setSubmitStatus("success");
-  const onReject = () => setSubmitStatus("success");
+  async function updateStatus(status: string) {
+    await new BackendClient().updatePaymentCommandStatus(paymentParams.referenceId, status);
+  }
+
+  const onConfirm = async () => {
+    await updateStatus("needs_kyc_data");
+    setSubmitStatus("success");
+  };
+  const onReject = async () => {
+    await updateStatus("abort");
+    setSubmitStatus("success");
+  };
 
   const humanFriendlyAmount = diemAmountToHumanFriendly(paymentParams.amount, true);
 

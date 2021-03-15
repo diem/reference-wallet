@@ -406,6 +406,8 @@ export default class BackendClient {
     }
   }
 
+  // Offchain
+
   async getNewFundsPullPreApprovals(): Promise<Approval[]> {
     try {
       const response = await this.client.get("/offchain/funds_pull_pre_approvals?status=pending");
@@ -459,7 +461,7 @@ export default class BackendClient {
 
   async updatePaymentCommandStatus(reference_id, status): Promise<void> {
     try {
-      await this.client.post(`/offchain/payment_command/${reference_id}`, {
+      await this.client.put(`/offchain/payment_command/${reference_id}`, {
         status,
       });
     } catch (e) {

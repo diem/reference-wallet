@@ -53,6 +53,8 @@ def update_payment_command_sender_status(reference_id: str, new_status):
     command_in_db = get_payment_command(reference_id)
 
     if command_in_db:
+        if new_status != command_in_db.sender_status:
+            command_in_db.status = TransactionStatus.OFF_CHAIN_OUTBOUND
         command_in_db.sender_status = new_status
         command_in_db.update(command_in_db)
         db_session.commit()
