@@ -57,15 +57,16 @@ def test_add_payment_command():
     assert model.merchant_name == MERCHANT_NAME
     assert model.expiration == datetime.fromtimestamp(expiration)
     assert sender_address.to_hex() == context.get().config.vasp_address
-    assert model.sender_status == Status.needs_kyc_data
+    assert model.sender_status == Status.none
     assert model.receiver_address == OTHER_ADDRESS
     assert model.receiver_status == Status.none
     assert model.amount == AMOUNT
+    assert model.status == TransactionStatus.PENDING
 
 
 def test_update_payment_command_status():
     """Update existing 'charge' payment to be 'ready_for_settlement' as payer"""
-    sender_status = Status.needs_kyc_data
+    sender_status = Status.none
     receiver_status = Status.none
 
     PaymentCommandSeeder.run(
@@ -78,6 +79,7 @@ def test_update_payment_command_status():
         receiver_status=receiver_status,
         action=ACTION_CHARGE,
         is_sender=True,
+        command_status=TransactionStatus.PENDING,
     )
 
     expected_my_actor_address, _ = identifier.decode_account(
@@ -86,15 +88,21 @@ def test_update_payment_command_status():
 
     check_payment_command(expected_my_actor_address=expected_my_actor_address.to_hex())
 
-    check_payment_command_model(receiver_status, sender_status)
+    check_payment_command_model(
+        receiver_status, sender_status, TransactionStatus.PENDING
+    )
 
     updated_status = Status.ready_for_settlement
     storage.update_payment_command_sender_status(REFERENCE_ID, updated_status)
 
-    check_payment_command_model(receiver_status, updated_status)
+    check_payment_command_model(
+        receiver_status, updated_status, TransactionStatus.OFF_CHAIN_OUTBOUND
+    )
 
 
-def check_payment_command_model(receiver_status, updated_status):
+def check_payment_command_model(
+    receiver_status, updated_status, expected_command_status
+):
     model = storage.get_payment_command(REFERENCE_ID)
 
     assert model
@@ -104,6 +112,7 @@ def check_payment_command_model(receiver_status, updated_status):
     assert model.receiver_address == OTHER_ADDRESS
     assert model.receiver_status == receiver_status
     assert model.amount == AMOUNT
+    assert model.status == expected_command_status
 
 
 def check_payment_command(expected_my_actor_address=context.get().config.vasp_address):
@@ -122,4 +131,4 @@ def check_payment_command(expected_my_actor_address=context.get().config.vasp_ad
     assert payment_command.payment.action.amount == AMOUNT
     assert payment_command.payment.action.currency == DiemCurrency.XUS
     assert payment_command.payment.receiver.status.status == Status.none
-    assert payment_command.payment.sender.status.status == Status.needs_kyc_data
+    assert payment_command.payment.sender.status.status == Status.none
