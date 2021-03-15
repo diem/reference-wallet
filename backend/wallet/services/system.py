@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Optional
 
 from diem import jsonrpc, diem_types
 from sqlalchemy import desc
@@ -28,20 +29,21 @@ logger = logging.getLogger("sync-db")
 
 def sync_db():
     client = jsonrpc.Client(JSON_RPC_URL)
+    up_to_version = client.get_metadata().version
+
     onchain_account = client.get_account(VASP_ADDRESS)
 
     transactions_in_db = Transaction.query.filter_by(type=TransactionType.EXTERNAL)
     count = transactions_in_db.count()
 
     if count > 0:
-        up_to_version = (
+        db_latest_version = (
             transactions_in_db.order_by(desc(Transaction.blockchain_version))
             .first()
             .blockchain_version
         )
-    else:
-        metadata = client.get_metadata()
-        up_to_version = metadata.version
+        if db_latest_version is not None:
+            up_to_version = db_latest_version
 
     if sync_required(onchain_account, up_to_version):
         sync(client, onchain_account, up_to_version)
@@ -140,13 +142,9 @@ def sync_transaction(transaction):
 
 
 def add_transaction_to_db(transaction):
-    metadata = transaction.transaction.script.metadata
-
-    receiver_sub_address = None
-    sender_sub_address = None
-
-    if metadata:
-        receiver_sub_address, sender_sub_address = deserialize_metadata(metadata)
+    receiver_sub_address, sender_sub_address = subaddreses_from_metadata(
+        transaction.transaction.script.metadata
+    )
 
     source_id = None
     destination_id = None
@@ -185,17 +183,20 @@ def add_transaction_to_db(transaction):
     )
 
 
-def deserialize_metadata(metadata):
-    metadata = diem_types.Metadata.bcs_deserialize(bytes.fromhex(metadata)).value.value
-
+def subaddreses_from_metadata(metadata_hex: str) -> (Optional[str], Optional[str]):
     receiver_sub_address = None
     sender_sub_address = None
 
-    if metadata.to_subaddress:
-        receiver_sub_address = metadata.to_subaddress.hex()
+    if metadata_hex:
+        metadata = diem_types.Metadata.bcs_deserialize(
+            bytes.fromhex(metadata_hex)
+        ).value.value
 
-    if metadata.from_subaddress:
-        sender_sub_address = metadata.from_subaddress.hex()
+        receiver_sub_address = getattr(metadata, "to_subaddress", None)
+        receiver_sub_address = receiver_sub_address and receiver_sub_address.hex()
+
+        sender_sub_address = getattr(metadata, "from_subaddress", None)
+        sender_sub_address = sender_sub_address and sender_sub_address.hex()
 
     return receiver_sub_address, sender_sub_address
 

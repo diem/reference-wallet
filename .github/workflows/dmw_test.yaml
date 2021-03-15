@@ -1,0 +1,40 @@
+name: DMW Test
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install pipenv
+        run: pip install --upgrade pipenv
+      - name: Fetch liquidity submodule
+        run: git submodule update --init --recursive
+      - name: Setup Environment
+        run: |
+            VASP_BASE_URL=http://localhost:8080 ./scripts/lrw.sh setup_environment false
+      - name: Launch tests against it
+        run: ./scripts/run_dmw_test.sh
+      - name: Save results
+        uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: test-output
+          path: |
+            output
