@@ -37,16 +37,12 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
     refreshUser();
   }, []);
 
-  async function updateStatus(status: string) {
-    await new BackendClient().updatePaymentCommandStatus(paymentParams.referenceId, status);
-  }
-
   const onConfirm = async () => {
-    await updateStatus("needs_kyc_data");
+    await new BackendClient().approvePaymentCommand(paymentParams.referenceId);
     setSubmitStatus("success");
   };
   const onReject = async () => {
-    await updateStatus("abort");
+    await new BackendClient().rejectPaymentCommand(paymentParams.referenceId);
     setSubmitStatus("success");
   };
 

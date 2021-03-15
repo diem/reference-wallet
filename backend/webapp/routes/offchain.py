@@ -10,6 +10,7 @@ from diem.offchain import (
     X_REQUEST_ID,
     X_REQUEST_SENDER_ADDRESS,
     FundPullPreApprovalStatus,
+    Status,
 )
 from flask import Blueprint, request
 from flask.views import MethodView
@@ -33,7 +34,6 @@ from webapp.schemas import (
     Error,
     CreateAndApproveFundPullPreApproval,
     CreatePaymentCommand as CreatePaymentCommandSchema,
-    UpdatePaymentCommand,
 )
 
 logger = logging.getLogger(__name__)
@@ -190,7 +190,7 @@ class OffchainRoutes:
                 HTTPStatus.OK,
             )
 
-    class AddPaymentCommand(OffchainView):
+    class AddPaymentCommandAsSender(OffchainView):
         summary = "Create New Payment Command"
 
         parameters = [body_parameter(CreatePaymentCommandSchema)]
@@ -204,7 +204,7 @@ class OffchainRoutes:
         def post(self):
             params = request.json
 
-            pc_service.add_payment_command(
+            pc_service.add_payment_command_as_sender(
                 self.user.account_id,
                 params["reference_id"],
                 params["vasp_address"],
@@ -217,11 +217,10 @@ class OffchainRoutes:
 
             return "OK", HTTPStatus.NO_CONTENT
 
-    class UpdatePaymentCommandStatus(OffchainView):
-        summary = "Update Payment Command"
+    class ApprovePaymentCommandStatus(OffchainView):
+        summary = "Approve Payment Command"
 
         parameters = [
-            body_parameter(UpdatePaymentCommand),
             path_string_param(
                 name="reference_id",
                 description="command reference id",
@@ -235,10 +234,32 @@ class OffchainRoutes:
             ),
         }
 
-        def put(self, reference_id: str):
-            params = request.json
+        def post(self, reference_id: str):
+            pc_service.update_payment_command_sender_status(
+                reference_id, Status.needs_kyc_data
+            )
 
-            pc_service.update_payment_command_status(reference_id, params["status"])
+            return "OK", HTTPStatus.NO_CONTENT
+
+    class RejectPaymentCommandStatus(OffchainView):
+        summary = "Reject Payment Command"
+
+        parameters = [
+            path_string_param(
+                name="reference_id",
+                description="command reference id",
+            ),
+        ]
+
+        responses = {
+            HTTPStatus.NO_CONTENT: response_definition("Request accepted"),
+            HTTPStatus.NOT_FOUND: response_definition(
+                "Command not found", schema=Error
+            ),
+        }
+
+        def post(self, reference_id: str):
+            pc_service.update_payment_command_sender_status(reference_id, Status.abort)
 
             return "OK", HTTPStatus.NO_CONTENT
 

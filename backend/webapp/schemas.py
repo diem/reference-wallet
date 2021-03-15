@@ -308,10 +308,6 @@ class UpdateFundsPullPreApproval(Schema):
     status = fields.Str(required=True, validate=OneOf(["valid", "rejected", "closed"]))
 
 
-class UpdatePaymentCommand(Schema):
-    status = fields.Str(required=True, validate=OneOf(["needs_kyc_data", "abort"]))
-
-
 class CreateAndApproveFundPullPreApproval(Schema):
     biller_address = fields.Str(required=True)
     funds_pull_pre_approval_id = fields.Str(required=True)
