@@ -1,11 +1,12 @@
 // Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useHistory } from "react-router-dom";
 import { Alert } from "reactstrap";
 import { PaymentParams } from "../utils/payment-params";
 import PaymentConfirmationModal from "./PaymentConfirmationModal";
+import BackendClient from "../services/backendClient";
 
 /**
  * Displays the payment confirmation dialog if there are payment details in the query string
@@ -33,6 +34,21 @@ function PaymentConfirmation() {
       setShowError(true);
     }
   }, [queryString]);
+
+  useEffect(() => {
+    const addPaymentCommand = async () => {
+      try {
+        if (paymentParams) {
+          await new BackendClient().addPaymentComand(paymentParams);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    // noinspection JSIgnoredPromiseFromCall
+    addPaymentCommand();
+  }, [paymentParams]);
 
   return (
     <>
