@@ -191,7 +191,7 @@ class ReferenceWalletProxyFPPA:
     ):
         self._request_authorized(
             "POST",
-            f"offchain/funds_pull_pre_approvals",
+            "offchain/funds_pull_pre_approvals",
             {
                 "biller_address": biller_address,
                 "funds_pull_pre_approval_id": funds_pull_pre_approval_id,

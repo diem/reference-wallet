@@ -65,8 +65,8 @@ class VaspProxy(ABC):
         description: str = None,
     ) -> str:
         """
-        Send only request data to be saved on this VASP without be sending through offchain,
-        so testee VASP could approve this request data through offchain.
+        Send only request data to be saved on this VASP without be sending through
+        offchain, so testee VASP could approve this request data through offchain.
 
         :param scope: Definition of the scope of this request.
         :param description: Optional, human readable description of the request.
