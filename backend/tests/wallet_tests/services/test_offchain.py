@@ -63,7 +63,7 @@ def test_process_inbound_payment_command(monkeypatch):
     receiver_sub_address = generate_new_subaddress(user.account_id)
     cmd = offchain.PaymentCommand.init(
         identifier.encode_account(sender.account_address, sender_sub_address, hrp),
-        utils._user_kyc_data(user.account_id),
+        utils.user_kyc_data(user.account_id),
         identifier.encode_account(
             context.get().config.vasp_address, receiver_sub_address, hrp
         ),
@@ -117,7 +117,7 @@ def test_submit_txn_when_both_ready(monkeypatch):
     receiver_ready_cmd = receiver_cmd.new_command(
         recipient_signature=b"recipient_signature".hex(),
         status=offchain.Status.ready_for_settlement,
-        kyc_data=utils._user_kyc_data(user.account_id),
+        kyc_data=utils.user_kyc_data(user.account_id),
     )
 
     model = storage.get_payment_command(cmd.reference_id())

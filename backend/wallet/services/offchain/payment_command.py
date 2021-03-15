@@ -9,10 +9,10 @@ from diem_utils.types.currencies import DiemCurrency
 from wallet import storage
 from wallet.services import account
 from wallet.services.offchain.utils import (
-    _hrp,
-    _account_address_and_subaddress,
-    _user_kyc_data,
-    _compliance_private_key,
+    hrp,
+    account_address_and_subaddress,
+    user_kyc_data,
+    compliance_private_key,
     generate_my_address,
 )
 from wallet.storage import models
@@ -51,7 +51,7 @@ def add_payment_command(
     my_address = generate_my_address(account_id)
 
     sig_msg = txnmetadata.travel_rule(
-        reference_id, identifier.decode_account_address(my_address, _hrp()), amount
+        reference_id, identifier.decode_account_address(my_address, hrp()), amount
     )[1]
 
     payment_command = models.PaymentCommand(
@@ -61,7 +61,7 @@ def add_payment_command(
         reference_id=reference_id,
         sender_address=my_address,
         sender_status=Status.none,
-        sender_kyc_data=offchain.to_json(_user_kyc_data(account_id)),
+        sender_kyc_data=offchain.to_json(user_kyc_data(account_id)),
         receiver_address=vasp_address,
         receiver_status=Status.none,
         amount=amount,
@@ -72,7 +72,7 @@ def add_payment_command(
         account_id=account_id,
         merchant_name=merchant_name,
         expiration=datetime.fromtimestamp(expiration),
-        recipient_signature=_compliance_private_key().sign(sig_msg).hex(),
+        recipient_signature=compliance_private_key().sign(sig_msg).hex(),
     )
     save_payment_command(payment_command)
 
@@ -281,10 +281,10 @@ def add_transaction_based_on_payment_command(
     blockchain_version: int,
 ) -> Transaction:
     payment = command.payment
-    sender_address, source_subaddress = _account_address_and_subaddress(
+    sender_address, source_subaddress = account_address_and_subaddress(
         payment.sender.address
     )
-    destination_address, destination_subaddress = _account_address_and_subaddress(
+    destination_address, destination_subaddress = account_address_and_subaddress(
         payment.receiver.address
     )
     source_id = get_account_id_from_subaddr(source_subaddress)
@@ -320,9 +320,9 @@ def save_outbound_payment_command(
     sender_sub_address = account.generate_new_subaddress(account_id=sender_id)
 
     command = offchain.PaymentCommand.init(
-        identifier.encode_account(sender_onchain_address, sender_sub_address, _hrp()),
-        _user_kyc_data(sender_id),
-        identifier.encode_account(destination_address, destination_subaddress, _hrp()),
+        identifier.encode_account(sender_onchain_address, sender_sub_address, hrp()),
+        user_kyc_data(sender_id),
+        identifier.encode_account(destination_address, destination_subaddress, hrp()),
         amount,
         currency.value,
     )
@@ -355,12 +355,12 @@ def _evaluate_kyc_data(command: offchain.PaymentObject) -> offchain.PaymentObjec
 def _send_kyc_data_and_receipient_signature(
     command: offchain.PaymentCommand,
 ) -> offchain.PaymentCommand:
-    sig_msg = command.travel_rule_metadata_signature_message(_hrp())
-    user_id = get_account_id_from_subaddr(command.receiver_subaddress(_hrp()).hex())
+    sig_msg = command.travel_rule_metadata_signature_message(hrp())
+    user_id = get_account_id_from_subaddr(command.receiver_subaddress(hrp()).hex())
 
     return command.new_command(
-        recipient_signature=_compliance_private_key().sign(sig_msg).hex(),
-        kyc_data=_user_kyc_data(user_id),
+        recipient_signature=compliance_private_key().sign(sig_msg).hex(),
+        kyc_data=user_kyc_data(user_id),
         status=offchain.Status.ready_for_settlement,
     )
 
