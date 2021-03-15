@@ -1,6 +1,5 @@
 import uuid
 
-import context
 from diem_utils.types.currencies import DiemCurrency
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet.storage import models, TransactionStatus
@@ -18,6 +17,7 @@ class PaymentCommandSeeder:
         receiver_status,
         action,
         is_sender,
+        command_status=TransactionStatus.PENDING,
     ):
         user = OneUser.run(
             db_session,
@@ -39,7 +39,7 @@ class PaymentCommandSeeder:
             amount=amount,
             currency=DiemCurrency.XUS,
             action=action,
-            status=TransactionStatus.OFF_CHAIN_OUTBOUND,
+            status=command_status,
             account_id=user.account_id,
         )
 
