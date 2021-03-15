@@ -12,6 +12,7 @@ import { Quote, QuoteAction, Rate } from "../interfaces/cico";
 import { Debt } from "../interfaces/settlement";
 import { Chain } from "../interfaces/system";
 import { Approval } from "../interfaces/approval";
+import { PaymentParams } from "../utils/payment-params";
 
 export default class BackendClient {
   private client: AxiosInstance;
@@ -438,10 +439,17 @@ export default class BackendClient {
     }
   }
 
-  async addPaymentComand(paymentParams): Promise<void> {
+  async addPaymentComand(paymentParams: PaymentParams): Promise<void> {
     try {
       await this.client.post(`/offchain/payment_command`, {
-        paymentParams,
+        vasp_address: paymentParams.vaspAddress,
+        reference_id: paymentParams.referenceId,
+        merchant_name: paymentParams.merchantName,
+        action: paymentParams.action.toLowerCase(),
+        currency: paymentParams.currency,
+        amount: paymentParams.amount,
+        expiration: paymentParams.expiration.getTime() / 1000,
+        redirect_url: paymentParams.redirectUrl,
       });
     } catch (e) {
       BackendClient.handleError(e);
