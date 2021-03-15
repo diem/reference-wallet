@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional, Callable, List
 
 import context
-from diem import offchain, identifier
+from diem import offchain, identifier, txnmetadata
 from diem.offchain import Status
 from diem_utils.types.currencies import DiemCurrency
 from wallet import storage
@@ -41,9 +41,13 @@ def add_payment_command(
 ) -> None:
     my_address = generate_my_address(account_id)
 
+    sig_msg = txnmetadata.travel_rule(
+        reference_id, identifier.decode_account_address(my_address, _hrp()), amount
+    )[1]
+
     payment_command = models.PaymentCommand(
         my_actor_address=my_address,
-        inbound=True,
+        inbound=False,
         cid=str(uuid.uuid4()),
         reference_id=reference_id,
         sender_address=my_address,
@@ -55,10 +59,11 @@ def add_payment_command(
         currency=currency,
         action=action,
         created_at=datetime.now(),
-        status=TransactionStatus.OFF_CHAIN_OUTBOUND,
+        status=TransactionStatus.PENDING,
         account_id=account_id,
         merchant_name=merchant_name,
         expiration=datetime.fromtimestamp(expiration),
+        recipient_signature=_compliance_private_key().sign(sig_msg).hex(),
     )
     save_payment_command(payment_command)
 
