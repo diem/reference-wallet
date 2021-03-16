@@ -196,3 +196,26 @@ class AccountInfo:
 @dataclass
 class OffChainSequenceInfo:
     pass
+
+
+@dataclass_json
+@dataclass
+class CreatePaymentCommandAsSender:
+    reference_id: str
+    vasp_address: str
+    merchant_name: str
+    action: str
+    currency: str
+    amount: int
+    expiration: int
+
+
+@dataclass_json
+@dataclass
+class CreatePaymentCommandAsReceiver:
+    reference_id: str
+    sender_address: str
+    action: str
+    currency: str
+    amount: int
+    expiration: int
