@@ -33,7 +33,7 @@ from webapp.schemas import (
     UpdateFundsPullPreApproval,
     Error,
     CreateAndApproveFundPullPreApproval,
-    CreatePaymentCommand as CreatePaymentCommandSchema,
+    CreatePaymentAsSenderCommand as CreatePaymentCommandSchema,
 )
 
 logger = logging.getLogger(__name__)
