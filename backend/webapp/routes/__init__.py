@@ -198,9 +198,7 @@ def offchain_api_routes():
     )
     offchain.add_url_rule(
         rule="/offchain/payment_command/<reference_id>/actions/reject",
-        view_func=OffchainRoutes.RejectPaymentCommand.as_view(
-            "reject_payment_command"
-        ),
+        view_func=OffchainRoutes.RejectPaymentCommand.as_view("reject_payment_command"),
         methods=["POST"],
     )
     offchain.add_url_rule(
