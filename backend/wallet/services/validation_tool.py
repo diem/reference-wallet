@@ -3,10 +3,48 @@ from datetime import datetime
 
 import context
 from diem import identifier, offchain
+from diem.offchain import Status
 from wallet.services.account import generate_new_subaddress
-from wallet.storage import funds_pull_pre_approval_command as fppa_storage
+from wallet.storage import (
+    funds_pull_pre_approval_command as fppa_storage,
+    models,
+    TransactionStatus,
+    payment_command as pc_storage,
+)
 
 from wallet.services.offchain.fund_pull_pre_approval import Role
+from wallet.services.offchain import utils
+
+
+def add_payment_command_as_receiver(
+    account_id,
+    reference_id,
+    sender_address,
+    amount,
+    currency,
+    action,
+    expiration,
+) -> None:
+    my_address = utils.generate_my_address(account_id)
+
+    payment_command = models.PaymentCommand(
+        my_actor_address=my_address,
+        inbound=False,
+        cid=str(uuid.uuid4()),
+        reference_id=reference_id,
+        sender_address=sender_address,
+        sender_status=Status.none,
+        receiver_address=my_address,
+        receiver_status=Status.none,
+        amount=amount,
+        currency=currency,
+        action=action,
+        created_at=datetime.now(),
+        status=TransactionStatus.PENDING,
+        account_id=account_id,
+        expiration=datetime.fromtimestamp(expiration),
+    )
+    pc_storage.save_payment_command(payment_command)
 
 
 def request_funds_pull_pre_approval_from_another(
@@ -37,7 +75,7 @@ def commit_funds_pull_pre_approval(
     max_transaction_amount = get_max_transaction_amount_from_scope(scope)
 
     fppa_storage.commit_command(
-        fppa_storage.models.FundsPullPreApprovalCommand(
+        models.FundsPullPreApprovalCommand(
             account_id=account_id,
             address=payer_address,
             biller_address=biller_address,

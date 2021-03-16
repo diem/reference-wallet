@@ -322,11 +322,18 @@ class FundsPullPreApprovalRequest(Schema):
 
 
 class CreatePaymentCommand(Schema):
-    vasp_address = fields.Str(required=True)
     reference_id = fields.Str(required=True)
-    merchant_name = fields.Str(required=True)
     action = fields.Str(required=True, validate=OneOf(["charge", "auth", "capture"]))
     currency = fields.Str(required=True)
     amount = fields.Int(required=True)
     expiration = fields.Int(required=True)
     redirect_url = fields.Str(required=True)
+
+
+class CreatePaymentAsSenderCommand(CreatePaymentCommand):
+    vasp_address = fields.Str(required=True)
+    merchant_name = fields.Str(required=True)
+
+
+class CreatePaymentAsReceiverCommand(CreatePaymentCommand):
+    sender_address = fields.Str(required=True)

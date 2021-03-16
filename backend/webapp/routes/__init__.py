@@ -232,6 +232,13 @@ def validation_tool_routes():
         ),
         methods=["POST"],
     )
+    validation_tool.add_url_rule(
+        rule="/validation/payment_command",
+        view_func=ValidationToolRoutes.AddPaymentCommandAsReceiver.as_view(
+            "add_payment_command"
+        ),
+        methods=["POST"],
+    )
 
 
 account_routes()
