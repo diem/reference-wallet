@@ -217,7 +217,7 @@ class OffchainRoutes:
 
             return "OK", HTTPStatus.NO_CONTENT
 
-    class ApprovePaymentCommandStatus(OffchainView):
+    class ApprovePaymentCommand(OffchainView):
         summary = "Approve Payment Command"
 
         parameters = [
@@ -241,7 +241,7 @@ class OffchainRoutes:
 
             return "OK", HTTPStatus.NO_CONTENT
 
-    class RejectPaymentCommandStatus(OffchainView):
+    class RejectPaymentCommand(OffchainView):
         summary = "Reject Payment Command"
 
         parameters = [
