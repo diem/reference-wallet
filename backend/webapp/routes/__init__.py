@@ -191,14 +191,14 @@ def offchain_api_routes():
     )
     offchain.add_url_rule(
         rule="/offchain/payment_command/<reference_id>/actions/approve",
-        view_func=OffchainRoutes.ApprovePaymentCommandStatus.as_view(
+        view_func=OffchainRoutes.ApprovePaymentCommand.as_view(
             "approve_payment_command"
         ),
         methods=["POST"],
     )
     offchain.add_url_rule(
         rule="/offchain/payment_command/<reference_id>/actions/reject",
-        view_func=OffchainRoutes.RejectPaymentCommandStatus.as_view(
+        view_func=OffchainRoutes.RejectPaymentCommand.as_view(
             "reject_payment_command"
         ),
         methods=["POST"],
