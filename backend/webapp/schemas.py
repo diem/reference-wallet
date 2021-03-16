@@ -188,6 +188,7 @@ class Transaction(Schema):
     blockchain_tx = fields.Nested(
         BlockchainTransaction, required=False, allow_none=True
     )
+    reference_id: str
 
 
 class CreateTransaction(Schema):
