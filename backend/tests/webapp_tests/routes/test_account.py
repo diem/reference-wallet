@@ -262,6 +262,7 @@ class TestAccountTransactions:
             },
             "blockchain_tx": None,
             "is_internal": True,
+            "reference_id": None,
         }
 
     def test_get_transaction_by_id_other_user(
@@ -308,6 +309,7 @@ class TestAccountTransactions:
                 },
                 "blockchain_tx": None,
                 "is_internal": True,
+                "reference_id": None,
             }
         ]
 
