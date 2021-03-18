@@ -30,7 +30,7 @@ class PaymentCommandSeeder:
         payment_command = models.PaymentCommand(
             my_actor_address=my_actor_address,
             inbound=True,
-            cid=str(uuid.uuid4()),
+            cid=reference_id,
             reference_id=reference_id,
             sender_address=sender_address,
             sender_status=sender_status,
