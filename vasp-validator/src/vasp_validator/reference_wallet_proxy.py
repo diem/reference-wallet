@@ -115,7 +115,6 @@ class ReferenceWalletProxy:
         currency,
         amount,
         expiration,
-        redirect_url="",
     ):
         request = CreatePaymentCommandAsSender(
             reference_id=reference_id,
@@ -125,7 +124,6 @@ class ReferenceWalletProxy:
             currency=currency,
             amount=amount,
             expiration=expiration,
-            redirect_url=redirect_url
         )
         self._request_authorized(
             "POST", "offchain/payment_command", json=request.to_dict()
@@ -149,7 +147,6 @@ class ReferenceWalletProxy:
         currency,
         amount,
         expiration,
-            redirect_url="",
     ):
         request = CreatePaymentCommandAsReceiver(
             reference_id=reference_id,
@@ -158,7 +155,6 @@ class ReferenceWalletProxy:
             currency=currency,
             amount=amount,
             expiration=expiration,
-            redirect_url="",
         )
         self._request_authorized(
             "POST", "validation/payment_command", json=request.to_dict()
