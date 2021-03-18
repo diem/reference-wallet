@@ -25,8 +25,8 @@ class VaspProxyTestee(VaspProxy):
     def send_transaction(self, address: str, amount: int, currency: str) -> TxState:
         return self.vasp.send_transaction(address, amount, currency)
 
-    def knows_transaction(self, version) -> bool:
-        return self.vasp.knows_transaction(version)
+    def knows_transaction_by_version(self, version) -> bool:
+        return self.vasp.knows_transaction_by_version(version)
 
     def get_offchain_state(self, reference_id: str):
         return self.vasp.get_offchain_state(reference_id)
@@ -74,4 +74,50 @@ class VaspProxyTestee(VaspProxy):
             funds_pull_pre_approval_id=funds_pull_pre_approval_id,
             scope=scope,
             description=description,
+        )
+
+    def create_payment_command_as_sender(
+        self,
+        reference_id,
+        vasp_address,
+        merchant_name,
+        action,
+        currency,
+        amount,
+        expiration,
+        redirect_url="",
+    ):
+        self.vasp.create_payment_command_as_sender(
+            reference_id=reference_id,
+            vasp_address=vasp_address,
+            merchant_name=merchant_name,
+            action=action,
+            currency=currency,
+            amount=amount,
+            expiration=expiration,
+            redirect_url=redirect_url
+        )
+
+    def approve_payment_command(self, reference_id):
+        self.vasp.approve_payment_command(reference_id)
+
+    def reject_payment_command(self, reference_id):
+        self.vasp.reject_payment_command(reference_id)
+
+    def create_payment_command_as_receiver(
+        self,
+        reference_id,
+        sender_address,
+        action,
+        currency,
+        amount,
+        expiration,
+    ):
+        self.vasp.create_payment_command_as_receiver(
+            reference_id=reference_id,
+            sender_address=sender_address,
+            action=action,
+            currency=currency,
+            amount=amount,
+            expiration=expiration,
         )

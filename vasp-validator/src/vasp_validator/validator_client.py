@@ -88,7 +88,7 @@ class ValidatorClient(VaspProxy):
             # offchain_refid=tx.offchain_refid,
         )
 
-    def knows_transaction(self, version):
+    def knows_transaction_by_version(self, version):
         """
         Checks whether the transaction with the specified version is recognized by
         the validator as received by the current user.
@@ -101,6 +101,22 @@ class ValidatorClient(VaspProxy):
             if txs and version in [
                 tx.blockchain_tx.version for tx in txs if tx.blockchain_tx
             ]:
+                return True
+            time.sleep(SECONDS_BETWEEN_RETRIES)
+
+        return False
+
+    def knows_transaction_by_reference_id(self, reference_id):
+        """
+        Checks whether the transaction with the specified version is recognized by
+        the validator as received by the current user.
+
+        Note: Consider checking other transaction properties too;
+        e.g., amount, currency etc.
+        """
+        for i in range(RETRIES_COUNT):
+            txs = self.wallet.get_transaction_list()
+            if txs and reference_id in [tx.reference_id for tx in txs]:
                 return True
             time.sleep(SECONDS_BETWEEN_RETRIES)
 
@@ -226,6 +242,51 @@ class ValidatorClient(VaspProxy):
             user = self.wallet.get_user()
         else:
             raise VaspValidatorError("Filed to create an approved user")
+
+    def create_payment_command_as_sender(
+        self,
+        reference_id,
+        vasp_address,
+        merchant_name,
+        action,
+        currency,
+        amount,
+        expiration,
+        redirect_url="",
+    ):
+        self.wallet.create_payment_command_as_sender(
+            reference_id=reference_id,
+            vasp_address=vasp_address,
+            merchant_name=merchant_name,
+            action=action,
+            currency=currency,
+            amount=amount,
+            expiration=expiration,
+        )
+
+    def approve_payment_command(self, reference_id):
+        self.wallet.approve_payment_command(reference_id)
+
+    def reject_payment_command(self, reference_id):
+        self.wallet.reject_payment_command(reference_id)
+
+    def create_payment_command_as_receiver(
+        self,
+        reference_id,
+        sender_address,
+        action,
+        currency,
+        amount,
+        expiration,
+    ):
+        self.wallet.create_payment_command_as_receiver(
+            reference_id=reference_id,
+            sender_address=sender_address,
+            action=action,
+            currency=currency,
+            amount=amount,
+            expiration=expiration,
+        )
 
 
 def get_random_string(length):

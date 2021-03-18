@@ -17,6 +17,8 @@ from .models import (
     OffChainSequenceInfo,
     TransactionId,
     FundsTransfer,
+    CreatePaymentCommandAsSender,
+    CreatePaymentCommandAsReceiver,
 )
 from .models_fppa import (
     FundPullPreApprovalScope,
@@ -103,6 +105,64 @@ class ReferenceWalletProxy:
             "POST", "account/transactions", json=tx_request.to_dict()
         )
         return TransactionId.from_json(send_transaction_response.text)
+
+    def create_payment_command_as_sender(
+        self,
+        reference_id,
+        vasp_address,
+        merchant_name,
+        action,
+        currency,
+        amount,
+        expiration,
+        redirect_url="",
+    ):
+        request = CreatePaymentCommandAsSender(
+            reference_id=reference_id,
+            vasp_address=vasp_address,
+            merchant_name=merchant_name,
+            action=action,
+            currency=currency,
+            amount=amount,
+            expiration=expiration,
+            redirect_url=redirect_url
+        )
+        self._request_authorized(
+            "POST", "offchain/payment_command", json=request.to_dict()
+        )
+
+    def approve_payment_command(self, reference_id):
+        self._request_authorized(
+            "POST", f"/offchain/payment_command/{reference_id}/actions/approve"
+        )
+
+    def reject_payment_command(self, reference_id):
+        self._request_authorized(
+            "POST", f"/offchain/payment_command/{reference_id}/actions/reject"
+        )
+
+    def create_payment_command_as_receiver(
+        self,
+        reference_id,
+        sender_address,
+        action,
+        currency,
+        amount,
+        expiration,
+            redirect_url="",
+    ):
+        request = CreatePaymentCommandAsReceiver(
+            reference_id=reference_id,
+            sender_address=sender_address,
+            action=action,
+            currency=currency,
+            amount=amount,
+            expiration=expiration,
+            redirect_url="",
+        )
+        self._request_authorized(
+            "POST", "validation/payment_command", json=request.to_dict()
+        )
 
     def get_transaction(self, tx_id) -> FundsTransfer:
         response = self._request_authorized("GET", f"account/transactions/{tx_id}")
