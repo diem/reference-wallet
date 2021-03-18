@@ -111,7 +111,6 @@ class VaspProxy(ABC):
         currency,
         amount,
         expiration,
-        redirect_url,
     ):
         ...
 

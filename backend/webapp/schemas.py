@@ -328,7 +328,6 @@ class CreatePaymentCommand(Schema):
     currency = fields.Str(required=True)
     amount = fields.Int(required=True)
     expiration = fields.Int(required=True)
-    redirect_url = fields.Str(required=True)
 
 
 class CreatePaymentAsSenderCommand(CreatePaymentCommand):

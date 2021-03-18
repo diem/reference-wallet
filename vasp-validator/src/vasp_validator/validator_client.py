@@ -252,7 +252,6 @@ class ValidatorClient(VaspProxy):
         currency,
         amount,
         expiration,
-        redirect_url="",
     ):
         self.wallet.create_payment_command_as_sender(
             reference_id=reference_id,
