@@ -1,4 +1,4 @@
-import uuid
+import logging
 from datetime import datetime
 from typing import Optional, Callable, List
 
@@ -14,6 +14,7 @@ from wallet.services.offchain.utils import (
     user_kyc_data,
     compliance_private_key,
     generate_my_address,
+    PaymentCommandModel,
 )
 from wallet.storage import models
 from wallet.storage import (
@@ -35,7 +36,6 @@ from ..storage import (
 )
 
 logger = logging.getLogger(__name__)
-PaymentCommandModel = models.PaymentCommand
 
 
 def add_payment_command_as_sender(
@@ -114,7 +114,27 @@ def _lock_and_save_inbound_command(
 ) -> None:
     def validate_and_save(model: Optional[PaymentCommandModel]) -> PaymentCommandModel:
         if model:
-            prior = get_payment_command(model.reference_id)
+            prior_model = storage.get_payment_command(model.reference_id)
+            # if command status is pending and not contain sender_address we assume that
+            # LRW is playing the merchant role in this offchain conversation as part
+            # of validation test and therefore we set the sender_address as the sender_address
+            # in the incoming command
+            if (
+                prior_model.status == TransactionStatus.PENDING
+                and not prior_model.sender_address
+            ):
+                prior_model.sender_address = command.payment.sender.address
+
+            prior = model_to_payment_command(prior_model)
+
+            logger.info(
+                f"#######################################################################"
+            )
+            logger.info(f"~~~~~~ prior:   {prior}")
+            logger.info(f"~~~~~~ command: {command}")
+            logger.info(
+                f"#######################################################################"
+            )
             if command == prior:
                 return
             command.validate(prior)

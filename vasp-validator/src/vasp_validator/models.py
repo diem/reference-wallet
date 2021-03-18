@@ -215,7 +215,6 @@ class CreatePaymentCommandAsSender:
 @dataclass
 class CreatePaymentCommandAsReceiver:
     reference_id: str
-    sender_address: str
     action: str
     currency: str
     amount: int

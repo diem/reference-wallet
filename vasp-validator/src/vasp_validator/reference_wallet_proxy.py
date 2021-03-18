@@ -142,7 +142,6 @@ class ReferenceWalletProxy:
     def create_payment_command_as_receiver(
         self,
         reference_id,
-        sender_address,
         action,
         currency,
         amount,
@@ -150,15 +149,17 @@ class ReferenceWalletProxy:
     ):
         request = CreatePaymentCommandAsReceiver(
             reference_id=reference_id,
-            sender_address=sender_address,
             action=action,
             currency=currency,
             amount=amount,
             expiration=expiration,
         )
-        self._request_authorized(
+        address_response = self._request_authorized(
             "POST", "validation/payment_command", json=request.to_dict()
         )
+
+        address = Address.from_json(address_response.text)
+        return address.address
 
     def get_transaction(self, tx_id) -> FundsTransfer:
         response = self._request_authorized("GET", f"account/transactions/{tx_id}")
