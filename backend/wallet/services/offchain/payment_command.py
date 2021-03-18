@@ -57,7 +57,7 @@ def add_payment_command_as_sender(
     payment_command = models.PaymentCommand(
         my_actor_address=my_address,
         inbound=False,
-        cid=str(uuid.uuid4()),
+        cid=reference_id,
         reference_id=reference_id,
         sender_address=my_address,
         sender_status=Status.none,

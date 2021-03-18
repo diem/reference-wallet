@@ -30,7 +30,7 @@ def add_payment_command_as_receiver(
     payment_command = models.PaymentCommand(
         my_actor_address=my_address,
         inbound=False,
-        cid=str(uuid.uuid4()),
+        cid=reference_id,
         reference_id=reference_id,
         sender_address=sender_address,
         sender_status=Status.none,
