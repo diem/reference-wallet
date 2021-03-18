@@ -272,7 +272,6 @@ class ValidatorClient(VaspProxy):
     def create_payment_command_as_receiver(
         self,
         reference_id,
-        sender_address,
         action,
         currency,
         amount,
@@ -280,7 +279,6 @@ class ValidatorClient(VaspProxy):
     ):
         self.wallet.create_payment_command_as_receiver(
             reference_id=reference_id,
-            sender_address=sender_address,
             action=action,
             currency=currency,
             amount=amount,

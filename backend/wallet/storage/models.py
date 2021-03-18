@@ -126,7 +126,7 @@ class PaymentCommand(Base):
     my_actor_address = Column(String, nullable=False)
     inbound = Column(Boolean, nullable=False)
     cid = Column(String, nullable=False)
-    sender_address = Column(String, nullable=False)
+    sender_address = Column(String, nullable=True)
     sender_status = Column(String, nullable=False, default="none")
     sender_kyc_data = Column(String, nullable=True)
     sender_metadata = Column(String, nullable=True)

@@ -126,7 +126,6 @@ class VaspProxy(ABC):
     def create_payment_command_as_receiver(
         self,
         reference_id,
-        sender_address,
         action,
         currency,
         amount,
