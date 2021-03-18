@@ -33,7 +33,7 @@ class VaspProxy(ABC):
         ...
 
     @abstractmethod
-    def knows_transaction(self, version) -> bool:
+    def knows_transaction_by_version(self, version) -> bool:
         ...
 
     @abstractmethod
@@ -98,5 +98,39 @@ class VaspProxy(ABC):
         funds_pull_pre_approval_id: str,
         scope: FundPullPreApprovalScope,
         description: str,
+    ):
+        ...
+
+    @abstractmethod
+    def create_payment_command_as_sender(
+        self,
+        reference_id,
+        vasp_address,
+        merchant_name,
+        action,
+        currency,
+        amount,
+        expiration,
+        redirect_url,
+    ):
+        ...
+
+    @abstractmethod
+    def approve_payment_command(self, reference_id):
+        ...
+
+    @abstractmethod
+    def reject_payment_command(self, reference_id):
+        ...
+
+    @abstractmethod
+    def create_payment_command_as_receiver(
+        self,
+        reference_id,
+        sender_address,
+        action,
+        currency,
+        amount,
+        expiration,
     ):
         ...
