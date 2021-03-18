@@ -184,3 +184,40 @@ class TestRequestFundsPullPreApprovalFromAnother:
 
         assert rv.status_code == 400
         assert "expiration_timestamp" in rv.get_data(as_text=True)
+
+
+@pytest.fixture()
+def mock_add_payment_command_as_receiver_service(monkeypatch):
+    def mock(
+        account_id,
+        reference_id,
+        amount,
+        currency,
+        action,
+        expiration,
+    ) -> str:
+        return ADDRESS
+
+    monkeypatch.setattr(
+        validation_tool_service, "add_payment_command_as_receiver", mock
+    )
+
+
+def test_add_payment_command_as_receiver(
+    authorized_client: Client, mock_add_payment_command_as_receiver_service
+):
+    request_body = {
+        "reference_id": str(uuid.uuid4()),
+        "action": "charge",
+        "currency": CURRENCY,
+        "amount": 2_000_000_000,
+        "expiration": 1802010490,
+    }
+
+    rv: Response = authorized_client.post(
+        "/validation/payment_command",
+        json=request_body,
+    )
+
+    assert rv.status_code == 200
+    assert rv.get_json() == {"address": ADDRESS}
