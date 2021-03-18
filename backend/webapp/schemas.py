@@ -333,7 +333,3 @@ class CreatePaymentCommand(Schema):
 class CreatePaymentAsSenderCommand(CreatePaymentCommand):
     vasp_address = fields.Str(required=True)
     merchant_name = fields.Str(required=True)
-
-
-class CreatePaymentAsReceiverCommand(CreatePaymentCommand):
-    sender_address = fields.Str(required=True)

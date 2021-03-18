@@ -3,14 +3,14 @@ from http import HTTPStatus
 from diem import offchain
 from flask import Blueprint, request
 from wallet.services import validation_tool as validation_tool_service
-from wallet.services.validation_tool import add_payment_command_as_receiver
 from webapp.schemas import (
     FundsPullPreApprovalRequestCreationResponse,
     FundsPullPreApprovalRequest,
 )
 
 from .strict_schema_view import StrictSchemaView, response_definition, body_parameter
-from webapp.schemas import CreatePaymentAsReceiverCommand as CreatePaymentCommandSchema
+from webapp.schemas import CreatePaymentCommand as CreatePaymentCommandSchema
+from webapp.schemas import FullAddress as FullAddressSchema
 
 
 validation_tool = Blueprint("validation_tool", __name__)
@@ -26,25 +26,24 @@ class ValidationToolRoutes:
         parameters = [body_parameter(CreatePaymentCommandSchema)]
 
         responses = {
-            HTTPStatus.NO_CONTENT: response_definition(
-                "Request accepted. You should poll for status updates."
+            HTTPStatus.OK: response_definition(
+                "Payment command receiver address", schema=FullAddressSchema
             )
         }
 
         def post(self):
             params = request.json
 
-            add_payment_command_as_receiver(
+            address = validation_tool_service.add_payment_command_as_receiver(
                 account_id=self.user.account_id,
                 reference_id=params["reference_id"],
-                sender_address=params["sender_address"],
                 amount=params["amount"],
                 currency=params["currency"],
                 action=params["action"],
                 expiration=params["expiration"],
             )
 
-            return "OK", HTTPStatus.NO_CONTENT
+            return {"address": address}, HTTPStatus.OK
 
     class CreateFundsPullPreApprovalRequest(ValidationToolView):
         summary = "Send funds pull pre-approval request to another VASP"

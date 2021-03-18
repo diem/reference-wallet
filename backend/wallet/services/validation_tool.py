@@ -19,12 +19,11 @@ from wallet.services.offchain import utils
 def add_payment_command_as_receiver(
     account_id,
     reference_id,
-    sender_address,
     amount,
     currency,
     action,
     expiration,
-) -> None:
+) -> str:
     my_address = utils.generate_my_address(account_id)
 
     payment_command = models.PaymentCommand(
@@ -32,7 +31,6 @@ def add_payment_command_as_receiver(
         inbound=False,
         cid=reference_id,
         reference_id=reference_id,
-        sender_address=sender_address,
         sender_status=Status.none,
         receiver_address=my_address,
         receiver_status=Status.none,
@@ -45,6 +43,8 @@ def add_payment_command_as_receiver(
         expiration=datetime.fromtimestamp(expiration),
     )
     pc_storage.save_payment_command(payment_command)
+
+    return my_address
 
 
 def request_funds_pull_pre_approval_from_another(
