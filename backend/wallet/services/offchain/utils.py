@@ -4,6 +4,9 @@ import context
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import offchain, identifier
 from wallet.services import kyc, account
+from wallet.storage import models
+
+PaymentCommandModel = models.PaymentCommand
 
 
 def hrp() -> str:
@@ -34,5 +37,4 @@ def user_kyc_data(user_id: int) -> offchain.KycDataObject:
 def generate_my_address(account_id):
     vasp_address = context.get().config.vasp_address
     sub_address = account.generate_new_subaddress(account_id)
-    hrp = context.get().config.diem_address_hrp()
-    return identifier.encode_account(vasp_address, sub_address, hrp)
+    return identifier.encode_account(vasp_address, sub_address, hrp())
