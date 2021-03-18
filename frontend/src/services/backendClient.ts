@@ -451,7 +451,6 @@ export default class BackendClient {
         currency: paymentParams.currency,
         amount: paymentParams.amount,
         expiration: paymentParams.expiration.getTime() / 1000,
-        redirect_url: paymentParams.redirectUrl,
       });
     } catch (e) {
       BackendClient.handleError(e);

@@ -85,7 +85,6 @@ class VaspProxyTestee(VaspProxy):
         currency,
         amount,
         expiration,
-        redirect_url="",
     ):
         self.vasp.create_payment_command_as_sender(
             reference_id=reference_id,
@@ -95,7 +94,6 @@ class VaspProxyTestee(VaspProxy):
             currency=currency,
             amount=amount,
             expiration=expiration,
-            redirect_url=redirect_url
         )
 
     def approve_payment_command(self, reference_id):

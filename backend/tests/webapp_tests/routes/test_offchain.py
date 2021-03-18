@@ -301,7 +301,6 @@ class TestAddPaymentCommand:
                 "currency": "XUS",
                 "amount": 1000,
                 "expiration": int(datetime.timestamp(datetime.now())),
-                "redirect_url": "https://bondandgurki.com/order/93c4963f-7f9e-4f9d-983e-7080ef782534/checkout/complete",
             },
         )
 
