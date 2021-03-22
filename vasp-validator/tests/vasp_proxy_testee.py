@@ -110,7 +110,7 @@ class VaspProxyTestee(VaspProxy):
         amount,
         expiration,
     ):
-        self.vasp.create_payment_command_as_receiver(
+        return self.vasp.create_payment_command_as_receiver(
             reference_id=reference_id,
             action=action,
             currency=currency,
