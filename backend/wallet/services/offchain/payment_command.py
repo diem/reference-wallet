@@ -3,8 +3,9 @@ from datetime import datetime
 from typing import Optional, Callable, List
 
 import context
-from diem import offchain, identifier, txnmetadata
-from diem.offchain import Status
+import offchain
+from diem import identifier, txnmetadata
+from offchain import Status
 from diem_utils.types.currencies import DiemCurrency
 from wallet import storage
 from wallet.services import account
@@ -191,8 +192,8 @@ def payment_command_to_model(
     return models.PaymentCommand(
         my_actor_address=command.my_actor_address,
         inbound=command.inbound,
-        cid=command.cid,
-        reference_id=command.payment.reference_id,
+        cid=command.reference_id(),
+        reference_id=command.reference_id(),
         sender_address=command.payment.sender.address,
         sender_status=command.payment.sender.status.status,
         sender_kyc_data=offchain.to_json(command.payment.sender.kyc_data)
