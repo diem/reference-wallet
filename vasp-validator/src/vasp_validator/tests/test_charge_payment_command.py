@@ -27,16 +27,15 @@ def test_approve_incoming_charge_payment_command(validator, vasp_proxy: VaspProx
     amount = 2_000_000_000
     expiration = int(time.time()) + ONE_YEAR_SECONDS
     # Step 1: validator create payment command as receiver
-    validator.create_payment_command_as_receiver(
+    validator_address = validator.create_payment_command_as_receiver(
         reference_id=reference_id,
-        sender_address=vasp_proxy_address,
+        # sender_address=vasp_proxy_address,
         action=action,
         currency=CURRENCY,
         amount=amount,
         expiration=expiration,
     )
     # Step 2: vasp_proxy create payment command as sender
-    validator_address = validator.get_receiving_address()
     print(f"~~~~~~ validator_address (receiver): {validator_address}")
     vasp_proxy.create_payment_command_as_sender(
         reference_id=reference_id,
