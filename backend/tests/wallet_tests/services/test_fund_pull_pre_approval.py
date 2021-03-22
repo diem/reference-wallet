@@ -4,7 +4,7 @@ from dataclasses import asdict
 
 import context
 import pytest
-from diem import identifier, LocalAccount, offchain
+from diem import identifier, LocalAccount
 from diem.offchain import (
     FundPullPreApprovalStatus,
 )
@@ -47,6 +47,7 @@ from wallet.storage import (
     update_command,
 )
 from wallet.types import RegistrationStatus
+import offchain
 
 CID = "35a1b548-3170-438f-bf3a-6ca0fef85d15"
 FUNDS_PULL_PRE_APPROVAL_ID = "5fc49fa0-5f2a-4faa-b391-ac1652c57e4d"

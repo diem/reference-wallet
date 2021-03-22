@@ -2,12 +2,12 @@
 #  SPDX-License-Identifier: Apache-2.0
 
 import pytest
-from diem import offchain
-from diem.offchain import FundPullPreApprovalStatus
+import offchain
 from diem_utils.types.currencies import DiemCurrency
 
 import context
 import wallet.services.offchain.offchain as offchain_service
+from offchain import FundPullPreApprovalStatus
 from wallet.services.offchain.fund_pull_pre_approval_sm import (
     FundsPullPreApprovalStateError,
     Role,
