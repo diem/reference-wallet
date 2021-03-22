@@ -5,8 +5,9 @@ import typing
 from typing import Optional
 
 import context
-from diem import offchain
-from diem.offchain import CommandType
+import offchain
+from offchain import CommandType
+from wallet.services.offchain import utils
 from wallet.services.offchain.payment_command import (
     _process_payment_by_status,
     _lock_and_save_inbound_command,
@@ -16,7 +17,6 @@ from wallet.services.offchain.payment_command import (
     _payment_command_status,
     _evaluate_kyc_data,
 )
-from wallet.services.offchain import utils
 from wallet.services.offchain.fund_pull_pre_approval import (
     process_funds_pull_pre_approvals_requests,
     handle_fund_pull_pre_approval_command,

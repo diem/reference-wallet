@@ -4,7 +4,7 @@ import dataclasses
 
 import wallet.services.offchain.payment_command as pc_service
 import wallet.services.offchain.utils as utils
-from diem import identifier, LocalAccount, offchain, jsonrpc
+from diem import identifier, LocalAccount, jsonrpc
 from diem_utils.types.currencies import DiemCurrency
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet import storage
@@ -14,6 +14,9 @@ from wallet.services.account import (
 )
 from wallet.services.offchain import offchain as offchain_service
 from wallet.storage import db_session
+
+from wallet import storage
+import offchain
 from wallet.types import TransactionStatus
 
 CID = "35a1b548-3170-438f-bf3a-6ca0fef85d15"

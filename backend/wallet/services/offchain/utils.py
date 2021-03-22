@@ -2,9 +2,10 @@ from typing import Tuple, Optional
 
 import context
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from diem import offchain, identifier
+from diem import identifier
 from wallet.services import kyc, account
 from wallet.storage import models
+import offchain
 
 PaymentCommandModel = models.PaymentCommand
 
