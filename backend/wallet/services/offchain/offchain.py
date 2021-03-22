@@ -83,6 +83,14 @@ def process_offchain_tasks() -> None:
         cmd = model_to_payment_command(model)
         action = cmd.follow_up_action()
 
+        logger.info(
+            f"~~~~~~~~ in offchain_action reference_id:{model.reference_id}, "
+            f"sender address: {model.sender_address}, "
+            f"sender status: {model.sender_status}, "
+            f"receiver address: {model.receiver_address}, "
+            f"receiver status: {model.receiver_status}"
+        )
+
         if action is None:
             return
         if action == offchain.Action.EVALUATE_KYC_DATA:
