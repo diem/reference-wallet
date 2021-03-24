@@ -91,7 +91,7 @@ def get_payment_command(reference_id: str) -> Optional[offchain.PaymentCommand]:
     return None
 
 
-def _process_payment_by_status(
+def process_payment_by_status(
     status: TransactionStatus,
     callback: Callable[[PaymentCommandModel], Optional[PaymentCommandModel]],
 ) -> None:
@@ -110,7 +110,7 @@ def _process_payment_by_status(
             logger.exception("process offchain transaction failed")
 
 
-def _lock_and_save_inbound_command(
+def lock_and_save_inbound_command(
     command: offchain.PaymentCommand,
 ) -> None:
     def validate_and_save(model: Optional[PaymentCommandModel]) -> PaymentCommandModel:

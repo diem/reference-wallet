@@ -9,8 +9,8 @@ import offchain
 from offchain import CommandType
 from wallet.services.offchain import utils
 from wallet.services.offchain.payment_command import (
-    _process_payment_by_status,
-    _lock_and_save_inbound_command,
+    process_payment_by_status,
+    lock_and_save_inbound_command,
     model_to_payment_command,
     update_model_base_on_payment_command,
     add_transaction_based_on_payment_command,
@@ -130,7 +130,7 @@ def process_offchain_tasks() -> None:
             )
             model.status = TransactionStatus.COMPLETED
 
-    _process_payment_by_status(TransactionStatus.OFF_CHAIN_OUTBOUND, send_command)
-    _process_payment_by_status(TransactionStatus.OFF_CHAIN_INBOUND, offchain_action)
-    _process_payment_by_status(TransactionStatus.OFF_CHAIN_READY, submit_txn)
+    process_payment_by_status(TransactionStatus.OFF_CHAIN_OUTBOUND, send_command)
+    process_payment_by_status(TransactionStatus.OFF_CHAIN_INBOUND, offchain_action)
+    process_payment_by_status(TransactionStatus.OFF_CHAIN_READY, submit_txn)
     process_funds_pull_pre_approvals_requests()
