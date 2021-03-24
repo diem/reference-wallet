@@ -26,7 +26,8 @@ from .types import (
     PaymentActionObject,
     PaymentCommandObject,
     ErrorCode,
-    FieldError, to_json,
+    FieldError,
+    to_json,
 )
 from .error import command_error, protocol_error, Error
 
