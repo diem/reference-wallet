@@ -12,20 +12,13 @@ from wallet.services import (
     account as account_service,
 )
 from wallet.services.risk import risk_check
+from wallet.storage import Transaction
 
 from . import INVENTORY_ACCOUNT_NAME
 from .log import add_transaction_log
 from .. import storage, services
 from ..logging import log_execution
-from ..storage import (
-    add_transaction,
-    Transaction,
-    get_transaction_by_details,
-    get_total_currency_credits,
-    get_total_currency_debits,
-    get_transaction_by_blockchain_version,
-)
-from ..storage import get_account_id_from_subaddr, get_account
+from wallet import storage
 from ..types import (
     TransactionDirection,
     TransactionType,
@@ -101,7 +94,7 @@ def process_incoming_transaction(
         if general_v0.from_subaddress:
             sender_subaddress = general_v0.from_subaddress.hex()
 
-        if get_transaction_by_details(
+        if storage.get_transaction_by_details(
             source_address=sender_address,
             source_subaddress=sender_subaddress,
             sequence=sequence,
@@ -119,14 +112,16 @@ def process_incoming_transaction(
                 f"sender: {sender_address}, receiver: {receiver_address}, "
                 f"seq: {sequence}, amount: {amount}"
             )
-            add_transaction(
+            storage.add_transaction(
                 amount=amount,
                 currency=currency,
                 payment_type=TransactionType.EXTERNAL,
                 status=TransactionStatus.COMPLETED,
                 source_address=sender_address,
                 source_subaddress=sender_subaddress,
-                destination_id=get_account(account_name=INVENTORY_ACCOUNT_NAME).id,
+                destination_id=storage.get_account(
+                    account_name=INVENTORY_ACCOUNT_NAME
+                ).id,
                 destination_address=receiver_address,
                 destination_subaddress=receiver_subaddr,
                 sequence=sequence,
@@ -134,7 +129,7 @@ def process_incoming_transaction(
             )
             return
 
-        receiver_id = get_account_id_from_subaddr(receiver_subaddr)
+        receiver_id = storage.get_account_id_from_subaddr(receiver_subaddr)
 
         # Could not find receiver for the given non-zero subaddress, so send back a refund from inventory account
         if receiver_id is None:
@@ -144,8 +139,10 @@ def process_incoming_transaction(
                 f"blockchain version {blockchain_version}, seq {sequence}"
             )
             # Record the received transaction as a regular transaction to inventory account
-            inventory_account_id = get_account(account_name=INVENTORY_ACCOUNT_NAME).id
-            tx = add_transaction(
+            inventory_account_id = storage.get_account(
+                account_name=INVENTORY_ACCOUNT_NAME
+            ).id
+            tx = storage.add_transaction(
                 amount=amount,
                 currency=currency,
                 payment_type=TransactionType.EXTERNAL,
@@ -173,7 +170,7 @@ def process_incoming_transaction(
                 f"sender address: {sender_address} and sender_subaddress: {sender_subaddress}, amount {amount}, "
                 f"blockchain version {blockchain_version}, seq {sequence}"
             )
-            add_transaction(
+            storage.add_transaction(
                 amount=amount,
                 currency=currency,
                 payment_type=TransactionType.EXTERNAL,
@@ -251,7 +248,7 @@ def process_incoming_transaction(
 
         logger.info(f"Refund metadata: txn version: {txn_version}, reason: {reason}")
 
-        original_txn = get_transaction_by_blockchain_version(txn_version)
+        original_txn = storage.get_transaction_by_blockchain_version(txn_version)
 
         logger.info(f"Refund metadata: original txn id: {original_txn}")
 
@@ -261,8 +258,10 @@ def process_incoming_transaction(
                 f"Refund metadata invalid: txn version: {txn_version} does not exist"
             )
             # Record the received transaction as a regular transaction to inventory account
-            inventory_account_id = get_account(account_name=INVENTORY_ACCOUNT_NAME).id
-            add_transaction(
+            inventory_account_id = storage.get_account(
+                account_name=INVENTORY_ACCOUNT_NAME
+            ).id
+            storage.add_transaction(
                 amount=amount,
                 currency=currency,
                 payment_type=TransactionType.EXTERNAL,
@@ -276,13 +275,13 @@ def process_incoming_transaction(
             return
 
         refund_reason = to_refund_reason(reason)
-        original_txn = get_transaction_by_blockchain_version(txn_version)
+        original_txn = storage.get_transaction_by_blockchain_version(txn_version)
         receiver_id = original_txn.source_id
         receiver_subaddr = original_txn.source_subaddress
         sender_subaddress = original_txn.destination_subaddress
         original_txn_id = original_txn.id
 
-        if get_transaction_by_details(
+        if storage.get_transaction_by_details(
             source_address=sender_address,
             source_subaddress=sender_subaddress,
             sequence=sequence,
@@ -292,7 +291,7 @@ def process_incoming_transaction(
             )
             return
 
-        add_transaction(
+        storage.add_transaction(
             amount=amount,
             currency=currency,
             payment_type=TransactionType.REFUND,
@@ -415,7 +414,7 @@ def _send_transaction_internal(
     log_execution(
         f"internal transfer from {sender_id} to receiver {destination_subaddress}"
     )
-    receiver_id = get_account_id_from_subaddr(subaddr=destination_subaddress)
+    receiver_id = storage.get_account_id_from_subaddr(subaddr=destination_subaddress)
     payment_type = TransactionType.INTERNAL if payment_type is None else payment_type
 
     return internal_transaction(
@@ -501,7 +500,7 @@ def internal_transaction(
     receiver_subaddress = account_service.generate_new_subaddress(receiver_id)
     internal_vasp_address = context.get().config.vasp_address
 
-    transaction = add_transaction(
+    transaction = storage.add_transaction(
         amount=amount,
         currency=currency,
         payment_type=payment_type,
@@ -551,7 +550,7 @@ def external_transaction(
             account_id=sender_id
         )
 
-    transaction = add_transaction(
+    transaction = storage.add_transaction(
         amount=amount,
         currency=currency,
         payment_type=payment_type,
@@ -640,8 +639,8 @@ def submit_onchain(transaction_id: str) -> None:
 
 
 def get_total_balance() -> Balance:
-    credits = get_total_currency_credits()
-    debits = get_total_currency_debits()
+    credits = storage.get_total_currency_credits()
+    debits = storage.get_total_currency_debits()
 
     balance = Balance()
     for credit in credits:
