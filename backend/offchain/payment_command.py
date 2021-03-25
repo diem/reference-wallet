@@ -1,11 +1,25 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-import typing, dataclasses, uuid, warnings
+import dataclasses
+import typing
+import uuid
+import warnings
 
 from diem import identifier, diem_types, txnmetadata
 
 from . import CommandType
+from .command import Command
+from .error import command_error
+from .payment_state import (
+    Action,
+    Actor,
+    MACHINE as payment_states,
+    follow_up_action,
+    trigger_actor,
+    R_SEND,
+)
+from .state import ConditionValidationError, State
 from .types import (
     CommandRequestObject,
     ErrorCode,
@@ -20,18 +34,6 @@ from .types import (
     replace_payment_actor,
     validate_write_once_fields,
 )
-from .error import command_error
-from .payment_state import (
-    Action,
-    Actor,
-    MACHINE as payment_states,
-    follow_up_action,
-    summary,
-    trigger_actor,
-    R_SEND,
-)
-from .state import ConditionValidationError, State
-from .command import Command
 
 
 @dataclasses.dataclass(frozen=True)
@@ -264,4 +266,9 @@ class PaymentCommand(Command):
         )
 
     def __str__(self) -> str:
-        return f"[payment#{self.cid} {self.my_actor_address} {summary(self.payment)}]"
+        return (
+            f"[payment#{self.cid}: "
+            f"{self.payment.sender.address} ({self.payment.sender.status.status}) "
+            f"--> "
+            f"{self.payment.receiver.address} ({self.payment.receiver.status.status})]"
+        )

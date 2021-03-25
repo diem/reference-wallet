@@ -41,10 +41,6 @@ def add_payment_command_as_sender(
 ) -> None:
     my_address = generate_my_address(account_id)
 
-    sig_msg = txnmetadata.travel_rule(
-        reference_id, identifier.decode_account_address(my_address, hrp()), amount
-    )[1]
-
     payment_command = models.PaymentCommand(
         my_actor_address=my_address,
         inbound=False,
@@ -63,7 +59,6 @@ def add_payment_command_as_sender(
         account_id=account_id,
         merchant_name=merchant_name,
         expiration=datetime.fromtimestamp(expiration),
-        recipient_signature=compliance_private_key().sign(sig_msg).hex(),
     )
     save_payment_command(payment_command)
 
@@ -93,7 +88,15 @@ def process_payment_by_status(
                 callback(model)
             return model
 
-        logger.info(f"lock for update: {model}")
+        logger.info(
+            f"lock model for update ["
+            f"reference_id: {model.reference_id}, "
+            f"status: {model.status}, "
+            f"{model.sender_address} ({model.sender_status}) "
+            f"--> "
+            f"{model.receiver_address} ({model.receiver_status})"
+            f"]"
+        )
         try:
             lock_for_update(model.reference_id, callback_with_status_check)
         except Exception:
@@ -105,27 +108,7 @@ def lock_and_save_inbound_command(
 ) -> None:
     def validate_and_save(model: Optional[PaymentCommandModel]) -> PaymentCommandModel:
         if model:
-            prior_model = storage.get_payment_command(model.reference_id)
-            # if command status is pending and not contain sender_address we assume that
-            # LRW is playing the merchant role in this offchain conversation as part
-            # of validation test and therefore we set the sender_address as the sender_address
-            # in the incoming command
-            if (
-                prior_model.status == TransactionStatus.PENDING
-                and not prior_model.sender_address
-            ):
-                prior_model.sender_address = command.payment.sender.address
-
-            prior = model_to_payment_command(prior_model)
-
-            logger.info(
-                f"#######################################################################"
-            )
-            logger.info(f"~~~~~~ prior:   {prior}")
-            logger.info(f"~~~~~~ command: {command}")
-            logger.info(
-                f"#######################################################################"
-            )
+            prior = get_payment_command(model.reference_id)
             if command == prior:
                 return
             command.validate(prior)
@@ -353,24 +336,3 @@ def _payment_command_status(
     elif command.is_abort():
         return TransactionStatus.CANCELED
     return default
-
-
-def _evaluate_kyc_data(command: offchain.PaymentObject) -> offchain.PaymentObject:
-    # todo: evaluate command.opponent_actor_obj().kyc_data
-    # when pass evaluation, we send kyc data as receiver or ready for settlement as sender
-    if command.is_receiver():
-        return _send_kyc_data_and_receipient_signature(command)
-    return command.new_command(status=offchain.Status.ready_for_settlement)
-
-
-def _send_kyc_data_and_receipient_signature(
-    command: offchain.PaymentCommand,
-) -> offchain.PaymentCommand:
-    sig_msg = command.travel_rule_metadata_signature_message(hrp())
-    user_id = get_account_id_from_subaddr(command.receiver_subaddress(hrp()).hex())
-
-    return command.new_command(
-        recipient_signature=compliance_private_key().sign(sig_msg).hex(),
-        kyc_data=user_kyc_data(user_id),
-        status=offchain.Status.ready_for_settlement,
-    )
