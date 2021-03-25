@@ -7,7 +7,12 @@ from typing import Optional
 import context
 import offchain
 from offchain import CommandType
+from wallet.services.kyc import xstr
 from wallet.services.offchain import utils
+from wallet.services.offchain.fund_pull_pre_approval import (
+    process_funds_pull_pre_approvals_requests,
+    handle_fund_pull_pre_approval_command,
+)
 from wallet.services.offchain.payment_command import (
     process_payment_by_status,
     lock_and_save_inbound_command,
@@ -15,24 +20,13 @@ from wallet.services.offchain.payment_command import (
     update_model_base_on_payment_command,
     add_transaction_based_on_payment_command,
     _payment_command_status,
-    _evaluate_kyc_data,
-)
-from wallet.services.offchain.fund_pull_pre_approval import (
-    process_funds_pull_pre_approvals_requests,
-    handle_fund_pull_pre_approval_command,
 )
 
 # noinspection PyUnresolvedReferences
-from wallet.storage.funds_pull_pre_approval_command import (
-    get_account_commands,
-    FundsPullPreApprovalCommandNotFound,
-    commit_command,
-    get_commands_by_sent_status,
-    get_command_by_id,
-    update_command,
-    get_account_command_by_id,
+from wallet.services.offchain.payment_command_as_receiver import (
+    save_payment_command_as_receiver,
 )
-
+from wallet.services.offchain.utils import evaluate_kyc_data
 from wallet.types import (
     TransactionStatus,
 )
@@ -48,11 +42,18 @@ def process_inbound_command(
         command = utils.offchain_client().process_inbound_request(
             request_sender_address, request_body_bytes
         )
-        logger.info(f"process inbound command: {offchain.to_json(command)}")
+        logger.info(f"process inbound command: {command}")
+        logger.debug(f"process inbound command: {offchain.to_json(command)}")
 
         if command.command_type() == CommandType.PaymentCommand:
             payment_command = typing.cast(offchain.PaymentCommand, command)
-            _lock_and_save_inbound_command(payment_command)
+            if payment_command.is_sender():
+                logger.debug(f"process inbound command as SENDER")
+                lock_and_save_inbound_command(payment_command)
+            else:
+                logger.debug(f"process inbound command as RECEIVER")
+                save_payment_command_as_receiver(payment_command)
+
         elif command.command_type() == CommandType.FundPullPreApprovalCommand:
             preapproval_command = typing.cast(
                 offchain.FundsPullPreApprovalCommand, command
@@ -84,17 +85,18 @@ def process_offchain_tasks() -> None:
         action = cmd.follow_up_action()
 
         logger.info(
-            f"~~~~~~~~ in offchain_action reference_id:{model.reference_id}, "
+            f"~~~~~~~~ in offchain_action reference_id: {model.reference_id}, "
             f"sender address: {model.sender_address}, "
             f"sender status: {model.sender_status}, "
             f"receiver address: {model.receiver_address}, "
-            f"receiver status: {model.receiver_status}"
+            f"receiver status: {model.receiver_status}, "
+            f"action: {action}"
         )
 
         if action is None:
             return
         if action == offchain.Action.EVALUATE_KYC_DATA:
-            new_cmd = _evaluate_kyc_data(cmd)
+            new_cmd = evaluate_kyc_data(cmd)
             status = _payment_command_status(
                 new_cmd, TransactionStatus.OFF_CHAIN_OUTBOUND
             )
@@ -130,7 +132,54 @@ def process_offchain_tasks() -> None:
             )
             model.status = TransactionStatus.COMPLETED
 
+    def send_command_as_receiver(model) -> None:
+        logger.info(
+            f"~~~~~~ in send_command_as_receiver for reference_id {model.reference_id}"
+        )
+        payment_command = model_to_payment_command(model)
+        # updated_command = evaluate_kyc_data(payment_command)
+        kyc_data = {
+            "payload_version": 1,
+            "type": "individual",
+            "given_name": xstr("Bond"),
+            "surname": xstr("Marton"),
+            "dob": xstr("2010-21-01"),
+            "address": {
+                "city": xstr("Dogcity"),
+                "country": xstr("Dogland"),
+                "line1": xstr("1234 Puppy Street"),
+                "line2": xstr("dogpalace 3"),
+                "postal_code": xstr("123456"),
+                "state": xstr("Dogstate"),
+            },
+        }
+
+        if not model.recipient_signature:
+            sig_msg = payment_command.travel_rule_metadata_signature_message(
+                utils.hrp()
+            )
+        else:
+            sig_msg = model.recipient_signature
+
+        new_command = payment_command.new_command(
+            recipient_signature=utils.compliance_private_key().sign(sig_msg).hex(),
+            kyc_data=kyc_data,
+            status=offchain.Status.ready_for_settlement,
+            inbound=payment_command.inbound,
+        )
+
+        update_model_base_on_payment_command(
+            model, new_command, TransactionStatus.OFF_CHAIN_WAIT
+        )
+
+        utils.offchain_client().send_command(
+            new_command, utils.compliance_private_key().sign
+        )
+
     process_payment_by_status(TransactionStatus.OFF_CHAIN_OUTBOUND, send_command)
     process_payment_by_status(TransactionStatus.OFF_CHAIN_INBOUND, offchain_action)
     process_payment_by_status(TransactionStatus.OFF_CHAIN_READY, submit_txn)
+    process_payment_by_status(
+        TransactionStatus.OFF_CHAIN_RECEIVER_OUTBOUND, send_command_as_receiver
+    )
     process_funds_pull_pre_approvals_requests()

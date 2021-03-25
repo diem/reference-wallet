@@ -51,10 +51,6 @@ def add_payment_command_as_sender(
 ) -> None:
     my_address = generate_my_address(account_id)
 
-    sig_msg = txnmetadata.travel_rule(
-        reference_id, identifier.decode_account_address(my_address, hrp()), amount
-    )[1]
-
     payment_command = models.PaymentCommand(
         my_actor_address=my_address,
         inbound=False,
@@ -73,7 +69,6 @@ def add_payment_command_as_sender(
         account_id=account_id,
         merchant_name=merchant_name,
         expiration=datetime.fromtimestamp(expiration),
-        recipient_signature=compliance_private_key().sign(sig_msg).hex(),
     )
     save_payment_command(payment_command)
 
@@ -103,7 +98,15 @@ def process_payment_by_status(
                 callback(model)
             return model
 
-        logger.info(f"lock for update: {model}")
+        logger.info(
+            f"lock model for update ["
+            f"reference_id: {model.reference_id}, "
+            f"status: {model.status}, "
+            f"{model.sender_address} ({model.sender_status}) "
+            f"--> "
+            f"{model.receiver_address} ({model.receiver_status})"
+            f"]"
+        )
         try:
             lock_for_update(model.reference_id, callback_with_status_check)
         except Exception:
@@ -115,27 +118,7 @@ def lock_and_save_inbound_command(
 ) -> None:
     def validate_and_save(model: Optional[PaymentCommandModel]) -> PaymentCommandModel:
         if model:
-            prior_model = storage.get_payment_command(model.reference_id)
-            # if command status is pending and not contain sender_address we assume that
-            # LRW is playing the merchant role in this offchain conversation as part
-            # of validation test and therefore we set the sender_address as the sender_address
-            # in the incoming command
-            if (
-                prior_model.status == TransactionStatus.PENDING
-                and not prior_model.sender_address
-            ):
-                prior_model.sender_address = command.payment.sender.address
-
-            prior = model_to_payment_command(prior_model)
-
-            logger.info(
-                f"#######################################################################"
-            )
-            logger.info(f"~~~~~~ prior:   {prior}")
-            logger.info(f"~~~~~~ command: {command}")
-            logger.info(
-                f"#######################################################################"
-            )
+            prior = get_payment_command(model.reference_id)
             if command == prior:
                 return
             command.validate(prior)
@@ -363,175 +346,3 @@ def _payment_command_status(
     elif command.is_abort():
         return TransactionStatus.CANCELED
     return default
-
-
-def _evaluate_kyc_data(command: offchain.PaymentObject) -> offchain.PaymentObject:
-    # todo: evaluate command.opponent_actor_obj().kyc_data
-    # when pass evaluation, we send kyc data as receiver or ready for settlement as sender
-    if command.is_receiver():
-        return _send_kyc_data_and_receipient_signature(command)
-    return command.new_command(status=offchain.Status.ready_for_settlement)
-
-
-def _send_kyc_data_and_receipient_signature(
-    command: offchain.PaymentCommand,
-) -> offchain.PaymentCommand:
-    sig_msg = command.travel_rule_metadata_signature_message(hrp())
-    user_id = get_account_id_from_subaddr(command.receiver_subaddress(hrp()).hex())
-
-    return command.new_command(
-        recipient_signature=compliance_private_key().sign(sig_msg).hex(),
-        kyc_data=user_kyc_data(user_id),
-        status=offchain.Status.ready_for_settlement,
-    )
-
-
-def get_funds_pull_pre_approvals(
-    account_id: int,
-) -> List[models.FundsPullPreApprovalCommand]:
-    return get_account_commands(account_id)
-
-
-def approve_funds_pull_pre_approval(
-    funds_pull_pre_approval_id: str, status: str
-) -> None:
-    """ update command in db with new given status and role PAYER"""
-    if status not in ["valid", "rejected"]:
-        raise ValueError(f"Status must be 'valid' or 'rejected' and not '{status}'")
-
-    command = get_funds_pull_pre_approval_command(funds_pull_pre_approval_id)
-
-    if command:
-        if command.status != "pending":
-            raise RuntimeError(
-                f"Could not approve command with status {command.status}"
-            )
-        update_command(funds_pull_pre_approval_id, status, Role.PAYER)
-    else:
-        raise RuntimeError(f"Could not find command {funds_pull_pre_approval_id}")
-
-
-def establish_funds_pull_pre_approval(
-    account_id: int,
-    biller_address: str,
-    funds_pull_pre_approval_id: str,
-    funds_pull_pre_approval_type: str,
-    expiration_timestamp: int,
-    max_cumulative_unit: str = None,
-    max_cumulative_unit_value: int = None,
-    max_cumulative_amount: int = None,
-    max_cumulative_amount_currency: str = None,
-    max_transaction_amount: int = None,
-    max_transaction_amount_currency: str = None,
-    description: str = None,
-) -> None:
-    """ Establish funds pull pre approval by payer """
-    validate_expiration_timestamp(expiration_timestamp)
-
-    command = get_funds_pull_pre_approval_command(funds_pull_pre_approval_id)
-
-    if command is not None:
-        raise RuntimeError(
-            f"Command with id {funds_pull_pre_approval_id} already exist in db"
-        )
-
-    vasp_address = context.get().config.vasp_address
-    sub_address = account.generate_new_subaddress(account_id)
-    hrp = context.get().config.diem_address_hrp()
-    address = identifier.encode_account(vasp_address, sub_address, hrp)
-
-    commit_command(
-        models.FundsPullPreApprovalCommand(
-            account_id=account_id,
-            address=address,
-            biller_address=biller_address,
-            funds_pull_pre_approval_id=funds_pull_pre_approval_id,
-            funds_pull_pre_approval_type=funds_pull_pre_approval_type,
-            expiration_timestamp=expiration_timestamp,
-            max_cumulative_unit=max_cumulative_unit,
-            max_cumulative_unit_value=max_cumulative_unit_value,
-            max_cumulative_amount=max_cumulative_amount,
-            max_cumulative_amount_currency=max_cumulative_amount_currency,
-            max_transaction_amount=max_transaction_amount,
-            max_transaction_amount_currency=max_transaction_amount_currency,
-            description=description,
-            status=FundPullPreApprovalStatus.valid,
-            role=Role.PAYER,
-        )
-    )
-
-
-def preapproval_model_to_command(
-    command: models.FundsPullPreApprovalCommand, my_address: str
-):
-    funds_pull_pre_approval = offchain.FundPullPreApprovalObject(
-        funds_pull_pre_approval_id=command.funds_pull_pre_approval_id,
-        address=command.address,
-        biller_address=command.biller_address,
-        scope=offchain.FundPullPreApprovalScopeObject(
-            type=offchain.FundPullPreApprovalType.consent,
-            expiration_timestamp=command.expiration_timestamp,
-            max_cumulative_amount=offchain.ScopedCumulativeAmountObject(
-                unit=command.max_cumulative_unit,
-                value=command.max_cumulative_unit_value,
-                max_amount=offchain.CurrencyObject(
-                    amount=command.max_cumulative_amount,
-                    currency=command.max_cumulative_amount_currency,
-                ),
-            ),
-            max_transaction_amount=offchain.CurrencyObject(
-                amount=command.max_transaction_amount,
-                currency=command.max_transaction_amount_currency,
-            ),
-        ),
-        status=command.status,
-        description=command.description,
-    )
-
-    return offchain.FundsPullPreApprovalCommand(
-        my_actor_address=my_address,
-        funds_pull_pre_approval=funds_pull_pre_approval,
-    )
-
-
-def preapproval_command_to_model(
-    account_id, command: offchain.FundsPullPreApprovalCommand, role: str
-) -> models.FundsPullPreApprovalCommand:
-    preapproval_object = command.funds_pull_pre_approval
-    max_cumulative_amount = preapproval_object.scope.max_cumulative_amount
-    max_transaction_amount = preapproval_object.scope.max_transaction_amount
-
-    return models.FundsPullPreApprovalCommand(
-        account_id=account_id,
-        funds_pull_pre_approval_id=preapproval_object.funds_pull_pre_approval_id,
-        address=preapproval_object.address,
-        biller_address=preapproval_object.biller_address,
-        funds_pull_pre_approval_type=preapproval_object.scope.type,
-        expiration_timestamp=preapproval_object.scope.expiration_timestamp,
-        max_cumulative_unit=max_cumulative_amount.unit
-        if max_cumulative_amount
-        else None,
-        max_cumulative_unit_value=max_cumulative_amount.value
-        if max_cumulative_amount
-        else None,
-        max_cumulative_amount=max_cumulative_amount.max_amount.amount
-        if max_cumulative_amount
-        else None,
-        max_cumulative_amount_currency=max_cumulative_amount.max_amount.currency
-        if max_cumulative_amount
-        else None,
-        max_transaction_amount=max_transaction_amount.amount
-        if max_transaction_amount
-        else None,
-        max_transaction_amount_currency=max_transaction_amount.currency
-        if max_transaction_amount
-        else None,
-        description=preapproval_object.description,
-        status=preapproval_object.status,
-        role=role,
-    )
-
-
-def validate_expiration_timestamp(expiration_timestamp):
-    if expiration_timestamp < time.time():
-        raise ValueError("expiration timestamp must be in the future")

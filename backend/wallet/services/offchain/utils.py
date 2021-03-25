@@ -4,7 +4,7 @@ import context
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import identifier
 from wallet.services import kyc, account
-from wallet.storage import models
+from wallet.storage import models, get_account_id_from_subaddr
 import offchain
 
 PaymentCommandModel = models.PaymentCommand
@@ -39,3 +39,24 @@ def generate_my_address(account_id):
     vasp_address = context.get().config.vasp_address
     sub_address = account.generate_new_subaddress(account_id)
     return identifier.encode_account(vasp_address, sub_address, hrp())
+
+
+def evaluate_kyc_data(command: offchain.PaymentCommand) -> offchain.PaymentCommand:
+    # todo: evaluate command.opponent_actor_obj().kyc_data
+    # when pass evaluation, we send kyc data as receiver or ready for settlement as sender
+    if command.is_receiver():
+        return _send_kyc_data_and_recipient_signature(command)
+    return command.new_command(status=offchain.Status.ready_for_settlement)
+
+
+def _send_kyc_data_and_recipient_signature(
+    command: offchain.PaymentCommand,
+) -> offchain.PaymentCommand:
+    sig_msg = command.travel_rule_metadata_signature_message(hrp())
+    user_id = get_account_id_from_subaddr(command.receiver_subaddress(hrp()).hex())
+
+    return command.new_command(
+        recipient_signature=compliance_private_key().sign(sig_msg).hex(),
+        kyc_data=user_kyc_data(user_id),
+        status=offchain.Status.ready_for_settlement,
+    )

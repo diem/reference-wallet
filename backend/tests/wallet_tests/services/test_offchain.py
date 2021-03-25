@@ -65,13 +65,16 @@ def test_process_inbound_payment_command(monkeypatch):
     sender_sub_address = identifier.gen_subaddress()
     receiver_sub_address = generate_new_subaddress(user.account_id)
     cmd = offchain.PaymentCommand.init(
-        identifier.encode_account(sender.account_address, sender_sub_address, hrp),
-        utils.user_kyc_data(user.account_id),
-        identifier.encode_account(
+        sender_account_id=identifier.encode_account(
+            sender.account_address, sender_sub_address, hrp
+        ),
+        sender_kyc_data=utils.user_kyc_data(user.account_id),
+        receiver_account_id=identifier.encode_account(
             context.get().config.vasp_address, receiver_sub_address, hrp
         ),
-        amount,
-        currency.value,
+        amount=amount,
+        currency=currency.value,
+        inbound=True,
     )
 
     with monkeypatch.context() as m:
@@ -81,6 +84,11 @@ def test_process_inbound_payment_command(monkeypatch):
             "process_inbound_request",
             lambda _, c: client.create_inbound_payment_command(c.cid, c.payment),
         )
+        m.setattr(
+            context.get().offchain_client,
+            "send_command",
+            lambda c, _: offchain.reply_request(c.cid),
+        )
         code, resp = offchain_service.process_inbound_command(
             cmd.payment.sender.address, cmd
         )
@@ -89,19 +97,8 @@ def test_process_inbound_payment_command(monkeypatch):
 
     model = storage.get_payment_command(cmd.reference_id())
     assert model
-    assert model.status == TransactionStatus.OFF_CHAIN_INBOUND
+    assert model.status == TransactionStatus.OFF_CHAIN_WAIT
     assert model.inbound, str(cmd)
-
-    with monkeypatch.context() as m:
-        m.setattr(
-            context.get().offchain_client,
-            "send_command",
-            lambda c, _: offchain.reply_request(c.cid),
-        )
-        offchain_service.process_offchain_tasks()
-
-        db_session.refresh(model)
-        assert model.status == TransactionStatus.OFF_CHAIN_OUTBOUND
 
 
 def test_submit_txn_when_both_ready(monkeypatch):
