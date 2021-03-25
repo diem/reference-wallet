@@ -28,6 +28,9 @@ class VaspProxyTestee(VaspProxy):
     def knows_transaction_by_version(self, version) -> bool:
         return self.vasp.knows_transaction_by_version(version)
 
+    def knows_transaction_by_reference_id(self, reference_id) -> bool:
+        return self.vasp.knows_transaction_by_reference_id(reference_id)
+
     def get_offchain_state(self, reference_id: str):
         return self.vasp.get_offchain_state(reference_id)
 
