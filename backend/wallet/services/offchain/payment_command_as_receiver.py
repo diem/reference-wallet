@@ -24,7 +24,7 @@ def save_payment_command_as_receiver(payment_command: offchain.PaymentCommand):
         model = storage.get_payment_command(reference_id)
 
         if model:
-            model.status = TransactionStatus.COMPLETED
+            model.status = TransactionStatus.OFF_CHAIN_READY
             storage.save_payment_command(model)
         else:
             logger.warning(

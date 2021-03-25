@@ -223,6 +223,9 @@ def process_incoming_transaction(
                 sequence=sequence,
                 blockchain_version=blockchain_version,
             )
+            payment_command.status = TransactionStatus.COMPLETED
+            storage.save_payment_command(payment_command)
+
             logger.info(f"transaction completed: {transaction.id}")
 
             return
