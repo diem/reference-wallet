@@ -4,16 +4,15 @@ from typing import Optional, Callable, List
 
 import context
 import offchain
-from diem import identifier, txnmetadata
-from offchain import Status
+from diem import identifier
 from diem_utils.types.currencies import DiemCurrency
+from offchain import Status
 from wallet import storage
 from wallet.services import account
 from wallet.services.offchain.utils import (
     hrp,
     account_address_and_subaddress,
     user_kyc_data,
-    compliance_private_key,
     generate_my_address,
     PaymentCommandModel,
 )
