@@ -1,13 +1,10 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-from .types import (
-    StatusObject,
-    Status,
-    PaymentActorObject,
-    PaymentObject,
-    KycDataObject,
-)
+import typing
+from enum import Enum
+
+from .action import Action
 from .state import (
     Field,
     Machine,
@@ -17,10 +14,13 @@ from .state import (
     new_transition,
     require,
 )
-from .action import Action
-from enum import Enum
-
-import typing
+from .types import (
+    StatusObject,
+    Status,
+    PaymentActorObject,
+    PaymentObject,
+    KycDataObject,
+)
 
 
 class Actor(Enum):
@@ -106,7 +106,6 @@ R_SEND: State[PaymentObject] = State(
     ),
 )
 
-
 MACHINE: Machine[PaymentObject] = build_machine(
     [
         new_transition(S_INIT, R_SEND),
@@ -123,7 +122,6 @@ MACHINE: Machine[PaymentObject] = build_machine(
         new_transition(R_SOFT_SEND, READY),
     ]
 )
-
 
 FOLLOW_UP: typing.Dict[
     State[PaymentObject], typing.Optional[typing.Tuple[Actor, Action]]
