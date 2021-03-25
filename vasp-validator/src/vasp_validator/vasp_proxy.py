@@ -37,6 +37,10 @@ class VaspProxy(ABC):
         ...
 
     @abstractmethod
+    def knows_transaction_by_reference_id(self, reference_id) -> bool:
+        ...
+
+    @abstractmethod
     def get_offchain_state(self, reference_id: str):
         ...
 

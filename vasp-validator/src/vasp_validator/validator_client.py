@@ -106,7 +106,7 @@ class ValidatorClient(VaspProxy):
 
         return False
 
-    def knows_transaction_by_reference_id(self, reference_id):
+    def knows_transaction_by_reference_id(self, reference_id) -> bool:
         """
         Checks whether the transaction with the specified version is recognized by
         the validator as received by the current user.
