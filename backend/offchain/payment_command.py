@@ -269,6 +269,6 @@ class PaymentCommand(Command):
         return (
             f"[payment#{self.cid}: "
             f"{self.payment.sender.address} ({self.payment.sender.status.status}) "
-            f"--> "
+            f"--{self.payment.action.amount}--> "
             f"{self.payment.receiver.address} ({self.payment.receiver.status.status})]"
         )
