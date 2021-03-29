@@ -95,7 +95,7 @@ def test_process_inbound_payment_command(monkeypatch):
 
     model = storage.get_payment_command(cmd.reference_id())
     assert model
-    assert model.status == TransactionStatus.OFF_CHAIN_WAIT
+    assert model.status == TransactionStatus.OFF_CHAIN_RECEIVER_OUTBOUND
     assert model.inbound, str(cmd)
 
 
