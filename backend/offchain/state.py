@@ -69,6 +69,21 @@ class Value(typing.Generic[T, S], Condition[T]):
         return MatchResult.create(val == self.value, [self.path])
 
 
+@dataclasses.dataclass(frozen=True)
+class OneOfValues(typing.Generic[T, S], Condition[T]):
+    path: str
+    value1: S
+    value2: S
+
+    def match(self, event_data: T) -> MatchResult:
+        val = event_data
+        for f in self.path.split("."):
+            if val is None or not hasattr(val, f):
+                return MatchResult.create(False, [self.path])
+            val = getattr(val, f)
+        return MatchResult.create(val == self.value1 or val == self.value2, [self.path])
+
+
 class ConditionValidationError(Exception):
     def __init__(self, validation: Condition[T], match_result: MatchResult) -> None:
         super().__init__(f"mismatch result: {match_result}")
