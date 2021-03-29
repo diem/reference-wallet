@@ -30,3 +30,13 @@ def save_payment_command_as_receiver(payment_command: offchain.PaymentCommand):
             logger.warning(
                 f"Failed to find payment command in DB for reference_id {reference_id}."
             )
+    elif sender_status == Status.abort:
+        model = storage.get_payment_command(reference_id)
+
+        if model:
+            model.status = TransactionStatus.CANCELED
+            storage.save_payment_command(model)
+    else:
+        logger.warning(
+            f"Unhandled sender status '{sender_status}' received for reference id {reference_id}"
+        )

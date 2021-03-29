@@ -13,6 +13,7 @@ from .state import (
     build_machine,
     new_transition,
     require,
+    OneOfValues,
 )
 from .types import (
     StatusObject,
@@ -32,6 +33,10 @@ def status(actor: str, s: str) -> Value[PaymentObject, str]:
     return Value[PaymentObject, str](f"{actor}.status.status", s)
 
 
+def one_of_statuses(actor: str, s1: str, s2: str) -> Value[PaymentObject, str]:
+    return OneOfValues[PaymentObject, str](f"{actor}.status.status", s1, s2)
+
+
 S_INIT: State[PaymentObject] = State(
     id="S_INIT",
     require=require(
@@ -44,7 +49,7 @@ S_ABORT: State[PaymentObject] = State(
     id="S_ABORT",
     require=require(
         status("sender", Status.abort),
-        status("receiver", Status.ready_for_settlement),
+        one_of_statuses("receiver", Status.ready_for_settlement, Status.none),
     ),
 )
 S_SOFT: State[PaymentObject] = State(
