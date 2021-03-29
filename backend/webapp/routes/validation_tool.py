@@ -9,9 +9,6 @@ from webapp.schemas import (
 )
 
 from .strict_schema_view import StrictSchemaView, response_definition, body_parameter
-from webapp.schemas import CreatePaymentCommand as CreatePaymentCommandSchema
-from webapp.schemas import FullAddress as FullAddressSchema
-
 
 validation_tool = Blueprint("validation_tool", __name__)
 
@@ -19,31 +16,6 @@ validation_tool = Blueprint("validation_tool", __name__)
 class ValidationToolRoutes:
     class ValidationToolView(StrictSchemaView):
         tags = ["ValidationTool"]
-
-    class AddPaymentCommandAsReceiver(ValidationToolView):
-        summary = "save payment command as receiver"
-
-        parameters = [body_parameter(CreatePaymentCommandSchema)]
-
-        responses = {
-            HTTPStatus.OK: response_definition(
-                "Payment command receiver address", schema=FullAddressSchema
-            )
-        }
-
-        def post(self):
-            params = request.json
-
-            address = validation_tool_service.add_payment_command_as_receiver(
-                account_id=self.user.account_id,
-                reference_id=params["reference_id"],
-                amount=params["amount"],
-                currency=params["currency"],
-                action=params["action"],
-                expiration=params["expiration"],
-            )
-
-            return {"address": address}, HTTPStatus.OK
 
     class CreateFundsPullPreApprovalRequest(ValidationToolView):
         summary = "Send funds pull pre-approval request to another VASP"

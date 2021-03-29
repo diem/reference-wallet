@@ -209,13 +209,3 @@ class CreatePaymentCommandAsSender:
     currency: str
     amount: int
     expiration: int
-
-
-@dataclass_json
-@dataclass
-class CreatePaymentCommandAsReceiver:
-    reference_id: str
-    action: str
-    currency: str
-    amount: int
-    expiration: int
