@@ -18,7 +18,6 @@ from .models import (
     TransactionId,
     FundsTransfer,
     CreatePaymentCommandAsSender,
-    CreatePaymentCommandAsReceiver,
 )
 from .models_fppa import (
     FundPullPreApprovalScope,
@@ -138,28 +137,6 @@ class ReferenceWalletProxy:
         self._request_authorized(
             "POST", f"/offchain/payment_command/{reference_id}/actions/reject"
         )
-
-    def create_payment_command_as_receiver(
-        self,
-        reference_id,
-        action,
-        currency,
-        amount,
-        expiration,
-    ):
-        request = CreatePaymentCommandAsReceiver(
-            reference_id=reference_id,
-            action=action,
-            currency=currency,
-            amount=amount,
-            expiration=expiration,
-        )
-        address_response = self._request_authorized(
-            "POST", "validation/payment_command", json=request.to_dict()
-        )
-
-        address = Address.from_json(address_response.text)
-        return address.address
 
     def get_transaction(self, tx_id) -> FundsTransfer:
         response = self._request_authorized("GET", f"account/transactions/{tx_id}")

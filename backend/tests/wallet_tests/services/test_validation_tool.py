@@ -1,25 +1,20 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
-import uuid
+
 from datetime import datetime
 
 from diem import offchain
 from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import TIMESTAMP
-
+from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet.services.account import get_account_id_from_bech32
 from wallet.services.offchain.fund_pull_pre_approval import Role
 from wallet.services.validation_tool import (
     request_funds_pull_pre_approval_from_another,
-    add_payment_command_as_receiver,
 )
 from wallet.storage import (
     db_session,
     funds_pull_pre_approval_command as fppa_storage,
-    get_payment_command,
-    TransactionStatus,
 )
-from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
-from datetime import datetime
 
 CURRENCY = "XUS"
 
@@ -137,34 +132,3 @@ class TestRequestFundsPullPreApprovalFromAnother:
         assert db_fppa.max_cumulative_unit_value is None
         assert db_fppa.max_cumulative_amount is None
         assert db_fppa.max_cumulative_amount_currency is None
-
-
-def test_add_payment_command_as_receiver():
-    user = OneUser.run(db_session)
-
-    reference_id = str(uuid.uuid4())
-
-    action = "charge"
-    amount = 2_000_000_000
-    expiration = 1802010490
-    address = add_payment_command_as_receiver(
-        account_id=user.account_id,
-        reference_id=reference_id,
-        amount=amount,
-        currency=CURRENCY,
-        action=action,
-        expiration=expiration,
-    )
-
-    payment_command = get_payment_command(reference_id)
-
-    assert payment_command.receiver_address == address
-    assert payment_command.my_actor_address == address
-    assert payment_command.sender_address is None
-    assert payment_command.account_id == user.account_id
-    assert payment_command.cid == reference_id
-    assert payment_command.amount == amount
-    assert payment_command.currency == CURRENCY
-    assert payment_command.action == action
-    assert payment_command.expiration == datetime.fromtimestamp(expiration)
-    assert payment_command.status == TransactionStatus.PENDING

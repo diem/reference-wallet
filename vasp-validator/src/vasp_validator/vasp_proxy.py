@@ -125,14 +125,3 @@ class VaspProxy(ABC):
     @abstractmethod
     def reject_payment_command(self, reference_id):
         ...
-
-    @abstractmethod
-    def create_payment_command_as_receiver(
-        self,
-        reference_id,
-        action,
-        currency,
-        amount,
-        expiration,
-    ):
-        ...

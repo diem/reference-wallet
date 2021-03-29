@@ -104,19 +104,3 @@ class VaspProxyTestee(VaspProxy):
 
     def reject_payment_command(self, reference_id):
         self.vasp.reject_payment_command(reference_id)
-
-    def create_payment_command_as_receiver(
-        self,
-        reference_id,
-        action,
-        currency,
-        amount,
-        expiration,
-    ):
-        return self.vasp.create_payment_command_as_receiver(
-            reference_id=reference_id,
-            action=action,
-            currency=currency,
-            amount=amount,
-            expiration=expiration,
-        )
