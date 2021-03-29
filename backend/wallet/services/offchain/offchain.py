@@ -85,7 +85,7 @@ def process_offchain_tasks() -> None:
         action = cmd.follow_up_action()
 
         logger.info(
-            f"~~~~~~~~ in offchain_action reference_id: {model.reference_id}, "
+            f"handling offchain_action reference_id: {model.reference_id}, "
             f"sender address: {model.sender_address}, "
             f"sender status: {model.sender_status}, "
             f"receiver address: {model.receiver_address}, "
@@ -133,9 +133,6 @@ def process_offchain_tasks() -> None:
             model.status = TransactionStatus.COMPLETED
 
     def send_command_as_receiver(model) -> None:
-        logger.info(
-            f"~~~~~~ in send_command_as_receiver for reference_id {model.reference_id}"
-        )
         payment_command = model_to_payment_command(model)
         # updated_command = evaluate_kyc_data(payment_command)
         kyc_data = {

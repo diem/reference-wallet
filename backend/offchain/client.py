@@ -196,13 +196,12 @@ class Client:
         )
         if request.command_type == CommandType.PaymentCommand:
             cast = typing.cast(PaymentCommandObject, request.command)
-            print(f"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {to_json(cast)}")
             payment = cast.payment
             self.validate_addresses(payment, request_sender_address)
             cmd = self.create_inbound_payment_command(request.cid, payment)
             if cmd.is_initial():
                 self.validate_dual_attestation_limit_by_action(cmd.payment.action)
-            elif cmd.payment.action.action == "charge" and cmd.is_rsend():
+            elif cmd.is_rsend():
                 self.validate_recipient_signature(cmd, public_key)
             return cmd
         elif request.command_type == CommandType.FundPullPreApprovalCommand:
