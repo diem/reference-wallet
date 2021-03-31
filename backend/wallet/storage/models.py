@@ -28,6 +28,7 @@ class User(Base):
     password_salt = Column(String, nullable=False)
     password_hash = Column(String, nullable=False)
     password_reset_token = Column(String, nullable=True)
+    password_reset_token_expiration = Column(DateTime, nullable=True)
     registration_status = Column(String, nullable=False)
     selected_fiat_currency = Column(String, nullable=False)
     selected_language = Column(String, nullable=False)

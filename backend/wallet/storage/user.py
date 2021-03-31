@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import uuid
-from datetime import date
+from datetime import date, datetime
 from typing import Optional, List
 
 from diem_utils.types.currencies import FiatCurrency
@@ -89,6 +89,7 @@ def update_user_password(user_id: int, password_hash: str, salt: str) -> None:
     if user is not None:
         user.password_hash = password_hash
         user.password_salt = salt
+        user.password_reset_token_expiration = datetime.now() - timedelta(minutes=30)
         db_session.commit()
     else:
         raise Exception("User does not exist!")
@@ -111,6 +112,7 @@ def update_user(
     address_2: Optional[str] = None,
     zip: Optional[str] = None,
     password_reset_token: Optional[str] = None,
+    password_reset_token_expiration: Optional[int] = None,
 ) -> User:
     user = User.query.get(user_id)
     if user is not None:
