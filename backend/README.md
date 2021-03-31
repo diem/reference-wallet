@@ -69,6 +69,15 @@ To test:
     $ ./format.sh  # runs black
     $ ./test.sh  # runs unit tests and type-checker
 
+
+### Running the Diem Mini Wallet (DMW) TestSuite
+1. Ensure that you have DRW running `../scripts/lrw.sh develop 8080`
+2. Run the mw_drw proxy: `DRW_URL_PREFIX=http://localhost:8080 MW_DRW_PROXY_PORT=3130 pipenv run python3 ./tests/mw_drw_proxy/proxy.py` . 
+   There is additional documentation on this command in the `tests/mw_drw_proxy` folder.
+3. Run the test suite: `pipenv run dmw -- test --verbose --target http://127.0.0.1:3130`.
+  To run a specific test, you can add `--pytest-args '-ktest_payment_under_threshold_succeed[sender-999999]'` to the test command
+
+
 ### Git setup
 
 It is recommended to install our git pre-commit hook. This hook runs all needed validations before committing:

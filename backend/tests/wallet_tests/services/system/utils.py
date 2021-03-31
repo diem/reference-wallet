@@ -235,11 +235,15 @@ def add_outgoing_user_transaction_to_db(
     user_account_id = Account.query.filter_by(name=account_name).first().id
     tx = Transaction(
         amount=amount,
-        sequence=sequence,
-        blockchain_version=version,
         source_address=VASP_ADDRESS,
         destination_address=receiver_address,
     )
+
+    if version is not None:
+        tx.blockchain_version = version
+
+    if sequence is not None:
+        tx.sequence = sequence
 
     tx.created_timestamp = datetime.now()
     tx.type = TransactionType.EXTERNAL
@@ -297,7 +301,7 @@ def check_balance(expected_balance):
 
             lrw_balance += balance
 
-    assert lrw_balance == expected_balance
+    assert lrw_balance == expected_balance, lrw_balance
 
 
 def check_number_of_transactions(expected):

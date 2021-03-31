@@ -95,6 +95,8 @@ class Transaction(Base):
     destination_subaddress = Column(String, nullable=True)
     created_timestamp = Column(DateTime, nullable=False)
     blockchain_version = Column(Integer, nullable=True)
+    original_txn_id = Column(Integer, nullable=True)
+    refund_reason = Column(String, nullable=True)
     sequence = Column(Integer, nullable=True)
     logs = relationship("TransactionLog", backref="tx", lazy=True)
     source_account = relationship(

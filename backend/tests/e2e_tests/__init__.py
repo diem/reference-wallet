@@ -5,6 +5,9 @@ import os, time, typing
 import random
 import requests
 from dataclasses import dataclass
+
+from requests import HTTPError
+
 from diem_utils.types.currencies import DiemCurrency, FiatCurrency
 
 LRW_WEB_1 = os.getenv("LRW_WEB_1")
@@ -21,7 +24,7 @@ print(GW_PORT_2)
 print(VASP_ADDR_1)
 print(VASP_ADDR_2)
 
-sherlock_info = {
+SHERLOCK_INFO = {
     "address_1": "221B Baker Street",
     "address_2": "",
     "city": "London",
@@ -37,16 +40,31 @@ sherlock_info = {
 }
 
 
+def default_log_fn(*args, **kwargs):
+    print(*args, **kwargs)
+
+
 @dataclass
 class UserClient:
     name: str
     backend: str
     token: str
     payment_method: str
+    log_fn: typing.Callable
 
     @staticmethod
-    def create(backend: str, name: str) -> "UserClient":
-        return create_test_user(backend, f"{name}_{random.randint(0, 1000)}")
+    def create(
+        backend: str,
+        name: str,
+        kyc_info=None,
+        log_fn=default_log_fn,
+    ) -> "UserClient":
+        return create_test_user(
+            backend,
+            name,
+            log_fn=log_fn,
+            kyc_info=kyc_info,
+        )
 
     def auth_headers(self) -> typing.Dict[str, str]:
         ret = {"Authorization": f"Bearer {self.token}"}
@@ -67,26 +85,42 @@ class UserClient:
             f"wait for {self.name}'s {currency} balance timeout ({timeout} secs), found balance: {new_balance}, expect {target_balance}"
         )
 
+    def update_user(self, user_data: dict) -> dict:
+        res = requests.put(
+            f"{self.backend}/api/user", headers=self.auth_headers(), json=user_data
+        )
+        res.raise_for_status()
+        return res.json()
+
+    def get_payment_methods(self) -> list:
+        res = requests.get(
+            f"{self.backend}/api/user/payment-methods", headers=self.auth_headers()
+        )
+        res.raise_for_status()
+        return res.json().get("payment_methods")
+
     def buy(self, amount: int, currency: str, by_currency: str):
+        self.log_fn(f"Buying {amount} {currency} for {self.name} ")
         err = None
         for i in range(8):
             try:
                 self._buy(amount, currency, by_currency)
                 return
             except Exception as e:
+                if isinstance(e, HTTPError):
+                    raise
                 err = e
-                pass
 
         raise RuntimeError(f"failed after retry, last error: {err}")
 
     def _buy(self, amount: int, currency: str, by_currency: str):
         before_balance = self.get_balance(currency)
-
+        self.log_fn(f"Current balance for {currency}: {amount} for '{self.name}'")
         pair = f"{currency}_{by_currency}"
         quote_id = get_test_quote(
             self.backend, self.auth_headers(), amount, "buy", pair
         )
-        print(f"quote_id: {quote_id}")
+        self.log_fn(f"quote_id: {quote_id}")
         # pay with the first payment method added to wallet 1
         payload = {"payment_method": self.payment_method}
         res = requests.post(
@@ -95,7 +129,7 @@ class UserClient:
             json=payload,
         )
         res.raise_for_status()
-        self.wait_for_balance(currency, before_balance + amount, 20)
+        self.wait_for_balance(currency, before_balance + amount, 50)
 
     def get_recv_addr(self) -> str:
         """Get the receiving subaddr for a test user"""
@@ -106,18 +140,20 @@ class UserClient:
         res.raise_for_status()
         return res.json().get("address")
 
-    def transfer(self, addr: str, amount: int, currency) -> None:
+    def transfer(self, addr: str, amount: int, currency: str) -> dict:
         payload = {
             "amount": amount,
             "currency": currency,
             "receiver_address": addr,
         }
+        self.log_fn(f"Transferring money '{payload}' for {self.name}")
         res = requests.post(
             f"{self.backend}/api/account/transactions",
             headers=self.auth_headers(),
             json=payload,
         )
         res.raise_for_status()
+        return res.json()
 
     def get_transactions(self) -> list:
         params = {"limit": 10}
@@ -129,10 +165,15 @@ class UserClient:
         res.raise_for_status()
         return res.json().get("transaction_list")
 
-    def get_balance(self, currency: str) -> list:
+    def get_balances(self) -> typing.List[typing.Dict]:
         res = requests.get(f"{self.backend}/api/account", headers=self.auth_headers())
         res.raise_for_status()
-        balances = res.json().get("balances")
+        return res.json().get("balances")
+
+    def get_balance(self, currency: str) -> int:
+        self.log_fn(f"Getting balance for {currency} for '{self.name}'")
+        balances = self.get_balances()
+        self.log_fn(f"got balances: {balances} for '{self.name}'")
         for b in balances:
             if b.get("currency") == currency:
                 return b.get("balance")
@@ -140,42 +181,58 @@ class UserClient:
         raise ValueError(f"no balance for the currency {currency} in {balances}")
 
 
-def invoke_kyc_check(backend, headers) -> None:
-    """Invoke a KYC check by updating user info for the first time"""
+def randomize_username(name):
+    suffix = "@test.com"
+    if "@" in name:
+        name, suffix = name.split("@")
+    return f"{name}_{random.randint(0, 100000000)}{suffix}"
 
-    res = requests.put(f"{backend}/api/user", headers=headers, json=sherlock_info)
+
+def invoke_kyc_check(backend, headers, kyc_info=None, log_fn=default_log_fn) -> None:
+    """Invoke a KYC check by updating user info for the first time"""
+    kyc_info = kyc_info or SHERLOCK_INFO
+    log_fn(f"Updating user info with KYC for '{kyc_info}'")
+    res = requests.put(f"{backend}/api/user", headers=headers, json=kyc_info)
     res.raise_for_status()
 
 
-def create_test_user(backend, username) -> UserClient:
+def create_test_user(
+    backend, username, log_fn=default_log_fn, kyc_info=None
+) -> UserClient:
     """Create a test user"""
-
+    username = randomize_username(username)
     payload = {"username": username, "password": "fakepassword"}
+    log_fn(f"Creating user '{username}', with password 'fakepassword'")
     res = requests.post(f"{backend}/api/user", json=payload)
     res.raise_for_status()
 
     token = res.text.strip('"')
     headers = {"Authorization": f"Bearer {token}"}
 
-    invoke_kyc_check(backend, headers)
-    payment_method = create_test_payment_method(backend, headers)
+    invoke_kyc_check(backend, headers, kyc_info=kyc_info, log_fn=log_fn)
+    payment_method = create_test_payment_method(backend, headers, log_fn=log_fn)
 
     return UserClient(
-        name=username, backend=backend, token=token, payment_method=payment_method
+        name=username,
+        backend=backend,
+        token=token,
+        payment_method=payment_method,
+        log_fn=log_fn,
     )
 
 
-def create_test_payment_method(backend, headers) -> str:
+def create_test_payment_method(backend, headers, log_fn=default_log_fn) -> str:
     """
     Create a test payment method and return its id as a string
     NOTE: assumes that this is the only payment method being added for the user
     """
-    payment_token = f"paymenttoken{random.randint(0, 1000)}"
+    payment_token = f"paymenttoken{random.randint(0, 1000000)}"
     payment_payload = {
         "name": "credit",
         "provider": "CreditCard",
         "token": payment_token,
     }
+    log_fn(f"Creating payment method '{payment_payload}'")
     res = requests.post(
         f"{backend}/api/user/payment-methods", headers=headers, json=payment_payload
     )
@@ -185,7 +242,10 @@ def create_test_payment_method(backend, headers) -> str:
     res.raise_for_status()
 
     assert len(res.json().get("payment_methods")) > 0
-    return str(res.json().get("payment_methods")[0].get("id"))
+
+    result_id = str(res.json().get("payment_methods")[0].get("id"))
+    log_fn(f"Created payment method '{result_id}'")
+    return result_id
 
 
 def get_test_quote(backend, headers, amount, buy_sell="buy", pair="XUS_USD") -> str:

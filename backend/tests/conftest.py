@@ -75,7 +75,10 @@ def patch_blockchain(monkeypatch):
     monkeypatch.setattr(DiemClient, "get_metadata", network.get_metadata)
 
     def wait_for_transaction(*args):
-        return Transaction(version=1, transaction=TransactionData(sequence_number=1))
+        return Transaction(
+            version=1,
+            transaction=TransactionData(sequence_number=1),
+        )
 
     monkeypatch.setattr(
         DiemClient,
