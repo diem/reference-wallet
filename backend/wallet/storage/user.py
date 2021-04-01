@@ -89,7 +89,8 @@ def update_user_password(user_id: int, password_hash: str, salt: str) -> None:
     if user is not None:
         user.password_hash = password_hash
         user.password_salt = salt
-        user.password_reset_token_expiration = datetime.now() - timedelta(minutes=30)
+        user.password_reset_token_expiration = None
+        user.password_reset_token = None
         db_session.commit()
     else:
         raise Exception("User does not exist!")
