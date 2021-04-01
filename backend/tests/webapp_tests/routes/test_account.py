@@ -9,7 +9,7 @@ from http import HTTPStatus
 from typing import Optional
 
 import pytest
-from diem.offchain import Status
+from offchain import Status
 from flask import Response
 from wallet.services.transaction import FundsTransfer
 from werkzeug import Client
@@ -25,7 +25,7 @@ from wallet.types import (
     TransactionType,
     TransactionSortOption,
 )
-from diem import offchain
+import offchain
 
 INTERNAL_TX = Transaction(
     id=1,

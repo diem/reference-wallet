@@ -2,7 +2,7 @@ import uuid
 
 import context
 from diem import identifier
-from diem.offchain import Status
+from offchain import Status
 from diem_utils.types.currencies import DiemCurrency
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from tests.wallet_tests.resources.seeds.payment_command_seeder import (

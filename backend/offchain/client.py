@@ -81,7 +81,7 @@ class Client:
     Pre-process inbound request data:
     ```
     from http import server
-    from diem.offchain import X_REQUEST_ID, X_REQUEST_SENDER_ADDRESS
+    from offchain import X_REQUEST_ID, X_REQUEST_SENDER_ADDRESS
 
     class Handler(server.BaseHTTPRequestHandler):
         def do_POST(self):
