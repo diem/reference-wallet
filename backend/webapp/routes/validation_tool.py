@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from diem import offchain
+import offchain
 from flask import Blueprint, request
 from wallet.services import validation_tool as validation_tool_service
 from webapp.schemas import (

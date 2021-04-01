@@ -5,8 +5,8 @@ import logging
 from http import HTTPStatus
 
 import wallet.services.offchain.payment_command
-from diem import offchain as diem_offchain
-from diem.offchain import (
+import offchain as diem_offchain
+from offchain import (
     X_REQUEST_ID,
     X_REQUEST_SENDER_ADDRESS,
     FundPullPreApprovalStatus,

@@ -5,7 +5,7 @@ from dataclasses import asdict
 import context
 import pytest
 from diem import identifier, LocalAccount
-from diem.offchain import (
+from offchain import (
     FundPullPreApprovalStatus,
 )
 from diem_utils.types.currencies import FiatCurrency, DiemCurrency

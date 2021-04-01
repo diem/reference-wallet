@@ -9,7 +9,7 @@ import context
 import diem_utils.types.currencies
 import pytest
 from diem import diem_types
-from diem.offchain import Status
+from offchain import Status
 from diem.txnmetadata import general_metadata, travel_rule, refund_metadata
 from diem.utils import sub_address, account_address_hex, account_address
 from diem_utils.types.currencies import DiemCurrency
