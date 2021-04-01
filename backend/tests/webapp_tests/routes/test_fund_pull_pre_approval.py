@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import offchain
+from offchain import FundPullPreApprovalStatus
 from flask import Response
 from flask.testing import Client
 from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import TIMESTAMP
@@ -41,7 +42,7 @@ def invent_preapproval(description):
                     currency="XUS",
                 ),
             ),
-            status=offchain.FundPullPreApprovalStatus.pending,
+            status=FundPullPreApprovalStatus.pending,
             description=description,
         ),
         biller_name="Bond",
@@ -106,7 +107,7 @@ class TestUpdateFundPullPreApprovalStatus:
             f"/offchain/funds_pull_pre_approvals/{FUNDS_PULL_PRE_APPROVAL_ID}",
             json={
                 "funds_pull_pre_approval_id": "1234",
-                "status": offchain.FundPullPreApprovalStatus.rejected,
+                "status": FundPullPreApprovalStatus.rejected,
             },
         )
 
