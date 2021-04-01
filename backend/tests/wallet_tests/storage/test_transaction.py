@@ -1,9 +1,20 @@
+import diem_utils.types
+from tests.wallet_tests.resources.seeds.one_user_multiple_transactions import (
+    OneUserMultipleTransactions,
+)
 from tests.wallet_tests.services.system.utils import (
     add_user_in_db,
     add_incoming_user_transaction_to_db,
     add_outgoing_user_transaction_to_db,
 )
-from wallet.storage import Transaction
+from wallet import types
+from wallet.storage import (
+    Transaction,
+    add_transaction,
+    get_account_transaction_ids,
+    db_session,
+    get_user_transactions,
+)
 from wallet.storage import (
     get_account_transactions,
     DiemCurrency,
@@ -135,3 +146,37 @@ def test_get_account_transactions_tp_to_version():
     )
 
     assert len(transactions) == 3
+
+
+def test_add_transaction() -> None:
+    tx = add_transaction(
+        amount=100,
+        currency=diem_utils.types.currencies.DiemCurrency.XUS,
+        payment_type=types.TransactionType.EXTERNAL,
+        status=types.TransactionStatus.PENDING,
+        source_id=1,
+        source_address="sender_address",
+        source_subaddress="sender_subaddress",
+        destination_id=123,
+        destination_address="receiver_address",
+        destination_subaddress="receiver_subaddress",
+    )
+    assert tx.id in get_account_transaction_ids(1)
+
+
+def test_get_user_transactions() -> None:
+    tx1, tx2, user = OneUserMultipleTransactions().run(db_session)
+
+    tx_list = get_user_transactions(user.id)
+
+    assert len(tx_list) == OneUserMultipleTransactions.total_txs
+
+
+def test_get_user_transactions_for_coin() -> None:
+    tx1, tx2, user = OneUserMultipleTransactions().run(db_session)
+
+    tx_list = get_user_transactions(user.id, OneUserMultipleTransactions.tx1_currency)
+
+    assert len(tx_list) == 2
+    tx: Transaction = tx_list[0]
+    assert tx.currency == OneUserMultipleTransactions.tx1_currency

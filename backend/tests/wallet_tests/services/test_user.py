@@ -3,7 +3,7 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-from datetime import date
+from datetime import date, datetime
 from typing import List
 
 import pytest
@@ -16,51 +16,50 @@ from wallet.services.kyc import (
     process_user_kyc,
     get_additional_user_kyc_info,
 )
-from wallet.services.user import (
-    create_new_user,
-    authorize,
-    update_password,
-    update_user,
-)
 from wallet.storage import db_session
 from wallet.types import RegistrationStatus, UsernameExistsError
 
+UPDATED_PASSWORD = "updatedsupersecurepassword"
+PASSWORD = "supersecurepassword"
+USER_NAME = "fakeuserid"
+
 
 def test_create_user() -> None:
-    username = "fakeuserid"
-    password = "supersecurepassword"
-    create_new_user(username, password)
-
-    assert authorize(username=username, password=password)
+    user_service.create_new_user(USER_NAME, PASSWORD)
+    assert user_service.authorize(username=USER_NAME, password=PASSWORD)
 
 
 def test_update_user_password() -> None:
-    username = "fakeuserid"
-    password = "supersecurepassword"
-    user_id = create_new_user(username, password)
-
-    password2 = "updatedsupersecurepassword"
-    update_password(user_id, password2)
-
+    user_id = user_service.create_new_user(USER_NAME, PASSWORD)
+    user_service.update_password(user_id, UPDATED_PASSWORD)
     assert (
-        authorize(username=username, password=password)
+        user_service.authorize(username=USER_NAME, password=PASSWORD)
         == types.LoginError.WRONG_PASSWORD
     )
-    assert authorize(username=username, password=password2) == types.LoginError.SUCCESS
+    assert (
+        user_service.authorize(username=USER_NAME, password=UPDATED_PASSWORD)
+        == types.LoginError.SUCCESS
+    )
+
+
+def test_create_password_reset_token():
+    user_id = user_service.create_new_user(USER_NAME, PASSWORD)
+    user = user_service.get_user(user_id)
+    token = user_service.create_password_reset_token(user)
+    assert token is not None
+    user = user_service.get_user(user_id)
+    assert user.password_reset_token_expiration is not None
+    assert user.password_reset_token_expiration > datetime.now()
 
 
 def test_create_existing_user_fails() -> None:
-    username = "fakeuserid"
-    password = "supersecurepassword"
-    create_new_user(username, password)
-
+    user_service.create_new_user(USER_NAME, PASSWORD)
     with pytest.raises(UsernameExistsError):
-        create_new_user(username, password)
+        user_service.create_new_user(USER_NAME, PASSWORD)
 
 
 def test_approved_user_is_verified() -> None:
     user = OneUser.run(db_session, registration_status=RegistrationStatus.Approved)
-
     assert is_verified(user.id)
 
 
@@ -99,12 +98,12 @@ def test_kyc_started_user_pending(monkeypatch) -> None:
 
 
 def test_get_user_kyc() -> None:
-    username = "fakeuserid"
-    password = "supersecurepassword"
     first_name = "first name"
     last_name = "last_name"
-    user_id = create_new_user(username, password, False, first_name, last_name)
-    update_user(user_id=user_id, country="US", city="New York")
+    user_id = user_service.create_new_user(
+        USER_NAME, PASSWORD, False, first_name, last_name
+    )
+    user_service.update_user(user_id=user_id, country="US", city="New York")
     kyc_info = get_additional_user_kyc_info(user_id)
     assert kyc_info == {
         "payload_version": 1,
