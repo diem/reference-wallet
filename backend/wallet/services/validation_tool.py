@@ -2,7 +2,8 @@ import uuid
 from datetime import datetime
 
 import context
-from diem import identifier, offchain
+from diem import identifier
+import offchain
 from wallet.services.account import generate_new_subaddress
 from wallet.services.offchain.fund_pull_pre_approval import Role
 from wallet.storage import (

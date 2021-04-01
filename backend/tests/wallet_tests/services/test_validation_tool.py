@@ -3,7 +3,7 @@
 
 from datetime import datetime
 
-from diem import offchain
+import offchain
 from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import TIMESTAMP
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet.services.account import get_account_id_from_bech32

@@ -77,7 +77,7 @@ python-dotenv = "*"
 dataclasses-json = "*"
 jwcrypto = "*"
 sqlalchemy-paginator = "*"
-diem = {editable = true, git = "https://github.com/firstdag/client-sdk-python.git", ref = "auth-and-capture"}
+diem = "*"
 
 [pipenv]
 allow_prereleases = true

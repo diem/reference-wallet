@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from diem import offchain
-from diem.offchain import FundPullPreApprovalStatus
+import offchain
+from offchain import FundPullPreApprovalStatus
 from flask import Response
 from flask.testing import Client
 from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import TIMESTAMP
@@ -42,7 +42,7 @@ def invent_preapproval(description):
                     currency="XUS",
                 ),
             ),
-            status=offchain.FundPullPreApprovalStatus.pending,
+            status=FundPullPreApprovalStatus.pending,
             description=description,
         ),
         biller_name="Bond",

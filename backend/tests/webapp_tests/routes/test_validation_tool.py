@@ -2,7 +2,7 @@ import json
 import uuid
 
 import pytest
-from diem import offchain
+import offchain
 from flask import Response
 from flask.testing import Client
 from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import TIMESTAMP
