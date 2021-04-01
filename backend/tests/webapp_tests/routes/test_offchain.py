@@ -1,10 +1,12 @@
-import json
+import uuid
 from typing import Optional, List
+from datetime import datetime
 
 import pytest
+from diem.offchain import Status
 from flask import Response
 from flask.testing import Client
-from wallet.services import offchain as offchain_service
+from wallet.services.offchain import payment_command as pc_service
 from diem import offchain
 
 CURRENCY = "XUS"
@@ -20,7 +22,7 @@ def mock_get_payment_command_json(monkeypatch):
                 reference_id="c6f7e351-e1c3-4da7-9310-4e87296febf2",
                 sender=offchain.PaymentActorObject(
                     address="tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
-                    status=offchain.StatusObject(status="ready_for_settlement"),
+                    status=offchain.StatusObject(status=Status.ready_for_settlement),
                     kyc_data=offchain.KycDataObject(
                         type="individual",
                         payload_version=1,
@@ -41,7 +43,7 @@ def mock_get_payment_command_json(monkeypatch):
                 ),
                 receiver=offchain.PaymentActorObject(
                     address="tdm1pwm5m35ayknjr0s67pk9xdf5mwqft4rvgxplmckcxr9lwd",
-                    status=offchain.StatusObject(status="ready_for_settlement"),
+                    status=offchain.StatusObject(status=Status.ready_for_settlement),
                     kyc_data=offchain.KycDataObject(
                         type="individual",
                         payload_version=1,
@@ -74,7 +76,7 @@ def mock_get_payment_command_json(monkeypatch):
             cid="1cea3243-4ea6-44b2-8590-ec5bf4a101b1",
         )
 
-    monkeypatch.setattr(offchain_service, "get_payment_command", mock)
+    monkeypatch.setattr(pc_service, "get_payment_command", mock)
 
 
 @pytest.fixture
@@ -87,7 +89,9 @@ def mock_get_account_payment_commands(monkeypatch):
                     reference_id="c6f7e351-e1c3-4da7-9310-4e87296febf2",
                     sender=offchain.PaymentActorObject(
                         address="tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
-                        status=offchain.StatusObject(status="ready_for_settlement"),
+                        status=offchain.StatusObject(
+                            status=Status.ready_for_settlement
+                        ),
                         kyc_data=offchain.KycDataObject(
                             type="individual",
                             payload_version=1,
@@ -108,7 +112,9 @@ def mock_get_account_payment_commands(monkeypatch):
                     ),
                     receiver=offchain.PaymentActorObject(
                         address="tdm1pwm5m35ayknjr0s67pk9xdf5mwqft4rvgxplmckcxr9lwd",
-                        status=offchain.StatusObject(status="ready_for_settlement"),
+                        status=offchain.StatusObject(
+                            status=Status.ready_for_settlement
+                        ),
                         kyc_data=offchain.KycDataObject(
                             type="individual",
                             payload_version=1,
@@ -146,7 +152,9 @@ def mock_get_account_payment_commands(monkeypatch):
                     reference_id="dbcb698a-22a8-4dac-8710-668cdfdd045e",
                     sender=offchain.PaymentActorObject(
                         address="tdm1pzmhcxpnyns7m035ctdqmexxadxjjalh3xckacksflqvx5",
-                        status=offchain.StatusObject(status="ready_for_settlement"),
+                        status=offchain.StatusObject(
+                            status=Status.ready_for_settlement
+                        ),
                         kyc_data=offchain.KycDataObject(
                             type="individual",
                             payload_version=1,
@@ -167,7 +175,9 @@ def mock_get_account_payment_commands(monkeypatch):
                     ),
                     receiver=offchain.PaymentActorObject(
                         address="tdm1pzmhcxpnyns7m035ctdqmexxadxjjalh3xckacksflqvx5",
-                        status=offchain.StatusObject(status="ready_for_settlement"),
+                        status=offchain.StatusObject(
+                            status=Status.ready_for_settlement
+                        ),
                         kyc_data=offchain.KycDataObject(
                             type="individual",
                             payload_version=1,
@@ -201,7 +211,32 @@ def mock_get_account_payment_commands(monkeypatch):
             ),
         ]
 
-    monkeypatch.setattr(offchain_service, "get_account_payment_commands", mock)
+    monkeypatch.setattr(pc_service, "get_account_payment_commands", mock)
+
+
+@pytest.fixture()
+def mock_add_payment_command(monkeypatch):
+    def mock(
+        account_id,
+        reference_id,
+        vasp_address,
+        merchant_name,
+        action,
+        currency,
+        amount,
+        expiration,
+    ) -> None:
+        return
+
+    monkeypatch.setattr(pc_service, "add_payment_command_as_sender", mock)
+
+
+@pytest.fixture()
+def mock_update_payment_command_status(monkeypatch):
+    def mock(reference_id, _) -> None:
+        return
+
+    monkeypatch.setattr(pc_service, "update_payment_command_sender_status", mock)
 
 
 class TestGetPaymentCommand:
@@ -239,3 +274,34 @@ class TestGetAccountPaymentCommands:
             payment_commands[0]["my_actor_address"]
             == "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
         )
+
+
+class TestAddPaymentCommand:
+    def test_add_payment_command(
+        self, authorized_client: Client, mock_add_payment_command
+    ) -> None:
+        rv: Response = authorized_client.post(
+            "/offchain/payment_command",
+            json={
+                "vasp_address": "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
+                "reference_id": str(uuid.uuid4()),
+                "merchant_name": "Bond & Gurki Pet Store",
+                "action": "charge",
+                "currency": "XUS",
+                "amount": 1000,
+                "expiration": int(datetime.timestamp(datetime.now())),
+            },
+        )
+
+        assert rv.status_code == 204, rv.get_data()
+
+
+class TestUpdatePaymentCommandStatus:
+    def test_update_payment_command_status_approve(
+        self, authorized_client: Client, mock_update_payment_command_status
+    ) -> None:
+        rv: Response = authorized_client.post(
+            "/offchain/payment_command/1234/actions/approve"
+        )
+
+        assert rv.status_code == 204, rv.get_data()

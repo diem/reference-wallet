@@ -126,7 +126,7 @@ class PaymentCommand(Base):
     my_actor_address = Column(String, nullable=False)
     inbound = Column(Boolean, nullable=False)
     cid = Column(String, nullable=False)
-    sender_address = Column(String, nullable=False)
+    sender_address = Column(String, nullable=True)
     sender_status = Column(String, nullable=False, default="none")
     sender_kyc_data = Column(String, nullable=True)
     sender_metadata = Column(String, nullable=True)
@@ -139,10 +139,16 @@ class PaymentCommand(Base):
     amount = Column(Integer, nullable=False)
     currency = Column(String, nullable=False)
     action = Column(String, nullable=False, default="charge")
-    created_at = Column(DateTime, nullable=False)
+    created_at = Column(
+        DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+    )
     original_payment_reference_id = Column(String, nullable=True)
     recipient_signature = Column(String, nullable=True)
     description = Column(String, nullable=True)
+    merchant_name = Column(String, nullable=True)
+    expiration = Column(DateTime, nullable=True)
 
     def update(self, updated_command):
         new_command_attributes = [

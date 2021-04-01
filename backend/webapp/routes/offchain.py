@@ -4,16 +4,21 @@
 import logging
 from http import HTTPStatus
 
+import wallet.services.offchain.payment_command
 from diem import offchain as diem_offchain
 from diem.offchain import (
     X_REQUEST_ID,
     X_REQUEST_SENDER_ADDRESS,
     FundPullPreApprovalStatus,
+    Status,
 )
 from flask import Blueprint, request
 from flask.views import MethodView
-from wallet.services import fund_pull_pre_approval as fppa_service
-from wallet.services import offchain as offchain_service
+from wallet.services.offchain import (
+    payment_command as pc_service,
+    offchain as offchain_service,
+    fund_pull_pre_approval as fppa_service,
+)
 from webapp.routes.strict_schema_view import (
     StrictSchemaView,
     response_definition,
@@ -28,6 +33,7 @@ from webapp.schemas import (
     UpdateFundsPullPreApproval,
     Error,
     CreateAndApproveFundPullPreApproval,
+    CreatePaymentAsSenderCommand as CreatePaymentCommandSchema,
 )
 
 logger = logging.getLogger(__name__)
@@ -154,7 +160,7 @@ class OffchainRoutes:
         }
 
         def get(self, transaction_id: int):
-            payment_command = offchain_service.get_payment_command(transaction_id)
+            payment_command = pc_service.get_payment_command(transaction_id)
 
             return (
                 payment_command_to_dict(payment_command),
@@ -171,7 +177,7 @@ class OffchainRoutes:
         }
 
         def get(self):
-            payment_commands = offchain_service.get_account_payment_commands(
+            payment_commands = pc_service.get_account_payment_commands(
                 self.user.account_id
             )
 
@@ -183,6 +189,79 @@ class OffchainRoutes:
                 {"payment_commands": payments},
                 HTTPStatus.OK,
             )
+
+    class AddPaymentCommandAsSender(OffchainView):
+        summary = "Create New Payment Command"
+
+        parameters = [body_parameter(CreatePaymentCommandSchema)]
+
+        responses = {
+            HTTPStatus.NO_CONTENT: response_definition(
+                "Request accepted. You should poll for status updates."
+            )
+        }
+
+        def post(self):
+            params = request.json
+
+            pc_service.add_payment_command_as_sender(
+                self.user.account_id,
+                params["reference_id"],
+                params["vasp_address"],
+                params["merchant_name"],
+                params["action"],
+                params["currency"],
+                int(params["amount"]),
+                int(params["expiration"]),
+            )
+
+            return "OK", HTTPStatus.NO_CONTENT
+
+    class ApprovePaymentCommand(OffchainView):
+        summary = "Approve Payment Command"
+
+        parameters = [
+            path_string_param(
+                name="reference_id",
+                description="command reference id",
+            ),
+        ]
+
+        responses = {
+            HTTPStatus.NO_CONTENT: response_definition("Request accepted"),
+            HTTPStatus.NOT_FOUND: response_definition(
+                "Command not found", schema=Error
+            ),
+        }
+
+        def post(self, reference_id: str):
+            pc_service.update_payment_command_sender_status(
+                reference_id, Status.needs_kyc_data
+            )
+
+            return "OK", HTTPStatus.NO_CONTENT
+
+    class RejectPaymentCommand(OffchainView):
+        summary = "Reject Payment Command"
+
+        parameters = [
+            path_string_param(
+                name="reference_id",
+                description="command reference id",
+            ),
+        ]
+
+        responses = {
+            HTTPStatus.NO_CONTENT: response_definition("Request accepted"),
+            HTTPStatus.NOT_FOUND: response_definition(
+                "Command not found", schema=Error
+            ),
+        }
+
+        def post(self, reference_id: str):
+            pc_service.update_payment_command_sender_status(reference_id, Status.abort)
+
+            return "OK", HTTPStatus.NO_CONTENT
 
     class GetFundsPullPreApprovals(OffchainView):
         summary = "Get funds pull pre approvals of a user"

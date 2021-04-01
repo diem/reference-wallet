@@ -1,11 +1,10 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 from dataclasses import asdict
-from datetime import datetime
 
 import context
 import pytest
-from diem import identifier, LocalAccount, offchain
+from diem import identifier, LocalAccount
 from diem.offchain import (
     FundPullPreApprovalStatus,
     FundPullPreApprovalObject,
@@ -19,7 +18,7 @@ from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import (
 from wallet.services.account import (
     generate_new_subaddress,
 )
-from wallet.services.fund_pull_pre_approval import (
+from wallet.services.offchain.fund_pull_pre_approval import (
     create_and_approve,
     approve,
     Role,
@@ -31,12 +30,14 @@ from wallet.services.fund_pull_pre_approval import (
     get_command_from_bech32,
     get_funds_pull_pre_approvals,
 )
-from wallet.services.fund_pull_pre_approval_sm import FundsPullPreApprovalStateError
-from wallet.services.fund_pull_pre_approval_sm import (
+from wallet.services.offchain.fund_pull_pre_approval_sm import (
+    FundsPullPreApprovalStateError,
+)
+from wallet.services.offchain.fund_pull_pre_approval_sm import (
     reduce_role,
     all_possible_states,
 )
-from wallet.services.offchain import (
+from wallet.services.offchain.offchain import (
     process_inbound_command,
 )
 from wallet.storage import (
@@ -47,6 +48,7 @@ from wallet.storage import (
     update_command,
 )
 from wallet.types import RegistrationStatus
+import offchain
 
 CID = "35a1b548-3170-438f-bf3a-6ca0fef85d15"
 FUNDS_PULL_PRE_APPROVAL_ID = "5fc49fa0-5f2a-4faa-b391-ac1652c57e4d"

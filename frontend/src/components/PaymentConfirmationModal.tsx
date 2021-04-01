@@ -37,8 +37,14 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
     refreshUser();
   }, []);
 
-  const onConfirm = () => setSubmitStatus("success");
-  const onReject = () => setSubmitStatus("success");
+  const onConfirm = async () => {
+    await new BackendClient().approvePaymentCommand(paymentParams.referenceId);
+    setSubmitStatus("success");
+  };
+  const onReject = async () => {
+    await new BackendClient().rejectPaymentCommand(paymentParams.referenceId);
+    setSubmitStatus("success");
+  };
 
   const humanFriendlyAmount = diemAmountToHumanFriendly(paymentParams.amount, true);
 

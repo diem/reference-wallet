@@ -106,7 +106,8 @@ def test_approve_request_by_payer(validator, vasp_proxy: VaspProxy):
     """
     The VASP receives a funds pull pre-approval request details and approve it
     """
-    # Step 1: Trigger the request creation in the validator and validate it's been created with "pending" status
+    # Step 1: Trigger the request creation in the validator
+    # and validate it's been created with "pending" status
     # and validate that no request was created in vasp_proxy
     scope = FundPullPreApprovalScope(
         type=FundPullPreApprovalType.consent,
@@ -127,7 +128,8 @@ def test_approve_request_by_payer(validator, vasp_proxy: VaspProxy):
 
     assert_validator_preapproval(FundPullPreApprovalStatus.pending)
 
-    # Step 2: Create and approve the request in vasp_proxy and validate it is "valid" on both sides
+    # Step 2: Create and approve the request in vasp_proxy
+    # and validate it is "valid" on both sides
     vasp_proxy.create_and_approve_funds_pull_request(
         biller_address=validator_address,
         funds_pull_pre_approval_id=actual_id,

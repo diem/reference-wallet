@@ -1,15 +1,22 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
+
 from datetime import datetime
 
 from diem import offchain
 from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import TIMESTAMP
-
-from wallet.services.account import get_account_id_from_bech32
-from wallet.services.fund_pull_pre_approval import Role
-from wallet.services.validation_tool import request_funds_pull_pre_approval_from_another
-from wallet.storage import db_session, funds_pull_pre_approval_command as fppa_storage
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
+from wallet.services.account import get_account_id_from_bech32
+from wallet.services.offchain.fund_pull_pre_approval import Role
+from wallet.services.validation_tool import (
+    request_funds_pull_pre_approval_from_another,
+)
+from wallet.storage import (
+    db_session,
+    funds_pull_pre_approval_command as fppa_storage,
+)
+
+CURRENCY = "XUS"
 
 SOME_ADDRESS_BECH32 = "tdm1pvjua68j72mhmp3n7jkuthmxlkj0g57gkpegq6qgkjfxwc"
 SOME_DESCRIPTION = "Children of the future watching empires fall"
@@ -27,12 +34,12 @@ class TestRequestFundsPullPreApprovalFromAnother:
                 value=3,
                 max_amount=offchain.CurrencyObject(
                     amount=333444555,
-                    currency="XUS",
+                    currency=CURRENCY,
                 ),
             ),
             max_transaction_amount=offchain.CurrencyObject(
                 amount=111222,
-                currency="XUS",
+                currency=CURRENCY,
             ),
         )
 

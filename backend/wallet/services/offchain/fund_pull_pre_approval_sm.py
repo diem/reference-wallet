@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 
-from diem.offchain import FundPullPreApprovalStatus
+from offchain import FundPullPreApprovalStatus
 
 logger = logging.getLogger(__name__)
 

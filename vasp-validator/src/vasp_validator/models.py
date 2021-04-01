@@ -87,6 +87,7 @@ class Transaction:
     destination: Vasp
     is_internal: bool
     blockchain_tx: Optional[BlockchainTransaction]
+    reference_id: str
 
 
 @dataclass_json
@@ -196,3 +197,15 @@ class AccountInfo:
 @dataclass
 class OffChainSequenceInfo:
     pass
+
+
+@dataclass_json
+@dataclass
+class CreatePaymentCommandAsSender:
+    reference_id: str
+    vasp_address: str
+    merchant_name: str
+    action: str
+    currency: str
+    amount: int
+    expiration: int

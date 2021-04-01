@@ -9,6 +9,7 @@ from http import HTTPStatus
 from typing import Optional
 
 import pytest
+from diem.offchain import Status
 from flask import Response
 from wallet.services.transaction import FundsTransfer
 from werkzeug import Client
@@ -61,7 +62,7 @@ INTERNAL_FUNDS_TRANSFER = FundsTransfer(
             reference_id="c6f7e351-e1c3-4da7-9310-4e87296febf2",
             sender=offchain.PaymentActorObject(
                 address="tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
-                status=offchain.StatusObject(status="ready_for_settlement"),
+                status=offchain.StatusObject(status=Status.ready_for_settlement),
                 kyc_data=offchain.KycDataObject(
                     type="individual",
                     payload_version=1,
@@ -82,7 +83,7 @@ INTERNAL_FUNDS_TRANSFER = FundsTransfer(
             ),
             receiver=offchain.PaymentActorObject(
                 address="tdm1pwm5m35ayknjr0s67pk9xdf5mwqft4rvgxplmckcxr9lwd",
-                status=offchain.StatusObject(status="ready_for_settlement"),
+                status=offchain.StatusObject(status=Status.ready_for_settlement),
                 kyc_data=offchain.KycDataObject(
                     type="individual",
                     payload_version=1,
@@ -261,6 +262,7 @@ class TestAccountTransactions:
             },
             "blockchain_tx": None,
             "is_internal": True,
+            "reference_id": None,
         }
 
     def test_get_transaction_by_id_other_user(
@@ -307,6 +309,7 @@ class TestAccountTransactions:
                 },
                 "blockchain_tx": None,
                 "is_internal": True,
+                "reference_id": None,
             }
         ]
 

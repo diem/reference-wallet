@@ -12,6 +12,7 @@ import { Quote, QuoteAction, Rate } from "../interfaces/cico";
 import { Debt } from "../interfaces/settlement";
 import { Chain } from "../interfaces/system";
 import { Approval } from "../interfaces/approval";
+import { PaymentParams } from "../utils/payment-params";
 
 export default class BackendClient {
   private client: AxiosInstance;
@@ -405,6 +406,8 @@ export default class BackendClient {
     }
   }
 
+  // Offchain
+
   async getNewFundsPullPreApprovals(): Promise<Approval[]> {
     try {
       const response = await this.client.get("/offchain/funds_pull_pre_approvals?status=pending");
@@ -432,6 +435,41 @@ export default class BackendClient {
       await this.client.put(`/offchain/funds_pull_pre_approvals/${funds_pull_pre_approval_id}`, {
         status,
       });
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async addPaymentComand(paymentParams: PaymentParams): Promise<void> {
+    try {
+      await this.client.post(`/offchain/payment_command`, {
+        vasp_address: paymentParams.vaspAddress,
+        reference_id: paymentParams.referenceId,
+        merchant_name: paymentParams.merchantName,
+        action: paymentParams.action.toLowerCase(),
+        currency: paymentParams.currency,
+        amount: paymentParams.amount,
+        expiration: paymentParams.expiration.getTime() / 1000,
+      });
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async approvePaymentCommand(reference_id): Promise<void> {
+    try {
+      await this.client.post(`/offchain/payment_command/${reference_id}/actions/approve`);
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async rejectPaymentCommand(reference_id): Promise<void> {
+    try {
+      await this.client.post(`/offchain/payment_command/${reference_id}/actions/reject`);
     } catch (e) {
       BackendClient.handleError(e);
       throw e;

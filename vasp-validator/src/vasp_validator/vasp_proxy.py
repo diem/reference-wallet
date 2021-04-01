@@ -33,7 +33,11 @@ class VaspProxy(ABC):
         ...
 
     @abstractmethod
-    def knows_transaction(self, version) -> bool:
+    def knows_transaction_by_version(self, version) -> bool:
+        ...
+
+    @abstractmethod
+    def knows_transaction_by_reference_id(self, reference_id) -> bool:
         ...
 
     @abstractmethod
@@ -65,8 +69,8 @@ class VaspProxy(ABC):
         description: str = None,
     ) -> str:
         """
-        Send only request data to be saved on this VASP without be sending through offchain,
-        so testee VASP could approve this request data through offchain.
+        Send only request data to be saved on this VASP without be sending through
+        offchain, so testee VASP could approve this request data through offchain.
 
         :param scope: Definition of the scope of this request.
         :param description: Optional, human readable description of the request.
@@ -99,4 +103,25 @@ class VaspProxy(ABC):
         scope: FundPullPreApprovalScope,
         description: str,
     ):
+        ...
+
+    @abstractmethod
+    def create_payment_command_as_sender(
+        self,
+        reference_id,
+        vasp_address,
+        merchant_name,
+        action,
+        currency,
+        amount,
+        expiration,
+    ):
+        ...
+
+    @abstractmethod
+    def approve_payment_command(self, reference_id):
+        ...
+
+    @abstractmethod
+    def reject_payment_command(self, reference_id):
         ...

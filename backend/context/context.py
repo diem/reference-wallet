@@ -4,7 +4,6 @@
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Optional
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,
@@ -14,11 +13,11 @@ from diem import (
     jsonrpc,
     utils,
     diem_types,
-    offchain,
     stdlib,
     txnmetadata,
     AuthKey,
 )
+import offchain
 
 from . import config, stubs
 

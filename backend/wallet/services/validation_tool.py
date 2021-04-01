@@ -4,9 +4,11 @@ from datetime import datetime
 import context
 from diem import identifier, offchain
 from wallet.services.account import generate_new_subaddress
-from wallet.storage import funds_pull_pre_approval_command as fppa_storage
-
-from .fund_pull_pre_approval import Role
+from wallet.services.offchain.fund_pull_pre_approval import Role
+from wallet.storage import (
+    funds_pull_pre_approval_command as fppa_storage,
+    models,
+)
 
 
 def request_funds_pull_pre_approval_from_another(
@@ -37,7 +39,7 @@ def commit_funds_pull_pre_approval(
     max_transaction_amount = get_max_transaction_amount_from_scope(scope)
 
     fppa_storage.commit_command(
-        fppa_storage.models.FundsPullPreApprovalCommand(
+        models.FundsPullPreApprovalCommand(
             account_id=account_id,
             address=payer_address,
             biller_address=biller_address,

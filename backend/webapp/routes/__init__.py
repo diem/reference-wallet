@@ -183,6 +183,25 @@ def offchain_api_routes():
         methods=["GET"],
     )
     offchain.add_url_rule(
+        rule="/offchain/payment_command",
+        view_func=OffchainRoutes.AddPaymentCommandAsSender.as_view(
+            "create_payment_command"
+        ),
+        methods=["POST"],
+    )
+    offchain.add_url_rule(
+        rule="/offchain/payment_command/<reference_id>/actions/approve",
+        view_func=OffchainRoutes.ApprovePaymentCommand.as_view(
+            "approve_payment_command"
+        ),
+        methods=["POST"],
+    )
+    offchain.add_url_rule(
+        rule="/offchain/payment_command/<reference_id>/actions/reject",
+        view_func=OffchainRoutes.RejectPaymentCommand.as_view("reject_payment_command"),
+        methods=["POST"],
+    )
+    offchain.add_url_rule(
         rule="/offchain/funds_pull_pre_approvals",
         view_func=OffchainRoutes.GetFundsPullPreApprovals.as_view(
             "get_funds_pull_pre_approval"

@@ -17,6 +17,7 @@ from .models import (
     OffChainSequenceInfo,
     TransactionId,
     FundsTransfer,
+    CreatePaymentCommandAsSender,
 )
 from .models_fppa import (
     FundPullPreApprovalScope,
@@ -103,6 +104,39 @@ class ReferenceWalletProxy:
             "POST", "account/transactions", json=tx_request.to_dict()
         )
         return TransactionId.from_json(send_transaction_response.text)
+
+    def create_payment_command_as_sender(
+        self,
+        reference_id,
+        vasp_address,
+        merchant_name,
+        action,
+        currency,
+        amount,
+        expiration,
+    ):
+        request = CreatePaymentCommandAsSender(
+            reference_id=reference_id,
+            vasp_address=vasp_address,
+            merchant_name=merchant_name,
+            action=action,
+            currency=currency,
+            amount=amount,
+            expiration=expiration,
+        )
+        self._request_authorized(
+            "POST", "offchain/payment_command", json=request.to_dict()
+        )
+
+    def approve_payment_command(self, reference_id):
+        self._request_authorized(
+            "POST", f"/offchain/payment_command/{reference_id}/actions/approve"
+        )
+
+    def reject_payment_command(self, reference_id):
+        self._request_authorized(
+            "POST", f"/offchain/payment_command/{reference_id}/actions/reject"
+        )
 
     def get_transaction(self, tx_id) -> FundsTransfer:
         response = self._request_authorized("GET", f"account/transactions/{tx_id}")
@@ -191,7 +225,7 @@ class ReferenceWalletProxyFPPA:
     ):
         self._request_authorized(
             "POST",
-            f"offchain/funds_pull_pre_approvals",
+            "offchain/funds_pull_pre_approvals",
             {
                 "biller_address": biller_address,
                 "funds_pull_pre_approval_id": funds_pull_pre_approval_id,
