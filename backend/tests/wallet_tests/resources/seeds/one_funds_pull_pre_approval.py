@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from diem.offchain import FundPullPreApprovalStatus
+from offchain import FundPullPreApprovalStatus
 from diem_utils.types.currencies import DiemCurrency
 from wallet.services.offchain.fund_pull_pre_approval import Role
 from wallet.storage.models import FundsPullPreApprovalCommand

@@ -3,11 +3,11 @@ from typing import Optional, List
 from datetime import datetime
 
 import pytest
-from diem.offchain import Status
+from offchain import Status
 from flask import Response
 from flask.testing import Client
 from wallet.services.offchain import payment_command as pc_service
-from diem import offchain
+import offchain
 
 CURRENCY = "XUS"
 ADDRESS = "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
