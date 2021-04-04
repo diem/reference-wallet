@@ -2,6 +2,8 @@ from ..vasp_proxy import VaspProxy
 import uuid
 import time
 
+AMOUNT = 100_000_000
+
 ONE_YEAR_SECONDS = 356 * 24 * 60 * 60
 CURRENCY = "XUS"
 
@@ -21,7 +23,6 @@ def test_approve_incoming_charge_payment_command(validator, vasp_proxy: VaspProx
     validator_address = validator.get_receiving_address()
     reference_id = str(uuid.uuid4())
     action = "charge"
-    amount = 2_000_000_000
     expiration = int(time.time()) + ONE_YEAR_SECONDS
 
     # Step 1: vasp_proxy create payment command as sender
@@ -31,7 +32,7 @@ def test_approve_incoming_charge_payment_command(validator, vasp_proxy: VaspProx
         merchant_name="vaspulator",
         action=action,
         currency=CURRENCY,
-        amount=amount,
+        amount=AMOUNT,
         expiration=expiration,
     )
     # Step 2: vasp_proxy approve payment command
@@ -63,7 +64,6 @@ def test_reject_payment_details_and_send(validator, vasp_proxy: VaspProxy):
     validator_address = validator.get_receiving_address()
     reference_id = str(uuid.uuid4())
     action = "charge"
-    amount = 2_000_000_000
     expiration = int(time.time()) + ONE_YEAR_SECONDS
 
     # Step 1: vasp_proxy create payment command as sender
@@ -73,7 +73,7 @@ def test_reject_payment_details_and_send(validator, vasp_proxy: VaspProxy):
         merchant_name="vaspulator",
         action=action,
         currency=CURRENCY,
-        amount=amount,
+        amount=AMOUNT,
         expiration=expiration,
     )
     # Step 2: vasp_proxy approve payment command

@@ -176,7 +176,6 @@ class Client:
 
         - `diem.offchain.types.payment_types.PaymentObject.sender` or `diem.offchain.types.payment_types.PaymentObject.sender`.address is invalid.
         - `request_sender_address` is not sender or receiver actor address.
-        - For initial payment object, the `diem.offchain.types.payment_types.PaymentActionObject.amount` is under dual attestation limit (travel rule limit).
         - When receiver actor statis is `ready_for_settlement`, the `recipient_signature` is not set or is invalid (verifying transaction metadata failed).
 
         """
@@ -199,9 +198,7 @@ class Client:
             payment = cast.payment
             self.validate_addresses(payment, request_sender_address)
             cmd = self.create_inbound_payment_command(request.cid, payment)
-            if cmd.is_initial():
-                self.validate_dual_attestation_limit_by_action(cmd.payment.action)
-            elif cmd.is_rsend():
+            if cmd.is_rsend():
                 self.validate_recipient_signature(cmd, public_key)
             return cmd
         elif request.command_type == CommandType.FundPullPreApprovalCommand:
@@ -232,45 +229,6 @@ class Client:
                 str(e),
                 "command.payment.recipient_signature",
             ) from e
-
-    def validate_dual_attestation_limit_by_action(
-        self, action: PaymentActionObject
-    ) -> None:
-        msg = self.is_under_dual_attestation_limit(action.currency, action.amount)
-        if msg:
-            raise command_error(
-                ErrorCode.no_kyc_needed, msg, "command.payment.action.amount"
-            )
-
-    def is_under_dual_attestation_limit(
-        self, currency: str, amount: int
-    ) -> typing.Optional[str]:
-        currencies = self.jsonrpc_client.get_currencies()
-        try:
-            self.validate_currency_code(currency, currencies)
-        except InvalidCurrencyCodeError as e:
-            raise command_error(
-                ErrorCode.invalid_field_value, str(e), "command.payment.action.currency"
-            )
-        except UnsupportedCurrencyCodeError as e:
-            raise command_error(
-                ErrorCode.unsupported_currency,
-                str(e),
-                "command.payment.action.currency",
-            )
-
-        limit = self.jsonrpc_client.get_metadata().dual_attestation_limit
-        for info in currencies:
-            if info.code == currency:
-                if _is_under_the_threshold(limit, info.to_xdx_exchange_rate, amount):
-                    return (
-                        "payment amount is %s (rate: %s) under travel rule threshold %s"
-                        % (
-                            amount,
-                            info.to_xdx_exchange_rate,
-                            limit,
-                        )
-                    )
 
     def validate_currency_code(
         self,
@@ -410,11 +368,3 @@ def _deserialize_jws(
         raise error_fn(
             ErrorCode.invalid_jws, f"deserialize JWS bytes failed: {e}", None
         ) from e
-
-
-def _is_under_the_threshold(limit: int, rate: float, amount: int) -> bool:
-    # use ceil of the xdx exchanged amount to ensure a valid amount
-    # is not considered as under the threshold because of float number
-    # transport or calculation difference comparing with Move module
-    # implementation.
-    return math.ceil(rate * amount) < limit
