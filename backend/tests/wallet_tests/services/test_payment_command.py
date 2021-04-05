@@ -51,12 +51,12 @@ def test_model_to_payment_command():
         amount=AMOUNT,
         currency=DiemCurrency.XUS,
         action="charge",
-        created_at=datetime.fromtimestamp(CREATED_AT / 1e3),
+        created_at=datetime.fromtimestamp(CREATED_AT),
         original_payment_reference_id=ORIGINAL_REFERENCE_ID,
         recipient_signature="recipient_signature",
         description="description",
         merchant_name="merchant_name",
-        expiration=datetime.fromtimestamp(EXPIRATION / 1e3),
+        expiration=datetime.fromtimestamp(EXPIRATION),
     )
 
     payment_command = pc_service.model_to_payment_command(model)
