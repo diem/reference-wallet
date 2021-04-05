@@ -1,16 +1,14 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
-import time
-from datetime import datetime
 
 import pytest
-from diem import offchain
-from diem.offchain import FundPullPreApprovalStatus
-from diem_utils.types.currencies import FiatCurrency, DiemCurrency
+import offchain
+from diem_utils.types.currencies import DiemCurrency
 
 import context
-import wallet.services.offchain as offchain_service
-from wallet.services.fund_pull_pre_approval_sm import (
+import wallet.services.offchain.offchain as offchain_service
+from offchain import FundPullPreApprovalStatus
+from wallet.services.offchain.fund_pull_pre_approval_sm import (
     FundsPullPreApprovalStateError,
     Role,
 )

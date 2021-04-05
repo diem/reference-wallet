@@ -3,16 +3,20 @@
 
 import context
 import dataclasses
-from diem import identifier, LocalAccount, offchain, jsonrpc
+
+import wallet.services.offchain.payment_command as pc_service
+import wallet.services.offchain.utils as utils
+from diem import identifier, LocalAccount, jsonrpc
 from diem_utils.types.currencies import DiemCurrency
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet.services.account import (
     generate_new_subaddress,
 )
-from wallet.services import offchain as offchain_service
+from wallet.services.offchain import offchain as offchain_service
 from wallet.storage import db_session
 
 from wallet import storage
+import offchain
 from wallet.types import TransactionStatus
 
 currency = DiemCurrency.XUS
@@ -25,7 +29,7 @@ def test_save_outbound_payment_command(monkeypatch):
     amount = 10_000_000_000
     receiver = LocalAccount.generate()
     sub_address = identifier.gen_subaddress()
-    cmd = offchain_service.save_outbound_payment_command(
+    cmd = pc_service.save_outbound_payment_command(
         user.account_id, receiver.account_address, sub_address, amount, currency
     )
 
@@ -59,13 +63,16 @@ def test_process_inbound_payment_command(monkeypatch):
     sender_sub_address = identifier.gen_subaddress()
     receiver_sub_address = generate_new_subaddress(user.account_id)
     cmd = offchain.PaymentCommand.init(
-        identifier.encode_account(sender.account_address, sender_sub_address, hrp),
-        offchain_service._user_kyc_data(user.account_id),
-        identifier.encode_account(
+        sender_account_id=identifier.encode_account(
+            sender.account_address, sender_sub_address, hrp
+        ),
+        sender_kyc_data=utils.user_kyc_data(user.account_id),
+        receiver_account_id=identifier.encode_account(
             context.get().config.vasp_address, receiver_sub_address, hrp
         ),
-        amount,
-        currency.value,
+        amount=amount,
+        currency=currency.value,
+        inbound=True,
     )
 
     with monkeypatch.context() as m:
@@ -75,6 +82,11 @@ def test_process_inbound_payment_command(monkeypatch):
             "process_inbound_request",
             lambda _, c: client.create_inbound_payment_command(c.cid, c.payment),
         )
+        m.setattr(
+            context.get().offchain_client,
+            "send_command",
+            lambda c, _: offchain.reply_request(c.cid),
+        )
         code, resp = offchain_service.process_inbound_command(
             cmd.payment.sender.address, cmd
         )
@@ -83,19 +95,8 @@ def test_process_inbound_payment_command(monkeypatch):
 
     model = storage.get_payment_command(cmd.reference_id())
     assert model
-    assert model.status == TransactionStatus.OFF_CHAIN_INBOUND
+    assert model.status == TransactionStatus.OFF_CHAIN_RECEIVER_OUTBOUND
     assert model.inbound, str(cmd)
-
-    with monkeypatch.context() as m:
-        m.setattr(
-            context.get().offchain_client,
-            "send_command",
-            lambda c, _: offchain.reply_request(c.cid),
-        )
-        offchain_service.process_offchain_tasks()
-
-        db_session.refresh(model)
-        assert model.status == TransactionStatus.OFF_CHAIN_OUTBOUND
 
 
 def test_submit_txn_when_both_ready(monkeypatch):
@@ -105,7 +106,7 @@ def test_submit_txn_when_both_ready(monkeypatch):
     amount = 10_000_000_000
     receiver = LocalAccount.generate()
     sub_address = identifier.gen_subaddress()
-    cmd = offchain_service.save_outbound_payment_command(
+    cmd = pc_service.save_outbound_payment_command(
         user.account_id, receiver.account_address, sub_address, amount, currency
     )
     receiver_cmd = dataclasses.replace(
@@ -114,7 +115,7 @@ def test_submit_txn_when_both_ready(monkeypatch):
     receiver_ready_cmd = receiver_cmd.new_command(
         recipient_signature=b"recipient_signature".hex(),
         status=offchain.Status.ready_for_settlement,
-        kyc_data=offchain_service._user_kyc_data(user.account_id),
+        kyc_data=utils.user_kyc_data(user.account_id),
     )
 
     model = storage.get_payment_command(cmd.reference_id())

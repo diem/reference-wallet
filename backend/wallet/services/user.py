@@ -23,6 +23,7 @@ from wallet.storage import (
     PaymentMethod,
 )
 from wallet.types import LoginError, UsernameExistsError
+from datetime import datetime, timedelta
 
 TOKEN_VALID_TIME: int = 600
 
@@ -135,7 +136,13 @@ def update_password(user_id, new_password):
 
 def create_password_reset_token(user: User) -> str:
     token = str(uuid4())
-    storage.update_user(user_id=user.id, password_reset_token=token)
+    expiration_time = datetime.now() + timedelta(minutes=5)
+
+    storage.update_user(
+        user_id=user.id,
+        password_reset_token=token,
+        password_reset_token_expiration=expiration_time,  # datetime.fromtimestamp(expiration_time),
+    )
 
     return token
 

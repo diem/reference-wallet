@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """ The Accounts API layer that handles user creation, information management and updates. """
-from datetime import date
+from datetime import date, datetime
 from http import HTTPStatus
 
 from flask import (
@@ -235,8 +235,9 @@ class UserRoutes:
         )  # path_string_param(name='account_name', description="account name")
         responses = {
             HTTPStatus.OK: response_definition("Success"),
+            HTTPStatus.UNAUTHORIZED: response_definition("Unknown user", schema=Error),
             HTTPStatus.UNAUTHORIZED: response_definition(
-                "Incorrect password", schema=Error
+                "Expired refresh token", schema=Error
             ),
         }
         require_authenticated_user = False
@@ -247,12 +248,15 @@ class UserRoutes:
             new_password = data["new_password"]
             _user = user_service.get_user_by_reset_token(reset_token=reset_token)
             if _user:
-                user_service.update_password(_user.id, new_password)
+                if _user.password_reset_token_expiration > datetime.now():
+                    user_service.update_password(_user.id, new_password)
+                else:
+                    return self.respond_with_error(
+                        HTTPStatus.UNAUTHORIZED, "Expired refresh token"
+                    )
                 return {"success": True}, HTTPStatus.OK
             else:
-                return self.respond_with_error(
-                    HTTPStatus.UNAUTHORIZED, "Incorrect password"
-                )
+                return self.respond_with_error(HTTPStatus.UNAUTHORIZED, "Unknown user")
 
     class StorePaymentMethod(UserView):
         summary = "Stores new payment method"

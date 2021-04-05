@@ -188,6 +188,7 @@ class Transaction(Schema):
     blockchain_tx = fields.Nested(
         BlockchainTransaction, required=False, allow_none=True
     )
+    reference_id: str
 
 
 class CreateTransaction(Schema):
@@ -319,3 +320,16 @@ class FundsPullPreApprovalRequest(Schema):
     payer_address = fields.Str(required=False, allow_none=True)
     scope = fields.Nested(Scope)
     description = fields.Str(required=False)
+
+
+class CreatePaymentCommand(Schema):
+    reference_id = fields.Str(required=True)
+    action = fields.Str(required=True, validate=OneOf(["charge", "auth", "capture"]))
+    currency = fields.Str(required=True)
+    amount = fields.Int(required=True)
+    expiration = fields.Int(required=True)
+
+
+class CreatePaymentAsSenderCommand(CreatePaymentCommand):
+    vasp_address = fields.Str(required=True)
+    merchant_name = fields.Str(required=True)

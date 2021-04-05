@@ -319,6 +319,7 @@ class AccountRoutes:
             },
             "is_internal": transaction.type == TransactionType.INTERNAL,
             "blockchain_tx": blockchain_tx,
+            "reference_id": transaction.reference_id,
         }
 
     @classmethod
