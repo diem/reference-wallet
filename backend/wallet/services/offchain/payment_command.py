@@ -139,7 +139,6 @@ def model_to_payment_command(model: PaymentCommandModel) -> offchain.PaymentComm
                 )
                 if model.sender_kyc_data
                 else None,
-                # TODO
                 metadata=model.sender_metadata,
                 additional_kyc_data=model.sender_additional_kyc_data,
             ),
@@ -151,7 +150,6 @@ def model_to_payment_command(model: PaymentCommandModel) -> offchain.PaymentComm
                 )
                 if model.receiver_kyc_data
                 else None,
-                # TODO
                 metadata=model.receiver_metadata,
                 additional_kyc_data=model.receiver_additional_kyc_data,
             ),
@@ -160,6 +158,9 @@ def model_to_payment_command(model: PaymentCommandModel) -> offchain.PaymentComm
                 currency=model.currency,
                 action=model.action,
                 timestamp=int(datetime.timestamp(model.created_at)),
+                valid_until=int(datetime.timestamp(model.expiration))
+                if model.expiration
+                else None,
             ),
             original_payment_reference_id=model.original_payment_reference_id,
             recipient_signature=model.recipient_signature,
@@ -199,6 +200,9 @@ def payment_command_to_model(
         description=command.payment.description,
         status=status,
         account_id=get_command_account_id(command),
+        expiration=datetime.fromtimestamp(command.payment.action.valid_until)
+        if command.payment.action.valid_until
+        else None,
     )
 
 
