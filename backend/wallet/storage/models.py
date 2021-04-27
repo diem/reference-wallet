@@ -137,8 +137,8 @@ class PaymentCommand(Base):
     receiver_kyc_data = Column(String, nullable=True)
     receiver_metadata = Column(String, nullable=True)
     receiver_additional_kyc_data = Column(String, nullable=True)
-    amount = Column(Integer, nullable=False)
-    currency = Column(String, nullable=False)
+    amount = Column(Integer, nullable=True)
+    currency = Column(String, nullable=True)
     action = Column(String, nullable=False, default="charge")
     created_at = Column(
         DateTime,
