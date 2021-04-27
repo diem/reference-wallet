@@ -98,7 +98,7 @@ def get_payment_details(reference_id: str):
             action=payment_command.action,
             currency=payment_command.currency,
             amount=payment_command.amount,
-            expiration=payment_command.expiration,
+            expiration=int(datetime.timestamp(payment_command.expiration)),
         )
 
     return None

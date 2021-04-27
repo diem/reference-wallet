@@ -339,7 +339,7 @@ def test_get_payment_details():
     assert payment_details.action == ACTION_CHARGE
     assert payment_details.amount == AMOUNT
     assert payment_details.currency == DiemCurrency.XUS
-    assert int(datetime.timestamp(payment_details.expiration)) == EXPIRATION
+    assert payment_details.expiration == EXPIRATION
     assert payment_details.merchant_name == MERCHANT_NAME
     assert payment_details.reference_id == REFERENCE_ID
     assert payment_details.vasp_address == OTHER_ADDRESS
