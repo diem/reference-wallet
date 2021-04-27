@@ -33,7 +33,7 @@ describe("Payment params from URL query string", () => {
     });
   });
 
-  describe("Valid partial payment URL", () => {
+  describe("Valid minimal payment URL", () => {
     it("should parse successfully", () => {
       const queryString =
         "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
@@ -47,7 +47,7 @@ describe("Payment params from URL query string", () => {
   });
 
   describe("Invalid partial payment URL", () => {
-    it("should parse successfully", () => {
+    it("should throw PaymentParamError", () => {
       const queryString =
         "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
         "checkoutDataType=PAYMENT_REQUEST&" +
