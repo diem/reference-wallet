@@ -15,21 +15,28 @@ export enum PaymentAction {
 
 export class PaymentParams {
   constructor(
+    readonly isFull: boolean,
     readonly vaspAddress: string,
     readonly referenceId: string,
-    readonly merchantName: string,
-    readonly checkoutDataType: CheckoutDataType,
-    readonly action: PaymentAction,
-    readonly currency: string,
-    readonly amount: number,
-    readonly expiration: Date,
-    readonly redirectUrl: string
+    readonly merchantName?: string,
+    readonly checkoutDataType?: CheckoutDataType,
+    readonly action?: PaymentAction,
+    readonly currency?: string,
+    readonly amount?: number,
+    readonly expiration?: Date,
+    readonly redirectUrl?: string
   ) {}
 
   public static fromUrlQueryString(queryString: string): PaymentParams {
     const params = new URLSearchParams(queryString);
 
     const vaspAddress = PaymentParams.getParam(params, "vaspAddress");
+    const referenceId = PaymentParams.getParam(params, "referenceId");
+
+    if (Array.from(params).length === 2) {
+      return new PaymentParams(false, vaspAddress, referenceId);
+    }
+
     const merchantName = PaymentParams.getParam(params, "merchantName");
     const checkoutDataType = CheckoutDataType[PaymentParams.getParam(params, "checkoutDataType")];
     const action = PaymentAction[PaymentParams.getParam(params, "action")];
@@ -37,7 +44,6 @@ export class PaymentParams {
     const amountTxt = PaymentParams.getParam(params, "amount");
     const expirationTxt = PaymentParams.getParam(params, "expiration");
     const redirectUrl = PaymentParams.getParam(params, "redirectUrl");
-    const referenceId = PaymentParams.getParam(params, "referenceId");
 
     try {
       new URL(redirectUrl);
@@ -75,6 +81,7 @@ export class PaymentParams {
     }
 
     return new PaymentParams(
+      true,
       vaspAddress,
       referenceId,
       merchantName,

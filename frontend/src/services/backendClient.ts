@@ -447,10 +447,11 @@ export default class BackendClient {
         vasp_address: paymentParams.vaspAddress,
         reference_id: paymentParams.referenceId,
         merchant_name: paymentParams.merchantName,
-        action: paymentParams.action.toLowerCase(),
+        action: paymentParams.action!.toLowerCase() ? paymentParams.action : undefined,
         currency: paymentParams.currency,
         amount: paymentParams.amount,
-        expiration: paymentParams.expiration.getTime() / 1000,
+        expiration:
+          paymentParams.expiration!.getTime() / 1000 ? paymentParams.expiration : undefined,
       });
     } catch (e) {
       BackendClient.handleError(e);

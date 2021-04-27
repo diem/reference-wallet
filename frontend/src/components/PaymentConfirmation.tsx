@@ -62,7 +62,7 @@ function PaymentConfirmation() {
         Invalid payment request.
       </Alert>
 
-      {!!paymentParams && (
+      {!!paymentParams && paymentParams.isFull && (
         <PaymentConfirmationModal
           open={!!paymentParams}
           paymentParams={paymentParams}

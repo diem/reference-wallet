@@ -33,6 +33,30 @@ describe("Payment params from URL query string", () => {
     });
   });
 
+  describe("Valid partial payment URL", () => {
+    it("should parse successfully", () => {
+      const queryString =
+        "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
+        "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&";
+
+      const params = PaymentParams.fromUrlQueryString(queryString);
+
+      expect(params.vaspAddress).toBe("tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0");
+      expect(params.referenceId).toBe("ce74d678-d014-48fc-b61d-2c36683feb29");
+    });
+  });
+
+  describe("Invalid partial payment URL", () => {
+    it("should parse successfully", () => {
+      const queryString =
+        "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
+        "checkoutDataType=PAYMENT_REQUEST&" +
+        "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&";
+
+      expect(() => PaymentParams.fromUrlQueryString(queryString)).toThrow("merchantName");
+    });
+  });
+
   describe("referenceId is not a proper UUID", () => {
     it("should throw PaymentParamError", () => {
       const queryString =
