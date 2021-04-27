@@ -235,7 +235,7 @@ def mock_get_account_payment_commands(monkeypatch):
 
 
 @pytest.fixture()
-def mock_add_payment_command(monkeypatch):
+def mock_add_payment_command_as_sender(monkeypatch):
     def mock(
         account_id,
         reference_id,
@@ -315,9 +315,9 @@ class TestGetAccountPaymentCommands:
         )
 
 
-class TestAddPaymentCommand:
-    def test_add_payment_command(
-        self, authorized_client: Client, mock_add_payment_command
+class TestAddPaymentCommandAsSender:
+    def test_add_payment_command_as_sender(
+        self, authorized_client: Client, mock_add_payment_command_as_sender
     ) -> None:
         rv: Response = authorized_client.post(
             "/offchain/payment_command",
