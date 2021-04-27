@@ -334,6 +334,19 @@ class TestAddPaymentCommand:
 
         assert rv.status_code == 204, rv.get_data()
 
+    def test_add_payment_command_as_sender_with_minimal_values(
+        self, authorized_client: Client, mock_add_payment_command_as_sender
+    ) -> None:
+        rv: Response = authorized_client.post(
+            "/offchain/payment_command",
+            json={
+                "vasp_address": "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
+                "reference_id": str(uuid.uuid4()),
+            },
+        )
+
+        assert rv.status_code == 204, rv.get_data()
+
 
 class TestUpdatePaymentCommandStatus:
     def test_update_payment_command_status_approve(

@@ -58,7 +58,7 @@ def add_payment_command_as_sender(
         status=TransactionStatus.PENDING,
         account_id=account_id,
         merchant_name=merchant_name,
-        expiration=datetime.fromtimestamp(expiration),
+        expiration=datetime.fromtimestamp(expiration) if expiration else None,
     )
     save_payment_command(payment_command)
 

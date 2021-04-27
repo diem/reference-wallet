@@ -234,15 +234,20 @@ class OffchainRoutes:
         def post(self):
             params = request.json
 
+            amount = int(params.get("amount")) if params.get("amount") else None
+            expiration = (
+                int(params.get("expiration")) if params.get("expiration") else None
+            )
+
             pc_service.add_payment_command_as_sender(
                 self.user.account_id,
-                params["reference_id"],
-                params["vasp_address"],
-                params["merchant_name"],
-                params["action"],
-                params["currency"],
-                int(params["amount"]),
-                int(params["expiration"]),
+                params.get("reference_id"),
+                params.get("vasp_address"),
+                params.get("merchant_name"),
+                params.get("action"),
+                params.get("currency"),
+                amount,
+                expiration,
             )
 
             return "OK", HTTPStatus.NO_CONTENT
