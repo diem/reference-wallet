@@ -20,7 +20,6 @@ import time
 CREATED_AT = int(time.time())
 EXPIRATION = CREATED_AT + 3000
 
-
 ACTION_CHARGE = "charge"
 AMOUNT = 100_000
 MERCHANT_NAME = "Bond & Gurki Pet Store"
@@ -316,3 +315,31 @@ def check_payment_command(expected_my_actor_address=context.get().config.vasp_ad
     assert payment_command.payment.action.currency == DiemCurrency.XUS
     assert payment_command.payment.receiver.status.status == Status.none
     assert payment_command.payment.sender.status.status == Status.none
+
+
+def test_get_payment_details():
+    PaymentCommandSeeder.run(
+        db_session,
+        reference_id=REFERENCE_ID,
+        amount=AMOUNT,
+        sender_address=MY_ADDRESS,
+        sender_status="none",
+        receiver_address=OTHER_ADDRESS,
+        receiver_status="none",
+        action=ACTION_CHARGE,
+        is_sender=True,
+        command_status=TransactionStatus.PENDING,
+        currency=DiemCurrency.XUS,
+        expiration=datetime.fromtimestamp(EXPIRATION),
+        merchant_name=MERCHANT_NAME,
+    )
+
+    payment_details = pc_service.get_payment_details(REFERENCE_ID)
+
+    assert payment_details.action == ACTION_CHARGE
+    assert payment_details.amount == AMOUNT
+    assert payment_details.currency == DiemCurrency.XUS
+    assert int(datetime.timestamp(payment_details.expiration)) == EXPIRATION
+    assert payment_details.merchant_name == MERCHANT_NAME
+    assert payment_details.reference_id == REFERENCE_ID
+    assert payment_details.vasp_address == OTHER_ADDRESS

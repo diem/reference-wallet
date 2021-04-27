@@ -11,6 +11,26 @@ import offchain
 
 CURRENCY = "XUS"
 ADDRESS = "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
+REFERENCE_ID = "c6f7e351-e1c3-4da7-9310-4e87296febf2"
+CHARGE_ACTION = "charge"
+AMOUNT = 200_000_000
+EXPIRATION = 1802010490
+
+
+@pytest.fixture
+def mock_get_payment_details(monkeypatch):
+    def mock(reference_id: int) -> Optional[pc_service.PaymentDetails]:
+        return pc_service.PaymentDetails(
+            vasp_address=ADDRESS,
+            reference_id=REFERENCE_ID,
+            merchant_name="Bond's Per Store",
+            action=CHARGE_ACTION,
+            currency=CURRENCY,
+            amount=AMOUNT,
+            expiration=EXPIRATION,
+        )
+
+    monkeypatch.setattr(pc_service, "get_payment_details", mock)
 
 
 @pytest.fixture
@@ -255,6 +275,25 @@ class TestGetPaymentCommand:
             rv.get_json()["my_actor_address"]
             == "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
         )
+
+
+class TestGetPaymentDetails:
+    def test_get_payment_details(
+        self, authorized_client: Client, mock_get_payment_details
+    ) -> None:
+        rv: Response = authorized_client.get(
+            "/offchain/query/payment_details/22",
+        )
+
+        assert rv.status_code == 200
+        assert rv.get_data() is not None
+        assert rv.get_json()["action"] == CHARGE_ACTION
+        assert rv.get_json()["amount"] == AMOUNT
+        assert rv.get_json()["currency"] == CURRENCY
+        assert rv.get_json()["expiration"] == EXPIRATION
+        assert rv.get_json()["merchant_name"] == "Bond's Per Store"
+        assert rv.get_json()["reference_id"] == REFERENCE_ID
+        assert rv.get_json()["vasp_address"] == ADDRESS
 
 
 class TestGetAccountPaymentCommands:

@@ -24,6 +24,7 @@ from wallet.storage import (
     Transaction,
 )
 from wallet.types import TransactionStatus, TransactionType
+import dataclasses
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +72,34 @@ def get_payment_command(reference_id: str) -> Optional[offchain.PaymentCommand]:
 
     if payment_command:
         return model_to_payment_command(payment_command)
+
+    return None
+
+
+@dataclasses.dataclass(frozen=True)
+class PaymentDetails:
+    vasp_address: str
+    reference_id: str
+    merchant_name: str
+    action: str
+    currency: str
+    amount: int
+    expiration: int
+
+
+def get_payment_details(reference_id: str):
+    payment_command = storage.get_payment_command(reference_id)
+
+    if payment_command:
+        return PaymentDetails(
+            vasp_address=payment_command.receiver_address,
+            reference_id=reference_id,
+            merchant_name=payment_command.merchant_name,
+            action=payment_command.action,
+            currency=payment_command.currency,
+            amount=payment_command.amount,
+            expiration=payment_command.expiration,
+        )
 
     return None
 

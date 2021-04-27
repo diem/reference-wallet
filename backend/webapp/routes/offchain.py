@@ -34,6 +34,7 @@ from webapp.schemas import (
     Error,
     CreateAndApproveFundPullPreApproval,
     CreatePaymentAsSenderCommand as CreatePaymentCommandSchema,
+    PaymentDetails,
 )
 
 logger = logging.getLogger(__name__)
@@ -81,6 +82,18 @@ def preapproval_command_to_dict(preapproval: fppa_service.FPPAObject):
         }
 
     return result
+
+
+def payment_details_to_dict(payment_details: pc_service.PaymentDetails):
+    return {
+        "vasp_address": payment_details.vasp_address,
+        "reference_id": payment_details.reference_id,
+        "merchant_name": payment_details.merchant_name,
+        "action": payment_details.action,
+        "currency": payment_details.currency,
+        "amount": payment_details.amount,
+        "expiration": payment_details.expiration,
+    }
 
 
 def payment_command_to_dict(command: diem_offchain.PaymentCommand):
@@ -150,20 +163,37 @@ class OffchainRoutes:
         summary = "Get Payment Command"
 
         parameters = [
-            path_string_param(
-                name="transaction_id", description="transaction internal id"
-            )
+            path_string_param(name="reference_id", description="command reference id")
         ]
 
         responses = {
             HTTPStatus.OK: response_definition("Payment Command", schema=PaymentCommand)
         }
 
-        def get(self, transaction_id: int):
-            payment_command = pc_service.get_payment_command(transaction_id)
+        def get(self, reference_id: int):
+            payment_command = pc_service.get_payment_command(reference_id)
 
             return (
                 payment_command_to_dict(payment_command),
+                HTTPStatus.OK,
+            )
+
+    class GetPaymentDetails(OffchainView):
+        summary = "Get Payment Details"
+
+        parameters = [
+            path_string_param(name="reference_id", description="command reference id")
+        ]
+
+        responses = {
+            HTTPStatus.OK: response_definition("Payment Command", schema=PaymentDetails)
+        }
+
+        def get(self, reference_id: int):
+            payment_details = pc_service.get_payment_details(reference_id)
+
+            return (
+                payment_details_to_dict(payment_details),
                 HTTPStatus.OK,
             )
 

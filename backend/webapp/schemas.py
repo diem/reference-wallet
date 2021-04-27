@@ -248,6 +248,16 @@ class PaymentObject(Schema):
     description = fields.Str(required=False)
 
 
+class PaymentDetails(Schema):
+    vasp_address = fields.Str(required=True)
+    reference_id = fields.Str(required=True)
+    merchant_name = fields.Str(required=True)
+    action = fields.Str(required=True, validate=OneOf(["charge", "authorization"]))
+    currency = diem_currency_code_field(required=True)
+    amount = fields.Int(required=True)
+    expiration = fields.Int(required=False)
+
+
 class PaymentCommand(Schema):
     my_actor_address = fields.Str(required=True, allow_none=False)
     payment = fields.Nested(PaymentObject)
