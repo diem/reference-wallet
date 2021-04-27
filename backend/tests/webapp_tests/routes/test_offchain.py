@@ -34,12 +34,12 @@ def mock_get_payment_details(monkeypatch):
 
 
 @pytest.fixture
-def mock_get_payment_command_json(monkeypatch):
-    def mock(transaction_id: int) -> Optional[str]:
+def mock_get_payment_command(monkeypatch):
+    def mock(reference_id: int) -> Optional[str]:
         return offchain.PaymentCommand(
             my_actor_address="tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
             payment=offchain.PaymentObject(
-                reference_id="c6f7e351-e1c3-4da7-9310-4e87296febf2",
+                reference_id=REFERENCE_ID,
                 sender=offchain.PaymentActorObject(
                     address="tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
                     status=offchain.StatusObject(status=Status.ready_for_settlement),
@@ -83,9 +83,9 @@ def mock_get_payment_command_json(monkeypatch):
                     metadata=[],
                 ),
                 action=offchain.PaymentActionObject(
-                    amount=2000000000,
-                    currency="XUS",
-                    action="charge",
+                    amount=AMOUNT,
+                    currency=CURRENCY,
+                    action=CHARGE_ACTION,
                     timestamp=1609064370,
                 ),
                 recipient_signature="ce9daec5599dc5afd5955d45664cb07be4e2104e32034b8356c3f0e99782d86288ed735d5ac3ffd6b08bba78a001e1b084284453a09400e1e1cbae9a9ac0d108",
@@ -156,7 +156,7 @@ def mock_get_account_payment_commands(monkeypatch):
                     action=offchain.PaymentActionObject(
                         amount=2000000000,
                         currency="XUS",
-                        action="charge",
+                        action=CHARGE_ACTION,
                         timestamp=1609064370,
                     ),
                     recipient_signature="ce9daec5599dc5afd5955d45664cb07be4e2104e32034b8356c3f0e99782d86288ed735d5ac3ffd6b08bba78a001e1b084284453a09400e1e1cbae9a9ac0d108",
@@ -219,7 +219,7 @@ def mock_get_account_payment_commands(monkeypatch):
                     action=offchain.PaymentActionObject(
                         amount=2000000000,
                         currency="XUS",
-                        action="charge",
+                        action=CHARGE_ACTION,
                         timestamp=1609064370,
                     ),
                     recipient_signature="d84c2e733c9d68c869ad5e2bb155e8f5441c65312d47dfd5189abfb5037a160dcca770cd733284bae53847c0d6eb17afc31248453a7fcbe43c5b2f3eadd67208",
@@ -260,8 +260,8 @@ def mock_update_payment_command_status(monkeypatch):
 
 
 class TestGetPaymentCommand:
-    def test_get_payment_command_json(
-        self, authorized_client: Client, mock_get_payment_command_json
+    def test_get_payment_command(
+        self, authorized_client: Client, mock_get_payment_command
     ) -> None:
         rv: Response = authorized_client.get(
             "/offchain/query/payment_command/22",
@@ -325,10 +325,10 @@ class TestAddPaymentCommand:
                 "vasp_address": "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
                 "reference_id": str(uuid.uuid4()),
                 "merchant_name": "Bond & Gurki Pet Store",
-                "action": "charge",
+                "action": CHARGE_ACTION,
                 "currency": "XUS",
                 "amount": 1000,
-                "expiration": int(datetime.timestamp(datetime.now())),
+                "expiration": EXPIRATION,
             },
         )
 

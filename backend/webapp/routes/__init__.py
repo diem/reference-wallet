@@ -171,7 +171,7 @@ def offchain_api_routes():
         methods=["POST"],
     )
     offchain.add_url_rule(
-        rule="/offchain/query/payment_command/<transaction_id>",
+        rule="/offchain/query/payment_command/<reference_id>",
         view_func=OffchainRoutes.GetPaymentCommand.as_view("get_payment_command"),
         methods=["GET"],
     )
