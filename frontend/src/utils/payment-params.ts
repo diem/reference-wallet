@@ -1,6 +1,7 @@
 // Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 import { parse as uuidParse, stringify as uuidStringify } from "uuid";
+import { PaymentDetails } from "../interfaces/payment_details";
 
 export class PaymentParamError extends Error {}
 
@@ -100,6 +101,21 @@ export class PaymentParams {
       throw new PaymentParamError(`Parameter ${paramName} not found in the URL query string`);
     }
     return value;
+  }
+
+  static fromPaymentDetails(payment_details: PaymentDetails) {
+    return new PaymentParams(
+      true,
+      payment_details.vasp_address,
+      payment_details.reference_id,
+      payment_details.merchant_name,
+      CheckoutDataType.PAYMENT_REQUEST,
+      PaymentAction[payment_details.action],
+      payment_details.currency,
+      payment_details.amount,
+      new Date(payment_details.expiration),
+      ""
+    );
   }
 }
 

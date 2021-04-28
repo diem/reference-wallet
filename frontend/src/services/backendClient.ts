@@ -13,6 +13,7 @@ import { Debt } from "../interfaces/settlement";
 import { Chain } from "../interfaces/system";
 import { Approval } from "../interfaces/approval";
 import { PaymentParams } from "../utils/payment-params";
+import { PaymentDetails } from "../interfaces/payment_details";
 
 export default class BackendClient {
   private client: AxiosInstance;
@@ -453,6 +454,17 @@ export default class BackendClient {
         expiration:
           paymentParams.expiration!.getTime() / 1000 ? paymentParams.expiration : undefined,
       });
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async getPaymentDetails(reference_id: string): Promise<PaymentDetails> {
+    try {
+      const response = await this.client.get(`/offchain/payment_details/${reference_id}`);
+
+      return response.data;
     } catch (e) {
       BackendClient.handleError(e);
       throw e;

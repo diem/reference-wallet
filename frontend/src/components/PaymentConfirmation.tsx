@@ -25,7 +25,7 @@ function PaymentConfirmation() {
 
   // Only if the query string changes, recalculate the payment params
   const queryString = useLocation().search;
-  const paymentParams: PaymentParams | undefined = useMemo(() => {
+  let paymentParamsFromUrl: PaymentParams | undefined = useMemo(() => {
     try {
       if (queryString) {
         return PaymentParams.fromUrlQueryString(queryString);
@@ -35,11 +35,24 @@ function PaymentConfirmation() {
     }
   }, [queryString]);
 
+  const [paymentParams, setPaymentParams] = useState(paymentParamsFromUrl);
+
   useEffect(() => {
     const addPaymentCommand = async () => {
       try {
         if (paymentParams) {
-          await new BackendClient().addPaymentComand(paymentParams);
+          let backendClient = new BackendClient();
+          await backendClient.addPaymentCommand(paymentParams);
+
+          if (!paymentParams.isFull) {
+            let payment_details;
+
+            while (!payment_details) {
+              payment_details = await backendClient.getPaymentDetails(paymentParams.referenceId);
+            }
+
+            setPaymentParams(PaymentParams.fromPaymentDetails(payment_details));
+          }
         }
       } catch (e) {
         console.error(e);
