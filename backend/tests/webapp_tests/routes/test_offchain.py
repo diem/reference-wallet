@@ -18,7 +18,7 @@ EXPIRATION = 1802010490
 
 
 @pytest.fixture
-def mock_get_payment_details(monkeypatch):
+def mock_get_payment_details_exist_object(monkeypatch):
     def mock(reference_id: int) -> Optional[pc_service.PaymentDetails]:
         return pc_service.PaymentDetails(
             vasp_address=ADDRESS,
@@ -29,6 +29,14 @@ def mock_get_payment_details(monkeypatch):
             amount=AMOUNT,
             expiration=EXPIRATION,
         )
+
+    monkeypatch.setattr(pc_service, "get_payment_details", mock)
+
+
+@pytest.fixture
+def mock_get_payment_details_not_exist_object(monkeypatch):
+    def mock(reference_id: int) -> Optional[pc_service.PaymentDetails]:
+        return None
 
     monkeypatch.setattr(pc_service, "get_payment_details", mock)
 
@@ -245,6 +253,7 @@ def mock_add_payment_command_as_sender(monkeypatch):
         currency,
         amount,
         expiration,
+        is_full,
     ) -> None:
         return
 
@@ -278,8 +287,8 @@ class TestGetPaymentCommand:
 
 
 class TestGetPaymentDetails:
-    def test_get_payment_details(
-        self, authorized_client: Client, mock_get_payment_details
+    def test_get_payment_details_exist_object(
+        self, authorized_client: Client, mock_get_payment_details_exist_object
     ) -> None:
         rv: Response = authorized_client.get(
             "/offchain/query/payment_details/22",
@@ -294,6 +303,15 @@ class TestGetPaymentDetails:
         assert rv.get_json()["merchant_name"] == "Bond's Per Store"
         assert rv.get_json()["reference_id"] == REFERENCE_ID
         assert rv.get_json()["vasp_address"] == ADDRESS
+
+    def test_get_payment_details_not_exist_object(
+        self, authorized_client: Client, mock_get_payment_details_not_exist_object
+    ) -> None:
+        rv: Response = authorized_client.get(
+            "/offchain/query/payment_details/22",
+        )
+
+        assert rv.status_code == 204
 
 
 class TestGetAccountPaymentCommands:

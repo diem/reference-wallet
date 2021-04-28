@@ -186,15 +186,22 @@ class OffchainRoutes:
         ]
 
         responses = {
-            HTTPStatus.OK: response_definition("Payment Command", schema=PaymentDetails)
+            HTTPStatus.OK: response_definition(
+                "Payment Command", schema=PaymentDetails
+            ),
+            HTTPStatus.NO_CONTENT: response_definition("Waiting for more info"),
         }
 
         def get(self, reference_id: int):
             payment_details = pc_service.get_payment_details(reference_id)
 
             return (
-                payment_details_to_dict(payment_details),
-                HTTPStatus.OK,
+                (
+                    payment_details_to_dict(payment_details),
+                    HTTPStatus.OK,
+                )
+                if payment_details
+                else ("OK", HTTPStatus.NO_CONTENT)
             )
 
     class GetAccountPaymentCommands(OffchainView):
@@ -248,6 +255,7 @@ class OffchainRoutes:
                 params.get("currency"),
                 amount,
                 expiration,
+                len(params) != 2,
             )
 
             return "OK", HTTPStatus.NO_CONTENT
