@@ -442,7 +442,7 @@ export default class BackendClient {
     }
   }
 
-  async addPaymentComand(paymentParams: PaymentParams): Promise<void> {
+  async addPaymentCommand(paymentParams: PaymentParams): Promise<void> {
     try {
       await this.client.post(`/offchain/payment_command`, {
         vasp_address: paymentParams.vaspAddress,
