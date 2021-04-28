@@ -23,7 +23,7 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
 
   const [submitStatus, setSubmitStatus] = useState<"edit" | "sending" | "fail" | "success">("edit");
 
-  const currency = settings.currencies[paymentParams.currency];
+  const currency = settings.currencies[paymentParams!.currency];
 
   useEffect(() => {
     async function refreshUser() {
@@ -33,6 +33,7 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
         console.error(e);
       }
     }
+
     // noinspection JSIgnoredPromiseFromCall
     refreshUser();
   }, []);
@@ -46,7 +47,7 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
     setSubmitStatus("success");
   };
 
-  const humanFriendlyAmount = diemAmountToHumanFriendly(paymentParams.amount, true);
+  const humanFriendlyAmount = diemAmountToHumanFriendly(paymentParams!.amount, true);
 
   return (
     <Modal className="modal-dialog-centered" isOpen={open} onClosed={onClose}>
@@ -94,7 +95,6 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
 
             <div>
               <small>{t("confirmation.expiration")}</small>
-              // @ts-ignore
               <p className="text-black">{paymentParams!.expiration.toLocaleString()}</p>
             </div>
 

@@ -40,7 +40,7 @@ function PaymentConfirmation() {
   useEffect(() => {
     const addPaymentCommand = async () => {
       try {
-        if (paymentParams) {
+        if (queryString && paymentParams) {
           let backendClient = new BackendClient();
           await backendClient.addPaymentCommand(paymentParams);
 
@@ -61,7 +61,7 @@ function PaymentConfirmation() {
 
     // noinspection JSIgnoredPromiseFromCall
     addPaymentCommand();
-  }, [paymentParams]);
+  }, [queryString]);
 
   return (
     <>
@@ -75,7 +75,7 @@ function PaymentConfirmation() {
         Invalid payment request.
       </Alert>
 
-      {!!paymentParams && (
+      {!!queryString && !!paymentParams && (
         <PaymentConfirmationModal
           open={!!paymentParams}
           paymentParams={paymentParams}
