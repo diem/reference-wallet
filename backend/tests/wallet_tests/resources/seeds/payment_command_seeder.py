@@ -7,7 +7,7 @@ from wallet.storage import models, TransactionStatus
 
 class PaymentCommandSeeder:
     @staticmethod
-    def run(
+    def run_full_command(
         db_session,
         reference_id,
         amount,
@@ -46,6 +46,41 @@ class PaymentCommandSeeder:
             account_id=user.account_id,
             expiration=expiration,
             merchant_name=merchant_name,
+        )
+
+        db_session.add(payment_command)
+        db_session.commit()
+
+    @staticmethod
+    def run_minimal_command(
+        db_session,
+        reference_id,
+        receiver_address,
+    ):
+        user = OneUser.run(
+            db_session,
+            account_amount=100_000_000_000,
+            account_currency=DiemCurrency.XUS,
+        )
+
+        my_actor_address = "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
+
+        payment_command = models.PaymentCommand(
+            my_actor_address=my_actor_address,
+            inbound=True,
+            cid=reference_id,
+            reference_id=reference_id,
+            sender_address=my_actor_address,
+            sender_status="none",
+            receiver_address=receiver_address,
+            receiver_status="none",
+            amount=None,
+            currency=None,
+            action="charge",
+            status=TransactionStatus.WAIT_FOR_INFO,
+            account_id=user.account_id,
+            expiration=None,
+            merchant_name=None,
         )
 
         db_session.add(payment_command)

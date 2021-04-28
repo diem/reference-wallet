@@ -225,6 +225,7 @@ def test_add_payment_command():
         currency=DiemCurrency.XUS,
         amount=AMOUNT,
         expiration=expiration,
+        is_full=True,
     )
 
     check_payment_command()
@@ -247,12 +248,52 @@ def test_add_payment_command():
     assert model.status == TransactionStatus.PENDING
 
 
+def test_add_minimal_payment_command():
+    """
+    Add minimal payment command for get info flow.
+    """
+    user = OneUser.run(
+        db_session, account_amount=100_000_000_000, account_currency=DiemCurrency.XUS
+    )
+
+    pc_service.add_payment_command_as_sender(
+        account_id=user.account_id,
+        reference_id=REFERENCE_ID,
+        vasp_address=OTHER_ADDRESS,
+        merchant_name=None,
+        action=None,
+        currency=None,
+        amount=None,
+        expiration=None,
+        is_full=False,
+    )
+
+    check_payment_command(expected_amount=None, expected_currency=None)
+
+    model = storage.get_payment_command(REFERENCE_ID)
+
+    sender_address, _ = identifier.decode_account(
+        model.sender_address, context.get().config.diem_address_hrp()
+    )
+
+    assert model
+    assert model.reference_id == REFERENCE_ID
+    assert model.merchant_name == None
+    assert model.expiration == None
+    assert sender_address.to_hex() == context.get().config.vasp_address
+    assert model.sender_status == Status.none
+    assert model.receiver_address == OTHER_ADDRESS
+    assert model.receiver_status == Status.none
+    assert model.amount == None
+    assert model.status == TransactionStatus.WAIT_FOR_INFO
+
+
 def test_update_payment_command_status():
     """Update existing 'charge' payment to be 'ready_for_settlement' as payer"""
     sender_status = Status.none
     receiver_status = Status.none
 
-    PaymentCommandSeeder.run(
+    PaymentCommandSeeder.run_full_command(
         db_session,
         reference_id=REFERENCE_ID,
         amount=AMOUNT,
@@ -298,7 +339,11 @@ def check_payment_command_model(
     assert model.status == expected_command_status
 
 
-def check_payment_command(expected_my_actor_address=context.get().config.vasp_address):
+def check_payment_command(
+    expected_my_actor_address=context.get().config.vasp_address,
+    expected_amount=AMOUNT,
+    expected_currency=DiemCurrency.XUS,
+):
     payment_command = pc_service.get_payment_command(REFERENCE_ID)
     my_actor_address, _ = identifier.decode_account(
         payment_command.my_actor_address, context.get().config.diem_address_hrp()
@@ -311,14 +356,14 @@ def check_payment_command(expected_my_actor_address=context.get().config.vasp_ad
         my_actor_address.to_hex() == expected_my_actor_address
     ), f"{my_actor_address.to_hex()} != {expected_my_actor_address}"
     assert payment_command.payment.action.action == ACTION_CHARGE
-    assert payment_command.payment.action.amount == AMOUNT
-    assert payment_command.payment.action.currency == DiemCurrency.XUS
+    assert payment_command.payment.action.amount == expected_amount
+    assert payment_command.payment.action.currency == expected_currency
     assert payment_command.payment.receiver.status.status == Status.none
     assert payment_command.payment.sender.status.status == Status.none
 
 
-def test_get_payment_details():
-    PaymentCommandSeeder.run(
+def test_get_full_payment_details():
+    PaymentCommandSeeder.run_full_command(
         db_session,
         reference_id=REFERENCE_ID,
         amount=AMOUNT,
@@ -343,3 +388,15 @@ def test_get_payment_details():
     assert payment_details.merchant_name == MERCHANT_NAME
     assert payment_details.reference_id == REFERENCE_ID
     assert payment_details.vasp_address == OTHER_ADDRESS
+
+
+def test_get_none_payment_details():
+    PaymentCommandSeeder.run_minimal_command(
+        db_session,
+        reference_id=REFERENCE_ID,
+        receiver_address=OTHER_ADDRESS,
+    )
+
+    payment_details = pc_service.get_payment_details(REFERENCE_ID)
+
+    assert payment_details is None
