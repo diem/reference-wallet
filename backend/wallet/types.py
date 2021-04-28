@@ -34,6 +34,8 @@ class TransactionStatus(str, Enum):
     OFF_CHAIN_WAIT = "off_chain_wait"
     # payment command should be send (as receiver) back to sender
     OFF_CHAIN_RECEIVER_OUTBOUND = "off_chain_receiver_outbound"
+    # minimal details of payment received, waiting for full info
+    WAIT_FOR_INFO = "wait_for_info"
 
 
 class TransactionType(str, Enum):

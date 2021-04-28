@@ -343,3 +343,4 @@ class CreatePaymentCommand(Schema):
 class CreatePaymentAsSenderCommand(CreatePaymentCommand):
     vasp_address = fields.Str(required=True)
     merchant_name = fields.Str(required=False)
+    is_full = fields.Bool(required=False, default=True)

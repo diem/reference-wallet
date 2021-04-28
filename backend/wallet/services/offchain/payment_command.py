@@ -38,6 +38,7 @@ def add_payment_command_as_sender(
     currency,
     amount,
     expiration: int,
+    is_full: bool,
 ) -> None:
     my_address = generate_my_address(account_id)
 
@@ -55,7 +56,9 @@ def add_payment_command_as_sender(
         currency=currency,
         action=action,
         created_at=datetime.now(),
-        status=TransactionStatus.PENDING,
+        status=TransactionStatus.PENDING
+        if is_full
+        else TransactionStatus.WAIT_FOR_INFO,
         account_id=account_id,
         merchant_name=merchant_name,
         expiration=datetime.fromtimestamp(expiration) if expiration else None,
@@ -90,7 +93,7 @@ class PaymentDetails:
 def get_payment_details(reference_id: str):
     payment_command = storage.get_payment_command(reference_id)
 
-    if payment_command:
+    if payment_command and payment_command.status != TransactionStatus.WAIT_FOR_INFO:
         return PaymentDetails(
             vasp_address=payment_command.receiver_address,
             reference_id=reference_id,
