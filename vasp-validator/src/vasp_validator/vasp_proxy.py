@@ -110,11 +110,11 @@ class VaspProxy(ABC):
         self,
         reference_id,
         vasp_address,
-        merchant_name,
-        action,
-        currency,
-        amount,
-        expiration,
+        merchant_name=None,
+        action=None,
+        currency=None,
+        amount=None,
+        expiration=None,
     ):
         ...
 
@@ -124,4 +124,8 @@ class VaspProxy(ABC):
 
     @abstractmethod
     def reject_payment_command(self, reference_id):
+        ...
+
+    @abstractmethod
+    def get_payment_details(self, reference_id):
         ...

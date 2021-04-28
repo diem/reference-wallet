@@ -83,11 +83,11 @@ class VaspProxyTestee(VaspProxy):
         self,
         reference_id,
         vasp_address,
-        merchant_name,
-        action,
-        currency,
-        amount,
-        expiration,
+        merchant_name=None,
+        action=None,
+        currency=None,
+        amount=None,
+        expiration=None,
     ):
         self.vasp.create_payment_command_as_sender(
             reference_id=reference_id,
@@ -104,3 +104,6 @@ class VaspProxyTestee(VaspProxy):
 
     def reject_payment_command(self, reference_id):
         self.vasp.reject_payment_command(reference_id)
+
+    def get_payment_details(self, reference_id):
+        return self.vasp.get_payment_details(reference_id)

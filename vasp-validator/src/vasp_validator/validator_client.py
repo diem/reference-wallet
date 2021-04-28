@@ -18,7 +18,6 @@ from .models_fppa import (
 )
 from .vasp_proxy import VaspProxy, TxStatus, TxState
 
-
 RETRIES_COUNT = os.getenv("RETRIES_COUNT", 20)
 SECONDS_BETWEEN_RETRIES = os.getenv("SECONDS_BETWEEN_RETRIES", 1)
 
@@ -247,11 +246,11 @@ class ValidatorClient(VaspProxy):
         self,
         reference_id,
         vasp_address,
-        merchant_name,
-        action,
-        currency,
-        amount,
-        expiration,
+        merchant_name=None,
+        action=None,
+        currency=None,
+        amount=None,
+        expiration=None,
     ):
         self.wallet.create_payment_command_as_sender(
             reference_id=reference_id,
@@ -268,6 +267,9 @@ class ValidatorClient(VaspProxy):
 
     def reject_payment_command(self, reference_id):
         self.wallet.reject_payment_command(reference_id)
+
+    def get_payment_details(self, reference_id):
+        return self.wallet.get_payment_details(reference_id)
 
 
 def get_random_string(length):

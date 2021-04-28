@@ -138,6 +138,19 @@ class PaymentCommand:
 
 @dataclass_json
 @dataclass
+class PaymentDetails:
+    vasp_address: str
+    reference_id: str
+    merchant_name: str
+    action: str
+    currency: str
+    amount: int
+    expiration: int
+    ...
+
+
+@dataclass_json
+@dataclass
 class FundsTransfer:
     transaction: Transaction
     payment_command: PaymentCommand
@@ -197,15 +210,3 @@ class AccountInfo:
 @dataclass
 class OffChainSequenceInfo:
     pass
-
-
-@dataclass_json
-@dataclass
-class CreatePaymentCommandAsSender:
-    reference_id: str
-    vasp_address: str
-    merchant_name: str
-    action: str
-    currency: str
-    amount: int
-    expiration: int
