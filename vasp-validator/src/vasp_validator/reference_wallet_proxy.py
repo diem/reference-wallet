@@ -143,7 +143,9 @@ class ReferenceWalletProxy:
         )
 
         return (
-            PaymentDetails.from_json(payment_details.text) if payment_details.text else None
+            PaymentDetails.from_json(payment_details.text)
+            if payment_details.text
+            else None
         )
 
     def approve_payment_command(self, reference_id):
