@@ -121,19 +121,19 @@ class ReferenceWalletProxy:
         }
 
         if merchant_name:
-            request.merchant_name = merchant_name
+            request["merchant_name"] = merchant_name
 
         if action:
-            request.action = action
+            request["action"] = action
 
         if currency:
-            request.currency = currency
+            request["currency"] = currency
 
         if amount:
-            request.amount = amount
+            request["amount"] = amount
 
         if expiration:
-            request.expiration = expiration
+            request["expiration"] = expiration
 
         self._request_authorized("POST", "offchain/payment_command", json=request)
 
