@@ -448,11 +448,14 @@ export default class BackendClient {
         vasp_address: paymentParams.vaspAddress,
         reference_id: paymentParams.referenceId,
         merchant_name: paymentParams.merchantName,
-        action: paymentParams.action!.toLowerCase() ? paymentParams.action : undefined,
+        action:
+          paymentParams.action !== undefined ? paymentParams.action!.toLowerCase() : undefined,
         currency: paymentParams.currency,
         amount: paymentParams.amount,
         expiration:
-          paymentParams.expiration!.getTime() / 1000 ? paymentParams.expiration : undefined,
+          paymentParams.expiration !== undefined
+            ? paymentParams.expiration!.getTime() / 1000
+            : undefined,
       });
     } catch (e) {
       BackendClient.handleError(e);
@@ -462,7 +465,7 @@ export default class BackendClient {
 
   async getPaymentDetails(reference_id: string): Promise<PaymentDetails> {
     try {
-      const response = await this.client.get(`/offchain/payment_details/${reference_id}`);
+      const response = await this.client.get(`/offchain/query/payment_details/${reference_id}`);
 
       return response.data;
     } catch (e) {
