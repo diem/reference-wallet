@@ -14,6 +14,7 @@ UUID_REGEX: typing.Pattern[str] = re.compile(
 class CommandType:
     PaymentCommand = "PaymentCommand"
     FundPullPreApprovalCommand = "FundPullPreApprovalCommand"
+    InfoCommand = "InfoCommand"
 
 
 class CommandResponseStatus:
@@ -92,6 +93,7 @@ class OffChainErrorType:
 # Late import to solve circular dependency and be able to list all the command types
 from .payment_types import PaymentCommandObject
 from .fund_pull_pre_approval_types import FundPullPreApprovalCommandObject
+from .info_types import InfoCommandObject
 
 
 @dataclass(frozen=True)
@@ -107,7 +109,9 @@ class CommandRequestObject:
             ]
         }
     )
-    command: typing.Union[PaymentCommandObject, FundPullPreApprovalCommandObject]
+    command: typing.Union[
+        PaymentCommandObject, FundPullPreApprovalCommandObject, InfoCommandObject
+    ]
     _ObjectType: str = datafield(
         default="CommandRequestObject",
         metadata={"valid-values": ["CommandRequestObject"]},

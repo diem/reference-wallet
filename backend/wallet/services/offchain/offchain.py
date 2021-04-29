@@ -30,6 +30,7 @@ from wallet.services.offchain.utils import evaluate_kyc_data
 from wallet.types import (
     TransactionStatus,
 )
+from offchain.types import new_info_request
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +135,6 @@ def process_offchain_tasks() -> None:
 
     def send_command_as_receiver(model) -> None:
         payment_command = model_to_payment_command(model)
-        # updated_command = evaluate_kyc_data(payment_command)
         kyc_data = {
             "payload_version": 1,
             "type": "individual",
@@ -173,10 +173,21 @@ def process_offchain_tasks() -> None:
             new_command, utils.compliance_private_key().sign
         )
 
+    def send_get_info_request(model) -> None:
+        utils.offchain_client().send_request(
+            request_sender_address=model.my_actor_address,
+            counterparty_account_id=model.receiver_address,
+            request_bytes=jws.serialize(
+                new_info_request(reference_id=model.reference_id, cid=model.cid),
+                utils.compliance_private_key().sign,
+            ),
+        )
+
     process_payment_by_status(TransactionStatus.OFF_CHAIN_OUTBOUND, send_command)
     process_payment_by_status(TransactionStatus.OFF_CHAIN_INBOUND, offchain_action)
     process_payment_by_status(TransactionStatus.OFF_CHAIN_READY, submit_txn)
     process_payment_by_status(
         TransactionStatus.OFF_CHAIN_RECEIVER_OUTBOUND, send_command_as_receiver
     )
+    process_payment_by_status(TransactionStatus.WAIT_FOR_INFO, send_get_info_request)
     process_funds_pull_pre_approvals_requests()

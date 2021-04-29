@@ -8,7 +8,6 @@ from .command_types import (
     OffChainErrorObject,
     CommandRequestObject,
     CommandResponseStatus,
-    FundPullPreApprovalCommandObject,
 )
 from .payment_types import (
     AbortCode,
@@ -32,7 +31,9 @@ from .fund_pull_pre_approval_types import (
     TimeUnit,
     CurrencyObject,
     FundPullPreApprovalType,
+    FundPullPreApprovalCommandObject,
 )
+from .info_types import InfoCommandObject
 
 import dataclasses, json, re, typing, uuid
 
@@ -282,6 +283,20 @@ def new_funds_pull_pre_approval_request(
         command=FundPullPreApprovalCommandObject(
             _ObjectType=CommandType.FundPullPreApprovalCommand,
             fund_pull_pre_approval=funds_pull_pre_approval,
+        ),
+    )
+
+
+def new_info_request(
+    reference_id: str,
+    cid: typing.Optional[str] = None,
+) -> CommandRequestObject:
+    return CommandRequestObject(
+        cid=cid or str(uuid.uuid4()),
+        command_type=CommandType.InfoCommand,
+        command=InfoCommandObject(
+            _ObjectType=CommandType.InfoCommand,
+            reference_id=reference_id,
         ),
     )
 
