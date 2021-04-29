@@ -12,7 +12,7 @@ from wallet.services.offchain import payment_command as pc_service
 from wallet.storage import db_session, TransactionStatus
 from wallet import storage
 from wallet.storage.models import PaymentCommand as PaymentCommandModel
-from datetime import datetime, timedelta
+from datetime import datetime
 import offchain
 from typing import List
 import time

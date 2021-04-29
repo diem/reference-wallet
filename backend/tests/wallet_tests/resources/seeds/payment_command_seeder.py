@@ -3,6 +3,7 @@ import uuid
 from diem_utils.types.currencies import DiemCurrency
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet.storage import models, TransactionStatus
+from datetime import datetime
 
 
 class PaymentCommandSeeder:
@@ -19,7 +20,7 @@ class PaymentCommandSeeder:
         is_sender,
         command_status=TransactionStatus.PENDING,
         currency=DiemCurrency.XUS,
-        expiration=1802010490,
+        expiration=datetime.fromtimestamp(1802010490),
         merchant_name="Gurki's Dog House",
     ):
         user = OneUser.run(
@@ -67,7 +68,7 @@ class PaymentCommandSeeder:
 
         payment_command = models.PaymentCommand(
             my_actor_address=my_actor_address,
-            inbound=True,
+            inbound=False,
             cid=reference_id,
             reference_id=reference_id,
             sender_address=my_actor_address,
