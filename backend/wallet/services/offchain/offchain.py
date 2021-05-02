@@ -23,9 +23,7 @@ from wallet.services.offchain.payment_command import (
 )
 
 # noinspection PyUnresolvedReferences
-from wallet.services.offchain.payment_command_as_receiver import (
-    save_payment_command_as_receiver,
-)
+from wallet.services.validation_tool import save_payment_command_as_receiver
 from wallet.services.offchain.utils import evaluate_kyc_data
 from wallet.types import (
     TransactionStatus,
