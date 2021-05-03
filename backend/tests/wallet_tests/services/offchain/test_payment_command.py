@@ -1,22 +1,25 @@
-import time
-from datetime import datetime
+import uuid
 
 import context
-import offchain
 from diem import identifier
-from diem_utils.types.currencies import DiemCurrency
 from offchain import Status
+from diem_utils.types.currencies import DiemCurrency
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from tests.wallet_tests.resources.seeds.payment_command_seeder import (
     PaymentCommandSeeder,
 )
-from wallet import storage
 from wallet.services.offchain import payment_command as pc_service
 from wallet.storage import db_session, TransactionStatus
+from wallet import storage
 from wallet.storage.models import PaymentCommand as PaymentCommandModel
+from datetime import datetime, timedelta
+import offchain
+from typing import List
+import time
 
 CREATED_AT = int(time.time())
 EXPIRATION = CREATED_AT + 3000
+
 
 ACTION_CHARGE = "charge"
 AMOUNT = 100_000
@@ -296,9 +299,7 @@ def check_payment_command_model(
     assert model.status == expected_command_status
 
 
-def check_payment_command(
-    expected_my_actor_address=context.get().config.vasp_address,
-):
+def check_payment_command(expected_my_actor_address=context.get().config.vasp_address):
     payment_command = pc_service.get_payment_command(REFERENCE_ID)
     my_actor_address, _ = identifier.decode_account(
         payment_command.my_actor_address, context.get().config.diem_address_hrp()
