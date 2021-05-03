@@ -19,14 +19,11 @@ class PaymentCommandSeeder:
         action,
         is_sender,
         command_status=TransactionStatus.PENDING,
-        currency=DiemCurrency.XUS,
-        expiration=datetime.fromtimestamp(1802010490),
-        merchant_name="Gurki's Dog House",
     ):
         user = OneUser.run(
             db_session,
             account_amount=100_000_000_000,
-            account_currency=currency,
+            account_currency=DiemCurrency.XUS,
         )
 
         my_actor_address = sender_address if is_sender else receiver_address
@@ -41,12 +38,10 @@ class PaymentCommandSeeder:
             receiver_address=receiver_address,
             receiver_status=receiver_status,
             amount=amount,
-            currency=currency,
+            currency=DiemCurrency.XUS,
             action=action,
             status=command_status,
             account_id=user.account_id,
-            expiration=expiration,
-            merchant_name=merchant_name,
         )
 
         db_session.add(payment_command)

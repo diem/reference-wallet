@@ -11,7 +11,7 @@ from offchain import (
 from offchain.types import GetInfoCommandResponse, PaymentInfoObject
 from offchain.types.info_types import PaymentReceiverObject, BusinessDataObject
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
-from wallet.services.offchain import info_commands as info_commands_service
+from wallet.services.offchain import info_command as info_commands_service
 from wallet.storage import db_session
 
 CREATED_AT = int(time.time())

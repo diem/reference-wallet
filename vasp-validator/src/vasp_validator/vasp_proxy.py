@@ -110,11 +110,11 @@ class VaspProxy(ABC):
         self,
         reference_id,
         vasp_address,
-        merchant_name=None,
-        action=None,
-        currency=None,
-        amount=None,
-        expiration=None,
+        merchant_name,
+        action,
+        currency,
+        amount,
+        expiration,
     ):
         ...
 

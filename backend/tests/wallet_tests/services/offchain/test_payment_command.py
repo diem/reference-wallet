@@ -298,8 +298,6 @@ def check_payment_command_model(
 
 def check_payment_command(
     expected_my_actor_address=context.get().config.vasp_address,
-    expected_amount=AMOUNT,
-    expected_currency=DiemCurrency.XUS,
 ):
     payment_command = pc_service.get_payment_command(REFERENCE_ID)
     my_actor_address, _ = identifier.decode_account(
@@ -313,7 +311,7 @@ def check_payment_command(
         my_actor_address.to_hex() == expected_my_actor_address
     ), f"{my_actor_address.to_hex()} != {expected_my_actor_address}"
     assert payment_command.payment.action.action == ACTION_CHARGE
-    assert payment_command.payment.action.amount == expected_amount
-    assert payment_command.payment.action.currency == expected_currency
+    assert payment_command.payment.action.amount == AMOUNT
+    assert payment_command.payment.action.currency == DiemCurrency.XUS
     assert payment_command.payment.receiver.status.status == Status.none
     assert payment_command.payment.sender.status.status == Status.none

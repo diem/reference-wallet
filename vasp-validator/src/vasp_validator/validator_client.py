@@ -246,11 +246,11 @@ class ValidatorClient(VaspProxy):
         self,
         reference_id,
         vasp_address,
-        merchant_name=None,
-        action=None,
-        currency=None,
-        amount=None,
-        expiration=None,
+        merchant_name,
+        action,
+        currency,
+        amount,
+        expiration,
     ):
         self.wallet.create_payment_command_as_sender(
             reference_id=reference_id,

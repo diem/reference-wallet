@@ -138,7 +138,7 @@ class PaymentCommand:
 
 @dataclass_json
 @dataclass
-class PaymentDetails:
+class PaymentInfo:
     vasp_address: str
     reference_id: str
     merchant_name: str

@@ -34,8 +34,13 @@ from .fund_pull_pre_approval_types import (
     FundPullPreApprovalType,
     FundPullPreApprovalCommandObject,
 )
-from .info_types import GetInfoCommandObject, GetInfoCommandResponse, PaymentInfoObject, \
-    PaymentReceiverObject, BusinessDataObject
+from .info_types import (
+    GetInfoCommandObject,
+    GetInfoCommandResponse,
+    PaymentInfoObject,
+    PaymentReceiverObject,
+    BusinessDataObject,
+)
 
 import dataclasses, json, re, typing, uuid
 
@@ -290,7 +295,7 @@ def new_funds_pull_pre_approval_request(
     )
 
 
-def new_info_request(
+def new_get_info_request(
     reference_id: str,
     cid: typing.Optional[str] = None,
 ) -> CommandRequestObject:
@@ -319,8 +324,8 @@ def new_payment_info_object(
     currency: str,
     action: str,
     timestamp: int,
-    valid_until: typing.Optional[int],
-    description: typing.Optional[str],
+    valid_until: typing.Optional[int] = None,
+    description: typing.Optional[str] = None,
 ):
     return (
         PaymentInfoObject(

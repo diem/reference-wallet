@@ -14,7 +14,7 @@ from wallet.services.offchain.fund_pull_pre_approval import (
     process_funds_pull_pre_approvals_requests,
     handle_fund_pull_pre_approval_command,
 )
-from wallet.services.offchain.info_commands import handle_get_info_command
+from wallet.services.offchain.info_command import handle_get_info_command
 from wallet.services.offchain.payment_command import (
     process_payment_by_status,
     lock_and_save_inbound_command,

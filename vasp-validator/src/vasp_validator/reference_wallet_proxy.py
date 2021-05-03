@@ -17,7 +17,7 @@ from .models import (
     OffChainSequenceInfo,
     TransactionId,
     FundsTransfer,
-    PaymentDetails,
+    PaymentInfo,
 )
 from .models_fppa import (
     FundPullPreApprovalScope,
@@ -109,49 +109,35 @@ class ReferenceWalletProxy:
         self,
         reference_id,
         vasp_address,
-        merchant_name=None,
-        action=None,
-        currency=None,
-        amount=None,
-        expiration=None,
+        merchant_name,
+        action,
+        currency,
+        amount,
+        expiration,
     ):
         request = {
             "reference_id": reference_id,
             "vasp_address": vasp_address,
+            "merchant_name": merchant_name,
+            "action": action,
+            "currency": currency,
+            "amount": amount,
+            "expiration": expiration,
         }
-
-        if merchant_name:
-            request["merchant_name"] = merchant_name
-
-        if action:
-            request["action"] = action
-
-        if currency:
-            request["currency"] = currency
-
-        if amount:
-            request["amount"] = amount
-
-        if expiration:
-            request["expiration"] = expiration
 
         self._request_authorized("POST", "offchain/payment_command", json=request)
 
-    def get_payment_info(self, reference_id, vasp_address) -> PaymentDetails:
+    def get_payment_info(self, reference_id, vasp_address) -> PaymentInfo:
         request = {
             "reference_id": reference_id,
             "vasp_address": vasp_address,
         }
 
-        payment_details = self._request_authorized(
+        payment_info = self._request_authorized(
             "GET", f"offchain/query/payment_info", json=request
         )
 
-        return (
-            PaymentDetails.from_json(payment_details.text)
-            if payment_details.text
-            else None
-        )
+        return PaymentInfo.from_json(payment_info.text) if payment_info.text else None
 
     def approve_payment_command(self, reference_id):
         self._request_authorized(

@@ -7,7 +7,7 @@ from offchain import Status
 from flask import Response
 from flask.testing import Client
 from wallet.services.offchain import payment_command as pc_service
-from wallet.services.offchain import info_commands
+from wallet.services.offchain import info_command
 import offchain
 
 
@@ -27,8 +27,8 @@ EXPIRATION = 1802010490
 def mock_get_payment_info_exist_object(monkeypatch):
     def mock(
         account_id, reference_id, vasp_address
-    ) -> Optional[info_commands.PaymentInfo]:
-        return info_commands.PaymentInfo(
+    ) -> Optional[info_command.PaymentInfo]:
+        return info_command.PaymentInfo(
             vasp_address=ADDRESS,
             reference_id=REFERENCE_ID,
             merchant_name="Bond's Per Store",
@@ -38,17 +38,17 @@ def mock_get_payment_info_exist_object(monkeypatch):
             expiration=EXPIRATION,
         )
 
-    monkeypatch.setattr(info_commands, "get_payment_info", mock)
+    monkeypatch.setattr(info_command, "get_payment_info", mock)
 
 
 @pytest.fixture
 def mock_get_payment_info_not_exist_object(monkeypatch):
     def mock(
         account_id, reference_id, vasp_address
-    ) -> Optional[info_commands.PaymentInfo]:
+    ) -> Optional[info_command.PaymentInfo]:
         return None
 
-    monkeypatch.setattr(info_commands, "get_payment_info", mock)
+    monkeypatch.setattr(info_command, "get_payment_info", mock)
 
 
 @pytest.fixture

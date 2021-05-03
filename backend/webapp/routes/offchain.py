@@ -4,7 +4,7 @@
 import logging
 from http import HTTPStatus
 
-import wallet.services.offchain.info_commands
+import wallet.services.offchain.info_command
 import wallet.services.offchain.payment_command
 import offchain as diem_offchain
 from offchain import (
@@ -87,7 +87,7 @@ def preapproval_command_to_dict(preapproval: fppa_service.FPPAObject):
 
 
 def payment_info_to_dict(
-    payment_details: wallet.services.offchain.info_commands.PaymentInfo,
+    payment_details: wallet.services.offchain.info_command.PaymentInfo,
 ):
     return {
         "vasp_address": payment_details.vasp_address,
@@ -201,7 +201,7 @@ class OffchainRoutes:
             vasp_address = params["vasp_address"]
             reference_id = params["reference_id"]
 
-            payment_details = wallet.services.offchain.info_commands.get_payment_info(
+            payment_details = wallet.services.offchain.info_command.get_payment_info(
                 account_id, reference_id, vasp_address
             )
 
