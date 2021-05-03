@@ -1,7 +1,6 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
-
-
+import wallet.services.offchain.info_commands
 from vasp_validator import ValidatorClient
 from vasp_validator.models_fppa import FundPullPreApprovalScope
 from vasp_validator.vasp_proxy import VaspProxy, TxState
@@ -17,7 +16,7 @@ class VaspProxyTestee(VaspProxy):
     """
 
     def __init__(self, url):
-        self.vasp = ValidatorClient.create(url, "pseudo-vasp")
+        self.vasp = ValidatorClient.create(url, "vasp-proxy-testee")
 
     def get_receiving_address(self) -> str:
         return self.vasp.get_receiving_address()
@@ -105,5 +104,7 @@ class VaspProxyTestee(VaspProxy):
     def reject_payment_command(self, reference_id):
         self.vasp.reject_payment_command(reference_id)
 
-    def get_payment_details(self, reference_id):
-        return self.vasp.get_payment_details(reference_id)
+    def get_payment_info(self, reference_id, vasp_address):
+        return wallet.services.offchain.info_commands.get_payment_info(
+            reference_id, vasp_address
+        )

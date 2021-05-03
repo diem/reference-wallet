@@ -268,8 +268,8 @@ class ValidatorClient(VaspProxy):
     def reject_payment_command(self, reference_id):
         self.wallet.reject_payment_command(reference_id)
 
-    def get_payment_details(self, reference_id):
-        return self.wallet.get_payment_details(reference_id)
+    def get_payment_info(self, reference_id, vasp_address):
+        return self.wallet.get_payment_info(reference_id, vasp_address)
 
 
 def get_random_string(length):

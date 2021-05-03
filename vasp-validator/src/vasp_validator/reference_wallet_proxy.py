@@ -137,9 +137,14 @@ class ReferenceWalletProxy:
 
         self._request_authorized("POST", "offchain/payment_command", json=request)
 
-    def get_payment_details(self, reference_id) -> PaymentDetails:
+    def get_payment_info(self, reference_id, vasp_address) -> PaymentDetails:
+        request = {
+            "reference_id": reference_id,
+            "vasp_address": vasp_address,
+        }
+
         payment_details = self._request_authorized(
-            "GET", f"offchain/query/payment_details/{reference_id}"
+            "GET", f"offchain/query/payment_info", json=request
         )
 
         return (

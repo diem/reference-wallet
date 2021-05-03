@@ -127,5 +127,5 @@ class VaspProxy(ABC):
         ...
 
     @abstractmethod
-    def get_payment_details(self, reference_id):
+    def get_payment_info(self, reference_id, vasp_address):
         ...
