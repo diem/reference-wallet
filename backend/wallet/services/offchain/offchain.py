@@ -40,9 +40,18 @@ def process_inbound_command(
 ) -> (int, bytes):
     command = None
     try:
-        command = utils.offchain_client().process_inbound_request(
+        request = utils.offchain_client().deserialize_jws_request(
             request_sender_address, request_body_bytes
         )
+
+        # LRW in RECEIVER role
+        if request.command_type == CommandType.GetInfoCommand:
+            return handle_get_info_command(request)
+
+        command = utils.offchain_client().process_inbound_request(
+            request, request_sender_address
+        )
+
         logger.info(f"process inbound command: {command}")
         logger.debug(f"process inbound command: {offchain.to_json(command)}")
 
@@ -64,12 +73,20 @@ def process_inbound_command(
         return _jws(command.id())
     except offchain.Error as e:
         logger.exception(e)
-        return _jws(command.cid if command else None, e.obj)
+        return _jws(command.id() if command else None, e.obj)
 
 
-def _jws(cid: Optional[str], err: Optional[offchain.OffChainErrorObject] = None):
+def _jws(
+    cid: Optional[str],
+    result_object: typing.Optional[typing.Union[PaymentInfoObject]] = None,
+    err: Optional[offchain.OffChainErrorObject] = None,
+):
     code = 400 if err else 200
-    resp = offchain.reply_request(cid)
+    resp = offchain.reply_request(
+        cid=cid,
+        result_object=result_object,
+        err=err,
+    )
     return code, offchain.jws.serialize(resp, utils.compliance_private_key().sign)
 
 
