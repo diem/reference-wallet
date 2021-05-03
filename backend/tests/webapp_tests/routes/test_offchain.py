@@ -7,20 +7,28 @@ from offchain import Status
 from flask import Response
 from flask.testing import Client
 from wallet.services.offchain import payment_command as pc_service
+from wallet.services.offchain import info_commands
 import offchain
+
 
 CURRENCY = "XUS"
 ADDRESS = "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
+ADDRESS_2 = "tdm1pwm5m35ayknjr0s67pk9xdf5mwqft4rvgxplmckcxr9lwd"
+ADDRESS_3 = "tdm1pzmhcxpnyns7m035ctdqmexxadxjjalh3xckacksflqvx5"
 REFERENCE_ID = "c6f7e351-e1c3-4da7-9310-4e87296febf2"
+REFERENCE_ID_2 = "dbcb698a-22a8-4dac-8710-668cdfdd045e"
+CID = "1cea3243-4ea6-44b2-8590-ec5bf4a101b1"
 CHARGE_ACTION = "charge"
 AMOUNT = 200_000_000
 EXPIRATION = 1802010490
 
 
 @pytest.fixture
-def mock_get_payment_details_exist_object(monkeypatch):
-    def mock(reference_id: int) -> Optional[pc_service.PaymentDetails]:
-        return pc_service.PaymentDetails(
+def mock_get_payment_info_exist_object(monkeypatch):
+    def mock(
+        account_id, reference_id, vasp_address
+    ) -> Optional[info_commands.PaymentInfo]:
+        return info_commands.PaymentInfo(
             vasp_address=ADDRESS,
             reference_id=REFERENCE_ID,
             merchant_name="Bond's Per Store",
@@ -30,26 +38,28 @@ def mock_get_payment_details_exist_object(monkeypatch):
             expiration=EXPIRATION,
         )
 
-    monkeypatch.setattr(pc_service, "get_payment_details", mock)
+    monkeypatch.setattr(info_commands, "get_payment_info", mock)
 
 
 @pytest.fixture
-def mock_get_payment_details_not_exist_object(monkeypatch):
-    def mock(reference_id: int) -> Optional[pc_service.PaymentDetails]:
+def mock_get_payment_info_not_exist_object(monkeypatch):
+    def mock(
+        account_id, reference_id, vasp_address
+    ) -> Optional[info_commands.PaymentInfo]:
         return None
 
-    monkeypatch.setattr(pc_service, "get_payment_details", mock)
+    monkeypatch.setattr(info_commands, "get_payment_info", mock)
 
 
 @pytest.fixture
 def mock_get_payment_command(monkeypatch):
     def mock(reference_id: int) -> Optional[str]:
         return offchain.PaymentCommand(
-            my_actor_address="tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
+            my_actor_address=ADDRESS,
             payment=offchain.PaymentObject(
                 reference_id=REFERENCE_ID,
                 sender=offchain.PaymentActorObject(
-                    address="tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
+                    address=ADDRESS,
                     status=offchain.StatusObject(status=Status.ready_for_settlement),
                     kyc_data=offchain.KycDataObject(
                         type="individual",
@@ -70,7 +80,7 @@ def mock_get_payment_command(monkeypatch):
                     metadata=[],
                 ),
                 receiver=offchain.PaymentActorObject(
-                    address="tdm1pwm5m35ayknjr0s67pk9xdf5mwqft4rvgxplmckcxr9lwd",
+                    address=ADDRESS_2,
                     status=offchain.StatusObject(status=Status.ready_for_settlement),
                     kyc_data=offchain.KycDataObject(
                         type="individual",
@@ -101,7 +111,7 @@ def mock_get_payment_command(monkeypatch):
                 description="",
             ),
             inbound=False,
-            cid="1cea3243-4ea6-44b2-8590-ec5bf4a101b1",
+            cid=CID,
         )
 
     monkeypatch.setattr(pc_service, "get_payment_command", mock)
@@ -112,11 +122,11 @@ def mock_get_account_payment_commands(monkeypatch):
     def mock(account_id: int) -> List[str]:
         return [
             offchain.PaymentCommand(
-                my_actor_address="tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
+                my_actor_address=ADDRESS,
                 payment=offchain.PaymentObject(
-                    reference_id="c6f7e351-e1c3-4da7-9310-4e87296febf2",
+                    reference_id=REFERENCE_ID,
                     sender=offchain.PaymentActorObject(
-                        address="tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
+                        address=ADDRESS,
                         status=offchain.StatusObject(
                             status=Status.ready_for_settlement
                         ),
@@ -139,7 +149,7 @@ def mock_get_account_payment_commands(monkeypatch):
                         metadata=[],
                     ),
                     receiver=offchain.PaymentActorObject(
-                        address="tdm1pwm5m35ayknjr0s67pk9xdf5mwqft4rvgxplmckcxr9lwd",
+                        address=ADDRESS_2,
                         status=offchain.StatusObject(
                             status=Status.ready_for_settlement
                         ),
@@ -172,14 +182,14 @@ def mock_get_account_payment_commands(monkeypatch):
                     description="",
                 ),
                 inbound=False,
-                cid="1cea3243-4ea6-44b2-8590-ec5bf4a101b1",
+                cid=CID,
             ),
             offchain.PaymentCommand(
-                my_actor_address="tdm1pzmhcxpnyns7m035ctdqmexxadxjjalh3xckacksflqvx5",
+                my_actor_address=ADDRESS_3,
                 payment=offchain.PaymentObject(
-                    reference_id="dbcb698a-22a8-4dac-8710-668cdfdd045e",
+                    reference_id=REFERENCE_ID_2,
                     sender=offchain.PaymentActorObject(
-                        address="tdm1pzmhcxpnyns7m035ctdqmexxadxjjalh3xckacksflqvx5",
+                        address=ADDRESS_3,
                         status=offchain.StatusObject(
                             status=Status.ready_for_settlement
                         ),
@@ -202,7 +212,7 @@ def mock_get_account_payment_commands(monkeypatch):
                         metadata=[],
                     ),
                     receiver=offchain.PaymentActorObject(
-                        address="tdm1pzmhcxpnyns7m035ctdqmexxadxjjalh3xckacksflqvx5",
+                        address=ADDRESS_3,
                         status=offchain.StatusObject(
                             status=Status.ready_for_settlement
                         ),
@@ -235,7 +245,7 @@ def mock_get_account_payment_commands(monkeypatch):
                     description="",
                 ),
                 inbound=False,
-                cid="1cea3243-4ea6-44b2-8590-ec5bf4a101b1",
+                cid=CID,
             ),
         ]
 
@@ -253,7 +263,6 @@ def mock_add_payment_command_as_sender(monkeypatch):
         currency,
         amount,
         expiration,
-        is_full,
     ) -> None:
         return
 
@@ -280,18 +289,24 @@ class TestGetPaymentCommand:
         assert rv.get_data() is not None
         payment_object = rv.get_json()["payment"]
         assert payment_object is not None
-        assert (
-            rv.get_json()["my_actor_address"]
-            == "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
-        )
+        assert rv.get_json()["my_actor_address"] == ADDRESS
 
 
-class TestGetPaymentDetails:
-    def test_get_payment_details_exist_object(
-        self, authorized_client: Client, mock_get_payment_details_exist_object
+class TestGetPaymentInfo:
+    def test_get_payment_info_exist_object(
+        self, authorized_client: Client, mock_get_payment_info_exist_object
     ) -> None:
         rv: Response = authorized_client.get(
-            "/offchain/query/payment_details/22",
+            "/offchain/query/payment_info",
+            json={
+                "vasp_address": ADDRESS,
+                "reference_id": REFERENCE_ID,
+                "merchant_name": "Bond & Gurki Pet Store",
+                "action": CHARGE_ACTION,
+                "currency": "XUS",
+                "amount": 1000,
+                "expiration": EXPIRATION,
+            },
         )
 
         assert rv.status_code == 200
@@ -304,11 +319,15 @@ class TestGetPaymentDetails:
         assert rv.get_json()["reference_id"] == REFERENCE_ID
         assert rv.get_json()["vasp_address"] == ADDRESS
 
-    def test_get_payment_details_not_exist_object(
-        self, authorized_client: Client, mock_get_payment_details_not_exist_object
+    def test_get_payment_info_not_exist_object(
+        self, authorized_client: Client, mock_get_payment_info_not_exist_object
     ) -> None:
         rv: Response = authorized_client.get(
-            "/offchain/query/payment_details/22",
+            "/offchain/query/payment_info",
+            json={
+                "vasp_address": ADDRESS,
+                "reference_id": REFERENCE_ID,
+            },
         )
 
         assert rv.status_code == 204
@@ -327,10 +346,7 @@ class TestGetAccountPaymentCommands:
         payment_commands = rv.get_json()["payment_commands"]
         assert payment_commands is not None
         assert len(payment_commands) == 2
-        assert (
-            payment_commands[0]["my_actor_address"]
-            == "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
-        )
+        assert payment_commands[0]["my_actor_address"] == ADDRESS
 
 
 class TestAddPaymentCommandAsSender:
@@ -340,26 +356,13 @@ class TestAddPaymentCommandAsSender:
         rv: Response = authorized_client.post(
             "/offchain/payment_command",
             json={
-                "vasp_address": "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
-                "reference_id": str(uuid.uuid4()),
+                "vasp_address": ADDRESS,
+                "reference_id": REFERENCE_ID,
                 "merchant_name": "Bond & Gurki Pet Store",
                 "action": CHARGE_ACTION,
                 "currency": "XUS",
                 "amount": 1000,
                 "expiration": EXPIRATION,
-            },
-        )
-
-        assert rv.status_code == 204, rv.get_data()
-
-    def test_add_payment_command_as_sender_with_minimal_values(
-        self, authorized_client: Client, mock_add_payment_command_as_sender
-    ) -> None:
-        rv: Response = authorized_client.post(
-            "/offchain/payment_command",
-            json={
-                "vasp_address": "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
-                "reference_id": str(uuid.uuid4()),
             },
         )
 
