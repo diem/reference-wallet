@@ -4,10 +4,8 @@ import context
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import identifier
 from wallet.services import kyc, account
-from wallet.storage import models, get_account_id_from_subaddr
+from wallet.storage import get_account_id_from_subaddr
 import offchain
-
-PaymentCommandModel = models.PaymentCommand
 
 
 def hrp() -> str:
