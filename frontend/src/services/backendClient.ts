@@ -13,7 +13,7 @@ import { Debt } from "../interfaces/settlement";
 import { Chain } from "../interfaces/system";
 import { Approval } from "../interfaces/approval";
 import { PaymentParams } from "../utils/payment-params";
-import { PaymentDetails } from "../interfaces/payment_details";
+import { PaymentInfo } from "../interfaces/payment_info";
 
 export default class BackendClient {
   private client: AxiosInstance;
@@ -463,9 +463,9 @@ export default class BackendClient {
     }
   }
 
-  async getPaymentDetails(reference_id: string): Promise<PaymentDetails> {
+  async getPaymentInfo(reference_id: string, vasp_address: string): Promise<PaymentInfo> {
     try {
-      const response = await this.client.get(`/offchain/query/payment_details/${reference_id}`);
+      const response = await this.client.get(`/offchain/query/payment_info`);
 
       return response.data;
     } catch (e) {

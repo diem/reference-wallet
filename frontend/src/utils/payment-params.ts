@@ -1,7 +1,7 @@
 // Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 import { parse as uuidParse, stringify as uuidStringify } from "uuid";
-import { PaymentDetails } from "../interfaces/payment_details";
+import { PaymentInfo } from "../interfaces/payment_info";
 
 export class PaymentParamError extends Error {}
 
@@ -30,11 +30,24 @@ export class PaymentParams {
 
   public static fromUrlQueryString(queryString: string): PaymentParams {
     const params = new URLSearchParams(queryString);
+    let isStandard = false;
 
     const vaspAddress = PaymentParams.getParam(params, "vaspAddress");
     const referenceId = PaymentParams.getParam(params, "referenceId");
 
     if (Array.from(params).length === 2) {
+      isStandard = true;
+    }
+
+    const redirectUrl = PaymentParams.getParam(params, "redirectUrl");
+
+    try {
+      new URL(redirectUrl);
+    } catch (e) {
+      throw new PaymentParamError("redirectUrl contains invalid URL");
+    }
+
+    if (Array.from(params).length === 3 || isStandard) {
       return new PaymentParams(false, vaspAddress, referenceId);
     }
 
@@ -44,13 +57,6 @@ export class PaymentParams {
     const currency = PaymentParams.getParam(params, "currency");
     const amountTxt = PaymentParams.getParam(params, "amount");
     const expirationTxt = PaymentParams.getParam(params, "expiration");
-    const redirectUrl = PaymentParams.getParam(params, "redirectUrl");
-
-    try {
-      new URL(redirectUrl);
-    } catch (e) {
-      throw new PaymentParamError("redirectUrl contains invalid URL");
-    }
 
     try {
       testUuid(referenceId);
@@ -103,18 +109,18 @@ export class PaymentParams {
     return value;
   }
 
-  static fromPaymentDetails(payment_details: PaymentDetails) {
+  static fromPaymentInfo(paymentInfo: PaymentInfo, redirectUrl?: string) {
     return new PaymentParams(
       true,
-      payment_details.vasp_address,
-      payment_details.reference_id,
-      payment_details.merchant_name,
+      paymentInfo.vasp_address,
+      paymentInfo.reference_id,
+      paymentInfo.merchant_name,
       CheckoutDataType.PAYMENT_REQUEST,
-      PaymentAction[payment_details.action],
-      payment_details.currency,
-      payment_details.amount,
-      new Date(payment_details.expiration),
-      ""
+      PaymentAction[paymentInfo.action],
+      paymentInfo.currency,
+      paymentInfo.amount,
+      new Date(paymentInfo.expiration),
+      redirectUrl
     );
   }
 }

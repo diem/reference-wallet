@@ -42,16 +42,22 @@ function PaymentConfirmation() {
       try {
         if (queryString && paymentParams) {
           let backendClient = new BackendClient();
-          await backendClient.addPaymentCommand(paymentParams);
 
           if (!paymentParams.isFull) {
-            let payment_details;
+            let payment_info;
 
-            while (!payment_details) {
-              payment_details = await backendClient.getPaymentDetails(paymentParams.referenceId);
+            while (!payment_info) {
+              payment_info = await backendClient.getPaymentInfo(
+                paymentParams.referenceId,
+                paymentParams.vaspAddress
+              );
             }
 
-            setPaymentParams(PaymentParams.fromPaymentDetails(payment_details));
+            setPaymentParams(
+              PaymentParams.fromPaymentInfo(payment_info, paymentParams.redirectUrl)
+            );
+          } else {
+            await backendClient.addPaymentCommand(paymentParams);
           }
         }
       } catch (e) {
