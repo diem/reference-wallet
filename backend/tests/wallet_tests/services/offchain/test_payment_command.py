@@ -1,21 +1,19 @@
-import uuid
+import time
+from datetime import datetime
 
 import context
+import offchain
 from diem import identifier
-from offchain import Status
 from diem_utils.types.currencies import DiemCurrency
+from offchain import Status
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from tests.wallet_tests.resources.seeds.payment_command_seeder import (
     PaymentCommandSeeder,
 )
+from wallet import storage
 from wallet.services.offchain import payment_command as pc_service
 from wallet.storage import db_session, TransactionStatus
-from wallet import storage
 from wallet.storage.models import PaymentCommand as PaymentCommandModel
-from datetime import datetime
-import offchain
-from typing import List
-import time
 
 CREATED_AT = int(time.time())
 EXPIRATION = CREATED_AT + 3000
@@ -225,7 +223,6 @@ def test_add_payment_command():
         currency=DiemCurrency.XUS,
         amount=AMOUNT,
         expiration=expiration,
-        is_full=True,
     )
 
     check_payment_command()
@@ -248,52 +245,12 @@ def test_add_payment_command():
     assert model.status == TransactionStatus.PENDING
 
 
-def test_add_minimal_payment_command():
-    """
-    Add minimal payment command for get info flow.
-    """
-    user = OneUser.run(
-        db_session, account_amount=100_000_000_000, account_currency=DiemCurrency.XUS
-    )
-
-    pc_service.add_payment_command_as_sender(
-        account_id=user.account_id,
-        reference_id=REFERENCE_ID,
-        vasp_address=OTHER_ADDRESS,
-        merchant_name=None,
-        action=None,
-        currency=None,
-        amount=None,
-        expiration=None,
-        is_full=False,
-    )
-
-    check_payment_command(expected_amount=None, expected_currency=None)
-
-    model = storage.get_payment_command(REFERENCE_ID)
-
-    sender_address, _ = identifier.decode_account(
-        model.sender_address, context.get().config.diem_address_hrp()
-    )
-
-    assert model
-    assert model.reference_id == REFERENCE_ID
-    assert model.merchant_name == None
-    assert model.expiration == None
-    assert sender_address.to_hex() == context.get().config.vasp_address
-    assert model.sender_status == Status.none
-    assert model.receiver_address == OTHER_ADDRESS
-    assert model.receiver_status == Status.none
-    assert model.amount == None
-    assert model.status == TransactionStatus.WAIT_FOR_INFO
-
-
 def test_update_payment_command_status():
     """Update existing 'charge' payment to be 'ready_for_settlement' as payer"""
     sender_status = Status.none
     receiver_status = Status.none
 
-    PaymentCommandSeeder.run_full_command(
+    PaymentCommandSeeder.run(
         db_session,
         reference_id=REFERENCE_ID,
         amount=AMOUNT,
@@ -360,43 +317,3 @@ def check_payment_command(
     assert payment_command.payment.action.currency == expected_currency
     assert payment_command.payment.receiver.status.status == Status.none
     assert payment_command.payment.sender.status.status == Status.none
-
-
-def test_get_full_payment_details():
-    PaymentCommandSeeder.run_full_command(
-        db_session,
-        reference_id=REFERENCE_ID,
-        amount=AMOUNT,
-        sender_address=MY_ADDRESS,
-        sender_status="none",
-        receiver_address=OTHER_ADDRESS,
-        receiver_status="none",
-        action=ACTION_CHARGE,
-        is_sender=True,
-        command_status=TransactionStatus.PENDING,
-        currency=DiemCurrency.XUS,
-        expiration=datetime.fromtimestamp(EXPIRATION),
-        merchant_name=MERCHANT_NAME,
-    )
-
-    payment_details = pc_service.get_payment_details(REFERENCE_ID)
-
-    assert payment_details.action == ACTION_CHARGE
-    assert payment_details.amount == AMOUNT
-    assert payment_details.currency == DiemCurrency.XUS
-    assert payment_details.expiration == EXPIRATION
-    assert payment_details.merchant_name == MERCHANT_NAME
-    assert payment_details.reference_id == REFERENCE_ID
-    assert payment_details.vasp_address == OTHER_ADDRESS
-
-
-def test_get_none_payment_details():
-    PaymentCommandSeeder.run_minimal_command(
-        db_session,
-        reference_id=REFERENCE_ID,
-        receiver_address=OTHER_ADDRESS,
-    )
-
-    payment_details = pc_service.get_payment_details(REFERENCE_ID)
-
-    assert payment_details is None

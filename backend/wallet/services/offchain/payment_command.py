@@ -14,7 +14,6 @@ from wallet.services.offchain.utils import (
     account_address_and_subaddress,
     user_kyc_data,
     generate_my_address,
-    PaymentCommandModel,
 )
 from wallet.storage import (
     save_payment_command,
@@ -24,9 +23,10 @@ from wallet.storage import (
     Transaction,
 )
 from wallet.types import TransactionStatus, TransactionType
-import dataclasses
 
 logger = logging.getLogger(__name__)
+
+PaymentCommandModel = models.PaymentCommand
 
 
 def add_payment_command_as_sender(
@@ -38,7 +38,6 @@ def add_payment_command_as_sender(
     currency,
     amount,
     expiration: int,
-    is_full: bool,
 ) -> None:
     my_address = generate_my_address(account_id)
 
@@ -56,13 +55,12 @@ def add_payment_command_as_sender(
         currency=currency,
         action=action,
         created_at=datetime.now(),
-        status=TransactionStatus.PENDING
-        if is_full
-        else TransactionStatus.WAIT_FOR_INFO,
+        status=TransactionStatus.PENDING,
         account_id=account_id,
         merchant_name=merchant_name,
         expiration=datetime.fromtimestamp(expiration) if expiration else None,
     )
+
     save_payment_command(payment_command)
 
 
@@ -75,34 +73,6 @@ def get_payment_command(reference_id: str) -> Optional[offchain.PaymentCommand]:
 
     if payment_command:
         return model_to_payment_command(payment_command)
-
-    return None
-
-
-@dataclasses.dataclass(frozen=True)
-class PaymentDetails:
-    vasp_address: str
-    reference_id: str
-    merchant_name: str
-    action: str
-    currency: str
-    amount: int
-    expiration: int
-
-
-def get_payment_details(reference_id: str):
-    payment_command = storage.get_payment_command(reference_id)
-
-    if payment_command and payment_command.status != TransactionStatus.WAIT_FOR_INFO:
-        return PaymentDetails(
-            vasp_address=payment_command.receiver_address,
-            reference_id=reference_id,
-            merchant_name=payment_command.merchant_name,
-            action=payment_command.action,
-            currency=payment_command.currency,
-            amount=payment_command.amount,
-            expiration=int(datetime.timestamp(payment_command.expiration)),
-        )
 
     return None
 
@@ -143,7 +113,7 @@ def lock_and_save_inbound_command(
             if command == prior:
                 return
             command.validate(prior)
-            status = _payment_command_status(
+            status = payment_command_status(
                 command, TransactionStatus.OFF_CHAIN_INBOUND
             )
             update_model_base_on_payment_command(model, command, status)
@@ -363,7 +333,7 @@ def save_outbound_payment_command(
     return command
 
 
-def _payment_command_status(
+def payment_command_status(
     command: offchain.PaymentCommand, default: TransactionStatus
 ) -> TransactionStatus:
     if command.is_both_ready():

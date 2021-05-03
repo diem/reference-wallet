@@ -7,19 +7,21 @@ from typing import Optional
 import context
 import offchain
 from offchain import CommandType
+from offchain.types import PaymentInfoObject
 from wallet.services.kyc import xstr
 from wallet.services.offchain import utils
 from wallet.services.offchain.fund_pull_pre_approval import (
     process_funds_pull_pre_approvals_requests,
     handle_fund_pull_pre_approval_command,
 )
+from wallet.services.offchain.info_commands import handle_get_info_command
 from wallet.services.offchain.payment_command import (
     process_payment_by_status,
     lock_and_save_inbound_command,
     model_to_payment_command,
     update_model_base_on_payment_command,
     add_transaction_based_on_payment_command,
-    _payment_command_status,
+    payment_command_status,
 )
 
 # noinspection PyUnresolvedReferences
@@ -30,7 +32,6 @@ from wallet.services.offchain.utils import evaluate_kyc_data
 from wallet.types import (
     TransactionStatus,
 )
-from offchain.types import new_info_request
 
 logger = logging.getLogger(__name__)
 
@@ -115,7 +116,7 @@ def process_offchain_tasks() -> None:
             return
         if action == offchain.Action.EVALUATE_KYC_DATA:
             new_cmd = evaluate_kyc_data(cmd)
-            status = _payment_command_status(
+            status = payment_command_status(
                 new_cmd, TransactionStatus.OFF_CHAIN_OUTBOUND
             )
             update_model_base_on_payment_command(model, new_cmd, status)
@@ -190,21 +191,10 @@ def process_offchain_tasks() -> None:
             new_command, utils.compliance_private_key().sign
         )
 
-    def send_get_info_request(model) -> None:
-        utils.offchain_client().send_request(
-            request_sender_address=model.my_actor_address,
-            counterparty_account_id=model.receiver_address,
-            request_bytes=jws.serialize(
-                new_info_request(reference_id=model.reference_id, cid=model.cid),
-                utils.compliance_private_key().sign,
-            ),
-        )
-
     process_payment_by_status(TransactionStatus.OFF_CHAIN_OUTBOUND, send_command)
     process_payment_by_status(TransactionStatus.OFF_CHAIN_INBOUND, offchain_action)
     process_payment_by_status(TransactionStatus.OFF_CHAIN_READY, submit_txn)
     process_payment_by_status(
         TransactionStatus.OFF_CHAIN_RECEIVER_OUTBOUND, send_command_as_receiver
     )
-    process_payment_by_status(TransactionStatus.WAIT_FOR_INFO, send_get_info_request)
     process_funds_pull_pre_approvals_requests()

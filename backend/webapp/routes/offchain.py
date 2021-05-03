@@ -4,6 +4,7 @@
 import logging
 from http import HTTPStatus
 
+import wallet.services.offchain.info_commands
 import wallet.services.offchain.payment_command
 import offchain as diem_offchain
 from offchain import (
@@ -34,7 +35,8 @@ from webapp.schemas import (
     Error,
     CreateAndApproveFundPullPreApproval,
     CreatePaymentAsSenderCommand as CreatePaymentCommandSchema,
-    PaymentDetails,
+    PaymentInfo,
+    GetPaymentInfoRequest,
 )
 
 logger = logging.getLogger(__name__)
@@ -84,7 +86,9 @@ def preapproval_command_to_dict(preapproval: fppa_service.FPPAObject):
     return result
 
 
-def payment_details_to_dict(payment_details: pc_service.PaymentDetails):
+def payment_info_to_dict(
+    payment_details: wallet.services.offchain.info_commands.PaymentInfo,
+):
     return {
         "vasp_address": payment_details.vasp_address,
         "reference_id": payment_details.reference_id,
@@ -178,26 +182,32 @@ class OffchainRoutes:
                 HTTPStatus.OK,
             )
 
-    class GetPaymentDetails(OffchainView):
+    class GetPaymentInfo(OffchainView):
         summary = "Get Payment Details"
 
         parameters = [
-            path_string_param(name="reference_id", description="command reference id")
+            body_parameter(GetPaymentInfoRequest),
         ]
 
         responses = {
-            HTTPStatus.OK: response_definition(
-                "Payment Command", schema=PaymentDetails
-            ),
+            HTTPStatus.OK: response_definition("Payment Command", schema=PaymentInfo),
             HTTPStatus.NO_CONTENT: response_definition("Waiting for more info"),
         }
 
-        def get(self, reference_id: int):
-            payment_details = pc_service.get_payment_details(reference_id)
+        def get(self):
+            params = request.json
+
+            account_id = self.user.account_id
+            vasp_address = params["vasp_address"]
+            reference_id = params["reference_id"]
+
+            payment_details = wallet.services.offchain.info_commands.get_payment_info(
+                account_id, reference_id, vasp_address
+            )
 
             return (
                 (
-                    payment_details_to_dict(payment_details),
+                    payment_info_to_dict(payment_details),
                     HTTPStatus.OK,
                 )
                 if payment_details
@@ -247,15 +257,14 @@ class OffchainRoutes:
             )
 
             pc_service.add_payment_command_as_sender(
-                self.user.account_id,
-                params.get("reference_id"),
-                params.get("vasp_address"),
-                params.get("merchant_name"),
-                params.get("action"),
-                params.get("currency"),
-                amount,
-                expiration,
-                len(params) != 2,
+                account_id=self.user.account_id,
+                reference_id=params.get("reference_id"),
+                vasp_address=params.get("vasp_address"),
+                merchant_name=params.get("merchant_name"),
+                action=params.get("action"),
+                currency=params.get("currency"),
+                amount=amount,
+                expiration=expiration,
             )
 
             return "OK", HTTPStatus.NO_CONTENT
