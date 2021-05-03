@@ -2,6 +2,7 @@ import dataclasses
 import typing
 import logging
 
+from diem_utils.types.currencies import DiemCurrency
 from offchain import (
     GetInfoCommandObject,
     CommandRequestObject,
@@ -9,10 +10,9 @@ from offchain import (
 )
 from offchain.types import (
     new_payment_info_object,
-    new_info_request,
+    new_get_info_request,
     GetInfoCommandResponse,
 )
-from wallet import storage
 from wallet.storage.models import PaymentInfo as PaymentInfoModel
 from wallet.storage.payment import save_payment_info
 from wallet.services.offchain import utils
@@ -21,17 +21,18 @@ logger = logging.getLogger(__name__)
 
 
 def handle_get_info_command(request: CommandRequestObject):
+    # TODO
     # This command arrive only when LRW playing the Merchant\Receiver role in the communication,
-    # and therefore we can assume that a PaymentCommand is already saved in DB
+    # and therefore we can generate the payment info on the spot
     info_command_object = typing.cast(GetInfoCommandObject, request.command)
 
-    # save_payment_command_as_receiver(payment_command)
-
     reference_id = info_command_object.reference_id
-    model = storage.get_payment_command(reference_id)
+
+    my_address = utils.generate_my_address(1)
+
     payment_info = new_payment_info_object(
         reference_id=reference_id,
-        receiver_address=model.my_actor_address,
+        receiver_address=my_address,
         name="Bond & Gurki Pet Store",
         legal_name="Bond & Gurki Pet Store",
         city="Dogcity",
@@ -40,12 +41,22 @@ def handle_get_info_command(request: CommandRequestObject):
         line2="dogpalace 3",
         postal_code="123456",
         state="Dogstate",
-        amount=model.amount,
-        currency=model.currency,
-        action=model.action,
-        timestamp=model.created_at,
-        valid_until=model.expiration,
-        description=model.description,
+        amount=100_000_000,
+        currency=DiemCurrency.XUS,
+        action="charge",
+        timestamp=123,
+        description="description",
+    )
+
+    save_payment_info(
+        PaymentInfoModel(
+            vasp_address=my_address,
+            reference_id=reference_id,
+            merchant_name=payment_info.receiver.business_data.name,
+            action="charge",
+            currency=DiemCurrency.XUS,
+            amount=100_000_000,
+        )
     )
     # return jws(cid=reference_id, result_object=payment_info)
     return None
@@ -69,7 +80,7 @@ def get_payment_info(account_id, reference_id: str, vasp_address):
         request_sender_address=my_address,
         counterparty_account_id=vasp_address,
         request_bytes=jws.serialize(
-            new_info_request(reference_id=reference_id, cid=reference_id),
+            new_get_info_request(reference_id=reference_id, cid=reference_id),
             utils.compliance_private_key().sign,
         ),
     )
