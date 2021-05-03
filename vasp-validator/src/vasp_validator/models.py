@@ -146,7 +146,6 @@ class PaymentDetails:
     currency: str
     amount: int
     expiration: int
-    ...
 
 
 @dataclass_json

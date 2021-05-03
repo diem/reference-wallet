@@ -248,7 +248,12 @@ class PaymentObject(Schema):
     description = fields.Str(required=False)
 
 
-class PaymentDetails(Schema):
+class GetPaymentInfoRequest(Schema):
+    vasp_address = fields.Str(required=True)
+    reference_id = fields.Str(required=True)
+
+
+class PaymentInfo(Schema):
     vasp_address = fields.Str(required=True)
     reference_id = fields.Str(required=True)
     merchant_name = fields.Str(required=True)
@@ -334,13 +339,12 @@ class FundsPullPreApprovalRequest(Schema):
 
 class CreatePaymentCommand(Schema):
     reference_id = fields.Str(required=True)
-    action = fields.Str(required=False, validate=OneOf(["charge", "auth", "capture"]))
-    currency = fields.Str(required=False)
-    amount = fields.Int(required=False)
-    expiration = fields.Int(required=False)
+    action = fields.Str(required=True, validate=OneOf(["charge", "auth", "capture"]))
+    currency = fields.Str(required=True)
+    amount = fields.Int(required=True)
+    expiration = fields.Int(required=True)
 
 
 class CreatePaymentAsSenderCommand(CreatePaymentCommand):
     vasp_address = fields.Str(required=True)
-    merchant_name = fields.Str(required=False)
-    is_full = fields.Bool(required=False, default=True)
+    merchant_name = fields.Str(required=True)

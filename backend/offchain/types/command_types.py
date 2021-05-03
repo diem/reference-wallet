@@ -5,7 +5,6 @@ import re
 import typing
 from dataclasses import dataclass, field as datafield
 
-
 UUID_REGEX: typing.Pattern[str] = re.compile(
     "^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$", re.IGNORECASE
 )
@@ -14,7 +13,11 @@ UUID_REGEX: typing.Pattern[str] = re.compile(
 class CommandType:
     PaymentCommand = "PaymentCommand"
     FundPullPreApprovalCommand = "FundPullPreApprovalCommand"
-    InfoCommand = "InfoCommand"
+    GetInfoCommand = "GetInfoCommand"
+
+
+class ResponseType:
+    GetInfoCommandResponse = "GetInfoCommandResponse"
 
 
 class CommandResponseStatus:
@@ -93,7 +96,7 @@ class OffChainErrorType:
 # Late import to solve circular dependency and be able to list all the command types
 from .payment_types import PaymentCommandObject
 from .fund_pull_pre_approval_types import FundPullPreApprovalCommandObject
-from .info_types import InfoCommandObject
+from .info_types import GetInfoCommandObject, GetInfoCommandResponse
 
 
 @dataclass(frozen=True)
@@ -106,11 +109,12 @@ class CommandRequestObject:
             "valid-values": [
                 CommandType.PaymentCommand,
                 CommandType.FundPullPreApprovalCommand,
+                CommandType.GetInfoCommand,
             ]
         }
     )
     command: typing.Union[
-        PaymentCommandObject, FundPullPreApprovalCommandObject, InfoCommandObject
+        PaymentCommandObject, FundPullPreApprovalCommandObject, GetInfoCommandObject
     ]
     _ObjectType: str = datafield(
         default="CommandRequestObject",
@@ -147,6 +151,9 @@ class CommandResponseObject:
                 CommandResponseStatus.failure,
             ]
         }
+    )
+    result: typing.Optional[typing.Union[GetInfoCommandResponse]] = datafield(
+        default=None
     )
     # The fixed string CommandResponseObject.
     _ObjectType: str = datafield(
