@@ -186,33 +186,50 @@ class OffchainRoutes:
         summary = "Get Payment Details"
 
         parameters = [
-            body_parameter(GetPaymentInfoRequest),
+            query_str_param(
+                name="reference_id",
+                description="payment reference id",
+                required=True,
+            ),
+            query_str_param(
+                name="vasp_address",
+                description="payment destination address",
+                required=True,
+            ),
         ]
 
         responses = {
-            HTTPStatus.OK: response_definition("Payment Command", schema=PaymentInfo),
-            HTTPStatus.NO_CONTENT: response_definition("Waiting for more info"),
+            HTTPStatus.OK: response_definition("Payment Info", schema=PaymentInfo),
         }
 
         def get(self):
-            params = request.json
+            try:
+                account_id = self.user.account_id
+                vasp_address = request.args["vasp_address"]
+                reference_id = request.args["reference_id"]
 
-            account_id = self.user.account_id
-            vasp_address = params["vasp_address"]
-            reference_id = params["reference_id"]
-
-            payment_details = wallet.services.offchain.info_command.get_payment_info(
-                account_id, reference_id, vasp_address
-            )
-
-            return (
-                (
-                    payment_info_to_dict(payment_details),
-                    HTTPStatus.OK,
+                payment_details = (
+                    wallet.services.offchain.info_command.get_payment_info(
+                        account_id, reference_id, vasp_address
+                    )
                 )
-                if payment_details
-                else ("OK", HTTPStatus.NO_CONTENT)
-            )
+
+                return (
+                    (
+                        payment_info_to_dict(payment_details),
+                        HTTPStatus.OK,
+                    )
+                    if payment_details
+                    else self.respond_with_error(
+                        HTTPStatus.NOT_FOUND,
+                        f"Failed finding payment info for reference id {reference_id}",
+                    )
+                )
+            except AccountNotFoundError as e:
+                return self.respond_with_error(HTTPStatus.NOT_FOUND, str(e))
+            except wallet.services.offchain.info_command.CommandResponseObjectFailure as e:
+                # TODO generic error that represent errors that might occurred in the internal HTTP call
+                ...
 
     class GetAccountPaymentCommands(OffchainView):
         summary = "Get Account Payment Commands"

@@ -297,16 +297,7 @@ class TestGetPaymentInfo:
         self, authorized_client: Client, mock_get_payment_info_exist_object
     ) -> None:
         rv: Response = authorized_client.get(
-            "/offchain/query/payment_info",
-            json={
-                "vasp_address": ADDRESS,
-                "reference_id": REFERENCE_ID,
-                "merchant_name": "Bond & Gurki Pet Store",
-                "action": CHARGE_ACTION,
-                "currency": "XUS",
-                "amount": 1000,
-                "expiration": EXPIRATION,
-            },
+            f"/offchain/query/payment_info?reference_id={REFERENCE_ID}&vasp_address={ADDRESS}",
         )
 
         assert rv.status_code == 200
@@ -323,14 +314,14 @@ class TestGetPaymentInfo:
         self, authorized_client: Client, mock_get_payment_info_not_exist_object
     ) -> None:
         rv: Response = authorized_client.get(
-            "/offchain/query/payment_info",
-            json={
-                "vasp_address": ADDRESS,
-                "reference_id": REFERENCE_ID,
-            },
+            f"/offchain/query/payment_info?reference_id={REFERENCE_ID}&vasp_address={ADDRESS}",
         )
 
-        assert rv.status_code == 204
+        assert rv.status_code == 404
+        assert (
+            rv.get_json()["error"]
+            == f"Failed finding payment info for reference id {REFERENCE_ID}"
+        )
 
 
 class TestGetAccountPaymentCommands:
