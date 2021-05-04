@@ -25,7 +25,7 @@ function PaymentConfirmation() {
 
   // Only if the query string changes, recalculate the payment params
   const queryString = useLocation().search;
-  let paymentParamsFromUrl: PaymentParams | undefined = useMemo(() => {
+  const paymentParamsFromUrl: PaymentParams | undefined = useMemo(() => {
     try {
       if (queryString) {
         return PaymentParams.fromUrlQueryString(queryString);

@@ -48,7 +48,18 @@ export class PaymentParams {
     }
 
     if (Array.from(params).length === 3 || isStandard) {
-      return new PaymentParams(false, vaspAddress, referenceId);
+      return new PaymentParams(
+        false,
+        vaspAddress,
+        referenceId,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        redirectUrl
+      );
     }
 
     const merchantName = PaymentParams.getParam(params, "merchantName");
