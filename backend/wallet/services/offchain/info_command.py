@@ -49,7 +49,8 @@ def handle_get_info_command(request: CommandRequestObject):
     )
 
     return utils.jws_response(
-        request.cid, result_object=GetInfoCommandResponse(payment_info=payment_info_object)
+        request.cid,
+        result_object=GetInfoCommandResponse(payment_info=payment_info_object),
     )
 
 

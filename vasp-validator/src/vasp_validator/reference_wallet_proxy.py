@@ -131,13 +131,15 @@ class ReferenceWalletProxy:
     def get_payment_info(self, reference_id, vasp_address) -> PaymentInfo:
         response = self._request_authorized(
             "GET",
-            f"offchain/query/payment_info?vasp_address={vasp_address}&reference_id={reference_id}",
+            f"offchain/query/payment_info?"
+            f"vasp_address={vasp_address}&"
+            f"reference_id={reference_id}",
         )
 
         return PaymentInfo.from_json(response.text) if response.text else None
 
     def prepare_payment_info(self) -> (str, str):
-        response = self._request_authorized("POST", f"/validation/payment_info")
+        response = self._request_authorized("POST", "/validation/payment_info")
         response_object = PreparePaymentInfoResponse.from_json(response.text)
 
         return response_object.reference_id, response_object.address
@@ -209,7 +211,7 @@ class ReferenceWalletProxyFPPA:
         )
         return r.json()["funds_pull_pre_approval_id"]
 
-    def create_funds_pull_pre_approval_request_for_unknown_payer(
+    def create_fppa_request_for_unknown_payer(
         self,
         scope: FundPullPreApprovalScope,
         description: str = None,
