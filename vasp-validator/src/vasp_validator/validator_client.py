@@ -271,6 +271,9 @@ class ValidatorClient(VaspProxy):
     def get_payment_info(self, reference_id, vasp_address):
         return self.wallet.get_payment_info(reference_id, vasp_address)
 
+    def prepare_payment_info(self):
+        return self.wallet.prepare_payment_info()
+
 
 def get_random_string(length):
     alphabet = string.ascii_lowercase + string.digits

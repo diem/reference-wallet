@@ -18,6 +18,7 @@ from .models import (
     TransactionId,
     FundsTransfer,
     PaymentInfo,
+    PreparePaymentInfoResponse,
 )
 from .models_fppa import (
     FundPullPreApprovalScope,
@@ -133,11 +134,12 @@ class ReferenceWalletProxy:
             f"offchain/query/payment_info?vasp_address=${vasp_address}&reference_id=${reference_id}",
         )
 
-        payment_info = self._request_authorized(
-            "GET", f"offchain/query/payment_info", json=request
-        )
+        return PaymentInfo.from_json(response.text) if response.text else None
 
-        return PaymentInfo.from_json(payment_info.text) if payment_info.text else None
+    def prepare_payment_info(self):
+        response = self._request_authorized("POST", f"/validation/payment_info")
+
+        return PreparePaymentInfoResponse.from_json(response.text)
 
     def approve_payment_command(self, reference_id):
         self._request_authorized(

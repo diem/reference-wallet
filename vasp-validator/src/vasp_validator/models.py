@@ -150,6 +150,13 @@ class PaymentInfo:
 
 @dataclass_json
 @dataclass
+class PreparePaymentInfoResponse:
+    vasp_address: str
+    reference_id: str
+
+
+@dataclass_json
+@dataclass
 class FundsTransfer:
     transaction: Transaction
     payment_command: PaymentCommand

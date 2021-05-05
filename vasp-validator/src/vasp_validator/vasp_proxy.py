@@ -129,3 +129,7 @@ class VaspProxy(ABC):
     @abstractmethod
     def get_payment_info(self, reference_id, vasp_address):
         ...
+
+    @abstractmethod
+    def prepare_payment_info(self):
+        ...
