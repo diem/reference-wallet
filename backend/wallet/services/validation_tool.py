@@ -1,3 +1,4 @@
+import time
 import uuid
 from datetime import datetime
 
@@ -6,10 +7,41 @@ from diem import identifier
 import offchain
 from wallet.services.account import generate_new_subaddress
 from wallet.services.offchain.fund_pull_pre_approval import Role
+from wallet.services.offchain.utils import generate_my_address
 from wallet.storage import (
     funds_pull_pre_approval_command as fppa_storage,
     models,
+    save_payment_info,
+    DiemCurrency,
 )
+from wallet.storage.models import PaymentInfo as PaymentInfoModel
+
+
+def prepare_payment_info(account_id: int, action="charge"):
+    my_address = generate_my_address(account_id)
+    reference_id = str(uuid.uuid4())
+
+    save_payment_info(
+        PaymentInfoModel(
+            vasp_address=my_address,
+            reference_id=reference_id,
+            merchant_name="Bond & Gurki Pet Store",
+            merchant_legal_name="Bond & Gurki Pet Store",
+            city="Dogcity",
+            country="Dogland",
+            line1="1234 Puppy Street",
+            line2="dogpalace 3",
+            postal_code="123456",
+            state="Dogstate",
+            action=action,
+            currency=DiemCurrency.XUS,
+            amount=100_000_000,
+            expiration=datetime.fromtimestamp(int(time.time()) + 3000),
+            description="description",
+        )
+    )
+
+    return reference_id, my_address
 
 
 def request_funds_pull_pre_approval_from_another(

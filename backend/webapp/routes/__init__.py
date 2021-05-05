@@ -235,6 +235,13 @@ def validation_tool_routes():
         ),
         methods=["POST"],
     )
+    validation_tool.add_url_rule(
+        rule="/validation/payment_info",
+        view_func=ValidationToolRoutes.PreparePaymentInfo.as_view(
+            "prepare_payment_info"
+        ),
+        methods=["POST"],
+    )
 
 
 account_routes()

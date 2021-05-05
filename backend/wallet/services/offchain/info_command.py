@@ -16,50 +16,39 @@ from offchain.types import (
 from wallet.storage.models import PaymentInfo as PaymentInfoModel
 from wallet.storage.payment import save_payment_info
 from wallet.services.offchain import utils
+from wallet import storage
 
 logger = logging.getLogger(__name__)
 
 
-def handle_get_info_command(request: CommandRequestObject, account_id: int):
+def handle_get_info_command(request: CommandRequestObject):
     # The get_info command arrive only when LRW playing the Merchant\Receiver role in the communication,
-    # and therefore we can generate the payment info on the spot
+    # and therefore we can assume that the payment info have been generated in advance
     info_command_object = typing.cast(GetInfoCommandObject, request.command)
 
     reference_id = info_command_object.reference_id
 
-    my_address = utils.generate_my_address(account_id)
-    logger.info(f"~~~~ my_address: {my_address}")
+    payment_info_model = storage.get_payment_info(reference_id)
 
-    payment_info = new_payment_info_object(
+    payment_info_object = new_payment_info_object(
         reference_id=reference_id,
-        receiver_address=my_address,
-        name="Bond & Gurki Pet Store",
-        legal_name="Bond & Gurki Pet Store",
-        city="Dogcity",
-        country="Dogland",
-        line1="1234 Puppy Street",
-        line2="dogpalace 3",
-        postal_code="123456",
-        state="Dogstate",
-        amount=100_000_000,
-        currency=DiemCurrency.XUS,
-        action="charge",
-        timestamp=123,
-        description="description",
+        receiver_address=payment_info_model.vasp_address,
+        name=payment_info_model.merchant_name,
+        legal_name=payment_info_model.merchant_legal_name,
+        city=payment_info_model.city,
+        country=payment_info_model.country,
+        line1=payment_info_model.line1,
+        line2=payment_info_model.line2,
+        postal_code=payment_info_model.postal_code,
+        state=payment_info_model.state,
+        amount=payment_info_model.amount,
+        currency=payment_info_model.currency,
+        action=payment_info_model.action,
+        timestamp=payment_info_model.expiration,
+        description=payment_info_model.description,
     )
 
-    save_payment_info(
-        PaymentInfoModel(
-            vasp_address=my_address,
-            reference_id=reference_id,
-            merchant_name=payment_info.receiver.business_data.name,
-            action="charge",
-            currency=DiemCurrency.XUS,
-            amount=100_000_000,
-        )
-    )
-
-    return utils.jws_response(request.cid, result_object=payment_info)
+    return utils.jws_response(request.cid, result_object=payment_info_object)
 
 
 @dataclasses.dataclass(frozen=True)

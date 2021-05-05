@@ -87,7 +87,7 @@ def preapproval_command_to_dict(preapproval: fppa_service.FPPAObject):
 
 
 def payment_info_to_dict(
-    payment_details: wallet.services.offchain.info_command.PaymentInfo,
+    payment_details: info_command.PaymentInfo,
 ):
     return {
         "vasp_address": payment_details.vasp_address,
@@ -485,7 +485,7 @@ class OffchainRoutes:
             logger.info(f"[{sender_address}:{x_request_id}] offchain v2 income request")
 
             code, response = offchain_service.process_inbound_command(
-                sender_address, request_body, self.user.account_id
+                sender_address, request_body
             )
 
             logger.info(

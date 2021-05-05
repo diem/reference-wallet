@@ -6,6 +6,7 @@ from wallet.services import validation_tool as validation_tool_service
 from webapp.schemas import (
     FundsPullPreApprovalRequestCreationResponse,
     FundsPullPreApprovalRequest,
+    PreparePaymentInfoResponse,
 )
 
 from .strict_schema_view import StrictSchemaView, response_definition, body_parameter
@@ -62,6 +63,28 @@ class ValidationToolRoutes:
                 {
                     "funds_pull_pre_approval_id": funds_pull_pre_approval_id,
                     "address": address,
+                },
+                HTTPStatus.OK,
+            )
+
+    class PreparePaymentInfo(ValidationToolView):
+        summary = "Create internal payment info record for testing purpose"
+        parameters = []
+        responses = {
+            HTTPStatus.OK: response_definition(
+                "Reference Id and Vasp Address", schema=PreparePaymentInfoResponse
+            ),
+        }
+
+        def post(self):
+            reference_id, my_address = validation_tool_service.prepare_payment_info(
+                self.user.account_id
+            )
+
+            return (
+                {
+                    "reference_id": reference_id,
+                    "address": my_address,
                 },
                 HTTPStatus.OK,
             )

@@ -39,7 +39,6 @@ logger = logging.getLogger(__name__)
 def process_inbound_command(
     request_sender_address: str,
     request_body_bytes: bytes,
-    account_id: Optional[int] = None,
 ) -> (int, bytes):
     command = None
     try:
@@ -49,7 +48,7 @@ def process_inbound_command(
 
         # LRW in RECEIVER role
         if request.command_type == CommandType.GetInfoCommand:
-            return handle_get_info_command(request, account_id)
+            return handle_get_info_command(request)
 
         command = utils.offchain_client().process_inbound_request(
             request, request_sender_address

@@ -17,6 +17,8 @@ from offchain.types.info_types import PaymentReceiverObject, BusinessDataObject
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet.services.offchain import info_command as info_commands_service, utils
 from wallet.storage import db_session
+from wallet import storage
+from wallet.storage.models import PaymentInfo as PaymentInfoModel
 
 CREATED_AT = int(time.time())
 EXPIRATION = CREATED_AT + 3000
@@ -121,15 +123,34 @@ def test_handle_get_info_command(mock_method):
     )
 
     # mocking generate_my_address to insure my_address consistency
-    mock_method(utils, "generate_my_address", will_return=MY_ADDRESS)
+    mock_method(
+        storage,
+        "get_payment_info",
+        will_return=PaymentInfoModel(
+            vasp_address=MY_ADDRESS,
+            reference_id=REFERENCE_ID,
+            merchant_name="Bond & Gurki Pet Store",
+            merchant_legal_name="Bond & Gurki Pet Store",
+            city="Dogcity",
+            country="Dogland",
+            line1="1234 Puppy Street",
+            line2="dogpalace 3",
+            postal_code="123456",
+            state="Dogstate",
+            action="charge",
+            currency=DiemCurrency.XUS,
+            amount=100_000_000,
+            expiration=EXPIRATION,
+            description="description",
+        ),
+    )
 
     response = info_commands_service.handle_get_info_command(
         new_get_info_request(reference_id=REFERENCE_ID, cid=REFERENCE_ID),
-        user.account_id,
     )
 
     assert response[0] == 200
     assert (
         response[1]
-        == b"eyJhbGciOiJFZERTQSJ9.eyJzdGF0dXMiOiAic3VjY2VzcyIsICJyZXN1bHQiOiB7InJlY2VpdmVyIjogeyJhZGRyZXNzIjogInRkbTFwem1oY3hwbnluczdtMDM1Y3RkcW1leHhhZDhwdGdhenhobGx2eXNjZXNxZGdwIiwgImJ1c2luZXNzX2RhdGEiOiB7Im5hbWUiOiAiQm9uZCAmIEd1cmtpIFBldCBTdG9yZSIsICJsZWdhbF9uYW1lIjogIkJvbmQgJiBHdXJraSBQZXQgU3RvcmUiLCAiYWRkcmVzcyI6IHsiY2l0eSI6ICJEb2djaXR5IiwgImNvdW50cnkiOiAiRG9nbGFuZCIsICJsaW5lMSI6ICIxMjM0IFB1cHB5IFN0cmVldCIsICJsaW5lMiI6ICJkb2dwYWxhY2UgMyIsICJwb3N0YWxfY29kZSI6ICIxMjM0NTYiLCAic3RhdGUiOiAiRG9nc3RhdGUifX19LCAiYWN0aW9uIjogeyJhbW91bnQiOiAxMDAwMDAwMDAsICJjdXJyZW5jeSI6ICJYVVMiLCAiYWN0aW9uIjogImNoYXJnZSIsICJ0aW1lc3RhbXAiOiAxMjN9LCAicmVmZXJlbmNlX2lkIjogIjI2MzJhMDE4LWU0OTItNDQ4Ny04MWYzLTc3NWQ2ZWNmYjZlZiIsICJkZXNjcmlwdGlvbiI6ICJkZXNjcmlwdGlvbiJ9LCAiX09iamVjdFR5cGUiOiAiQ29tbWFuZFJlc3BvbnNlT2JqZWN0IiwgImNpZCI6ICIyNjMyYTAxOC1lNDkyLTQ0ODctODFmMy03NzVkNmVjZmI2ZWYifQ==.P1C2b6SWCSR2j10IG-gN3wVIqxKdGQah-7uRnv2Vg8-NGkGfIUDXe4K_uVkwOyxQa2n_EYeX1FlEVdhSQ_JRCQ=="
+        == b"eyJhbGciOiJFZERTQSJ9.eyJzdGF0dXMiOiAic3VjY2VzcyIsICJyZXN1bHQiOiB7InJlY2VpdmVyIjogeyJhZGRyZXNzIjogInRkbTFwem1oY3hwbnluczdtMDM1Y3RkcW1leHhhZDhwdGdhenhobGx2eXNjZXNxZGdwIiwgImJ1c2luZXNzX2RhdGEiOiB7Im5hbWUiOiAiQm9uZCAmIEd1cmtpIFBldCBTdG9yZSIsICJsZWdhbF9uYW1lIjogIkJvbmQgJiBHdXJraSBQZXQgU3RvcmUiLCAiYWRkcmVzcyI6IHsiY2l0eSI6ICJEb2djaXR5IiwgImNvdW50cnkiOiAiRG9nbGFuZCIsICJsaW5lMSI6ICIxMjM0IFB1cHB5IFN0cmVldCIsICJsaW5lMiI6ICJkb2dwYWxhY2UgMyIsICJwb3N0YWxfY29kZSI6ICIxMjM0NTYiLCAic3RhdGUiOiAiRG9nc3RhdGUifX19LCAiYWN0aW9uIjogeyJhbW91bnQiOiAxMDAwMDAwMDAsICJjdXJyZW5jeSI6ICJYVVMiLCAiYWN0aW9uIjogImNoYXJnZSIsICJ0aW1lc3RhbXAiOiAxNjIwMjEzNTc0fSwgInJlZmVyZW5jZV9pZCI6ICIyNjMyYTAxOC1lNDkyLTQ0ODctODFmMy03NzVkNmVjZmI2ZWYiLCAiZGVzY3JpcHRpb24iOiAiZGVzY3JpcHRpb24ifSwgIl9PYmplY3RUeXBlIjogIkNvbW1hbmRSZXNwb25zZU9iamVjdCIsICJjaWQiOiAiMjYzMmEwMTgtZTQ5Mi00NDg3LTgxZjMtNzc1ZDZlY2ZiNmVmIn0=.B3r70zVMXpEMlEJlMaOK3WrbGnQElpQEDrtn8aPmhEEwu8suvp17qs-O55ZlIG7EbYg_aoIbBh6DbYFc6NTRAw=="
     )
