@@ -73,39 +73,34 @@ class PaymentInfo:
     expiration: int
 
 
+class P2MGeneralError(Exception):
+    pass
+
+
 def get_payment_info(account_id, reference_id: str, vasp_address):
     my_address = utils.generate_my_address(account_id)
 
-    command_response_object = utils.offchain_client().send_request(
-        request_sender_address=my_address,
-        counterparty_account_id=vasp_address,
-        request_bytes=jws.serialize(
-            new_get_info_request(reference_id=reference_id, cid=reference_id),
-            utils.compliance_private_key().sign,
-        ),
-    )
+    try:
+        command_response_object = utils.offchain_client().send_request(
+            request_sender_address=my_address,
+            counterparty_account_id=vasp_address,
+            request_bytes=jws.serialize(
+                new_get_info_request(reference_id=reference_id, cid=reference_id),
+                utils.compliance_private_key().sign,
+            ),
+        )
+    except Exception as e:
+        raise P2MGeneralError(e)
 
-    if command_response_object.status == "success":
-        if (
-            command_response_object.result
-            and type(command_response_object.result) is GetInfoCommandResponse
-        ):
-            payment_info = command_response_object.result.payment_info
-            action_object = payment_info.action
+    if (
+        command_response_object.result
+        and type(command_response_object.result) is GetInfoCommandResponse
+    ):
+        payment_info = command_response_object.result.payment_info
+        action_object = payment_info.action
 
-            save_payment_info(
-                PaymentInfoModel(
-                    vasp_address=vasp_address,
-                    reference_id=reference_id,
-                    merchant_name=payment_info.receiver.business_data.name,
-                    action=action_object.action,
-                    currency=action_object.currency,
-                    amount=action_object.amount,
-                    expiration=action_object.valid_until,
-                )
-            )
-
-            return PaymentInfo(
+        save_payment_info(
+            PaymentInfoModel(
                 vasp_address=vasp_address,
                 reference_id=reference_id,
                 merchant_name=payment_info.receiver.business_data.name,
@@ -114,8 +109,16 @@ def get_payment_info(account_id, reference_id: str, vasp_address):
                 amount=action_object.amount,
                 expiration=action_object.valid_until,
             )
-    else:
-        # todo send request failed
-        ...
+        )
+
+        return PaymentInfo(
+            vasp_address=vasp_address,
+            reference_id=reference_id,
+            merchant_name=payment_info.receiver.business_data.name,
+            action=action_object.action,
+            currency=action_object.currency,
+            amount=action_object.amount,
+            expiration=action_object.valid_until,
+        )
 
     return None

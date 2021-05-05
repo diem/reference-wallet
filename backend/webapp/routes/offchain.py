@@ -4,9 +4,9 @@
 import logging
 from http import HTTPStatus
 
-import wallet.services.offchain.info_command
-import wallet.services.offchain.payment_command
+from wallet.services.offchain import info_command
 import offchain as diem_offchain
+from diem.jsonrpc import AccountNotFoundError
 from offchain import (
     X_REQUEST_ID,
     X_REQUEST_SENDER_ADDRESS,
@@ -200,6 +200,12 @@ class OffchainRoutes:
 
         responses = {
             HTTPStatus.OK: response_definition("Payment Info", schema=PaymentInfo),
+            HTTPStatus.NOT_FOUND: response_definition(
+                "Command not found", schema=Error
+            ),
+            HTTPStatus.UNPROCESSABLE_ENTITY: response_definition(
+                "Command not found", schema=Error
+            ),
         }
 
         def get(self):
@@ -208,10 +214,8 @@ class OffchainRoutes:
                 vasp_address = request.args["vasp_address"]
                 reference_id = request.args["reference_id"]
 
-                payment_details = (
-                    wallet.services.offchain.info_command.get_payment_info(
-                        account_id, reference_id, vasp_address
-                    )
+                payment_details = info_command.get_payment_info(
+                    account_id, reference_id, vasp_address
                 )
 
                 return (
@@ -227,9 +231,8 @@ class OffchainRoutes:
                 )
             except AccountNotFoundError as e:
                 return self.respond_with_error(HTTPStatus.NOT_FOUND, str(e))
-            except wallet.services.offchain.info_command.CommandResponseObjectFailure as e:
-                # TODO generic error that represent errors that might occurred in the internal HTTP call
-                ...
+            except info_command.P2MGeneralError as e:
+                return self.respond_with_error(HTTPStatus.UNPROCESSABLE_ENTITY, str(e))
 
     class GetAccountPaymentCommands(OffchainView):
         summary = "Get Account Payment Commands"
