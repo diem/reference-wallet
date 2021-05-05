@@ -20,15 +20,15 @@ from wallet.services.offchain import utils
 logger = logging.getLogger(__name__)
 
 
-def handle_get_info_command(request: CommandRequestObject):
-    # TODO
-    # This command arrive only when LRW playing the Merchant\Receiver role in the communication,
+def handle_get_info_command(request: CommandRequestObject, account_id: int):
+    # The get_info command arrive only when LRW playing the Merchant\Receiver role in the communication,
     # and therefore we can generate the payment info on the spot
     info_command_object = typing.cast(GetInfoCommandObject, request.command)
 
     reference_id = info_command_object.reference_id
 
-    my_address = utils.generate_my_address(1)
+    my_address = utils.generate_my_address(account_id)
+    logger.info(f"~~~~ my_address: {my_address}")
 
     payment_info = new_payment_info_object(
         reference_id=reference_id,
@@ -58,8 +58,8 @@ def handle_get_info_command(request: CommandRequestObject):
             amount=100_000_000,
         )
     )
-    # return jws(cid=reference_id, result_object=payment_info)
-    return None
+
+    return utils.jws_response(request.cid, result_object=payment_info)
 
 
 @dataclasses.dataclass(frozen=True)

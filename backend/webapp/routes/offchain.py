@@ -482,7 +482,7 @@ class OffchainRoutes:
             logger.info(f"[{sender_address}:{x_request_id}] offchain v2 income request")
 
             code, response = offchain_service.process_inbound_command(
-                sender_address, request_body
+                sender_address, request_body, self.user.account_id
             )
 
             logger.info(

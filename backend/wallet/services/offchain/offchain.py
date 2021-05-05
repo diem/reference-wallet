@@ -37,7 +37,9 @@ logger = logging.getLogger(__name__)
 
 
 def process_inbound_command(
-    request_sender_address: str, request_body_bytes: bytes
+    request_sender_address: str,
+    request_body_bytes: bytes,
+    account_id: Optional[int] = None,
 ) -> (int, bytes):
     command = None
     try:
@@ -47,7 +49,7 @@ def process_inbound_command(
 
         # LRW in RECEIVER role
         if request.command_type == CommandType.GetInfoCommand:
-            return handle_get_info_command(request)
+            return handle_get_info_command(request, account_id)
 
         command = utils.offchain_client().process_inbound_request(
             request, request_sender_address
@@ -71,24 +73,10 @@ def process_inbound_command(
             )
             handle_fund_pull_pre_approval_command(preapproval_command)
 
-        return _jws(command.id())
+        return utils.jws_response(command.id())
     except offchain.Error as e:
         logger.exception(e)
-        return _jws(command.id() if command else None, e.obj)
-
-
-def _jws(
-    cid: Optional[str],
-    result_object: typing.Optional[typing.Union[PaymentInfoObject]] = None,
-    err: Optional[offchain.OffChainErrorObject] = None,
-):
-    code = 400 if err else 200
-    resp = offchain.reply_request(
-        cid=cid,
-        result_object=result_object,
-        err=err,
-    )
-    return code, offchain.jws.serialize(resp, utils.compliance_private_key().sign)
+        return utils.jws_response(command.id() if command else None, e.obj)
 
 
 def process_offchain_tasks() -> None:

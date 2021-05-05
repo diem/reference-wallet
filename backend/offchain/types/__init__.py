@@ -300,7 +300,7 @@ def new_get_info_request(
     cid: typing.Optional[str] = None,
 ) -> CommandRequestObject:
     return CommandRequestObject(
-        cid=cid or str(uuid.uuid4()),
+        cid=cid or reference_id or str(uuid.uuid4()),
         command_type=CommandType.GetInfoCommand,
         command=GetInfoCommandObject(
             _ObjectType=CommandType.GetInfoCommand,
@@ -327,33 +327,31 @@ def new_payment_info_object(
     valid_until: typing.Optional[int] = None,
     description: typing.Optional[str] = None,
 ):
-    return (
-        PaymentInfoObject(
-            receiver=PaymentReceiverObject(
-                address=receiver_address,
-                business_data=BusinessDataObject(
-                    name=name,
-                    legal_name=legal_name,
-                    address=AddressObject(
-                        city=city,
-                        country=country,
-                        line1=line1,
-                        line2=line2,
-                        postal_code=postal_code,
-                        state=state,
-                    ),
+    return PaymentInfoObject(
+        receiver=PaymentReceiverObject(
+            address=receiver_address,
+            business_data=BusinessDataObject(
+                name=name,
+                legal_name=legal_name,
+                address=AddressObject(
+                    city=city,
+                    country=country,
+                    line1=line1,
+                    line2=line2,
+                    postal_code=postal_code,
+                    state=state,
                 ),
             ),
-            action=PaymentActionObject(
-                amount=amount,
-                currency=currency,
-                action=action,
-                timestamp=timestamp,
-                valid_until=valid_until,
-            ),
-            reference_id=reference_id,
-            description=description,
         ),
+        action=PaymentActionObject(
+            amount=amount,
+            currency=currency,
+            action=action,
+            timestamp=timestamp,
+            valid_until=valid_until,
+        ),
+        reference_id=reference_id,
+        description=description,
     )
 
 

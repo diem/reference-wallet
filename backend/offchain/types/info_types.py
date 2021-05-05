@@ -26,7 +26,7 @@ class PaymentReceiverObject:
 
 
 @dataclass(frozen=True)
-class PaymentInfoObject(object):
+class PaymentInfoObject:
     receiver: PaymentReceiverObject
     action: PaymentActionObject
     reference_id: str
