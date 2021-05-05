@@ -1,6 +1,5 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
-import wallet.services.offchain.info_command
 from vasp_validator import ValidatorClient
 from vasp_validator.models_fppa import FundPullPreApprovalScope
 from vasp_validator.vasp_proxy import VaspProxy, TxState

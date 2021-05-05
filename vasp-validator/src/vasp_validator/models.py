@@ -151,7 +151,7 @@ class PaymentInfo:
 @dataclass_json
 @dataclass
 class PreparePaymentInfoResponse:
-    vasp_address: str
+    address: str
     reference_id: str
 
 
