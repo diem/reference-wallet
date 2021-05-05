@@ -214,16 +214,16 @@ class OffchainRoutes:
                 vasp_address = request.args["vasp_address"]
                 reference_id = request.args["reference_id"]
 
-                payment_details = info_command.get_payment_info(
+                payment_info = info_command.get_payment_info(
                     account_id, reference_id, vasp_address
                 )
 
                 return (
                     (
-                        payment_info_to_dict(payment_details),
+                        payment_info_to_dict(payment_info),
                         HTTPStatus.OK,
                     )
-                    if payment_details
+                    if payment_info
                     else self.respond_with_error(
                         HTTPStatus.NOT_FOUND,
                         f"Failed finding payment info for reference id {reference_id}",

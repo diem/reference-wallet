@@ -1,8 +1,8 @@
 import dataclasses
-import typing
 import logging
+import typing
+from datetime import datetime
 
-from diem_utils.types.currencies import DiemCurrency
 from offchain import (
     GetInfoCommandObject,
     CommandRequestObject,
@@ -13,10 +13,10 @@ from offchain.types import (
     new_get_info_request,
     GetInfoCommandResponse,
 )
+from wallet import storage
+from wallet.services.offchain import utils
 from wallet.storage.models import PaymentInfo as PaymentInfoModel
 from wallet.storage.payment import save_payment_info
-from wallet.services.offchain import utils
-from wallet import storage
 
 logger = logging.getLogger(__name__)
 
@@ -44,11 +44,13 @@ def handle_get_info_command(request: CommandRequestObject):
         amount=payment_info_model.amount,
         currency=payment_info_model.currency,
         action=payment_info_model.action,
-        timestamp=payment_info_model.expiration,
+        timestamp=int(datetime.timestamp(payment_info_model.expiration)),
         description=payment_info_model.description,
     )
 
-    return utils.jws_response(request.cid, result_object=payment_info_object)
+    return utils.jws_response(
+        request.cid, result_object=GetInfoCommandResponse(payment_info=payment_info_object)
+    )
 
 
 @dataclasses.dataclass(frozen=True)
@@ -79,7 +81,9 @@ def get_payment_info(account_id, reference_id: str, vasp_address):
             ),
         )
     except Exception as e:
-        raise P2MGeneralError(e)
+        error = P2MGeneralError(e)
+        logger.error(error)
+        raise error
 
     if (
         command_response_object.result

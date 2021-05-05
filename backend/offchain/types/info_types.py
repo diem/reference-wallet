@@ -36,6 +36,4 @@ class PaymentInfoObject:
 @dataclass(frozen=True)
 class GetInfoCommandResponse:
     payment_info: PaymentInfoObject
-    _ObjectType: str = datafield(
-        metadata={"valid-values": [ResponseType.GetInfoCommandResponse]},
-    )
+    _ObjectType: str = datafield(default=ResponseType.GetInfoCommandResponse)
