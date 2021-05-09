@@ -32,4 +32,4 @@ from .transaction import *
 from .logs import *
 from .funds_pull_pre_approval_command import *
 from .payment_command import *
-from .payment import *
+from .payment_info import *

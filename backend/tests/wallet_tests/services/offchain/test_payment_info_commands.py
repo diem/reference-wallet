@@ -1,12 +1,14 @@
-import time
+from datetime import datetime
 
 import context
+import pytest
 from diem_utils.types.currencies import DiemCurrency
 from offchain import (
     CommandResponseObject,
     PaymentActionObject,
     AddressObject,
     OffChainErrorObject,
+    CommandResponseError,
 )
 from offchain.types import (
     GetInfoCommandResponse,
@@ -14,14 +16,14 @@ from offchain.types import (
     new_get_info_request,
 )
 from offchain.types.info_types import PaymentReceiverObject, BusinessDataObject
+from tests.wallet_tests.resources.seeds.one_payment_info import PaymentInfoSeeder
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
-from wallet.services.offchain import info_command as info_commands_service, utils
+from wallet.services.offchain import info_command as info_commands_service
+from wallet.services.offchain.info_command import P2MGeneralError
 from wallet.storage import db_session
-from wallet import storage
-from wallet.storage.models import PaymentInfo as PaymentInfoModel
 
-CREATED_AT = int(time.time())
-EXPIRATION = CREATED_AT + 3000
+CREATED_AT = datetime(2021, 5, 12)
+EXPIRATION = datetime(2021, 5, 17)
 
 ACTION_CHARGE = "charge"
 AMOUNT = 100_000
@@ -56,7 +58,6 @@ def test_get_payment_info_for_charge_action_successfully(mock_method):
 
 
 def test_get_payment_info_for_charge_action_failure(mock_method):
-    # TODO
     user = OneUser.run(
         db_session, account_amount=100_000_000_000, account_currency=DiemCurrency.XUS
     )
@@ -64,14 +65,13 @@ def test_get_payment_info_for_charge_action_failure(mock_method):
     mock_method(
         context.get().offchain_client,
         "send_request",
-        will_return=generate_failed_command_response_object(),
+        will_raise=CommandResponseError(generate_failed_command_response_object()),
     )
 
-    payment_info = info_commands_service.get_payment_info(
-        user.account_id, REFERENCE_ID, OTHER_ADDRESS
-    )
-
-    assert payment_info is None
+    with pytest.raises(P2MGeneralError):
+        info_commands_service.get_payment_info(
+            user.account_id, REFERENCE_ID, OTHER_ADDRESS
+        )
 
 
 def generate_failed_command_response_object():
@@ -118,32 +118,7 @@ def generate_success_command_response_object():
 
 
 def test_handle_get_info_command(mock_method):
-    user = OneUser.run(
-        db_session, account_amount=100_000_000_000, account_currency=DiemCurrency.XUS
-    )
-
-    # mocking generate_my_address to insure my_address consistency
-    mock_method(
-        storage,
-        "get_payment_info",
-        will_return=PaymentInfoModel(
-            vasp_address=MY_ADDRESS,
-            reference_id=REFERENCE_ID,
-            merchant_name="Bond & Gurki Pet Store",
-            merchant_legal_name="Bond & Gurki Pet Store",
-            city="Dogcity",
-            country="Dogland",
-            line1="1234 Puppy Street",
-            line2="dogpalace 3",
-            postal_code="123456",
-            state="Dogstate",
-            action="charge",
-            currency=DiemCurrency.XUS,
-            amount=100_000_000,
-            expiration=EXPIRATION,
-            description="description",
-        ),
-    )
+    PaymentInfoSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
 
     response = info_commands_service.handle_get_info_command(
         new_get_info_request(reference_id=REFERENCE_ID, cid=REFERENCE_ID),
@@ -152,5 +127,5 @@ def test_handle_get_info_command(mock_method):
     assert response[0] == 200
     assert (
         response[1]
-        == b"eyJhbGciOiJFZERTQSJ9.eyJzdGF0dXMiOiAic3VjY2VzcyIsICJyZXN1bHQiOiB7InJlY2VpdmVyIjogeyJhZGRyZXNzIjogInRkbTFwem1oY3hwbnluczdtMDM1Y3RkcW1leHhhZDhwdGdhenhobGx2eXNjZXNxZGdwIiwgImJ1c2luZXNzX2RhdGEiOiB7Im5hbWUiOiAiQm9uZCAmIEd1cmtpIFBldCBTdG9yZSIsICJsZWdhbF9uYW1lIjogIkJvbmQgJiBHdXJraSBQZXQgU3RvcmUiLCAiYWRkcmVzcyI6IHsiY2l0eSI6ICJEb2djaXR5IiwgImNvdW50cnkiOiAiRG9nbGFuZCIsICJsaW5lMSI6ICIxMjM0IFB1cHB5IFN0cmVldCIsICJsaW5lMiI6ICJkb2dwYWxhY2UgMyIsICJwb3N0YWxfY29kZSI6ICIxMjM0NTYiLCAic3RhdGUiOiAiRG9nc3RhdGUifX19LCAiYWN0aW9uIjogeyJhbW91bnQiOiAxMDAwMDAwMDAsICJjdXJyZW5jeSI6ICJYVVMiLCAiYWN0aW9uIjogImNoYXJnZSIsICJ0aW1lc3RhbXAiOiAxNjIwMjEzNTc0fSwgInJlZmVyZW5jZV9pZCI6ICIyNjMyYTAxOC1lNDkyLTQ0ODctODFmMy03NzVkNmVjZmI2ZWYiLCAiZGVzY3JpcHRpb24iOiAiZGVzY3JpcHRpb24ifSwgIl9PYmplY3RUeXBlIjogIkNvbW1hbmRSZXNwb25zZU9iamVjdCIsICJjaWQiOiAiMjYzMmEwMTgtZTQ5Mi00NDg3LTgxZjMtNzc1ZDZlY2ZiNmVmIn0=.B3r70zVMXpEMlEJlMaOK3WrbGnQElpQEDrtn8aPmhEEwu8suvp17qs-O55ZlIG7EbYg_aoIbBh6DbYFc6NTRAw=="
+        == b"eyJhbGciOiJFZERTQSJ9.eyJzdGF0dXMiOiAic3VjY2VzcyIsICJyZXN1bHQiOiB7InBheW1lbnRfaW5mbyI6IHsicmVjZWl2ZXIiOiB7ImFkZHJlc3MiOiAidGRtMXB6bWhjeHBueW5zN20wMzVjdGRxbWV4eGFkOHB0Z2F6eGhsbHZ5c2Nlc3FkZ3AiLCAiYnVzaW5lc3NfZGF0YSI6IHsibmFtZSI6ICJCb25kICYgR3Vya2kgUGV0IFN0b3JlIiwgImxlZ2FsX25hbWUiOiAiQm9uZCAmIEd1cmtpIFBldCBTdG9yZSIsICJhZGRyZXNzIjogeyJjaXR5IjogIkRvZ2NpdHkiLCAiY291bnRyeSI6ICJEb2dsYW5kIiwgImxpbmUxIjogIjEyMzQgUHVwcHkgU3RyZWV0IiwgImxpbmUyIjogImRvZ3BhbGFjZSAzIiwgInBvc3RhbF9jb2RlIjogIjEyMzQ1NiIsICJzdGF0ZSI6ICJEb2dzdGF0ZSJ9fX0sICJhY3Rpb24iOiB7ImFtb3VudCI6IDEwMDAwMDAwMCwgImN1cnJlbmN5IjogIlhVUyIsICJhY3Rpb24iOiAiY2hhcmdlIiwgInRpbWVzdGFtcCI6IDE2MjExOTg4MDB9LCAicmVmZXJlbmNlX2lkIjogIjI2MzJhMDE4LWU0OTItNDQ4Ny04MWYzLTc3NWQ2ZWNmYjZlZiIsICJkZXNjcmlwdGlvbiI6ICJkZXNjcmlwdGlvbiJ9LCAiX09iamVjdFR5cGUiOiAiR2V0SW5mb0NvbW1hbmRSZXNwb25zZSJ9LCAiX09iamVjdFR5cGUiOiAiQ29tbWFuZFJlc3BvbnNlT2JqZWN0IiwgImNpZCI6ICIyNjMyYTAxOC1lNDkyLTQ0ODctODFmMy03NzVkNmVjZmI2ZWYifQ==.I7tbK6GwpI_YANbR6btCwHQpmmti0oin7boVEWgKQqPnrzDWg7SmLBX3AMPsVad_M94xLK0hHA0vcORKvvUsBA=="
     )
