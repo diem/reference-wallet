@@ -30,13 +30,23 @@ export class PaymentParams {
 
   public static fromUrlQueryString(queryString: string): PaymentParams {
     const params = new URLSearchParams(queryString);
-    let isStandard = false;
 
     const vaspAddress = PaymentParams.getParam(params, "vaspAddress");
     const referenceId = PaymentParams.getParam(params, "referenceId");
 
     if (Array.from(params).length === 2) {
-      isStandard = true;
+      return new PaymentParams(
+        false,
+        vaspAddress,
+        referenceId,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      );
     }
 
     const redirectUrl = PaymentParams.getParam(params, "redirectUrl");
@@ -47,7 +57,7 @@ export class PaymentParams {
       throw new PaymentParamError("redirectUrl contains invalid URL");
     }
 
-    if (Array.from(params).length === 3 || isStandard) {
+    if (Array.from(params).length === 3) {
       return new PaymentParams(
         false,
         vaspAddress,
