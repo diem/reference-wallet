@@ -36,7 +36,9 @@ def prepare_payment_info(account_id: int, action="charge"):
             action=action,
             currency=DiemCurrency.XUS,
             amount=100_000_000,
-            expiration=datetime.fromtimestamp(int(time.time()) + 3000),
+            expiration=datetime.fromtimestamp(int(time.time()) + 3000)
+            if action == "auth"
+            else None,
             description="description",
         )
     )

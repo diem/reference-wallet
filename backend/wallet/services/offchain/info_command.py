@@ -45,7 +45,9 @@ def handle_get_info_command(request: CommandRequestObject):
         currency=payment_info_model.currency,
         action=payment_info_model.action,
         timestamp=int(datetime.timestamp(payment_info_model.created_at)),
-        valid_until=payment_info_model.expiration,
+        valid_until=int(datetime.timestamp(payment_info_model.expiration))
+        if payment_info_model.action == "auth"
+        else None,
         description=payment_info_model.description,
     )
 
@@ -105,7 +107,9 @@ def get_payment_info(account_id, reference_id: str, vasp_address: str):
                     action=action_object.action,
                     currency=action_object.currency,
                     amount=action_object.amount,
-                    expiration=action_object.valid_until,
+                    expiration=datetime.fromtimestamp(action_object.valid_until)
+                    if action_object.valid_until
+                    else None,
                 )
             )
 
@@ -116,5 +120,7 @@ def get_payment_info(account_id, reference_id: str, vasp_address: str):
         action=payment_info_model.action,
         currency=payment_info_model.currency,
         amount=payment_info_model.amount,
-        expiration=int(datetime.timestamp(payment_info_model.expiration)) if payment_info_model.expiration else None,
+        expiration=int(datetime.timestamp(payment_info_model.expiration))
+        if payment_info_model.expiration
+        else None,
     )

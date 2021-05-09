@@ -166,7 +166,7 @@ class ValidatorClient(VaspProxy):
             description=description,
         )
 
-    def create_funds_pull_pre_approval_request_for_unknown_payer(
+    def create_fppa_request_for_unknown_payer(
         self,
         scope: FundPullPreApprovalScope,
         description: str = None,
@@ -271,8 +271,8 @@ class ValidatorClient(VaspProxy):
     def get_payment_info(self, reference_id, vasp_address):
         return self.wallet.get_payment_info(reference_id, vasp_address)
 
-    def prepare_payment_info(self):
-        return self.wallet.prepare_payment_info()
+    def prepare_payment_info(self, action):
+        return self.wallet.prepare_payment_info(action)
 
 
 def get_random_string(length):
