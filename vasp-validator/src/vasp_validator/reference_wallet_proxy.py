@@ -138,8 +138,10 @@ class ReferenceWalletProxy:
 
         return PaymentInfo.from_json(response.text) if response.text else None
 
-    def prepare_payment_info(self) -> (str, str):
-        response = self._request_authorized("POST", "/validation/payment_info")
+    def prepare_payment_info(self, action: str = "charge") -> (str, str):
+        response = self._request_authorized(
+            "POST", f"/validation/payment_info/{action}"
+        )
         response_object = PreparePaymentInfoResponse.from_json(response.text)
 
         return response_object.reference_id, response_object.address

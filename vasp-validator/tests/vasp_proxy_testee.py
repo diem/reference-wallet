@@ -106,5 +106,5 @@ class VaspProxyTestee(VaspProxy):
     def get_payment_info(self, reference_id, vasp_address):
         return self.vasp.get_payment_info(reference_id, vasp_address)
 
-    def prepare_payment_info(self):
-        return self.vasp.prepare_payment_info()
+    def prepare_payment_info(self, action):
+        return self.vasp.prepare_payment_info(action)

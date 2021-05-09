@@ -9,7 +9,12 @@ from webapp.schemas import (
     PreparePaymentInfoResponse,
 )
 
-from .strict_schema_view import StrictSchemaView, response_definition, body_parameter
+from .strict_schema_view import (
+    StrictSchemaView,
+    response_definition,
+    body_parameter,
+    path_string_param,
+)
 
 validation_tool = Blueprint("validation_tool", __name__)
 
@@ -69,16 +74,21 @@ class ValidationToolRoutes:
 
     class PreparePaymentInfo(ValidationToolView):
         summary = "Create internal payment info record for testing purpose"
-        parameters = []
+        parameters = [
+            path_string_param(
+                name="action",
+                description="payment action",
+            ),
+        ]
         responses = {
             HTTPStatus.OK: response_definition(
                 "Reference Id and Vasp Address", schema=PreparePaymentInfoResponse
             ),
         }
 
-        def post(self):
+        def post(self, action: str = "charge"):
             reference_id, my_address = validation_tool_service.prepare_payment_info(
-                self.user.account_id
+                self.user.account_id, action
             )
 
             return (

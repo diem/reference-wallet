@@ -131,5 +131,5 @@ class VaspProxy(ABC):
         ...
 
     @abstractmethod
-    def prepare_payment_info(self):
+    def prepare_payment_info(self, action):
         ...
