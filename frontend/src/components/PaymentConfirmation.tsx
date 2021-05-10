@@ -25,7 +25,7 @@ function PaymentConfirmation() {
 
   // Only if the query string changes, recalculate the payment params
   const queryString = useLocation().search;
-  const paymentParams: PaymentParams | undefined = useMemo(() => {
+  const paymentParamsFromUrl: PaymentParams | undefined = useMemo(() => {
     try {
       if (queryString) {
         return PaymentParams.fromUrlQueryString(queryString);
@@ -35,11 +35,30 @@ function PaymentConfirmation() {
     }
   }, [queryString]);
 
+  const [paymentParams, setPaymentParams] = useState(paymentParamsFromUrl);
+
   useEffect(() => {
     const addPaymentCommand = async () => {
       try {
-        if (paymentParams) {
-          await new BackendClient().addPaymentComand(paymentParams);
+        if (queryString && paymentParams) {
+          let backendClient = new BackendClient();
+
+          if (!paymentParams.isFull) {
+            let payment_info;
+
+            while (!payment_info) {
+              payment_info = await backendClient.getPaymentInfo(
+                paymentParams.referenceId,
+                paymentParams.vaspAddress
+              );
+            }
+
+            setPaymentParams(
+              PaymentParams.fromPaymentInfo(payment_info, paymentParams.redirectUrl)
+            );
+          } else {
+            await backendClient.addPaymentCommand(paymentParams);
+          }
         }
       } catch (e) {
         console.error(e);
@@ -48,7 +67,7 @@ function PaymentConfirmation() {
 
     // noinspection JSIgnoredPromiseFromCall
     addPaymentCommand();
-  }, [paymentParams]);
+  }, [queryString]);
 
   return (
     <>
@@ -62,7 +81,7 @@ function PaymentConfirmation() {
         Invalid payment request.
       </Alert>
 
-      {!!paymentParams && (
+      {!!queryString && !!paymentParams && (
         <PaymentConfirmationModal
           open={!!paymentParams}
           paymentParams={paymentParams}

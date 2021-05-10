@@ -8,7 +8,7 @@ from .command_types import (
     OffChainErrorObject,
     CommandRequestObject,
     CommandResponseStatus,
-    FundPullPreApprovalCommandObject,
+    ResponseType,
 )
 from .payment_types import (
     AbortCode,
@@ -32,6 +32,14 @@ from .fund_pull_pre_approval_types import (
     TimeUnit,
     CurrencyObject,
     FundPullPreApprovalType,
+    FundPullPreApprovalCommandObject,
+)
+from .info_types import (
+    GetInfoCommandObject,
+    GetInfoCommandResponse,
+    PaymentInfoObject,
+    PaymentReceiverObject,
+    BusinessDataObject,
 )
 
 import dataclasses, json, re, typing, uuid
@@ -58,12 +66,13 @@ class InvalidOverwriteError(FieldError):
 
 T = typing.TypeVar("T")
 
-
 _OBJECT_TYPES: typing.Dict[str, typing.Any] = {
     "CommandResponseObject": CommandResponseObject,
     "CommandRequestObject": CommandRequestObject,
     CommandType.PaymentCommand: PaymentCommandObject,
     CommandType.FundPullPreApprovalCommand: FundPullPreApprovalCommandObject,
+    CommandType.GetInfoCommand: GetInfoCommandObject,
+    ResponseType.GetInfoCommandResponse: GetInfoCommandResponse,
 }
 
 _OBJECT_TYPE_FIELD_NAME = "_ObjectType"
@@ -286,14 +295,76 @@ def new_funds_pull_pre_approval_request(
     )
 
 
+def new_get_info_request(
+    reference_id: str,
+    cid: typing.Optional[str] = None,
+) -> CommandRequestObject:
+    return CommandRequestObject(
+        cid=cid or reference_id or str(uuid.uuid4()),
+        command_type=CommandType.GetInfoCommand,
+        command=GetInfoCommandObject(
+            _ObjectType=CommandType.GetInfoCommand,
+            reference_id=reference_id,
+        ),
+    )
+
+
+def new_payment_info_object(
+    reference_id: str,
+    receiver_address: str,
+    name: str,
+    legal_name: str,
+    city: str,
+    country: str,
+    line1: str,
+    line2: str,
+    postal_code: str,
+    state: str,
+    amount: int,
+    currency: str,
+    action: str,
+    timestamp: int,
+    valid_until: typing.Optional[int] = None,
+    description: typing.Optional[str] = None,
+):
+    return PaymentInfoObject(
+        receiver=PaymentReceiverObject(
+            address=receiver_address,
+            business_data=BusinessDataObject(
+                name=name,
+                legal_name=legal_name,
+                address=AddressObject(
+                    city=city,
+                    country=country,
+                    line1=line1,
+                    line2=line2,
+                    postal_code=postal_code,
+                    state=state,
+                ),
+            ),
+        ),
+        action=PaymentActionObject(
+            amount=amount,
+            currency=currency,
+            action=action,
+            timestamp=timestamp,
+            valid_until=valid_until,
+        ),
+        reference_id=reference_id,
+        description=description,
+    )
+
+
 def reply_request(
     cid: typing.Optional[str],
+    result_object: typing.Optional[typing.Union[GetInfoCommandResponse]] = None,
     err: typing.Optional[OffChainErrorObject] = None,
 ) -> CommandResponseObject:
     return CommandResponseObject(
         status=CommandResponseStatus.failure if err else CommandResponseStatus.success,
         error=err,
         cid=cid,
+        result=result_object,
     )
 
 

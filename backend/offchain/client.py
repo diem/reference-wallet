@@ -158,9 +158,7 @@ class Client:
             raise CommandResponseError(cmd_resp)
         return cmd_resp
 
-    def process_inbound_request(
-        self, request_sender_address: str, request_bytes: bytes
-    ) -> Command:
+    def process_inbound_request(self, request, request_sender_address) -> Command:
         """Validate and decode the `request_bytes` into `diem.offchain.command.Command` object.
 
         Raises `diem.offchain.error.Error` with `protocol_error` when:
@@ -179,27 +177,12 @@ class Client:
         - When receiver actor statis is `ready_for_settlement`, the `recipient_signature` is not set or is invalid (verifying transaction metadata failed).
 
         """
-
-        if not request_sender_address:
-            raise protocol_error(
-                ErrorCode.missing_http_header,
-                f"missing {http_header.X_REQUEST_SENDER_ADDRESS}",
-            )
-        try:
-            _, public_key = self.get_base_url_and_compliance_key(request_sender_address)
-        except ValueError as e:
-            raise protocol_error(ErrorCode.invalid_http_header, str(e)) from e
-
-        request = _deserialize_jws(
-            request_bytes, CommandRequestObject, public_key, command_error
-        )
         if request.command_type == CommandType.PaymentCommand:
-            cast = typing.cast(PaymentCommandObject, request.command)
-            payment = cast.payment
+            payment = typing.cast(PaymentCommandObject, request.command).payment
             self.validate_addresses(payment, request_sender_address)
             cmd = self.create_inbound_payment_command(request.cid, payment)
             if cmd.is_rsend():
-                self.validate_recipient_signature(cmd, public_key)
+                self.validate_recipient_signature(cmd, request_sender_address)
             return cmd
         elif request.command_type == CommandType.FundPullPreApprovalCommand:
             fund_pull_pre_approval = typing.cast(
@@ -215,8 +198,13 @@ class Client:
         )
 
     def validate_recipient_signature(
-        self, cmd: PaymentCommand, public_key: Ed25519PublicKey
+        self, cmd: PaymentCommand, request_sender_address
     ) -> None:
+        try:
+            _, public_key = self.get_base_url_and_compliance_key(request_sender_address)
+        except ValueError as e:
+            raise protocol_error(ErrorCode.invalid_http_header, str(e)) from e
+
         msg = cmd.travel_rule_metadata_signature_message(self.hrp)
         try:
             sig = cmd.payment.recipient_signature
@@ -336,6 +324,23 @@ class Client:
             )
 
         raise command_error(ErrorCode.unknown_address, "unknown actor addresses: {obj}")
+
+    def deserialize_jws_request(self, request_sender_address, request_bytes):
+        if not request_sender_address:
+            raise protocol_error(
+                ErrorCode.missing_http_header,
+                f"missing {http_header.X_REQUEST_SENDER_ADDRESS}",
+            )
+
+        _, public_key = self.get_base_url_and_compliance_key(request_sender_address)
+
+        return _deserialize_jws(
+            request_bytes, CommandRequestObject, public_key, command_error
+        )
+
+
+def deserialize_jws_response():
+    ...
 
 
 def _filter_supported_currency_codes(

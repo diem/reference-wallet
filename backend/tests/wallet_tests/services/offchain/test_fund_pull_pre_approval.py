@@ -411,6 +411,11 @@ def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_ex
     )
     mock_method(
         context.get().offchain_client,
+        "deserialize_jws_request",
+        will_return=cmd,
+    )
+    mock_method(
+        context.get().offchain_client,
         "process_inbound_request",
         will_return=cmd,
     )
@@ -678,6 +683,11 @@ def payee_initiate_completely_new_funds_pull_pre_approval_request_check(
         biller_address=payee_bech32,
         funds_pull_pre_approval_id=FUNDS_PULL_PRE_APPROVAL_ID,
         status=FundPullPreApprovalStatus.pending,
+    )
+    mock_method(
+        context.get().offchain_client,
+        "deserialize_jws_request",
+        will_return=cmd,
     )
     mock_method(
         context.get().offchain_client,

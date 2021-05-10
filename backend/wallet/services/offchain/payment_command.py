@@ -14,7 +14,6 @@ from wallet.services.offchain.utils import (
     account_address_and_subaddress,
     user_kyc_data,
     generate_my_address,
-    PaymentCommandModel,
 )
 from wallet.storage import (
     save_payment_command,
@@ -26,6 +25,8 @@ from wallet.storage import (
 from wallet.types import TransactionStatus, TransactionType
 
 logger = logging.getLogger(__name__)
+
+PaymentCommandModel = models.PaymentCommand
 
 
 def add_payment_command_as_sender(
@@ -57,8 +58,9 @@ def add_payment_command_as_sender(
         status=TransactionStatus.PENDING,
         account_id=account_id,
         merchant_name=merchant_name,
-        expiration=datetime.fromtimestamp(expiration),
+        expiration=datetime.fromtimestamp(expiration) if expiration else None,
     )
+
     save_payment_command(payment_command)
 
 
@@ -111,7 +113,7 @@ def lock_and_save_inbound_command(
             if command == prior:
                 return
             command.validate(prior)
-            status = _payment_command_status(
+            status = payment_command_status(
                 command, TransactionStatus.OFF_CHAIN_INBOUND
             )
             update_model_base_on_payment_command(model, command, status)
@@ -331,7 +333,7 @@ def save_outbound_payment_command(
     return command
 
 
-def _payment_command_status(
+def payment_command_status(
     command: offchain.PaymentCommand, default: TransactionStatus
 ) -> TransactionStatus:
     if command.is_both_ready():

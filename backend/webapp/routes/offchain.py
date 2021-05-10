@@ -4,8 +4,9 @@
 import logging
 from http import HTTPStatus
 
-import wallet.services.offchain.payment_command
+from wallet.services.offchain import info_command
 import offchain as diem_offchain
+from diem.jsonrpc import AccountNotFoundError
 from offchain import (
     X_REQUEST_ID,
     X_REQUEST_SENDER_ADDRESS,
@@ -34,6 +35,8 @@ from webapp.schemas import (
     Error,
     CreateAndApproveFundPullPreApproval,
     CreatePaymentAsSenderCommand as CreatePaymentCommandSchema,
+    PaymentInfo,
+    GetPaymentInfoRequest,
 )
 
 logger = logging.getLogger(__name__)
@@ -81,6 +84,20 @@ def preapproval_command_to_dict(preapproval: fppa_service.FPPAObject):
         }
 
     return result
+
+
+def payment_info_to_dict(
+    payment_details: info_command.PaymentInfo,
+):
+    return {
+        "vasp_address": payment_details.vasp_address,
+        "reference_id": payment_details.reference_id,
+        "merchant_name": payment_details.merchant_name,
+        "action": payment_details.action,
+        "currency": payment_details.currency,
+        "amount": payment_details.amount,
+        "expiration": payment_details.expiration,
+    }
 
 
 def payment_command_to_dict(command: diem_offchain.PaymentCommand):
@@ -150,22 +167,72 @@ class OffchainRoutes:
         summary = "Get Payment Command"
 
         parameters = [
-            path_string_param(
-                name="transaction_id", description="transaction internal id"
-            )
+            path_string_param(name="reference_id", description="command reference id")
         ]
 
         responses = {
             HTTPStatus.OK: response_definition("Payment Command", schema=PaymentCommand)
         }
 
-        def get(self, transaction_id: int):
-            payment_command = pc_service.get_payment_command(transaction_id)
+        def get(self, reference_id: int):
+            payment_command = pc_service.get_payment_command(reference_id)
 
             return (
                 payment_command_to_dict(payment_command),
                 HTTPStatus.OK,
             )
+
+    class GetPaymentInfo(OffchainView):
+        summary = "Get Payment Details"
+
+        parameters = [
+            query_str_param(
+                name="reference_id",
+                description="payment reference id",
+                required=True,
+            ),
+            query_str_param(
+                name="vasp_address",
+                description="payment destination address",
+                required=True,
+            ),
+        ]
+
+        responses = {
+            HTTPStatus.OK: response_definition("Payment Info", schema=PaymentInfo),
+            HTTPStatus.NOT_FOUND: response_definition(
+                "Command not found", schema=Error
+            ),
+            HTTPStatus.UNPROCESSABLE_ENTITY: response_definition(
+                "Command not found", schema=Error
+            ),
+        }
+
+        def get(self):
+            try:
+                account_id = self.user.account_id
+                vasp_address = request.args["vasp_address"]
+                reference_id = request.args["reference_id"]
+
+                payment_info = info_command.get_payment_info(
+                    account_id, reference_id, vasp_address
+                )
+
+                return (
+                    (
+                        payment_info_to_dict(payment_info),
+                        HTTPStatus.OK,
+                    )
+                    if payment_info
+                    else self.respond_with_error(
+                        HTTPStatus.NOT_FOUND,
+                        f"Failed finding payment info for reference id {reference_id}",
+                    )
+                )
+            except AccountNotFoundError as e:
+                return self.respond_with_error(HTTPStatus.NOT_FOUND, str(e))
+            except info_command.P2MGeneralError as e:
+                return self.respond_with_error(HTTPStatus.UNPROCESSABLE_ENTITY, str(e))
 
     class GetAccountPaymentCommands(OffchainView):
         summary = "Get Account Payment Commands"
@@ -204,15 +271,20 @@ class OffchainRoutes:
         def post(self):
             params = request.json
 
+            amount = int(params.get("amount")) if params.get("amount") else None
+            expiration = (
+                int(params.get("expiration")) if params.get("expiration") else None
+            )
+
             pc_service.add_payment_command_as_sender(
-                self.user.account_id,
-                params["reference_id"],
-                params["vasp_address"],
-                params["merchant_name"],
-                params["action"],
-                params["currency"],
-                int(params["amount"]),
-                int(params["expiration"]),
+                account_id=self.user.account_id,
+                reference_id=params.get("reference_id"),
+                vasp_address=params.get("vasp_address"),
+                merchant_name=params.get("merchant_name"),
+                action=params.get("action"),
+                currency=params.get("currency"),
+                amount=amount,
+                expiration=expiration,
             )
 
             return "OK", HTTPStatus.NO_CONTENT

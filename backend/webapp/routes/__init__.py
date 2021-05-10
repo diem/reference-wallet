@@ -171,8 +171,13 @@ def offchain_api_routes():
         methods=["POST"],
     )
     offchain.add_url_rule(
-        rule="/offchain/query/payment_command/<transaction_id>",
+        rule="/offchain/query/payment_command/<reference_id>",
         view_func=OffchainRoutes.GetPaymentCommand.as_view("get_payment_command"),
+        methods=["GET"],
+    )
+    offchain.add_url_rule(
+        rule="/offchain/query/payment_info",
+        view_func=OffchainRoutes.GetPaymentInfo.as_view("get_payment_info"),
         methods=["GET"],
     )
     offchain.add_url_rule(
@@ -227,6 +232,13 @@ def validation_tool_routes():
         rule="/validation/funds_pull_pre_approvals",
         view_func=ValidationToolRoutes.CreateFundsPullPreApprovalRequest.as_view(
             "create_funds_pull_pre_approval_request"
+        ),
+        methods=["POST"],
+    )
+    validation_tool.add_url_rule(
+        rule="/validation/payment_info/<action>",
+        view_func=ValidationToolRoutes.PreparePaymentInfo.as_view(
+            "prepare_payment_info"
         ),
         methods=["POST"],
     )

@@ -114,10 +114,7 @@ def test_approve_request_by_payer(validator, vasp_proxy: VaspProxy):
         expiration_timestamp=int(time.time()) + ONE_YEAR_SECONDS,
     )
     description = "test_approve_request_by_payer"
-    (
-        actual_id,
-        validator_address,
-    ) = validator.create_funds_pull_pre_approval_request_for_unknown_payer(
+    (actual_id, validator_address,) = validator.create_fppa_request_for_unknown_payer(
         description=description,
         scope=scope,
     )

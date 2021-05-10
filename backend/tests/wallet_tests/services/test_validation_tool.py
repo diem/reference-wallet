@@ -10,10 +10,12 @@ from wallet.services.account import get_account_id_from_bech32
 from wallet.services.offchain.fund_pull_pre_approval import Role
 from wallet.services.validation_tool import (
     request_funds_pull_pre_approval_from_another,
+    prepare_payment_info,
 )
 from wallet.storage import (
     db_session,
     funds_pull_pre_approval_command as fppa_storage,
+    get_payment_info,
 )
 
 CURRENCY = "XUS"
@@ -132,3 +134,15 @@ class TestRequestFundsPullPreApprovalFromAnother:
         assert db_fppa.max_cumulative_unit_value is None
         assert db_fppa.max_cumulative_amount is None
         assert db_fppa.max_cumulative_amount_currency is None
+
+
+def test_prepare_payment_info():
+    user = OneUser.run(db_session)
+
+    reference_id, address = prepare_payment_info(user.account_id)
+
+    payment_info = get_payment_info(reference_id)
+
+    assert payment_info
+    assert payment_info.reference_id == reference_id
+    assert payment_info.vasp_address == address

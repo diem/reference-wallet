@@ -7,19 +7,21 @@ from typing import Optional
 import context
 import offchain
 from offchain import CommandType
+from offchain.types import PaymentInfoObject
 from wallet.services.kyc import xstr
 from wallet.services.offchain import utils
 from wallet.services.offchain.fund_pull_pre_approval import (
     process_funds_pull_pre_approvals_requests,
     handle_fund_pull_pre_approval_command,
 )
+from wallet.services.offchain.info_command import handle_get_info_command
 from wallet.services.offchain.payment_command import (
     process_payment_by_status,
     lock_and_save_inbound_command,
     model_to_payment_command,
     update_model_base_on_payment_command,
     add_transaction_based_on_payment_command,
-    _payment_command_status,
+    payment_command_status,
 )
 
 # noinspection PyUnresolvedReferences
@@ -35,13 +37,23 @@ logger = logging.getLogger(__name__)
 
 
 def process_inbound_command(
-    request_sender_address: str, request_body_bytes: bytes
+    request_sender_address: str,
+    request_body_bytes: bytes,
 ) -> (int, bytes):
     command = None
     try:
-        command = utils.offchain_client().process_inbound_request(
+        request = utils.offchain_client().deserialize_jws_request(
             request_sender_address, request_body_bytes
         )
+
+        # LRW in RECEIVER role
+        if request.command_type == CommandType.GetInfoCommand:
+            return handle_get_info_command(request)
+
+        command = utils.offchain_client().process_inbound_request(
+            request, request_sender_address
+        )
+
         logger.info(f"process inbound command: {command}")
         logger.debug(f"process inbound command: {offchain.to_json(command)}")
 
@@ -60,16 +72,10 @@ def process_inbound_command(
             )
             handle_fund_pull_pre_approval_command(preapproval_command)
 
-        return _jws(command.id())
+        return utils.jws_response(command.id())
     except offchain.Error as e:
         logger.exception(e)
-        return _jws(command.cid if command else None, e.obj)
-
-
-def _jws(cid: Optional[str], err: Optional[offchain.OffChainErrorObject] = None):
-    code = 400 if err else 200
-    resp = offchain.reply_request(cid)
-    return code, offchain.jws.serialize(resp, utils.compliance_private_key().sign)
+        return utils.jws_response(command.id() if command else None, e.obj)
 
 
 def process_offchain_tasks() -> None:
@@ -97,7 +103,7 @@ def process_offchain_tasks() -> None:
             return
         if action == offchain.Action.EVALUATE_KYC_DATA:
             new_cmd = evaluate_kyc_data(cmd)
-            status = _payment_command_status(
+            status = payment_command_status(
                 new_cmd, TransactionStatus.OFF_CHAIN_OUTBOUND
             )
             update_model_base_on_payment_command(model, new_cmd, status)
@@ -134,7 +140,6 @@ def process_offchain_tasks() -> None:
 
     def send_command_as_receiver(model) -> None:
         payment_command = model_to_payment_command(model)
-        # updated_command = evaluate_kyc_data(payment_command)
         kyc_data = {
             "payload_version": 1,
             "type": "individual",

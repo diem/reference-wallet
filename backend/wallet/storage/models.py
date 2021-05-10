@@ -251,3 +251,29 @@ class FundsPullPreApprovalCommand(Base):
                 # An attribute in updated_command does not exist in 'self'
                 # We assume this has nothing to do with us and continue to next attribute
                 ...
+
+
+class PaymentInfo(Base):
+    __tablename__ = "paymentinfo"
+    reference_id = Column(
+        String, primary_key=True, nullable=False, unique=True, index=True
+    )
+    vasp_address = Column(String)
+    merchant_name = Column(String)
+    merchant_legal_name = Column(String)
+    city = Column(String)
+    country = Column(String)
+    line1 = Column(String)
+    line2 = Column(String)
+    postal_code = Column(String)
+    state = Column(String)
+    action = Column(String)
+    currency = Column(String)
+    amount = Column(Integer)
+    expiration = Column(DateTime, nullable=True)
+    created_at = Column(
+        DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+    )
+    description = Column(String)
