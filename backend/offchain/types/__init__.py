@@ -34,7 +34,7 @@ from .fund_pull_pre_approval_types import (
     FundPullPreApprovalType,
     FundPullPreApprovalCommandObject,
 )
-from .info_types import (
+from .payment_types import (
     GetInfoCommandObject,
     GetInfoCommandResponse,
     PaymentInfoObject,

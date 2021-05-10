@@ -96,7 +96,7 @@ class OffChainErrorType:
 # Late import to solve circular dependency and be able to list all the command types
 from .payment_command_types import PaymentCommandObject
 from .fund_pull_pre_approval_types import FundPullPreApprovalCommandObject
-from .info_types import GetInfoCommandObject, GetInfoCommandResponse
+from .payment_types import GetInfoCommandObject, GetInfoCommandResponse
 
 
 @dataclass(frozen=True)
