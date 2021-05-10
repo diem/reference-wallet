@@ -6,7 +6,7 @@ import { Button, Modal, ModalBody, Spinner } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../contexts/app";
 import { diemAmountToHumanFriendly } from "../utils/amount-precision";
-import { PaymentParams } from "../utils/payment-params";
+import { PaymentParamError, PaymentParams } from "../utils/payment-params";
 import CloseButton from "./CloseButton";
 import BackendClient from "../services/backendClient";
 
@@ -23,7 +23,11 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
 
   const [submitStatus, setSubmitStatus] = useState<"edit" | "sending" | "fail" | "success">("edit");
 
-  const currency = settings.currencies[paymentParams!.currency];
+  if (!paymentParams.currency || !paymentParams.amount) {
+    throw new PaymentParamError("Mandatory field missing value");
+  }
+
+  const currency = settings.currencies[paymentParams.currency];
 
   useEffect(() => {
     async function refreshUser() {
@@ -93,10 +97,12 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
               <p className="text-black">{paymentParams.vaspAddress}</p>
             </div>
 
-            <div>
-              <small>{t("confirmation.expiration")}</small>
-              <p className="text-black">{paymentParams!.expiration.toLocaleString()}</p>
-            </div>
+            {paymentParams.expiration && (
+              <div>
+                <small>{t("confirmation.expiration")}</small>
+                <p className="text-black">{paymentParams.expiration.toLocaleString()}</p>
+              </div>
+            )}
 
             {submitStatus !== "success" && (
               <>
