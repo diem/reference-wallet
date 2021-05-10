@@ -1,15 +1,12 @@
-import uuid
 from typing import Optional, List
-from datetime import datetime
 
+import offchain
 import pytest
-from offchain import Status
 from flask import Response
 from flask.testing import Client
+from offchain import Status
+from wallet.services.offchain import payment
 from wallet.services.offchain import payment_command as pc_service
-from wallet.services.offchain import info_command
-import offchain
-
 
 CURRENCY = "XUS"
 ADDRESS = "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
@@ -24,11 +21,11 @@ EXPIRATION = 1802010490
 
 
 @pytest.fixture
-def mock_get_payment_info_exist_object(monkeypatch):
+def mock_get_payment_details_exist_object(monkeypatch):
     def mock(
         account_id, reference_id, vasp_address
-    ) -> Optional[info_command.PaymentInfo]:
-        return info_command.PaymentInfo(
+    ) -> Optional[payment.PaymentDetails]:
+        return payment.PaymentDetails(
             vasp_address=ADDRESS,
             reference_id=REFERENCE_ID,
             merchant_name="Bond's Per Store",
@@ -38,17 +35,17 @@ def mock_get_payment_info_exist_object(monkeypatch):
             expiration=EXPIRATION,
         )
 
-    monkeypatch.setattr(info_command, "get_payment_info", mock)
+    monkeypatch.setattr(payment, "get_payment_details", mock)
 
 
 @pytest.fixture
-def mock_get_payment_info_not_exist_object(monkeypatch):
+def mock_get_payment_details_not_exist_object(monkeypatch):
     def mock(
         account_id, reference_id, vasp_address
-    ) -> Optional[info_command.PaymentInfo]:
+    ) -> Optional[payment.PaymentDetails]:
         return None
 
-    monkeypatch.setattr(info_command, "get_payment_info", mock)
+    monkeypatch.setattr(payment, "get_payment_details", mock)
 
 
 @pytest.fixture
@@ -293,8 +290,8 @@ class TestGetPaymentCommand:
 
 
 class TestGetPaymentInfo:
-    def test_get_payment_info_exist_object(
-        self, authorized_client: Client, mock_get_payment_info_exist_object
+    def test_get_payment_details_exist_object(
+        self, authorized_client: Client, mock_get_payment_details_exist_object
     ) -> None:
         rv: Response = authorized_client.get(
             f"/offchain/query/payment_info?reference_id={REFERENCE_ID}&vasp_address={ADDRESS}",
@@ -310,8 +307,8 @@ class TestGetPaymentInfo:
         assert rv.get_json()["reference_id"] == REFERENCE_ID
         assert rv.get_json()["vasp_address"] == ADDRESS
 
-    def test_get_payment_info_not_exist_object(
-        self, authorized_client: Client, mock_get_payment_info_not_exist_object
+    def test_get_payment_details_not_exist_object(
+        self, authorized_client: Client, mock_get_payment_details_not_exist_object
     ) -> None:
         rv: Response = authorized_client.get(
             f"/offchain/query/payment_info?reference_id={REFERENCE_ID}&vasp_address={ADDRESS}",
@@ -320,7 +317,7 @@ class TestGetPaymentInfo:
         assert rv.status_code == 404
         assert (
             rv.get_json()["error"]
-            == f"Failed finding payment info for reference id {REFERENCE_ID}"
+            == f"Failed finding payment details for reference id {REFERENCE_ID}"
         )
 
 

@@ -15,8 +15,8 @@ from offchain.types import (
 )
 from wallet import storage
 from wallet.services.offchain import utils
-from wallet.storage.models import PaymentInfo as PaymentInfoModel
-from wallet.storage.payment_info import save_payment_info
+from wallet.storage.models import Payment as PaymentModel
+from wallet.storage.payment import save_payment
 
 logger = logging.getLogger(__name__)
 
@@ -24,41 +24,41 @@ logger = logging.getLogger(__name__)
 def handle_get_info_command(request: CommandRequestObject):
     # The get_info command arrive only when LRW playing the Merchant\Receiver role in the communication,
     # and therefore we can assume that the payment info already been saved in DB
-    info_command_object = typing.cast(GetInfoCommandObject, request.command)
+    get_info_command_object = typing.cast(GetInfoCommandObject, request.command)
 
-    reference_id = info_command_object.reference_id
+    reference_id = get_info_command_object.reference_id
 
-    payment_info_model = storage.get_payment_info(reference_id)
+    payment_model = storage.get_payment_details(reference_id)
 
     payment_info_object = new_payment_info_object(
         reference_id=reference_id,
-        receiver_address=payment_info_model.vasp_address,
-        name=payment_info_model.merchant_name,
-        legal_name=payment_info_model.merchant_legal_name,
-        city=payment_info_model.city,
-        country=payment_info_model.country,
-        line1=payment_info_model.line1,
-        line2=payment_info_model.line2,
-        postal_code=payment_info_model.postal_code,
-        state=payment_info_model.state,
-        amount=payment_info_model.amount,
-        currency=payment_info_model.currency,
-        action=payment_info_model.action,
-        timestamp=int(datetime.timestamp(payment_info_model.created_at)),
-        valid_until=int(datetime.timestamp(payment_info_model.expiration))
-        if payment_info_model.action == "auth"
+        receiver_address=payment_model.vasp_address,
+        name=payment_model.merchant_name,
+        legal_name=payment_model.merchant_legal_name,
+        city=payment_model.city,
+        country=payment_model.country,
+        line1=payment_model.line1,
+        line2=payment_model.line2,
+        postal_code=payment_model.postal_code,
+        state=payment_model.state,
+        amount=payment_model.amount,
+        currency=payment_model.currency,
+        action=payment_model.action,
+        timestamp=int(datetime.timestamp(payment_model.created_at)),
+        valid_until=int(datetime.timestamp(payment_model.expiration))
+        if payment_model.action == "auth"
         else None,
-        description=payment_info_model.description,
+        description=payment_model.description,
     )
 
     return utils.jws_response(
-        request.cid,
+        reference_id,
         result_object=GetInfoCommandResponse(payment_info=payment_info_object),
     )
 
 
 @dataclasses.dataclass(frozen=True)
-class PaymentInfo:
+class PaymentDetails:
     vasp_address: str
     reference_id: str
     merchant_name: str
@@ -72,10 +72,10 @@ class P2MGeneralError(Exception):
     pass
 
 
-def get_payment_info(account_id, reference_id: str, vasp_address: str):
-    payment_info_model = storage.get_payment_info(reference_id)
+def get_payment_details(account_id, reference_id: str, vasp_address: str):
+    payment_model = storage.get_payment_details(reference_id)
 
-    if payment_info_model is None:
+    if payment_model is None:
         my_address = utils.generate_my_address(account_id)
 
         try:
@@ -99,8 +99,8 @@ def get_payment_info(account_id, reference_id: str, vasp_address: str):
             payment_info = command_response_object.result.payment_info
             action_object = payment_info.action
 
-            payment_info_model = save_payment_info(
-                PaymentInfoModel(
+            payment_model = save_payment(
+                PaymentModel(
                     vasp_address=vasp_address,
                     reference_id=reference_id,
                     merchant_name=payment_info.receiver.business_data.name,
@@ -113,14 +113,36 @@ def get_payment_info(account_id, reference_id: str, vasp_address: str):
                 )
             )
 
-    return PaymentInfo(
-        vasp_address=payment_info_model.vasp_address,
-        reference_id=payment_info_model.reference_id,
-        merchant_name=payment_info_model.merchant_name,
-        action=payment_info_model.action,
-        currency=payment_info_model.currency,
-        amount=payment_info_model.amount,
-        expiration=int(datetime.timestamp(payment_info_model.expiration))
-        if payment_info_model.expiration
+    return PaymentDetails(
+        vasp_address=payment_model.vasp_address,
+        reference_id=payment_model.reference_id,
+        merchant_name=payment_model.merchant_name,
+        action=payment_model.action,
+        currency=payment_model.currency,
+        amount=payment_model.amount,
+        expiration=int(datetime.timestamp(payment_model.expiration))
+        if payment_model.expiration
         else None,
     )
+
+
+def add_new_payment(
+    reference_id,
+    vasp_address,
+    merchant_name,
+    action,
+    currency,
+    amount,
+    expiration,
+):
+    payment_command = PaymentModel(
+        vasp_address=vasp_address,
+        reference_id=reference_id,
+        merchant_name=merchant_name,
+        action=action,
+        currency=currency,
+        amount=amount,
+        expiration=datetime.fromtimestamp(expiration) if expiration else None,
+    )
+
+    save_payment(payment_command)

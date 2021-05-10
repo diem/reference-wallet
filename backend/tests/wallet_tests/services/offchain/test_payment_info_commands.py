@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 import context
@@ -16,10 +17,10 @@ from offchain.types import (
     new_get_info_request,
 )
 from offchain.types.info_types import PaymentReceiverObject, BusinessDataObject
-from tests.wallet_tests.resources.seeds.one_payment_info import PaymentInfoSeeder
+from tests.wallet_tests.resources.seeds.one_payment_seeder import OnePaymentSeeder
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
-from wallet.services.offchain import info_command as info_commands_service
-from wallet.services.offchain.info_command import P2MGeneralError
+from wallet.services.offchain import payment as info_commands_service
+from wallet.services.offchain.payment import P2MGeneralError
 from wallet.storage import db_session
 
 CREATED_AT = datetime(2021, 5, 12)
@@ -45,7 +46,7 @@ def test_get_payment_info_for_charge_action_successfully(mock_method):
         will_return=generate_success_command_response_object(),
     )
 
-    payment_info = info_commands_service.get_payment_info(
+    payment_info = info_commands_service.get_payment_details(
         user.account_id, REFERENCE_ID, OTHER_ADDRESS
     )
 
@@ -69,7 +70,7 @@ def test_get_payment_info_for_charge_action_failure(mock_method):
     )
 
     with pytest.raises(P2MGeneralError):
-        info_commands_service.get_payment_info(
+        info_commands_service.get_payment_details(
             user.account_id, REFERENCE_ID, OTHER_ADDRESS
         )
 
@@ -118,11 +119,11 @@ def generate_success_command_response_object():
 
 
 def test_handle_get_info_command(mock_method):
-    PaymentInfoSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
+    OnePaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
 
-    response = info_commands_service.handle_get_info_command(
-        new_get_info_request(reference_id=REFERENCE_ID, cid=REFERENCE_ID),
-    )
+    get_info_request = new_get_info_request(reference_id=REFERENCE_ID, cid=REFERENCE_ID)
+
+    response = info_commands_service.handle_get_info_command(get_info_request)
 
     assert response[0] == 200
     assert (

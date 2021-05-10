@@ -188,16 +188,16 @@ class TestRequestFundsPullPreApprovalFromAnother:
         assert "expiration_timestamp" in rv.get_data(as_text=True)
 
 
-class TestPreparePaymentInfo:
+class TestPreparePaymentAsReceiver:
     def test(self, authorized_client, mock_method):
         mock_method(
             validation_tool_service,
-            "prepare_payment_info",
+            "prepare_payment_as_receiver",
             will_return=(REFERENCE_ID, ADDRESS),
         )
 
         rv: Response = authorized_client.post(
-            "/validation/payment_info",
+            "/validation/payment_info/charge",
         )
 
         assert rv.status_code == 200

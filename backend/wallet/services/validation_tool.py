@@ -11,18 +11,18 @@ from wallet.services.offchain.utils import generate_my_address
 from wallet.storage import (
     funds_pull_pre_approval_command as fppa_storage,
     models,
-    save_payment_info,
+    save_payment,
     DiemCurrency,
 )
-from wallet.storage.models import PaymentInfo as PaymentInfoModel
+from wallet.storage.models import Payment as PaymentModel
 
 
-def prepare_payment_info(account_id: int, action="charge"):
+def prepare_payment_as_receiver(account_id: int, action="charge"):
     my_address = generate_my_address(account_id)
     reference_id = str(uuid.uuid4())
 
-    save_payment_info(
-        PaymentInfoModel(
+    save_payment(
+        PaymentModel(
             vasp_address=my_address,
             reference_id=reference_id,
             merchant_name="Bond & Gurki Pet Store",

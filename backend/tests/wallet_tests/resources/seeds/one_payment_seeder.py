@@ -1,14 +1,14 @@
 from datetime import datetime
 
 from diem_utils.types.currencies import DiemCurrency
-from wallet.storage.models import PaymentInfo as PaymentInfoModel
+from wallet.storage.models import Payment as PaymentModel
 
 
-class PaymentInfoSeeder:
+class OnePaymentSeeder:
     @staticmethod
     def run(db_session, vasp_address, reference_id):
         db_session.add(
-            PaymentInfoModel(
+            PaymentModel(
                 vasp_address=vasp_address,
                 reference_id=reference_id,
                 merchant_name="Bond & Gurki Pet Store",

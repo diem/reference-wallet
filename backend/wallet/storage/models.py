@@ -253,8 +253,8 @@ class FundsPullPreApprovalCommand(Base):
                 ...
 
 
-class PaymentInfo(Base):
-    __tablename__ = "paymentinfo"
+class Payment(Base):
+    __tablename__ = "payment"
     reference_id = Column(
         String, primary_key=True, nullable=False, unique=True, index=True
     )
