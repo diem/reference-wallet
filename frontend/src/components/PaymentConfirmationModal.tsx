@@ -6,7 +6,7 @@ import { Button, Modal, ModalBody, Spinner } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../contexts/app";
 import { diemAmountToHumanFriendly } from "../utils/amount-precision";
-import { PaymentParamError, PaymentParams } from "../utils/payment-params";
+import { PaymentParams } from "../utils/payment-params";
 import CloseButton from "./CloseButton";
 import BackendClient from "../services/backendClient";
 
