@@ -13,6 +13,7 @@ import { Debt } from "../interfaces/settlement";
 import { Chain } from "../interfaces/system";
 import { Approval } from "../interfaces/approval";
 import { PaymentParams } from "../utils/payment-params";
+import { PaymentInfo } from "../interfaces/payment_info";
 
 export default class BackendClient {
   private client: AxiosInstance;
@@ -441,17 +442,34 @@ export default class BackendClient {
     }
   }
 
-  async addPaymentComand(paymentParams: PaymentParams): Promise<void> {
+  async addPaymentCommand(paymentParams: PaymentParams): Promise<void> {
     try {
       await this.client.post(`/offchain/payment_command`, {
         vasp_address: paymentParams.vaspAddress,
         reference_id: paymentParams.referenceId,
         merchant_name: paymentParams.merchantName,
-        action: paymentParams.action.toLowerCase(),
+        action:
+          paymentParams.action !== undefined ? paymentParams.action!.toLowerCase() : undefined,
         currency: paymentParams.currency,
         amount: paymentParams.amount,
-        expiration: paymentParams.expiration.getTime() / 1000,
+        expiration:
+          paymentParams.expiration !== undefined
+            ? paymentParams.expiration!.getTime() / 1000
+            : undefined,
       });
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async getPaymentInfo(reference_id: string, vasp_address: string): Promise<PaymentInfo> {
+    try {
+      const response = await this.client.get(
+        `/offchain/query/payment_info?vasp_address=${vasp_address}&reference_id=${reference_id}`
+      );
+
+      return response.data;
     } catch (e) {
       BackendClient.handleError(e);
       throw e;

@@ -18,7 +18,6 @@ from .models_fppa import (
 )
 from .vasp_proxy import VaspProxy, TxStatus, TxState
 
-
 RETRIES_COUNT = os.getenv("RETRIES_COUNT", 20)
 SECONDS_BETWEEN_RETRIES = os.getenv("SECONDS_BETWEEN_RETRIES", 1)
 
@@ -167,12 +166,12 @@ class ValidatorClient(VaspProxy):
             description=description,
         )
 
-    def create_funds_pull_pre_approval_request_for_unknown_payer(
+    def create_fppa_request_for_unknown_payer(
         self,
         scope: FundPullPreApprovalScope,
         description: str = None,
     ):
-        return self.wallet.funds_pull_preapproval.create_funds_pull_pre_approval_request_for_unknown_payer(
+        return self.wallet.funds_pull_preapproval.create_fppa_request_for_unknown_payer(
             scope=scope,
             description=description,
         )
@@ -268,6 +267,12 @@ class ValidatorClient(VaspProxy):
 
     def reject_payment_command(self, reference_id):
         self.wallet.reject_payment_command(reference_id)
+
+    def get_payment_info(self, reference_id, vasp_address):
+        return self.wallet.get_payment_info(reference_id, vasp_address)
+
+    def prepare_payment_info(self, action):
+        return self.wallet.prepare_payment_info(action)
 
 
 def get_random_string(length):

@@ -11,6 +11,8 @@ from wallet.services import validation_tool as validation_tool_service
 
 FUNDS_PULL_PRE_APPROVAL_ID = str(uuid.uuid4())
 CURRENCY = "XUS"
+ADDRESS = "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
+REFERENCE_ID = "2632a018-e492-4487-81f3-775d6ecfb6ef"
 
 
 @pytest.fixture
@@ -184,3 +186,20 @@ class TestRequestFundsPullPreApprovalFromAnother:
 
         assert rv.status_code == 400
         assert "expiration_timestamp" in rv.get_data(as_text=True)
+
+
+class TestPreparePaymentInfo:
+    def test(self, authorized_client, mock_method):
+        mock_method(
+            validation_tool_service,
+            "prepare_payment_info",
+            will_return=(REFERENCE_ID, ADDRESS),
+        )
+
+        rv: Response = authorized_client.post(
+            "/validation/payment_info",
+        )
+
+        assert rv.status_code == 200
+        assert rv.get_json()["address"] == ADDRESS
+        assert rv.get_json()["reference_id"] == REFERENCE_ID

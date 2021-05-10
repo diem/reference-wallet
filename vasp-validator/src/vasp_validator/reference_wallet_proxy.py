@@ -17,7 +17,8 @@ from .models import (
     OffChainSequenceInfo,
     TransactionId,
     FundsTransfer,
-    CreatePaymentCommandAsSender,
+    PaymentInfo,
+    PreparePaymentInfoResponse,
 )
 from .models_fppa import (
     FundPullPreApprovalScope,
@@ -115,18 +116,35 @@ class ReferenceWalletProxy:
         amount,
         expiration,
     ):
-        request = CreatePaymentCommandAsSender(
-            reference_id=reference_id,
-            vasp_address=vasp_address,
-            merchant_name=merchant_name,
-            action=action,
-            currency=currency,
-            amount=amount,
-            expiration=expiration,
+        request = {
+            "reference_id": reference_id,
+            "vasp_address": vasp_address,
+            "merchant_name": merchant_name,
+            "action": action,
+            "currency": currency,
+            "amount": amount,
+            "expiration": expiration,
+        }
+
+        self._request_authorized("POST", "offchain/payment_command", json=request)
+
+    def get_payment_info(self, reference_id, vasp_address) -> PaymentInfo:
+        response = self._request_authorized(
+            "GET",
+            f"offchain/query/payment_info?"
+            f"vasp_address={vasp_address}&"
+            f"reference_id={reference_id}",
         )
-        self._request_authorized(
-            "POST", "offchain/payment_command", json=request.to_dict()
+
+        return PaymentInfo.from_json(response.text) if response.text else None
+
+    def prepare_payment_info(self, action: str = "charge") -> (str, str):
+        response = self._request_authorized(
+            "POST", f"/validation/payment_info/{action}"
         )
+        response_object = PreparePaymentInfoResponse.from_json(response.text)
+
+        return response_object.reference_id, response_object.address
 
     def approve_payment_command(self, reference_id):
         self._request_authorized(
@@ -195,7 +213,7 @@ class ReferenceWalletProxyFPPA:
         )
         return r.json()["funds_pull_pre_approval_id"]
 
-    def create_funds_pull_pre_approval_request_for_unknown_payer(
+    def create_fppa_request_for_unknown_payer(
         self,
         scope: FundPullPreApprovalScope,
         description: str = None,
