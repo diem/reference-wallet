@@ -1,6 +1,6 @@
 from .command_types import CommandType, ResponseType
 from dataclasses import dataclass, field as datafield
-from .payment_types import AddressObject, PaymentActionObject
+from .payment_command_types import AddressObject, PaymentActionObject
 
 
 @dataclass(frozen=True)

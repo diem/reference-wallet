@@ -10,7 +10,7 @@ from .command_types import (
     CommandResponseStatus,
     ResponseType,
 )
-from .payment_types import (
+from .payment_command_types import (
     AbortCode,
     NationalIdObject,
     AddressObject,
