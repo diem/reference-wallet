@@ -33,6 +33,31 @@ describe("Payment params from URL query string", () => {
     });
   });
 
+  describe("Valid standard payment URL", () => {
+    it("should parse successfully", () => {
+      const queryString =
+        "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
+        "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&redirectUrl=https://www.ynet.co.il/";
+
+      const params = PaymentParams.fromUrlQueryString(queryString);
+
+      expect(params.vaspAddress).toBe("tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0");
+      expect(params.referenceId).toBe("ce74d678-d014-48fc-b61d-2c36683feb29");
+      expect(params.redirectUrl).toBe("https://www.ynet.co.il/");
+    });
+  });
+
+  describe("Invalid standard payment URL", () => {
+    it("should throw PaymentParamError", () => {
+      const queryString =
+        "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
+        "checkoutDataType=PAYMENT_REQUEST&" +
+        "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&redirectUrl=https://www.ynet.co.il/";
+
+      expect(() => PaymentParams.fromUrlQueryString(queryString)).toThrow("merchantName");
+    });
+  });
+
   describe("referenceId is not a proper UUID", () => {
     it("should throw PaymentParamError", () => {
       const queryString =

@@ -1,6 +1,7 @@
 // Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 import { parse as uuidParse, stringify as uuidStringify } from "uuid";
+import { PaymentInfo } from "../interfaces/payment_info";
 
 export class PaymentParamError extends Error {}
 
@@ -15,35 +16,68 @@ export enum PaymentAction {
 
 export class PaymentParams {
   constructor(
+    readonly isFull: boolean,
     readonly vaspAddress: string,
     readonly referenceId: string,
-    readonly merchantName: string,
-    readonly checkoutDataType: CheckoutDataType,
-    readonly action: PaymentAction,
-    readonly currency: string,
-    readonly amount: number,
-    readonly expiration: Date,
-    readonly redirectUrl: string
+    readonly merchantName?: string,
+    readonly checkoutDataType?: CheckoutDataType,
+    readonly action?: PaymentAction,
+    readonly currency?: string,
+    readonly amount?: number,
+    readonly expiration?: Date,
+    readonly redirectUrl?: string
   ) {}
 
   public static fromUrlQueryString(queryString: string): PaymentParams {
     const params = new URLSearchParams(queryString);
 
     const vaspAddress = PaymentParams.getParam(params, "vaspAddress");
-    const merchantName = PaymentParams.getParam(params, "merchantName");
-    const checkoutDataType = CheckoutDataType[PaymentParams.getParam(params, "checkoutDataType")];
-    const action = PaymentAction[PaymentParams.getParam(params, "action")];
-    const currency = PaymentParams.getParam(params, "currency");
-    const amountTxt = PaymentParams.getParam(params, "amount");
-    const expirationTxt = PaymentParams.getParam(params, "expiration");
-    const redirectUrl = PaymentParams.getParam(params, "redirectUrl");
     const referenceId = PaymentParams.getParam(params, "referenceId");
+
+    if (Array.from(params).length === 2) {
+      return new PaymentParams(
+        false,
+        vaspAddress,
+        referenceId,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      );
+    }
+
+    const redirectUrl = PaymentParams.getParam(params, "redirectUrl");
 
     try {
       new URL(redirectUrl);
     } catch (e) {
       throw new PaymentParamError("redirectUrl contains invalid URL");
     }
+
+    if (Array.from(params).length === 3) {
+      return new PaymentParams(
+        false,
+        vaspAddress,
+        referenceId,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        redirectUrl
+      );
+    }
+
+    const merchantName = PaymentParams.getParam(params, "merchantName");
+    const checkoutDataType = CheckoutDataType[PaymentParams.getParam(params, "checkoutDataType")];
+    const action = PaymentAction[PaymentParams.getParam(params, "action")];
+    const currency = PaymentParams.getParam(params, "currency");
+    const amountTxt = PaymentParams.getParam(params, "amount");
+    const expirationTxt = PaymentParams.getParam(params, "expiration");
 
     try {
       testUuid(referenceId);
@@ -75,6 +109,7 @@ export class PaymentParams {
     }
 
     return new PaymentParams(
+      true,
       vaspAddress,
       referenceId,
       merchantName,
@@ -93,6 +128,21 @@ export class PaymentParams {
       throw new PaymentParamError(`Parameter ${paramName} not found in the URL query string`);
     }
     return value;
+  }
+
+  static fromPaymentInfo(paymentInfo: PaymentInfo, redirectUrl?: string) {
+    return new PaymentParams(
+      true,
+      paymentInfo.vasp_address,
+      paymentInfo.reference_id,
+      paymentInfo.merchant_name,
+      CheckoutDataType.PAYMENT_REQUEST,
+      PaymentAction[paymentInfo.action],
+      paymentInfo.currency,
+      paymentInfo.amount,
+      new Date(paymentInfo.expiration),
+      redirectUrl
+    );
   }
 }
 

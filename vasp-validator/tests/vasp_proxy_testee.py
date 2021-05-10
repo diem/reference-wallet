@@ -1,7 +1,5 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
-
-
 from vasp_validator import ValidatorClient
 from vasp_validator.models_fppa import FundPullPreApprovalScope
 from vasp_validator.vasp_proxy import VaspProxy, TxState
@@ -17,7 +15,7 @@ class VaspProxyTestee(VaspProxy):
     """
 
     def __init__(self, url):
-        self.vasp = ValidatorClient.create(url, "pseudo-vasp")
+        self.vasp = ValidatorClient.create(url, "vasp-proxy-testee")
 
     def get_receiving_address(self) -> str:
         return self.vasp.get_receiving_address()
@@ -46,7 +44,7 @@ class VaspProxyTestee(VaspProxy):
             description=description,
         )
 
-    def create_funds_pull_pre_approval_request_for_unknown_payer(
+    def create_fppa_request_for_unknown_payer(
         self,
         scope: FundPullPreApprovalScope,
         description: str = None,
@@ -104,3 +102,9 @@ class VaspProxyTestee(VaspProxy):
 
     def reject_payment_command(self, reference_id):
         self.vasp.reject_payment_command(reference_id)
+
+    def get_payment_info(self, reference_id, vasp_address):
+        return self.vasp.get_payment_info(reference_id, vasp_address)
+
+    def prepare_payment_info(self, action):
+        return self.vasp.prepare_payment_info(action)
