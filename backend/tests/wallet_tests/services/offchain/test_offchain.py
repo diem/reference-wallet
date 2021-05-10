@@ -81,11 +81,16 @@ def test_process_inbound_payment_command(monkeypatch):
         client = context.get().offchain_client
         m.setattr(
             client,
-            "process_inbound_request",
+            "deserialize_jws_request",
             lambda _, c: client.create_inbound_payment_command(c.cid, c.payment),
         )
         m.setattr(
-            context.get().offchain_client,
+            client,
+            "process_inbound_request",
+            lambda c, _: client.create_inbound_payment_command(c.cid, c.payment),
+        )
+        m.setattr(
+            client,
             "send_command",
             lambda c, _: offchain.reply_request(c.cid),
         )
@@ -128,9 +133,14 @@ def test_submit_txn_when_both_ready(monkeypatch):
     with monkeypatch.context() as m:
         client = context.get().offchain_client
         m.setattr(
+            context.get().offchain_client,
+            "deserialize_jws_request",
+            lambda _, c: client.create_inbound_payment_command(c.cid, c.payment),
+        )
+        m.setattr(
             client,
             "process_inbound_request",
-            lambda _, c: client.create_inbound_payment_command(c.cid, c.payment),
+            lambda c, _: client.create_inbound_payment_command(c.cid, c.payment),
         )
         code, resp = offchain_service.process_inbound_command(
             cmd.payment.receiver.address, receiver_ready_cmd

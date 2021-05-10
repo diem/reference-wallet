@@ -46,6 +46,7 @@ from .types import (
     from_dict,
     validate_write_once_fields,
     FundPullPreApprovalType,
+    GetInfoCommandObject,
 )
 from .http_header import X_REQUEST_ID, X_REQUEST_SENDER_ADDRESS
 from .action import Action

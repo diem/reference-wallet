@@ -51,15 +51,15 @@ def test_approve_incoming_charge_payment_command(validator, vasp_proxy: VaspProx
 
 def test_reject_payment_details_and_send(validator, vasp_proxy: VaspProxy):
     """
-        This test simulate the scenario which in a merchant VASP sending payment
-        details using QR code or link and the user wallet approve it.
-        1. vasp_proxy create payment command as sender
-        (as he would do in case he will get payment details through QR code or link)
-        2. vasp_proxy reject the incoming payment command
-        This operation should cause eventually onchain transaction
-        3. vasp_proxy verify that transaction not been created
-        4. validator verify that transaction not been created
-        """
+    This test simulate the scenario which in a merchant VASP sending payment
+    details using QR code or link and the user wallet approve it.
+    1. vasp_proxy create payment command as sender
+    (as he would do in case he will get payment details through QR code or link)
+    2. vasp_proxy reject the incoming payment command
+    This operation should cause eventually onchain transaction
+    3. vasp_proxy verify that transaction not been created
+    4. validator verify that transaction not been created
+    """
 
     validator_address = validator.get_receiving_address()
     reference_id = str(uuid.uuid4())
