@@ -3,6 +3,7 @@ import logging
 import typing
 from datetime import datetime
 
+from diem_utils.types.currencies import DiemCurrency
 from offchain import (
     GetInfoCommandObject,
     CommandRequestObject,
@@ -15,12 +16,15 @@ from offchain.types import (
     new_init_charge_command,
     new_init_auth_command,
     InitChargeCommandResponse,
+    InitChargeCommand,
+    InitAuthorizeCommand,
 )
 from wallet import storage
 from wallet.services.offchain import utils
 from wallet.services.offchain.utils import generate_my_address
 from wallet.storage.models import Payment as PaymentModel
 from wallet.storage.payment import save_payment
+from wallet.types import TransactionType, TransactionStatus
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +64,32 @@ def handle_get_info_command(request: CommandRequestObject):
         reference_id,
         result_object=GetInfoCommandResponse(payment_info=payment_info_object),
     )
+
+
+def handle_init_charge_command(request: CommandRequestObject):
+    init_charge_command_object = typing.cast(InitChargeCommand, request.command)
+
+    reference_id = init_charge_command_object.reference_id
+
+    # TODO
+    recipient_signature = ""
+
+    return utils.jws_response(
+        reference_id,
+        result_object=InitChargeCommandResponse(
+            recipient_signature=recipient_signature
+        ),
+    )
+
+
+def handle_init_authorize_command(request: CommandRequestObject):
+    init_auth_command_object = typing.cast(InitAuthorizeCommand, request.command)
+
+    reference_id = init_auth_command_object.reference_id
+
+    payment_model = storage.get_payment_details(reference_id)
+
+    return utils.jws_response(reference_id)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -200,6 +230,8 @@ def approve_payment(account_id, reference_id):
             logger.error(error)
             raise error
     elif payment_model.action == "auth":
+        user = storage.get_user(account_id)
+
         try:
             utils.offchain_client().send_request(
                 request_sender_address=payment_model.my_address,
@@ -208,19 +240,41 @@ def approve_payment(account_id, reference_id):
                     new_init_auth_command(
                         reference_id=payment_model.reference_id,
                         vasp_address=payment_model.vasp_address,
-                        my_name="",
-                        my_sure_name="",
-                        city=payment_model.my_city,
-                        country=payment_model.my_country,
-                        line1=payment_model.line1,
-                        line2=payment_model.line2,
-                        postal_code=payment_model.postal_code,
-                        state=payment_model.state,
+                        my_name=user.first_name,
+                        my_sure_name=user.last_name,
+                        city=user.city,
+                        country=user.country,
+                        line1=user.address_1,
+                        line2=user.address_2,
+                        postal_code=user.zip,
+                        state=user.state,
                         national_id_value="",
                         national_id_type="",
                     ),
                     utils.compliance_private_key().sign,
                 ),
+            )
+
+            my_address, my_sub_address = utils.account_address_and_subaddress(
+                payment_model.my_address
+            )
+
+            vasp_address, vasp_sub_address = utils.account_address_and_subaddress(
+                payment_model.vasp_address
+            )
+
+            storage.add_transaction(
+                amount=payment_model.amount,
+                currency=DiemCurrency[payment_model.currency],
+                payment_type=TransactionType.EXTERNAL,
+                status=TransactionStatus.LOCKED,
+                source_id=account_id,
+                source_address=my_address,
+                source_subaddress=my_sub_address,
+                destination_id=None,
+                destination_address=vasp_address,
+                destination_subaddress=vasp_sub_address,
+                reference_id=reference_id,
             )
         except Exception as e:
             error = P2MGeneralError(e)

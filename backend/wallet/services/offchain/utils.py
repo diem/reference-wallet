@@ -22,9 +22,9 @@ def offchain_client() -> offchain.Client:
     return context.get().offchain_client
 
 
-def account_address_and_subaddress(account_id: str) -> Tuple[str, Optional[str]]:
+def account_address_and_subaddress(address: str) -> Tuple[str, Optional[str]]:
     account_address, sub = identifier.decode_account(
-        account_id, context.get().config.diem_address_hrp()
+        address, context.get().config.diem_address_hrp()
     )
     return account_address.to_hex(), sub.hex() if sub else None
 

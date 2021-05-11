@@ -34,6 +34,8 @@ class TransactionStatus(str, Enum):
     OFF_CHAIN_WAIT = "off_chain_wait"
     # payment command should be send (as receiver) back to sender
     OFF_CHAIN_RECEIVER_OUTBOUND = "off_chain_receiver_outbound"
+    # authorization
+    LOCKED = "locked_funds"
 
 
 class TransactionType(str, Enum):
