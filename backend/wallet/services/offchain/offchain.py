@@ -2,12 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import typing
-from typing import Optional
 
 import context
 import offchain
 from offchain import CommandType
-from offchain.types import PaymentInfoObject
 from wallet.services.kyc import xstr
 from wallet.services.offchain import utils
 from wallet.services.offchain.fund_pull_pre_approval import (

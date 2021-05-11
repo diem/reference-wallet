@@ -257,6 +257,32 @@ def test_balance_calculation_in_and_out() -> None:
     }
 
 
+def test_balance_calculation_with_locked_funds() -> None:
+    account_id = 1
+    counter_id = 0
+    income = Transaction(
+        source_id=counter_id,
+        destination_id=account_id,
+        amount=100,
+        currency=DiemCurrency.XUS,
+        status=TransactionStatus.COMPLETED,
+    )
+    outgoing = Transaction(
+        source_id=account_id,
+        destination_id=counter_id,
+        amount=50,
+        currency=DiemCurrency.XUS,
+        status=TransactionStatus.LOCKED,
+    )
+    balance = calc_account_balance(
+        account_id=account_id, transactions=[income, outgoing]
+    )
+
+    assert balance.total == {
+        DiemCurrency.XUS: 50,
+    }
+
+
 def test_balance_calculation_in_pending() -> None:
     account_id = 1
     counter_id = 0
