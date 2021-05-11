@@ -258,6 +258,7 @@ class Payment(Base):
     reference_id = Column(
         String, primary_key=True, nullable=False, unique=True, index=True
     )
+    my_address = Column(String)
     vasp_address = Column(String)
     merchant_name = Column(String)
     merchant_legal_name = Column(String)

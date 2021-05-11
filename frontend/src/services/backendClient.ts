@@ -463,6 +463,27 @@ export default class BackendClient {
     }
   }
 
+  async addPayment(paymentParams: PaymentParams): Promise<void> {
+    try {
+      await this.client.post(`/offchain/payment`, {
+        vasp_address: paymentParams.vaspAddress,
+        reference_id: paymentParams.referenceId,
+        merchant_name: paymentParams.merchantName,
+        action:
+          paymentParams.action !== undefined ? paymentParams.action!.toLowerCase() : undefined,
+        currency: paymentParams.currency,
+        amount: paymentParams.amount,
+        expiration:
+          paymentParams.expiration !== undefined
+            ? paymentParams.expiration!.getTime() / 1000
+            : undefined,
+      });
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
   async getPaymentInfo(reference_id: string, vasp_address: string): Promise<PaymentInfo> {
     try {
       const response = await this.client.get(

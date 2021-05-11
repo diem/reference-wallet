@@ -91,6 +91,7 @@ class PaymentRoutes:
             )
 
             payment_service.add_new_payment(
+                account_id=self.user.account_id,
                 reference_id=params.get("reference_id"),
                 vasp_address=params.get("vasp_address"),
                 merchant_name=params.get("merchant_name"),

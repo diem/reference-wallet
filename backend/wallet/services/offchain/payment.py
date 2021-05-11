@@ -15,6 +15,7 @@ from offchain.types import (
 )
 from wallet import storage
 from wallet.services.offchain import utils
+from wallet.services.offchain.utils import generate_my_address
 from wallet.storage.models import Payment as PaymentModel
 from wallet.storage.payment import save_payment
 
@@ -102,6 +103,7 @@ def get_payment_details(account_id, reference_id: str, vasp_address: str):
             payment_model = save_payment(
                 PaymentModel(
                     vasp_address=vasp_address,
+                    my_address=my_address,
                     reference_id=reference_id,
                     merchant_name=payment_info.receiver.business_data.name,
                     action=action_object.action,
@@ -127,6 +129,7 @@ def get_payment_details(account_id, reference_id: str, vasp_address: str):
 
 
 def add_new_payment(
+    account_id,
     reference_id,
     vasp_address,
     merchant_name,
@@ -137,6 +140,7 @@ def add_new_payment(
 ):
     payment_command = PaymentModel(
         vasp_address=vasp_address,
+        my_address=generate_my_address(account_id),
         reference_id=reference_id,
         merchant_name=merchant_name,
         action=action,
