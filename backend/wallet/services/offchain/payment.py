@@ -12,6 +12,9 @@ from offchain.types import (
     new_payment_info_object,
     new_get_info_request,
     GetInfoCommandResponse,
+    new_init_charge_command,
+    new_init_auth_command,
+    InitChargeCommandResponse,
 )
 from wallet import storage
 from wallet.services.offchain import utils
@@ -25,6 +28,7 @@ logger = logging.getLogger(__name__)
 def handle_get_info_command(request: CommandRequestObject):
     # The get_info command arrive only when LRW playing the Merchant\Receiver role in the communication,
     # and therefore we can assume that the payment info already been saved in DB
+    # and the missing data we can mock
     get_info_command_object = typing.cast(GetInfoCommandObject, request.command)
 
     reference_id = get_info_command_object.reference_id
@@ -35,13 +39,13 @@ def handle_get_info_command(request: CommandRequestObject):
         reference_id=reference_id,
         receiver_address=payment_model.vasp_address,
         name=payment_model.merchant_name,
-        legal_name=payment_model.merchant_legal_name,
-        city=payment_model.city,
-        country=payment_model.country,
-        line1=payment_model.line1,
-        line2=payment_model.line2,
-        postal_code=payment_model.postal_code,
-        state=payment_model.state,
+        legal_name=payment_model.merchant_name,
+        city="Dogcity",
+        country="Dogland",
+        line1="1234 Puppy Street",
+        line2="dogpalace",
+        postal_code="123456",
+        state="Dogstate",
         amount=payment_model.amount,
         currency=payment_model.currency,
         action=payment_model.action,
@@ -150,3 +154,77 @@ def add_new_payment(
     )
 
     save_payment(payment_command)
+
+
+def approve_payment(account_id, reference_id):
+    payment_model = storage.get_payment_details(reference_id)
+
+    if not payment_model:
+        raise P2MGeneralError(f"Could not find payment {reference_id}")
+
+    if payment_model.action == "charge":
+        user = storage.get_user(account_id)
+
+        try:
+            command_response_object = utils.offchain_client().send_request(
+                request_sender_address=payment_model.my_address,
+                counterparty_account_id=payment_model.vasp_address,
+                request_bytes=jws.serialize(
+                    new_init_charge_command(
+                        reference_id=payment_model.reference_id,
+                        vasp_address=payment_model.vasp_address,
+                        my_name=user.first_name,
+                        my_sure_name=user.last_name,
+                        city=user.city,
+                        country=user.country,
+                        line1=user.address_1,
+                        line2=user.address_2,
+                        postal_code=user.zip,
+                        state=user.state,
+                        national_id_value="",
+                        national_id_type="",
+                    ),
+                    utils.compliance_private_key().sign,
+                ),
+            )
+
+            if (
+                command_response_object.result
+                and type(command_response_object.result) is InitChargeCommandResponse
+            ):
+                recipient_signature = command_response_object.result.recipient_signature
+
+                storage.update_payment(reference_id, recipient_signature)
+        except Exception as e:
+            error = P2MGeneralError(e)
+            logger.error(error)
+            raise error
+    elif payment_model.action == "auth":
+        try:
+            utils.offchain_client().send_request(
+                request_sender_address=payment_model.my_address,
+                counterparty_account_id=payment_model.vasp_address,
+                request_bytes=jws.serialize(
+                    new_init_auth_command(
+                        reference_id=payment_model.reference_id,
+                        vasp_address=payment_model.vasp_address,
+                        my_name="",
+                        my_sure_name="",
+                        city=payment_model.my_city,
+                        country=payment_model.my_country,
+                        line1=payment_model.line1,
+                        line2=payment_model.line2,
+                        postal_code=payment_model.postal_code,
+                        state=payment_model.state,
+                        national_id_value="",
+                        national_id_type="",
+                    ),
+                    utils.compliance_private_key().sign,
+                ),
+            )
+        except Exception as e:
+            error = P2MGeneralError(e)
+            logger.error(error)
+            raise error
+    else:
+        raise P2MGeneralError(f"Unsupported action type {payment_model.action}")

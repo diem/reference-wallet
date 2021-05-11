@@ -16,7 +16,7 @@ from offchain.types import (
     PaymentInfoObject,
     new_get_info_request,
 )
-from offchain.types.payment_types import PaymentReceiverObject, BusinessDataObject
+from offchain.types.payment_types import PaymentReceiverObject, BusinessDataObject, InitChargeCommandResponse
 from tests.wallet_tests.resources.seeds.one_payment_seeder import OnePaymentSeeder
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet import storage
@@ -44,7 +44,7 @@ def test_get_payment_details_for_charge_action_successfully(mock_method):
     mock_method(
         context.get().offchain_client,
         "send_request",
-        will_return=generate_success_command_response_object(),
+        will_return=generate_success_get_info_command_response_object(),
     )
 
     payment_info = info_commands_service.get_payment_details(
@@ -84,7 +84,7 @@ def generate_failed_command_response_object():
     )
 
 
-def generate_success_command_response_object():
+def generate_success_get_info_command_response_object():
     return CommandResponseObject(
         status="success",
         result=GetInfoCommandResponse(
@@ -161,3 +161,54 @@ def test_add_new_payment():
     assert payment_details.currency == DiemCurrency.XUS
     assert payment_details.amount == AMOUNT
     assert int(datetime.timestamp(payment_details.expiration)) == expiration
+
+
+def generate_success_init_charge_command_response_object():
+    return CommandResponseObject(
+        status="success",
+        result=InitChargeCommandResponse(
+            _ObjectType="GetInfoCommandResponse",
+            recipient_signature=b'I have no idea what to write here',
+        ),
+        cid=REFERENCE_ID,
+    )
+
+
+def test_approve_payment_success(mock_method):
+    """
+    since we mock the offchain send_request all we left to verify is
+    if the payment record in DB are update correctly if any update required
+    """
+    user = OneUser.run(
+        db_session, account_amount=100_000_000_000, account_currency=DiemCurrency.XUS
+    )
+
+    OnePaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
+    
+    mock_method(
+        context.get().offchain_client,
+        "send_request",
+        will_return=generate_success_init_charge_command_response_object(),
+    )
+
+    payment_service.approve_payment(user.account_id, REFERENCE_ID)
+
+    payment_model = storage.get_payment_details(REFERENCE_ID)
+
+    assert payment_model.recipient_signature
+
+
+def test_approve_payment_fail_because_payment_not_exist():
+    with pytest.raises(payment_service.P2MGeneralError):
+        payment_service.approve_payment(1, REFERENCE_ID)
+
+
+def test_approve_payment_unsupported_action_type():
+    user = OneUser.run(
+        db_session, account_amount=100_000_000_000, account_currency=DiemCurrency.XUS
+    )
+
+    OnePaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID, action="dog")
+
+    with pytest.raises(payment_service.P2MGeneralError):
+        payment_service.approve_payment(user.account_id, REFERENCE_ID)

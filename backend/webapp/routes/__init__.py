@@ -240,8 +240,8 @@ def offchain_api_routes():
         methods=["GET"],
     )
     payment.add_url_rule(
-        rule="/offchain/payment_details/<reference_id>/actions/approve",
-        view_func=PaymentRoutes.ApprovePayment.as_view("approve_payment_info"),
+        rule="/offchain/payment/<reference_id>/actions/approve",
+        view_func=PaymentRoutes.ApprovePayment.as_view("approve_payment"),
         methods=["POST"],
     )
     payment.add_url_rule(

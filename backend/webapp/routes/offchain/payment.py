@@ -7,6 +7,7 @@ from webapp.routes.strict_schema_view import (
     query_str_param,
     response_definition,
     body_parameter,
+    path_string_param,
 )
 from webapp.schemas import Error
 from flask import Blueprint, request
@@ -104,7 +105,26 @@ class PaymentRoutes:
             return "OK", HTTPStatus.NO_CONTENT
 
     class ApprovePayment(PaymentView):
-        ...
+        summary = "Approve Payment"
+
+        parameters = [
+            path_string_param(
+                name="reference_id",
+                description="reference id",
+            ),
+        ]
+
+        responses = {
+            HTTPStatus.NO_CONTENT: response_definition("Request accepted"),
+            HTTPStatus.NOT_FOUND: response_definition(
+                "Payment not found", schema=Error
+            ),
+        }
+
+        def post(self, reference_id: str):
+            payment_service.approve_payment(self.user.account_id, reference_id)
+
+            return "OK", HTTPStatus.NO_CONTENT
 
     class RejectPayment(PaymentView):
         ...

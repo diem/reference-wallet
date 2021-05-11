@@ -261,13 +261,6 @@ class Payment(Base):
     my_address = Column(String)
     vasp_address = Column(String)
     merchant_name = Column(String)
-    merchant_legal_name = Column(String)
-    city = Column(String)
-    country = Column(String)
-    line1 = Column(String)
-    line2 = Column(String)
-    postal_code = Column(String)
-    state = Column(String)
     action = Column(String)
     currency = Column(String)
     amount = Column(Integer)
@@ -277,4 +270,19 @@ class Payment(Base):
         nullable=False,
         default=datetime.utcnow,
     )
-    description = Column(String)
+    description = Column(String, nullable=True)
+    recipient_signature = Column(String, nullable=True)
+
+    def update(self, updated_command):
+        new_command_attributes = [
+            a for a in dir(updated_command) if not a.startswith("_")
+        ]
+        for key in new_command_attributes:
+            try:
+                updated_value = getattr(updated_command, key)
+                if not callable(updated_value) and getattr(self, key) != updated_value:
+                    setattr(self, key, updated_value)
+            except AttributeError:
+                # An attribute in updated_command does not exist in 'self'
+                # We assume this has nothing to do with us and continue to next attribute
+                ...
