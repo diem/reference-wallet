@@ -1,6 +1,6 @@
 from .command_types import CommandType, ResponseType
 from dataclasses import dataclass, field as datafield
-from .payment_command_types import AddressObject, PaymentActionObject
+from .payment_command_types import AddressObject, PaymentActionObject, NationalIdObject
 
 
 @dataclass(frozen=True)
@@ -37,3 +37,35 @@ class PaymentInfoObject:
 class GetInfoCommandResponse:
     payment_info: PaymentInfoObject
     _ObjectType: str = datafield(default=ResponseType.GetInfoCommandResponse)
+
+
+@dataclass(frozen=True)
+class InitChargeCommandResponse:
+    recipient_signature: str = None
+    _ObjectType: str = datafield(default=ResponseType.InitChargeCommandResponse)
+
+
+@dataclass(frozen=True)
+class PayerDataObject:
+    given_name: str
+    surname: str
+    address: AddressObject
+    national_id: NationalIdObject
+
+
+@dataclass(frozen=True)
+class PaymentSenderObject:
+    account_address: str
+    payer_data: PayerDataObject
+
+
+@dataclass(frozen=True)
+class InitChargeCommand:
+    sender: PaymentSenderObject
+    reference_id: str
+
+
+@dataclass(frozen=True)
+class InitAuthorizeCommand:
+    sender: PaymentSenderObject
+    reference_id: str

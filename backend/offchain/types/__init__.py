@@ -40,6 +40,11 @@ from .payment_types import (
     PaymentInfoObject,
     PaymentReceiverObject,
     BusinessDataObject,
+    InitChargeCommand,
+    PaymentSenderObject,
+    PayerDataObject,
+    InitAuthorizeCommand,
+    InitChargeCommandResponse,
 )
 
 import dataclasses, json, re, typing, uuid
@@ -73,6 +78,7 @@ _OBJECT_TYPES: typing.Dict[str, typing.Any] = {
     CommandType.FundPullPreApprovalCommand: FundPullPreApprovalCommandObject,
     CommandType.GetInfoCommand: GetInfoCommandObject,
     ResponseType.GetInfoCommandResponse: GetInfoCommandResponse,
+    ResponseType.InitChargeCommandResponse: InitChargeCommandResponse,
 }
 
 _OBJECT_TYPE_FIELD_NAME = "_ObjectType"
@@ -333,7 +339,7 @@ def new_payment_info_object(
             business_data=BusinessDataObject(
                 name=name,
                 legal_name=legal_name,
-                address=AddressObject(
+                address=new_address_object(
                     city=city,
                     country=country,
                     line1=line1,
@@ -352,6 +358,148 @@ def new_payment_info_object(
         ),
         reference_id=reference_id,
         description=description,
+    )
+
+
+def new_init_auth_command(
+    reference_id,
+    vasp_address,
+    my_name,
+    my_sure_name,
+    city,
+    country,
+    line1,
+    line2,
+    postal_code,
+    state,
+    national_id_value,
+    national_id_type,
+):
+    return InitAuthorizeCommand(
+        reference_id=reference_id,
+        sender=new_payment_sender_object(
+            city,
+            country,
+            line1,
+            line2,
+            my_name,
+            my_sure_name,
+            national_id_type,
+            national_id_value,
+            postal_code,
+            state,
+            vasp_address,
+        ),
+    )
+
+
+def new_init_charge_command(
+    reference_id,
+    vasp_address,
+    my_name,
+    my_sure_name,
+    city,
+    country,
+    line1,
+    line2,
+    postal_code,
+    state,
+    national_id_value,
+    national_id_type,
+):
+    return InitChargeCommand(
+        reference_id=reference_id,
+        sender=new_payment_sender_object(
+            city,
+            country,
+            line1,
+            line2,
+            my_name,
+            my_sure_name,
+            national_id_type,
+            national_id_value,
+            postal_code,
+            state,
+            vasp_address,
+        ),
+    )
+
+
+def new_payment_sender_object(
+    city,
+    country,
+    line1,
+    line2,
+    my_name,
+    my_sure_name,
+    national_id_type,
+    national_id_value,
+    postal_code,
+    state,
+    vasp_address,
+):
+    return PaymentSenderObject(
+        account_address=vasp_address,
+        payer_data=new_payer_data_object(
+            city,
+            country,
+            line1,
+            line2,
+            my_name,
+            my_sure_name,
+            national_id_type,
+            national_id_value,
+            postal_code,
+            state,
+        ),
+    )
+
+
+def new_payer_data_object(
+    city,
+    country,
+    line1,
+    line2,
+    my_name,
+    my_sure_name,
+    national_id_type,
+    national_id_value,
+    postal_code,
+    state,
+):
+    return PayerDataObject(
+        given_name=my_name,
+        surname=my_sure_name,
+        address=new_address_object(
+            city=city,
+            country=country,
+            line1=line1,
+            line2=line2,
+            postal_code=postal_code,
+            state=state,
+        ),
+        national_id=new_national_id_object(
+            country, national_id_type, national_id_value
+        ),
+    )
+
+
+def new_national_id_object(country, national_id_type, national_id_value):
+    return NationalIdObject(
+        id_value=national_id_value,
+        country=country,
+        type=national_id_type,
+    )
+
+
+def new_address_object(city, country, line1, line2, postal_code, state):
+    return AddressObject(
+        city=city,
+        country=country,
+        line1=line1,
+        line2=line2,
+        postal_code=postal_code,
+        state=state,
     )
 
 

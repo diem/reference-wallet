@@ -14,10 +14,13 @@ class CommandType:
     PaymentCommand = "PaymentCommand"
     FundPullPreApprovalCommand = "FundPullPreApprovalCommand"
     GetInfoCommand = "GetInfoCommand"
+    InitChargeCommand = "InitChargeCommand"
+    InitAuthorizeCommand = "InitAuthorizeCommand"
 
 
 class ResponseType:
     GetInfoCommandResponse = "GetInfoCommandResponse"
+    InitChargeCommandResponse = "InitChargeCommandResponse"
 
 
 class CommandResponseStatus:
