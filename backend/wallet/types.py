@@ -35,7 +35,7 @@ class TransactionStatus(str, Enum):
     # payment command should be send (as receiver) back to sender
     OFF_CHAIN_RECEIVER_OUTBOUND = "off_chain_receiver_outbound"
     # authorization
-    LOCKED = "locked_funds"
+    LOCKED = "locked"
 
 
 class TransactionType(str, Enum):

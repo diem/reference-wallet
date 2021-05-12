@@ -109,7 +109,6 @@ class Transaction(Base):
 
     reference_id = Column(
         String,
-        ForeignKey("paymentcommand.reference_id"),
         nullable=True,
         unique=True,
         index=True,

@@ -12,7 +12,7 @@ import { Quote, QuoteAction, Rate } from "../interfaces/cico";
 import { Debt } from "../interfaces/settlement";
 import { Chain } from "../interfaces/system";
 import { Approval } from "../interfaces/approval";
-import { PaymentParams } from "../utils/payment-params";
+import { PaymentAction, PaymentParams } from "../utils/payment-params";
 import { PaymentInfo } from "../interfaces/payment_info";
 
 export default class BackendClient {
@@ -464,13 +464,22 @@ export default class BackendClient {
   }
 
   async addPayment(paymentParams: PaymentParams): Promise<void> {
+    let action;
+
     try {
+      if (paymentParams.action !== undefined) {
+        if (paymentParams.action === PaymentAction.AUTHORIZATION) {
+          action = "auth";
+        } else {
+          action = paymentParams.action.toLowerCase();
+        }
+      }
+
       await this.client.post(`/offchain/payment`, {
         vasp_address: paymentParams.vaspAddress,
         reference_id: paymentParams.referenceId,
         merchant_name: paymentParams.merchantName,
-        action:
-          paymentParams.action !== undefined ? paymentParams.action!.toLowerCase() : undefined,
+        action: action,
         currency: paymentParams.currency,
         amount: paymentParams.amount,
         expiration:
@@ -506,9 +515,11 @@ export default class BackendClient {
     }
   }
 
-  async approvePayment(reference_id): Promise<void> {
+  async approvePayment(reference_id, is_full: boolean = false): Promise<void> {
     try {
-      await this.client.post(`/offchain/payment/${reference_id}/actions/approve`);
+      await this.client.post(`/offchain/payment/${reference_id}/actions/approve`, {
+        init_offchain_required: !is_full,
+      });
     } catch (e) {
       BackendClient.handleError(e);
       throw e;

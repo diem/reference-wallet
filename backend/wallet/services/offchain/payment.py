@@ -186,99 +186,111 @@ def add_new_payment(
     save_payment(payment_command)
 
 
-def approve_payment(account_id, reference_id):
+def approve_payment(account_id: int, reference_id: str, init_required: bool):
     payment_model = storage.get_payment_details(reference_id)
 
     if not payment_model:
         raise P2MGeneralError(f"Could not find payment {reference_id}")
 
     if payment_model.action == "charge":
-        user = storage.get_user(account_id)
-
-        try:
-            command_response_object = utils.offchain_client().send_request(
-                request_sender_address=payment_model.my_address,
-                counterparty_account_id=payment_model.vasp_address,
-                request_bytes=jws.serialize(
-                    new_init_charge_command(
-                        reference_id=payment_model.reference_id,
-                        vasp_address=payment_model.vasp_address,
-                        my_name=user.first_name,
-                        my_sure_name=user.last_name,
-                        city=user.city,
-                        country=user.country,
-                        line1=user.address_1,
-                        line2=user.address_2,
-                        postal_code=user.zip,
-                        state=user.state,
-                        national_id_value="",
-                        national_id_type="",
-                    ),
-                    utils.compliance_private_key().sign,
-                ),
-            )
-
-            if (
-                command_response_object.result
-                and type(command_response_object.result) is InitChargeCommandResponse
-            ):
-                recipient_signature = command_response_object.result.recipient_signature
-
-                storage.update_payment(reference_id, recipient_signature)
-        except Exception as e:
-            error = P2MGeneralError(e)
-            logger.error(error)
-            raise error
+        if init_required:
+            init_charge_payment(payment_model, account_id)
     elif payment_model.action == "auth":
-        user = storage.get_user(account_id)
+        if init_required:
+            init_auth_payment(payment_model, account_id)
 
-        try:
-            utils.offchain_client().send_request(
-                request_sender_address=payment_model.my_address,
-                counterparty_account_id=payment_model.vasp_address,
-                request_bytes=jws.serialize(
-                    new_init_auth_command(
-                        reference_id=payment_model.reference_id,
-                        vasp_address=payment_model.vasp_address,
-                        my_name=user.first_name,
-                        my_sure_name=user.last_name,
-                        city=user.city,
-                        country=user.country,
-                        line1=user.address_1,
-                        line2=user.address_2,
-                        postal_code=user.zip,
-                        state=user.state,
-                        national_id_value="",
-                        national_id_type="",
-                    ),
-                    utils.compliance_private_key().sign,
-                ),
-            )
-
-            my_address, my_sub_address = utils.account_address_and_subaddress(
-                payment_model.my_address
-            )
-
-            vasp_address, vasp_sub_address = utils.account_address_and_subaddress(
-                payment_model.vasp_address
-            )
-
-            storage.add_transaction(
-                amount=payment_model.amount,
-                currency=DiemCurrency[payment_model.currency],
-                payment_type=TransactionType.EXTERNAL,
-                status=TransactionStatus.LOCKED,
-                source_id=account_id,
-                source_address=my_address,
-                source_subaddress=my_sub_address,
-                destination_id=None,
-                destination_address=vasp_address,
-                destination_subaddress=vasp_sub_address,
-                reference_id=reference_id,
-            )
-        except Exception as e:
-            error = P2MGeneralError(e)
-            logger.error(error)
-            raise error
+        lock_funds(account_id, payment_model, reference_id)
     else:
         raise P2MGeneralError(f"Unsupported action type {payment_model.action}")
+
+
+def lock_funds(account_id, payment_model, reference_id):
+    my_address, my_sub_address = utils.account_address_and_subaddress(
+        payment_model.my_address
+    )
+    vasp_address, vasp_sub_address = utils.account_address_and_subaddress(
+        payment_model.vasp_address
+    )
+    storage.add_transaction(
+        amount=payment_model.amount,
+        currency=DiemCurrency[payment_model.currency],
+        payment_type=TransactionType.EXTERNAL,
+        status=TransactionStatus.LOCKED,
+        source_id=account_id,
+        source_address=my_address,
+        source_subaddress=my_sub_address,
+        destination_id=None,
+        destination_address=vasp_address,
+        destination_subaddress=vasp_sub_address,
+        reference_id=reference_id,
+    )
+
+
+def init_auth_payment(payment_model, account_id):
+    user = storage.get_user(account_id)
+
+    try:
+        utils.offchain_client().send_request(
+            request_sender_address=payment_model.my_address,
+            counterparty_account_id=payment_model.vasp_address,
+            request_bytes=jws.serialize(
+                new_init_auth_command(
+                    reference_id=payment_model.reference_id,
+                    vasp_address=payment_model.vasp_address,
+                    my_name=user.first_name,
+                    my_sure_name=user.last_name,
+                    city=user.city,
+                    country=user.country,
+                    line1=user.address_1,
+                    line2=user.address_2,
+                    postal_code=user.zip,
+                    state=user.state,
+                    national_id_value="",
+                    national_id_type="",
+                ),
+                utils.compliance_private_key().sign,
+            ),
+        )
+    except Exception as e:
+        error = P2MGeneralError(e)
+        logger.error(error)
+        raise error
+
+
+def init_charge_payment(payment_model, account_id):
+    user = storage.get_user(account_id)
+
+    try:
+        command_response_object = utils.offchain_client().send_request(
+            request_sender_address=payment_model.my_address,
+            counterparty_account_id=payment_model.vasp_address,
+            request_bytes=jws.serialize(
+                new_init_charge_command(
+                    reference_id=payment_model.reference_id,
+                    vasp_address=payment_model.vasp_address,
+                    my_name=user.first_name,
+                    my_sure_name=user.last_name,
+                    city=user.city,
+                    country=user.country,
+                    line1=user.address_1,
+                    line2=user.address_2,
+                    postal_code=user.zip,
+                    state=user.state,
+                    national_id_value="",
+                    national_id_type="",
+                ),
+                utils.compliance_private_key().sign,
+            ),
+        )
+
+        if (
+            command_response_object.result
+            and type(command_response_object.result) is InitChargeCommandResponse
+        ):
+            recipient_signature = command_response_object.result.recipient_signature
+
+            storage.update_payment(payment_model.reference_id, recipient_signature)
+    except Exception as e:
+        error = P2MGeneralError(e)
+        logger.error(error)
+        raise error

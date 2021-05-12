@@ -9,7 +9,7 @@ from webapp.routes.strict_schema_view import (
     body_parameter,
     path_string_param,
 )
-from webapp.schemas import Error
+from webapp.schemas import Error, ApprovePaymentSchema
 from flask import Blueprint, request
 from webapp.schemas import CreatePayment as CreatePaymentSchema, Payment
 
@@ -112,6 +112,7 @@ class PaymentRoutes:
                 name="reference_id",
                 description="reference id",
             ),
+            body_parameter(ApprovePaymentSchema),
         ]
 
         responses = {
@@ -122,7 +123,9 @@ class PaymentRoutes:
         }
 
         def post(self, reference_id: str):
-            payment_service.approve_payment(self.user.account_id, reference_id)
+            is_full = request.json.get("init_offchain_required")
+
+            payment_service.approve_payment(self.user.account_id, reference_id, is_full)
 
             return "OK", HTTPStatus.NO_CONTENT
 

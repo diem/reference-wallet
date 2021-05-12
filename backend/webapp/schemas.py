@@ -353,3 +353,7 @@ class CreatePayment(CreatePaymentCommand):
 class PreparePaymentInfoResponse(Schema):
     reference_id = fields.Str(required=True)
     address = fields.Str(required=False)
+
+
+class ApprovePaymentSchema(Schema):
+    init_offchain_required = fields.Bool(required=False, default=False)
