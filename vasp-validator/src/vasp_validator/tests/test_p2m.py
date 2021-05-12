@@ -3,7 +3,7 @@ from ..vasp_proxy import VaspProxy
 ONE_YEAR_SECONDS = 356 * 24 * 60 * 60
 
 
-def test_get_info_charge(validator, vasp_proxy: VaspProxy):
+def test_charge_payment_flow(validator, vasp_proxy: VaspProxy):
     # Step 1: vasp_proxy create payment info
     reference_id, validator_address = validator.prepare_payment_as_receiver("charge")
     # get validator saved payment info
@@ -37,7 +37,7 @@ def test_get_info_charge(validator, vasp_proxy: VaspProxy):
     )
 
 
-def test_get_info_auth(validator, vasp_proxy: VaspProxy):
+def test_auth_payment_flow(validator, vasp_proxy: VaspProxy):
     # Step 1: vasp_proxy create payment info
     reference_id, validator_address = validator.prepare_payment_as_receiver("auth")
     # get validator saved payment info
