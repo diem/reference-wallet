@@ -56,24 +56,31 @@ def handle_init_charge_command(request: CommandRequestObject):
 
     reference_id = init_charge_command_object.reference_id
 
-    recipient_signature = sign_as_receiver(
-        init_charge_command_object.sender.account_address, reference_id
-    )
-
-    return utils.jws_response(
-        reference_id,
-        result_object=InitChargeCommandResponse(
-            recipient_signature=recipient_signature
-        ),
-    )
-
-
-def sign_as_receiver(sender_address, reference_id):
     payment = storage.get_payment_details(reference_id)
 
+    payment_amount = payment.amount
+
+    if payment_amount > 1_000_000_000:
+        recipient_signature = sign_as_receiver(
+            reference_id=reference_id,
+            sender_address=init_charge_command_object.sender.account_address,
+            amount=payment_amount,
+        )
+
+        return utils.jws_response(
+            reference_id,
+            result_object=InitChargeCommandResponse(
+                recipient_signature=recipient_signature
+            ),
+        )
+    else:
+        return utils.jws_response(reference_id)
+
+
+def sign_as_receiver(reference_id, sender_address, amount):
     sender_address, _ = utils.account_address_and_subaddress(sender_address)
 
-    sig_msg = txnmetadata.travel_rule(reference_id, sender_address, payment.amount)[1]
+    sig_msg = txnmetadata.travel_rule(reference_id, sender_address, amount)[1]
 
     return utils.compliance_private_key().sign(sig_msg).hex()
 
