@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 
 import context
@@ -23,7 +22,6 @@ from offchain.types.payment_types import (
 from tests.wallet_tests.resources.seeds.one_payment_seeder import OnePaymentSeeder
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet import storage
-from wallet.services.offchain import payment as info_commands_service
 from wallet.services.offchain import payment as payment_service
 from wallet.storage import db_session
 
@@ -50,7 +48,7 @@ def test_get_payment_details_for_charge_action_successfully(mock_method):
         will_return=generate_success_get_info_command_response_object(),
     )
 
-    payment_info = info_commands_service.get_payment_details(
+    payment_info = payment_service.get_payment_details(
         user.account_id, REFERENCE_ID, OTHER_ADDRESS
     )
 
@@ -74,7 +72,7 @@ def test_get_payment_details_for_charge_action_failure(mock_method):
     )
 
     with pytest.raises(payment_service.P2MGeneralError):
-        info_commands_service.get_payment_details(
+        payment_service.get_payment_details(
             user.account_id, REFERENCE_ID, OTHER_ADDRESS
         )
 
