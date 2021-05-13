@@ -1,9 +1,8 @@
-import uuid
-
 import context
 from diem import identifier
 from offchain import Status
 from diem_utils.types.currencies import DiemCurrency
+from offchain.types import new_address_object
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from tests.wallet_tests.resources.seeds.payment_command_seeder import (
     PaymentCommandSeeder,
@@ -79,7 +78,7 @@ def test_payment_command_to_model():
                     payload_version=1,
                     given_name="Bond",
                     surname="Marton",
-                    address=offchain.AddressObject(
+                    address=new_address_object(
                         city="CityOfDogs",
                         country="DogsCountry",
                         line1="Dog Street 11",
@@ -88,7 +87,7 @@ def test_payment_command_to_model():
                         state="DogsState",
                     ),
                     dob="2010-01-21",
-                    place_of_birth=offchain.AddressObject(
+                    place_of_birth=new_address_object(
                         city="CityOfPuppies",
                         country="PuppiesCountry",
                         line1="Puppy Street 1",
@@ -114,7 +113,7 @@ def test_payment_command_to_model():
                     payload_version=1,
                     given_name="Gurki",
                     surname="Marton",
-                    address=offchain.AddressObject(
+                    address=new_address_object(
                         city="CityOfDogs",
                         country="DogsCountry",
                         line1="Dog Street 11",
@@ -123,7 +122,7 @@ def test_payment_command_to_model():
                         state="DogsState",
                     ),
                     dob="2011-11-11",
-                    place_of_birth=offchain.AddressObject(
+                    place_of_birth=new_address_object(
                         city="CityOfPuppies",
                         country="PuppiesCountry",
                         line1="Puppy Street 1",

@@ -11,6 +11,7 @@ from typing import Optional
 import pytest
 from offchain import Status
 from flask import Response
+from offchain.types import new_address_object
 from wallet.services.transaction import FundsTransfer
 from werkzeug import Client
 
@@ -68,7 +69,7 @@ INTERNAL_FUNDS_TRANSFER = FundsTransfer(
                     payload_version=1,
                     given_name="Bond",
                     surname="Marton",
-                    address=offchain.AddressObject(
+                    address=new_address_object(
                         city="Dogcity",
                         country="Dogland",
                         line1="1234 Puppy Street",
@@ -89,7 +90,7 @@ INTERNAL_FUNDS_TRANSFER = FundsTransfer(
                     payload_version=1,
                     given_name="Gurki",
                     surname="Silver",
-                    address=offchain.AddressObject(
+                    address=new_address_object(
                         city="Dogcity",
                         country="Dogland",
                         line1="567 Puppy Street",

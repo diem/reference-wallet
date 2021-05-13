@@ -7,14 +7,13 @@ from diem_utils.types.currencies import DiemCurrency
 from offchain import (
     CommandResponseObject,
     PaymentActionObject,
-    AddressObject,
     OffChainErrorObject,
     CommandResponseError,
 )
 from offchain.types import (
     GetInfoCommandResponse,
     PaymentInfoObject,
-    new_get_info_request,
+    new_address_object,
 )
 from offchain.types.payment_types import (
     PaymentReceiverObject,
@@ -99,7 +98,7 @@ def generate_success_get_info_command_response_object():
                     business_data=BusinessDataObject(
                         name=MERCHANT_NAME,
                         legal_name=MERCHANT_NAME,
-                        address=AddressObject(
+                        address=new_address_object(
                             city="CityOfDogs",
                             country="DogsCountry",
                             line1="Dog Street 11",

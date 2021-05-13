@@ -4,6 +4,7 @@ import offchain
 import pytest
 from flask import Response
 from offchain import Status
+from offchain.types import new_address_object
 from wallet.services.offchain import payment_command as pc_service
 from werkzeug.test import Client
 
@@ -34,7 +35,7 @@ def mock_get_payment_command(monkeypatch):
                         payload_version=1,
                         given_name="Bond",
                         surname="Marton",
-                        address=offchain.AddressObject(
+                        address=new_address_object(
                             city="Dogcity",
                             country="Dogland",
                             line1="1234 Puppy Street",
@@ -55,7 +56,7 @@ def mock_get_payment_command(monkeypatch):
                         payload_version=1,
                         given_name="Gurki",
                         surname="Silver",
-                        address=offchain.AddressObject(
+                        address=new_address_object(
                             city="Dogcity",
                             country="Dogland",
                             line1="567 Puppy Street",
@@ -103,7 +104,7 @@ def mock_get_account_payment_commands(monkeypatch):
                             payload_version=1,
                             given_name="Bond",
                             surname="Marton",
-                            address=offchain.AddressObject(
+                            address=new_address_object(
                                 city="Dogcity",
                                 country="Dogland",
                                 line1="1234 Puppy Street",
@@ -126,7 +127,7 @@ def mock_get_account_payment_commands(monkeypatch):
                             payload_version=1,
                             given_name="Gurki",
                             surname="Silver",
-                            address=offchain.AddressObject(
+                            address=new_address_object(
                                 city="Dogcity",
                                 country="Dogland",
                                 line1="567 Puppy Street",
@@ -166,7 +167,7 @@ def mock_get_account_payment_commands(monkeypatch):
                             payload_version=1,
                             given_name="Bond",
                             surname="Marton",
-                            address=offchain.AddressObject(
+                            address=new_address_object(
                                 city="Dogcity",
                                 country="Dogland",
                                 line1="1234 Puppy Street",
@@ -189,7 +190,7 @@ def mock_get_account_payment_commands(monkeypatch):
                             payload_version=1,
                             given_name="Gurki",
                             surname="Silver",
-                            address=offchain.AddressObject(
+                            address=new_address_object(
                                 city="Dogcity",
                                 country="Dogland",
                                 line1="567 Puppy Street",
