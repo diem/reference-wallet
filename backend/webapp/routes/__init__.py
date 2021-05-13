@@ -6,7 +6,7 @@
 from .account import account, AccountRoutes
 from .admin import admin, AdminRoutes
 from .cico import cico, CicoRoutes
-from webapp.routes.offchain.main import offchain, OffchainMainRoute
+from webapp.routes.offchain.main_offchain import offchain, OffchainMainRoute
 from webapp.routes.offchain.funds_pull_pre_approval import (
     funds_pull_pre_approval,
     FundsPullPreApprovalsRoutes,
