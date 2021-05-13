@@ -1,7 +1,7 @@
 import dataclasses
 import logging
-import typing
 from datetime import datetime
+from typing import Optional
 
 from diem_utils.types.currencies import DiemCurrency
 from offchain import (
@@ -118,7 +118,9 @@ def add_new_payment(
     save_payment(payment_command)
 
 
-def approve_payment(account_id: int, reference_id: str, init_required: bool):
+def approve_payment(
+    account_id: int, reference_id: str, init_required: Optional[bool] = True
+):
     payment_model = storage.get_payment_details(reference_id)
 
     if not payment_model:
