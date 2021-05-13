@@ -123,21 +123,6 @@ def generate_success_get_info_command_response_object():
     )
 
 
-@pytest.mark.skip(reason="cant figure out why the response keep changing")
-def test_handle_get_info_command(mock_method):
-    OnePaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
-
-    get_info_request = new_get_info_request(reference_id=REFERENCE_ID, cid=REFERENCE_ID)
-
-    response = info_commands_service.handle_get_info_command(get_info_request)
-
-    assert response[0] == 200
-    assert (
-        response[1]
-        == b"eyJhbGciOiJFZERTQSJ9.eyJzdGF0dXMiOiAic3VjY2VzcyIsICJyZXN1bHQiOiB7InBheW1lbnRfaW5mbyI6IHsicmVjZWl2ZXIiOiB7ImFkZHJlc3MiOiAidGRtMXB6bWhjeHBueW5zN20wMzVjdGRxbWV4eGFkOHB0Z2F6eGhsbHZ5c2Nlc3FkZ3AiLCAiYnVzaW5lc3NfZGF0YSI6IHsibmFtZSI6ICJCb25kICYgR3Vya2kgUGV0IFN0b3JlIiwgImxlZ2FsX25hbWUiOiAiQm9uZCAmIEd1cmtpIFBldCBTdG9yZSIsICJhZGRyZXNzIjogeyJjaXR5IjogIkRvZ2NpdHkiLCAiY291bnRyeSI6ICJEb2dsYW5kIiwgImxpbmUxIjogIjEyMzQgUHVwcHkgU3RyZWV0IiwgImxpbmUyIjogImRvZ3BhbGFjZSAzIiwgInBvc3RhbF9jb2RlIjogIjEyMzQ1NiIsICJzdGF0ZSI6ICJEb2dzdGF0ZSJ9fX0sICJhY3Rpb24iOiB7ImFtb3VudCI6IDEwMDAwMDAwMCwgImN1cnJlbmN5IjogIlhVUyIsICJhY3Rpb24iOiAiY2hhcmdlIiwgInRpbWVzdGFtcCI6IDE2MjExOTg4MDB9LCAicmVmZXJlbmNlX2lkIjogIjI2MzJhMDE4LWU0OTItNDQ4Ny04MWYzLTc3NWQ2ZWNmYjZlZiIsICJkZXNjcmlwdGlvbiI6ICJkZXNjcmlwdGlvbiJ9LCAiX09iamVjdFR5cGUiOiAiR2V0SW5mb0NvbW1hbmRSZXNwb25zZSJ9LCAiX09iamVjdFR5cGUiOiAiQ29tbWFuZFJlc3BvbnNlT2JqZWN0IiwgImNpZCI6ICIyNjMyYTAxOC1lNDkyLTQ0ODctODFmMy03NzVkNmVjZmI2ZWYifQ==.I7tbK6GwpI_YANbR6btCwHQpmmti0oin7boVEWgKQqPnrzDWg7SmLBX3AMPsVad_M94xLK0hHA0vcORKvvUsBA=="
-    )
-
-
 def test_add_new_payment():
     user = OneUser.run(
         db_session, account_amount=100_000_000_000, account_currency=DiemCurrency.XUS

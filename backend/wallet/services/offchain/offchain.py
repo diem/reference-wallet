@@ -12,7 +12,7 @@ from wallet.services.offchain.fund_pull_pre_approval import (
     process_funds_pull_pre_approvals_requests,
     handle_fund_pull_pre_approval_command,
 )
-from wallet.services.offchain.payment import (
+from wallet.services.offchain.payment_as_receiver import (
     handle_get_info_command,
     handle_init_charge_command,
     handle_init_authorize_command,

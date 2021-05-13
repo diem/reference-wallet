@@ -5,19 +5,14 @@ from datetime import datetime
 
 from diem_utils.types.currencies import DiemCurrency
 from offchain import (
-    GetInfoCommandObject,
-    CommandRequestObject,
     jws,
 )
 from offchain.types import (
-    new_payment_info_object,
     new_get_info_request,
     GetInfoCommandResponse,
     new_init_charge_command,
     new_init_auth_command,
     InitChargeCommandResponse,
-    InitChargeCommand,
-    InitAuthorizeCommand,
 )
 from wallet import storage
 from wallet.services.offchain import utils
@@ -27,69 +22,6 @@ from wallet.storage.payment import save_payment
 from wallet.types import TransactionType, TransactionStatus
 
 logger = logging.getLogger(__name__)
-
-
-def handle_get_info_command(request: CommandRequestObject):
-    # The get_info command arrive only when LRW playing the Merchant\Receiver role in the communication,
-    # and therefore we can assume that the payment info already been saved in DB
-    # and the missing data we can mock
-    get_info_command_object = typing.cast(GetInfoCommandObject, request.command)
-
-    reference_id = get_info_command_object.reference_id
-
-    payment_model = storage.get_payment_details(reference_id)
-
-    payment_info_object = new_payment_info_object(
-        reference_id=reference_id,
-        receiver_address=payment_model.vasp_address,
-        name=payment_model.merchant_name,
-        legal_name=payment_model.merchant_name,
-        city="Dogcity",
-        country="Dogland",
-        line1="1234 Puppy Street",
-        line2="dogpalace",
-        postal_code="123456",
-        state="Dogstate",
-        amount=payment_model.amount,
-        currency=payment_model.currency,
-        action=payment_model.action,
-        timestamp=int(datetime.timestamp(payment_model.created_at)),
-        valid_until=int(datetime.timestamp(payment_model.expiration))
-        if payment_model.action == "auth"
-        else None,
-        description=payment_model.description,
-    )
-
-    return utils.jws_response(
-        reference_id,
-        result_object=GetInfoCommandResponse(payment_info=payment_info_object),
-    )
-
-
-def handle_init_charge_command(request: CommandRequestObject):
-    init_charge_command_object = typing.cast(InitChargeCommand, request.command)
-
-    reference_id = init_charge_command_object.reference_id
-
-    # TODO
-    recipient_signature = ""
-
-    return utils.jws_response(
-        reference_id,
-        result_object=InitChargeCommandResponse(
-            recipient_signature=recipient_signature
-        ),
-    )
-
-
-def handle_init_authorize_command(request: CommandRequestObject):
-    init_auth_command_object = typing.cast(InitAuthorizeCommand, request.command)
-
-    reference_id = init_auth_command_object.reference_id
-
-    payment_model = storage.get_payment_details(reference_id)
-
-    return utils.jws_response(reference_id)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -237,16 +169,16 @@ def init_auth_payment(payment_model, account_id):
                 new_init_auth_command(
                     reference_id=payment_model.reference_id,
                     vasp_address=payment_model.vasp_address,
-                    my_name=user.first_name,
-                    my_sure_name=user.last_name,
-                    city=user.city,
-                    country=user.country,
-                    line1=user.address_1,
-                    line2=user.address_2,
-                    postal_code=user.zip,
-                    state=user.state,
-                    national_id_value="",
-                    national_id_type="",
+                    sender_name=user.first_name,
+                    sender_sure_name=user.last_name,
+                    sender_city=user.city,
+                    sender_country=user.country,
+                    sender_line1=user.address_1,
+                    sender_line2=user.address_2,
+                    sender_postal_code=user.zip,
+                    sender_state=user.state,
+                    sender_national_id_value="",
+                    sender_national_id_type="",
                 ),
                 utils.compliance_private_key().sign,
             ),
@@ -268,16 +200,16 @@ def init_charge_payment(payment_model, account_id):
                 new_init_charge_command(
                     reference_id=payment_model.reference_id,
                     vasp_address=payment_model.vasp_address,
-                    my_name=user.first_name,
-                    my_sure_name=user.last_name,
-                    city=user.city,
-                    country=user.country,
-                    line1=user.address_1,
-                    line2=user.address_2,
-                    postal_code=user.zip,
-                    state=user.state,
-                    national_id_value="",
-                    national_id_type="",
+                    sender_name=user.first_name,
+                    sender_sure_name=user.last_name,
+                    sender_city=user.city,
+                    sender_country=user.country,
+                    sender_line1=user.address_1,
+                    sender_line2=user.address_2,
+                    sender_postal_code=user.zip,
+                    sender_state=user.state,
+                    sender_national_id_value="",
+                    sender_national_id_type="",
                 ),
                 utils.compliance_private_key().sign,
             ),
