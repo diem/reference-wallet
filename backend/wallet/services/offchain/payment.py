@@ -128,10 +128,10 @@ def approve_payment(
 
     if payment_model.action == "charge":
         if init_required:
-            init_charge_payment(payment_model, account_id)
+            send_init_charge_payment_request(payment_model, account_id)
     elif payment_model.action == "auth":
         if init_required:
-            init_auth_payment(payment_model, account_id)
+            send_init_auth_payment_request(payment_model, account_id)
 
         lock_funds(account_id, payment_model, reference_id)
     else:
@@ -160,7 +160,7 @@ def lock_funds(account_id, payment_model, reference_id):
     )
 
 
-def init_auth_payment(payment_model, account_id):
+def send_init_auth_payment_request(payment_model, account_id):
     user = storage.get_user(account_id)
 
     try:
@@ -191,7 +191,7 @@ def init_auth_payment(payment_model, account_id):
         raise error
 
 
-def init_charge_payment(payment_model, account_id):
+def send_init_charge_payment_request(payment_model, account_id):
     user = storage.get_user(account_id)
 
     try:
