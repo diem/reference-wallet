@@ -127,9 +127,13 @@ class VaspProxy(ABC):
         ...
 
     @abstractmethod
-    def get_payment_info(self, reference_id, vasp_address):
+    def get_payment_details(self, reference_id, vasp_address):
         ...
 
     @abstractmethod
-    def prepare_payment_info(self, action):
+    def prepare_payment_as_receiver(self, action):
+        ...
+
+    @abstractmethod
+    def approve_payment(self, reference_id, init_offchain):
         ...

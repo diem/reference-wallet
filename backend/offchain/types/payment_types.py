@@ -63,9 +63,11 @@ class PaymentSenderObject:
 class InitChargeCommand:
     sender: PaymentSenderObject
     reference_id: str
+    _ObjectType: str = datafield(default=CommandType.InitChargeCommand)
 
 
 @dataclass(frozen=True)
 class InitAuthorizeCommand:
     sender: PaymentSenderObject
     reference_id: str
+    _ObjectType: str = datafield(default=CommandType.InitAuthorizeCommand)

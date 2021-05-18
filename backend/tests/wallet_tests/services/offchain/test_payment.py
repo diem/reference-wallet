@@ -199,5 +199,3 @@ def generate_success_init_charge_command_response_object():
         ),
         cid=REFERENCE_ID,
     )
-
-

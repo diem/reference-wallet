@@ -117,6 +117,8 @@ class CommandRequestObject:
                 CommandType.PaymentCommand,
                 CommandType.FundPullPreApprovalCommand,
                 CommandType.GetInfoCommand,
+                CommandType.InitChargeCommand,
+                CommandType.InitAuthorizeCommand,
             ]
         }
     )

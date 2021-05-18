@@ -77,6 +77,8 @@ _OBJECT_TYPES: typing.Dict[str, typing.Any] = {
     CommandType.PaymentCommand: PaymentCommandObject,
     CommandType.FundPullPreApprovalCommand: FundPullPreApprovalCommandObject,
     CommandType.GetInfoCommand: GetInfoCommandObject,
+    CommandType.InitChargeCommand: InitChargeCommand,
+    CommandType.InitAuthorizeCommand: InitAuthorizeCommand,
     ResponseType.GetInfoCommandResponse: GetInfoCommandResponse,
     ResponseType.InitChargeCommandResponse: InitChargeCommandResponse,
 }
@@ -375,20 +377,25 @@ def new_init_auth_command(
     sender_national_id_value,
     sender_national_id_type,
 ):
-    return new_init_command(
-        CommandType.InitAuthorizeCommand,
-        reference_id,
-        sender_city,
-        sender_country,
-        sender_line1,
-        sender_line2,
-        sender_name,
-        sender_national_id_type,
-        sender_national_id_value,
-        sender_postal_code,
-        sender_state,
-        sender_sure_name,
-        vasp_address,
+    return CommandRequestObject(
+        cid=reference_id or str(uuid.uuid4()),
+        command_type=CommandType.InitAuthorizeCommand,
+        command=InitAuthorizeCommand(
+            reference_id=reference_id,
+            sender=new_payment_sender_object(
+                sender_city,
+                sender_country,
+                sender_line1,
+                sender_line2,
+                sender_name,
+                sender_sure_name,
+                sender_national_id_type,
+                sender_national_id_value,
+                sender_postal_code,
+                sender_state,
+                vasp_address,
+            ),
+        ),
     )
 
 
@@ -406,41 +413,9 @@ def new_init_charge_command(
     sender_national_id_value,
     sender_national_id_type,
 ):
-    return new_init_command(
-        CommandType.InitChargeCommand,
-        reference_id,
-        sender_city,
-        sender_country,
-        sender_line1,
-        sender_line2,
-        sender_name,
-        sender_national_id_type,
-        sender_national_id_value,
-        sender_postal_code,
-        sender_state,
-        sender_sure_name,
-        vasp_address,
-    )
-
-
-def new_init_command(
-    command_type,
-    reference_id,
-    sender_city,
-    sender_country,
-    sender_line1,
-    sender_line2,
-    sender_name,
-    sender_national_id_type,
-    sender_national_id_value,
-    sender_postal_code,
-    sender_state,
-    sender_sure_name,
-    vasp_address,
-):
     return CommandRequestObject(
         cid=reference_id or str(uuid.uuid4()),
-        command_type=command_type,
+        command_type=CommandType.InitChargeCommand,
         command=InitChargeCommand(
             reference_id=reference_id,
             sender=new_payment_sender_object(

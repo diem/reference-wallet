@@ -236,7 +236,7 @@ def offchain_api_routes():
     # payments - P2M
     payment.add_url_rule(
         rule="/offchain/query/payment_details",
-        view_func=PaymentRoutes.GetPaymentDetails.as_view("get_payment_info"),
+        view_func=PaymentRoutes.GetPaymentDetails.as_view("get_payment_details"),
         methods=["GET"],
     )
     payment.add_url_rule(

@@ -136,7 +136,7 @@ class TestRequestFundsPullPreApprovalFromAnother:
         assert db_fppa.max_cumulative_amount_currency is None
 
 
-def test_prepare_payment_info():
+def test_prepare_payment_as_receiver():
     user = OneUser.run(db_session)
 
     reference_id, address = prepare_payment_as_receiver(user.account_id)

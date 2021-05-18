@@ -2,7 +2,7 @@ import typing
 from datetime import datetime
 
 from diem import txnmetadata
-from offchain import ErrorCode, CommandRequestObject, GetInfoCommandObject
+from offchain import CommandRequestObject, GetInfoCommandObject
 from offchain.types import (
     new_payment_info_object,
     GetInfoCommandResponse,
