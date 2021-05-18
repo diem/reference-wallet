@@ -1,8 +1,8 @@
 from typing import Optional
 
-import pytest
 from flask import Response
 from wallet.services.offchain import payment as payment_service
+from wallet.services.offchain.payment import P2MGeneralError
 from werkzeug.test import Client
 
 CURRENCY = "XUS"
@@ -17,38 +17,24 @@ AMOUNT = 200_000_000
 EXPIRATION = 1802010490
 
 
-@pytest.fixture
-def mock_get_payment_details_exist_object(monkeypatch):
-    def mock(
-        account_id, reference_id, vasp_address
-    ) -> Optional[payment_service.PaymentDetails]:
-        return payment_service.PaymentDetails(
-            vasp_address=ADDRESS,
-            reference_id=REFERENCE_ID,
-            merchant_name="Bond's Per Store",
-            action=CHARGE_ACTION,
-            currency=CURRENCY,
-            amount=AMOUNT,
-            expiration=EXPIRATION,
-        )
-
-    monkeypatch.setattr(payment_service, "get_payment_details", mock)
-
-
-@pytest.fixture
-def mock_get_payment_details_not_exist_object(monkeypatch):
-    def mock(
-        account_id, reference_id, vasp_address
-    ) -> Optional[payment_service.PaymentDetails]:
-        return None
-
-    monkeypatch.setattr(payment_service, "get_payment_details", mock)
-
-
 class TestGetPaymentDetails:
     def test_get_payment_details_exist_object(
-        self, authorized_client: Client, mock_get_payment_details_exist_object
+        self, authorized_client: Client, mock_method
     ) -> None:
+        MERCHANT_NAME = "Bond's Pet Store"
+        mock_method(
+            payment_service,
+            "get_payment_details",
+            will_return=payment_service.PaymentDetails(
+                vasp_address=ADDRESS,
+                reference_id=REFERENCE_ID,
+                merchant_name=MERCHANT_NAME,
+                action=CHARGE_ACTION,
+                currency=CURRENCY,
+                amount=AMOUNT,
+                expiration=EXPIRATION,
+            ),
+        )
         rv: Response = authorized_client.get(
             f"/offchain/query/payment_details?reference_id={REFERENCE_ID}&vasp_address={ADDRESS}",
         )
@@ -59,13 +45,15 @@ class TestGetPaymentDetails:
         assert rv.get_json()["amount"] == AMOUNT
         assert rv.get_json()["currency"] == CURRENCY
         assert rv.get_json()["expiration"] == EXPIRATION
-        assert rv.get_json()["merchant_name"] == "Bond's Per Store"
+        assert rv.get_json()["merchant_name"] == MERCHANT_NAME
         assert rv.get_json()["reference_id"] == REFERENCE_ID
         assert rv.get_json()["vasp_address"] == ADDRESS
 
     def test_get_payment_details_not_exist_object(
-        self, authorized_client: Client, mock_get_payment_details_not_exist_object
+        self, authorized_client: Client, mock_method
     ) -> None:
+        mock_method(payment_service, "get_payment_details", will_return=None)
+
         rv: Response = authorized_client.get(
             f"/offchain/query/payment_details?reference_id={REFERENCE_ID}&vasp_address={ADDRESS}",
         )
@@ -77,25 +65,14 @@ class TestGetPaymentDetails:
         )
 
 
-@pytest.fixture()
-def mock_add_payment(monkeypatch):
-    def mock(
-        account_id,
-        reference_id,
-        vasp_address,
-        merchant_name,
-        action,
-        currency,
-        amount,
-        expiration,
-    ) -> None:
-        return
-
-    monkeypatch.setattr(payment_service, "add_new_payment", mock)
-
-
 class TestAddPayment:
-    def test_add_payment(self, authorized_client: Client, mock_add_payment):
+    def test_add_payment(self, authorized_client: Client, mock_method):
+        mock_method(
+            payment_service,
+            "add_new_payment",
+            will_return=None,
+        )
+
         rv: Response = authorized_client.post(
             "/offchain/payment",
             json={
@@ -107,6 +84,28 @@ class TestAddPayment:
                 "amount": 1000,
                 "expiration": EXPIRATION,
             },
+        )
+
+        assert rv.status_code == 204, rv.get_data()
+
+
+class TestApprovePayment:
+    def test_payment_not_found(self, authorized_client: Client, mock_method):
+        mock_method(payment_service, "approve_payment", will_raise=P2MGeneralError)
+
+        rv: Response = authorized_client.post(
+            f"/offchain/payment/{REFERENCE_ID}/actions/approve",
+            json={"init_offchain_required": False},
+        )
+
+        assert rv.status_code == 404, rv.get_data()
+
+    def test_successful_payment(self, authorized_client: Client, mock_method):
+        mock_method(payment_service, "approve_payment", will_return=None)
+
+        rv: Response = authorized_client.post(
+            f"/offchain/payment/{REFERENCE_ID}/actions/approve",
+            json={"init_offchain_required": False},
         )
 
         assert rv.status_code == 204, rv.get_data()

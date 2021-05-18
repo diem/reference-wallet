@@ -37,7 +37,38 @@ def test_handle_get_info_command(mock_method):
     )
 
 
-def test_handle_init_charge_command(mock_method):
+def test_handle_init_charge_command_success(mock_method):
+    OnePaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
+
+    handle_init_charge_command(successful_init_charge_command())
+
+
+def test_handle_init_charge_command_success_with_recipient_signature(mock_method):
+    OnePaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID, amount=1_000_000_000)
+
+    handle_init_charge_command(successful_init_charge_command())
+
+
+def successful_init_charge_command():
+    return new_init_charge_command(
+        reference_id=REFERENCE_ID,
+        vasp_address=OTHER_ADDRESS,
+        sender_name="Bond",
+        sender_sure_name="Silver",
+        sender_city="CityOfDogs",
+        sender_country="DogsCountry",
+        sender_line1="Dog Street 11",
+        sender_line2="",
+        sender_postal_code="123456",
+        sender_state="DogsState",
+        sender_national_id_value="",
+        sender_national_id_type="",
+    )
+
+
+def test_handle_init_charge_command_fail(mock_method):
+    OnePaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
+
     handle_init_charge_command(
         new_init_charge_command(
             reference_id=REFERENCE_ID,
@@ -54,7 +85,6 @@ def test_handle_init_charge_command(mock_method):
             sender_national_id_type="",
         )
     )
-    ...
 
 
 def test_handle_init_authorize_command():

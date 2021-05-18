@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from diem.jsonrpc import AccountNotFoundError
 from wallet.services.offchain import payment as payment_service
+from wallet.services.offchain.payment import P2MGeneralError
 from webapp.routes.strict_schema_view import (
     StrictSchemaView,
     query_str_param,
@@ -123,9 +124,18 @@ class PaymentRoutes:
         }
 
         def post(self, reference_id: str):
-            is_full = request.json.get("init_offchain_required")
+            init_offchain_required = (
+                request.json.get("init_offchain_required")
+                if request.json.get("init_offchain_required")
+                else False
+            )
 
-            payment_service.approve_payment(self.user.account_id, reference_id, is_full)
+            try:
+                payment_service.approve_payment(
+                    self.user.account_id, reference_id, init_offchain_required
+                )
+            except P2MGeneralError as e:
+                return self.respond_with_error(HTTPStatus.NOT_FOUND, str(e))
 
             return "OK", HTTPStatus.NO_CONTENT
 
