@@ -37,7 +37,7 @@ def mock_get_payment_command(monkeypatch):
                         surname="Marton",
                         address=new_address_object(
                             city="Dogcity",
-                            country="Dogland",
+                            country="DL",
                             line1="1234 Puppy Street",
                             line2="dogpalace 3",
                             postal_code="123456",
@@ -58,7 +58,7 @@ def mock_get_payment_command(monkeypatch):
                         surname="Silver",
                         address=new_address_object(
                             city="Dogcity",
-                            country="Dogland",
+                            country="DL",
                             line1="567 Puppy Street",
                             line2="doggarden 3",
                             postal_code="123456",
@@ -106,7 +106,7 @@ def mock_get_account_payment_commands(monkeypatch):
                             surname="Marton",
                             address=new_address_object(
                                 city="Dogcity",
-                                country="Dogland",
+                                country="DL",
                                 line1="1234 Puppy Street",
                                 line2="dogpalace 3",
                                 postal_code="123456",
@@ -129,7 +129,7 @@ def mock_get_account_payment_commands(monkeypatch):
                             surname="Silver",
                             address=new_address_object(
                                 city="Dogcity",
-                                country="Dogland",
+                                country="DL",
                                 line1="567 Puppy Street",
                                 line2="doggarden 3",
                                 postal_code="123456",
@@ -169,7 +169,7 @@ def mock_get_account_payment_commands(monkeypatch):
                             surname="Marton",
                             address=new_address_object(
                                 city="Dogcity",
-                                country="Dogland",
+                                country="DL",
                                 line1="1234 Puppy Street",
                                 line2="dogpalace 3",
                                 postal_code="123456",
@@ -192,7 +192,7 @@ def mock_get_account_payment_commands(monkeypatch):
                             surname="Silver",
                             address=new_address_object(
                                 city="Dogcity",
-                                country="Dogland",
+                                country="DL",
                                 line1="567 Puppy Street",
                                 line2="doggarden 3",
                                 postal_code="123456",

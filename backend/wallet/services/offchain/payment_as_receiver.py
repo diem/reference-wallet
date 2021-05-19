@@ -30,7 +30,7 @@ def handle_get_info_command(request: CommandRequestObject):
         name=payment_model.merchant_name,
         legal_name=payment_model.merchant_name,
         city="Dogcity",
-        country="Dogland",
+        country="DL",
         line1="1234 Puppy Street",
         line2="dogpalace",
         postal_code="123456",

@@ -168,7 +168,7 @@ def generate_success_get_info_command_response_object():
                         legal_name=MERCHANT_NAME,
                         address=new_address_object(
                             city="CityOfDogs",
-                            country="DogsCountry",
+                            country="DG",
                             line1="Dog Street 11",
                             line2="",
                             postal_code="123456",
