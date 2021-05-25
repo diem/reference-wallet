@@ -93,7 +93,7 @@ def to_json(obj: T, indent: typing.Optional[int] = None) -> str:
         raw = list(map(dataclasses.asdict, obj))
     else:
         raw = obj
-    return json.dumps(_delete_none(raw), indent=indent)
+    return json.dumps(raw, indent=indent)
 
 
 def from_json(data: str, klass: typing.Optional[typing.Type[T]] = None) -> T:
@@ -168,7 +168,7 @@ def _field_value_from_dict(
     full_name = _join_field_path(field_path, field.name)
     field_type = field.type
     args = field.type.__args__ if hasattr(field.type, "__args__") else []
-    is_optional = len(args) == 2 and isinstance(None, args[1])  # pyre-ignore
+    is_optional = any(isinstance(None, arg) for arg in args)  # pyre-ignore
     if is_optional:
         field_type = args[0]
     val = obj.get(field.name)
