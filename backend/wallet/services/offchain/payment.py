@@ -39,6 +39,10 @@ class P2MGeneralError(Exception):
     pass
 
 
+class PaymentNotFoundError(Exception):
+    pass
+
+
 def get_payment_details(account_id, reference_id: str, vasp_address: str):
     payment_model = storage.get_payment_details(reference_id)
 
@@ -124,7 +128,7 @@ def approve_payment(
     payment_model = storage.get_payment_details(reference_id)
 
     if not payment_model:
-        raise P2MGeneralError(f"Could not find payment {reference_id}")
+        raise PaymentNotFoundError(f"Could not find payment {reference_id}")
 
     if payment_model.action == "charge":
         if init_required:
