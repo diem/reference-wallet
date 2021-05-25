@@ -40,11 +40,11 @@ from .payment_types import (
     PaymentInfoObject,
     PaymentReceiverObject,
     BusinessDataObject,
-    InitChargeCommand,
+    InitChargePayment,
     PaymentSenderObject,
     PayerDataObject,
     InitAuthorizeCommand,
-    InitChargeCommandResponse,
+    InitChargePaymentResponse,
 )
 
 import dataclasses, json, re, typing, uuid
@@ -77,10 +77,10 @@ _OBJECT_TYPES: typing.Dict[str, typing.Any] = {
     CommandType.PaymentCommand: PaymentCommandObject,
     CommandType.FundPullPreApprovalCommand: FundPullPreApprovalCommandObject,
     CommandType.GetInfoCommand: GetInfoCommandObject,
-    CommandType.InitChargeCommand: InitChargeCommand,
+    CommandType.InitChargePayment: InitChargePayment,
     CommandType.InitAuthorizeCommand: InitAuthorizeCommand,
     ResponseType.GetInfoCommandResponse: GetInfoCommandResponse,
-    ResponseType.InitChargeCommandResponse: InitChargeCommandResponse,
+    ResponseType.InitChargePaymentResponse: InitChargePaymentResponse,
 }
 
 _OBJECT_TYPE_FIELD_NAME = "_ObjectType"
@@ -415,8 +415,8 @@ def new_init_charge_command(
 ):
     return CommandRequestObject(
         cid=reference_id or str(uuid.uuid4()),
-        command_type=CommandType.InitChargeCommand,
-        command=InitChargeCommand(
+        command_type=CommandType.InitChargePayment,
+        command=InitChargePayment(
             reference_id=reference_id,
             sender=new_payment_sender_object(
                 sender_city,
@@ -515,7 +515,9 @@ def new_address_object(city, country, line1, line2, postal_code, state):
 
 def reply_request(
     cid: typing.Optional[str],
-    result_object: typing.Optional[typing.Union[GetInfoCommandResponse]] = None,
+    result_object: typing.Optional[
+        typing.Union[GetInfoCommandResponse, InitChargePaymentResponse]
+    ] = None,
     err: typing.Optional[OffChainErrorObject] = None,
 ) -> CommandResponseObject:
     return CommandResponseObject(

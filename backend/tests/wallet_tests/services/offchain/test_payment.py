@@ -17,7 +17,7 @@ from offchain.types import (
 from offchain.types.payment_types import (
     PaymentReceiverObject,
     BusinessDataObject,
-    InitChargeCommandResponse,
+    InitChargePaymentResponse,
 )
 from tests.wallet_tests.resources.seeds.one_payment_seeder import OnePaymentSeeder
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
@@ -193,7 +193,7 @@ def generate_success_get_info_command_response_object():
 def generate_success_init_charge_command_response_object():
     return CommandResponseObject(
         status="success",
-        result=InitChargeCommandResponse(
+        result=InitChargePaymentResponse(
             _ObjectType="GetInfoCommandResponse",
             recipient_signature=b"I have no idea what to write here",
         ),

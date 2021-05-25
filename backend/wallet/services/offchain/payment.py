@@ -12,7 +12,7 @@ from offchain.types import (
     GetInfoCommandResponse,
     new_init_charge_command,
     new_init_auth_command,
-    InitChargeCommandResponse,
+    InitChargePaymentResponse,
 )
 from wallet import storage
 from wallet.services.offchain import utils
@@ -219,7 +219,7 @@ def send_init_charge_payment_request(payment_model, account_id):
 
         if (
             command_response_object.result
-            and type(command_response_object.result) is InitChargeCommandResponse
+            and type(command_response_object.result) is InitChargePaymentResponse
         ):
             recipient_signature = command_response_object.result.recipient_signature
 

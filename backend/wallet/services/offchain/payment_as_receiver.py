@@ -6,8 +6,8 @@ from offchain import CommandRequestObject, GetInfoCommandObject
 from offchain.types import (
     new_payment_info_object,
     GetInfoCommandResponse,
-    InitChargeCommand,
-    InitChargeCommandResponse,
+    InitChargePayment,
+    InitChargePaymentResponse,
     InitAuthorizeCommand,
 )
 from wallet import storage
@@ -52,7 +52,7 @@ def handle_get_info_command(request: CommandRequestObject):
 
 
 def handle_init_charge_command(request: CommandRequestObject):
-    init_charge_command_object = typing.cast(InitChargeCommand, request.command)
+    init_charge_command_object = typing.cast(InitChargePayment, request.command)
 
     reference_id = init_charge_command_object.reference_id
 
@@ -69,7 +69,7 @@ def handle_init_charge_command(request: CommandRequestObject):
 
         return utils.jws_response(
             reference_id,
-            result_object=InitChargeCommandResponse(
+            result_object=InitChargePaymentResponse(
                 recipient_signature=recipient_signature
             ),
         )

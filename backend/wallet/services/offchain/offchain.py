@@ -51,7 +51,7 @@ def process_inbound_command(
         # LRW as RECEIVER
         if request.command_type == CommandType.GetInfoCommand:
             return handle_get_info_command(request)
-        elif request.command_type == CommandType.InitChargeCommand:
+        elif request.command_type == CommandType.InitChargePayment:
             return handle_init_charge_command(request)
         elif request.command_type == CommandType.InitAuthorizeCommand:
             return handle_init_authorize_command(request)

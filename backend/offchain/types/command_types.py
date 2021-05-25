@@ -14,13 +14,13 @@ class CommandType:
     PaymentCommand = "PaymentCommand"
     FundPullPreApprovalCommand = "FundPullPreApprovalCommand"
     GetInfoCommand = "GetInfoCommand"
-    InitChargeCommand = "InitChargeCommand"
+    InitChargePayment = "InitChargePayment"
     InitAuthorizeCommand = "InitAuthorizeCommand"
 
 
 class ResponseType:
     GetInfoCommandResponse = "GetInfoCommandResponse"
-    InitChargeCommandResponse = "InitChargeCommandResponse"
+    InitChargePaymentResponse = "InitChargePaymentResponse"
 
 
 class CommandResponseStatus:
@@ -102,7 +102,9 @@ from .fund_pull_pre_approval_types import FundPullPreApprovalCommandObject
 from .payment_types import (
     GetInfoCommandObject,
     GetInfoCommandResponse,
-    InitChargeCommandResponse,
+    InitChargePaymentResponse,
+    InitChargePayment,
+    InitAuthorizeCommand,
 )
 
 
@@ -117,13 +119,17 @@ class CommandRequestObject:
                 CommandType.PaymentCommand,
                 CommandType.FundPullPreApprovalCommand,
                 CommandType.GetInfoCommand,
-                CommandType.InitChargeCommand,
+                CommandType.InitChargePayment,
                 CommandType.InitAuthorizeCommand,
             ]
         }
     )
     command: typing.Union[
-        PaymentCommandObject, FundPullPreApprovalCommandObject, GetInfoCommandObject
+        PaymentCommandObject,
+        FundPullPreApprovalCommandObject,
+        GetInfoCommandObject,
+        InitChargePayment,
+        InitAuthorizeCommand,
     ]
     _ObjectType: str = datafield(
         default="CommandRequestObject",
@@ -162,7 +168,7 @@ class CommandResponseObject:
         }
     )
     result: typing.Optional[
-        typing.Union[GetInfoCommandResponse, InitChargeCommandResponse]
+        typing.Union[GetInfoCommandResponse, InitChargePaymentResponse]
     ] = datafield(default=None)
     # The fixed string CommandResponseObject.
     _ObjectType: str = datafield(

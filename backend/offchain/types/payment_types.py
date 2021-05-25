@@ -1,3 +1,5 @@
+import typing
+
 from .command_types import CommandType, ResponseType
 from dataclasses import dataclass, field as datafield
 from .payment_command_types import AddressObject, PaymentActionObject, NationalIdObject
@@ -40,9 +42,9 @@ class GetInfoCommandResponse:
 
 
 @dataclass(frozen=True)
-class InitChargeCommandResponse:
-    recipient_signature: str = None
-    _ObjectType: str = datafield(default=ResponseType.InitChargeCommandResponse)
+class InitChargePaymentResponse:
+    recipient_signature: typing.Optional[str] = None
+    _ObjectType: str = datafield(default=ResponseType.InitChargePaymentResponse)
 
 
 @dataclass(frozen=True)
@@ -60,10 +62,10 @@ class PaymentSenderObject:
 
 
 @dataclass(frozen=True)
-class InitChargeCommand:
+class InitChargePayment:
     sender: PaymentSenderObject
     reference_id: str
-    _ObjectType: str = datafield(default=CommandType.InitChargeCommand)
+    _ObjectType: str = datafield(default=CommandType.InitChargePayment)
 
 
 @dataclass(frozen=True)
