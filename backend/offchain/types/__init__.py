@@ -168,7 +168,15 @@ def _field_value_from_dict(
     full_name = _join_field_path(field_path, field.name)
     field_type = field.type
     args = field.type.__args__ if hasattr(field.type, "__args__") else []
-    is_optional = any(isinstance(None, arg) for arg in args)  # pyre-ignore
+
+    is_optional = False
+
+    for arg in args:
+        if hasattr(arg, "__origin__"):
+            is_optional = isinstance(None, arg.__origin__)
+        else:
+            is_optional = isinstance(None, arg)
+
     if is_optional:
         field_type = args[0]
     val = obj.get(field.name)
