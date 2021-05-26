@@ -52,9 +52,7 @@ def handle_get_info_command(request: CommandRequestObject):
 
 
 def handle_init_charge_command(request: CommandRequestObject):
-    init_charge_command_object = typing.cast(InitChargePayment, request.command)
-
-    reference_id = init_charge_command_object.reference_id
+    reference_id = request.command.reference_id
 
     payment = storage.get_payment_details(reference_id)
 
@@ -63,7 +61,7 @@ def handle_init_charge_command(request: CommandRequestObject):
     if payment_amount > 1_000_000_000:
         recipient_signature = sign_as_receiver(
             reference_id=reference_id,
-            sender_address=init_charge_command_object.sender.account_address,
+            sender_address=request.command.sender.account_address,
             amount=payment_amount,
         )
 
@@ -86,8 +84,6 @@ def sign_as_receiver(reference_id, sender_address, amount):
 
 
 def handle_init_authorize_command(request: CommandRequestObject):
-    init_auth_command_object = typing.cast(InitAuthorizeCommand, request.command)
-
-    reference_id = init_auth_command_object.reference_id
+    reference_id = request.command.reference_id
 
     return utils.jws_response(reference_id)

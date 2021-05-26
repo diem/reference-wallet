@@ -45,6 +45,9 @@ class PaymentRoutes:
             HTTPStatus.UNPROCESSABLE_ENTITY: response_definition(
                 "Command not found", schema=Error
             ),
+            HTTPStatus.INTERNAL_SERVER_ERROR: response_definition(
+                "INTERNAL_SERVER_ERROR"
+            ),
         }
 
         def get(self):
@@ -53,9 +56,14 @@ class PaymentRoutes:
                 vasp_address = request.args["vasp_address"]
                 reference_id = request.args["reference_id"]
 
-                payment_details = payment_service.get_payment_details(
-                    account_id, reference_id, vasp_address
-                )
+                try:
+                    payment_details = payment_service.get_payment_details(
+                        account_id, reference_id, vasp_address
+                    )
+                except P2MGeneralError as e:
+                    return self.respond_with_error(
+                        HTTPStatus.INTERNAL_SERVER_ERROR, str(e)
+                    )
 
                 return (
                     (

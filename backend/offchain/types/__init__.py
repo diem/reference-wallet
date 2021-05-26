@@ -378,7 +378,7 @@ def new_init_auth_command(
     sender_national_id_type,
 ):
     return CommandRequestObject(
-        cid=reference_id or str(uuid.uuid4()),
+        cid=reference_id,
         command_type=CommandType.InitAuthorizeCommand,
         command=InitAuthorizeCommand(
             reference_id=reference_id,
@@ -414,7 +414,7 @@ def new_init_charge_command(
     sender_national_id_type,
 ):
     return CommandRequestObject(
-        cid=reference_id or str(uuid.uuid4()),
+        cid=reference_id,
         command_type=CommandType.InitChargePayment,
         command=InitChargePayment(
             reference_id=reference_id,
