@@ -10,5 +10,6 @@
   "status": "Status",
   "tx_id": "Transaction ID",
   "internal": "Internal",
-  "not_available": "Not available"
+  "not_available": "Not available",
+  "locked_status": "Locked"
 }

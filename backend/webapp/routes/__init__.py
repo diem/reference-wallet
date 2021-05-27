@@ -6,7 +6,13 @@
 from .account import account, AccountRoutes
 from .admin import admin, AdminRoutes
 from .cico import cico, CicoRoutes
-from .offchain import offchain, OffchainRoutes
+from webapp.routes.offchain.main_offchain import offchain, OffchainMainRoute
+from webapp.routes.offchain.funds_pull_pre_approval import (
+    funds_pull_pre_approval,
+    FundsPullPreApprovalsRoutes,
+)
+from webapp.routes.offchain.payment import payment, PaymentRoutes
+from webapp.routes.offchain.payment_command import payment_command, PaymentCommandRoutes
 from .system import system, SystemRoutes
 from .user import user, UserRoutes
 from .validation_tool import validation_tool, ValidationToolRoutes
@@ -165,64 +171,87 @@ def system_routes():
 
 
 def offchain_api_routes():
+    # main offchain end point for all incoming commands
     offchain.add_url_rule(
         rule="/offchain/v2/command",
-        view_func=OffchainRoutes.OffchainV2View.as_view("command_response"),
+        view_func=OffchainMainRoute.OffchainV2View.as_view("command_response"),
         methods=["POST"],
     )
-    offchain.add_url_rule(
+    # payment command end points - P2P
+    payment_command.add_url_rule(
         rule="/offchain/query/payment_command/<reference_id>",
-        view_func=OffchainRoutes.GetPaymentCommand.as_view("get_payment_command"),
+        view_func=PaymentCommandRoutes.GetPaymentCommand.as_view("get_payment_command"),
         methods=["GET"],
     )
-    offchain.add_url_rule(
-        rule="/offchain/query/payment_info",
-        view_func=OffchainRoutes.GetPaymentInfo.as_view("get_payment_info"),
-        methods=["GET"],
-    )
-    offchain.add_url_rule(
+    payment_command.add_url_rule(
         rule="/offchain/query/payment_command",
-        view_func=OffchainRoutes.GetAccountPaymentCommands.as_view(
+        view_func=PaymentCommandRoutes.GetAccountPaymentCommands.as_view(
             "get_account_payment_commands"
         ),
         methods=["GET"],
     )
-    offchain.add_url_rule(
+    payment_command.add_url_rule(
         rule="/offchain/payment_command",
-        view_func=OffchainRoutes.AddPaymentCommandAsSender.as_view(
+        view_func=PaymentCommandRoutes.AddPaymentCommandAsSender.as_view(
             "create_payment_command"
         ),
         methods=["POST"],
     )
-    offchain.add_url_rule(
+    payment_command.add_url_rule(
         rule="/offchain/payment_command/<reference_id>/actions/approve",
-        view_func=OffchainRoutes.ApprovePaymentCommand.as_view(
+        view_func=PaymentCommandRoutes.ApprovePaymentCommand.as_view(
             "approve_payment_command"
         ),
         methods=["POST"],
     )
-    offchain.add_url_rule(
+    payment_command.add_url_rule(
         rule="/offchain/payment_command/<reference_id>/actions/reject",
-        view_func=OffchainRoutes.RejectPaymentCommand.as_view("reject_payment_command"),
+        view_func=PaymentCommandRoutes.RejectPaymentCommand.as_view(
+            "reject_payment_command"
+        ),
         methods=["POST"],
     )
-    offchain.add_url_rule(
+    # funds pull pre approval \ consent end points
+    funds_pull_pre_approval.add_url_rule(
         rule="/offchain/funds_pull_pre_approvals",
-        view_func=OffchainRoutes.GetFundsPullPreApprovals.as_view(
+        view_func=FundsPullPreApprovalsRoutes.GetFundsPullPreApprovals.as_view(
             "get_funds_pull_pre_approval"
         ),
         methods=["GET"],
     )
-    offchain.add_url_rule(
+    funds_pull_pre_approval.add_url_rule(
         rule="/offchain/funds_pull_pre_approvals/<funds_pull_pre_approval_id>",
-        view_func=OffchainRoutes.UpdateFundPullPreApprovalStatus.as_view(
+        view_func=FundsPullPreApprovalsRoutes.UpdateFundPullPreApprovalStatus.as_view(
             "approve_funds_pull_pre_approval"
         ),
         methods=["PUT"],
     )
-    offchain.add_url_rule(
+    funds_pull_pre_approval.add_url_rule(
         rule="/offchain/funds_pull_pre_approvals",
-        view_func=OffchainRoutes.CreateAndApprove.as_view("create_and_approve"),
+        view_func=FundsPullPreApprovalsRoutes.CreateAndApprove.as_view(
+            "create_and_approve"
+        ),
+        methods=["POST"],
+    )
+    # payments - P2M
+    payment.add_url_rule(
+        rule="/offchain/query/payment_details",
+        view_func=PaymentRoutes.GetPaymentDetails.as_view("get_payment_details"),
+        methods=["GET"],
+    )
+    payment.add_url_rule(
+        rule="/offchain/payment/<reference_id>/actions/approve",
+        view_func=PaymentRoutes.ApprovePayment.as_view("approve_payment"),
+        methods=["POST"],
+    )
+    payment.add_url_rule(
+        rule="/offchain/payment/<reference_id>/actions/reject",
+        view_func=PaymentRoutes.RejectPayment.as_view("reject_payment_info"),
+        methods=["POST"],
+    )
+    payment.add_url_rule(
+        rule="/offchain/payment",
+        view_func=PaymentRoutes.AddPayment.as_view("add_new_payment"),
         methods=["POST"],
     )
 
@@ -237,8 +266,8 @@ def validation_tool_routes():
     )
     validation_tool.add_url_rule(
         rule="/validation/payment_info/<action>",
-        view_func=ValidationToolRoutes.PreparePaymentInfo.as_view(
-            "prepare_payment_info"
+        view_func=ValidationToolRoutes.PreparePaymentAsReceiver.as_view(
+            "prepare payment as receiver"
         ),
         methods=["POST"],
     )

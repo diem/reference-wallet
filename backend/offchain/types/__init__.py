@@ -10,7 +10,7 @@ from .command_types import (
     CommandResponseStatus,
     ResponseType,
 )
-from .payment_types import (
+from .payment_command_types import (
     AbortCode,
     NationalIdObject,
     AddressObject,
@@ -34,12 +34,17 @@ from .fund_pull_pre_approval_types import (
     FundPullPreApprovalType,
     FundPullPreApprovalCommandObject,
 )
-from .info_types import (
+from .payment_types import (
     GetInfoCommandObject,
     GetInfoCommandResponse,
     PaymentInfoObject,
     PaymentReceiverObject,
     BusinessDataObject,
+    InitChargePayment,
+    PaymentSenderObject,
+    PayerDataObject,
+    InitAuthorizeCommand,
+    InitChargePaymentResponse,
 )
 
 import dataclasses, json, re, typing, uuid
@@ -72,7 +77,10 @@ _OBJECT_TYPES: typing.Dict[str, typing.Any] = {
     CommandType.PaymentCommand: PaymentCommandObject,
     CommandType.FundPullPreApprovalCommand: FundPullPreApprovalCommandObject,
     CommandType.GetInfoCommand: GetInfoCommandObject,
+    CommandType.InitChargePayment: InitChargePayment,
+    CommandType.InitAuthorizeCommand: InitAuthorizeCommand,
     ResponseType.GetInfoCommandResponse: GetInfoCommandResponse,
+    ResponseType.InitChargePaymentResponse: InitChargePaymentResponse,
 }
 
 _OBJECT_TYPE_FIELD_NAME = "_ObjectType"
@@ -85,7 +93,7 @@ def to_json(obj: T, indent: typing.Optional[int] = None) -> str:
         raw = list(map(dataclasses.asdict, obj))
     else:
         raw = obj
-    return json.dumps(_delete_none(raw), indent=indent)
+    return json.dumps(raw, indent=indent)
 
 
 def from_json(data: str, klass: typing.Optional[typing.Type[T]] = None) -> T:
@@ -160,7 +168,15 @@ def _field_value_from_dict(
     full_name = _join_field_path(field_path, field.name)
     field_type = field.type
     args = field.type.__args__ if hasattr(field.type, "__args__") else []
-    is_optional = len(args) == 2 and isinstance(None, args[1])  # pyre-ignore
+
+    is_optional = False
+
+    for arg in args:
+        if hasattr(arg, "__origin__"):
+            is_optional = isinstance(None, arg.__origin__)
+        else:
+            is_optional = isinstance(None, arg)
+
     if is_optional:
         field_type = args[0]
     val = obj.get(field.name)
@@ -190,37 +206,6 @@ def _field_value_from_dict(
 
 def _join_field_path(path: str, field: str) -> str:
     return f"{path}.{field}" if path else field
-
-
-def new_payment_object(
-    sender_account_id: str,
-    sender_kyc_data: KycDataObject,
-    receiver_account_id: str,
-    amount: int,
-    currency: str,
-    original_payment_reference_id: typing.Optional[str] = None,
-    description: typing.Optional[str] = None,
-) -> PaymentObject:
-    """Initialize a payment request command
-
-    returns generated reference_id and created `CommandRequestObject`
-    """
-
-    return PaymentObject(
-        reference_id=str(uuid.uuid4()),
-        sender=PaymentActorObject(
-            address=sender_account_id,
-            kyc_data=sender_kyc_data,
-            status=StatusObject(status=Status.needs_kyc_data),
-        ),
-        receiver=PaymentActorObject(
-            address=receiver_account_id,
-            status=StatusObject(status=Status.none),
-        ),
-        action=PaymentActionObject(amount=amount, currency=currency),
-        description=description,
-        original_payment_reference_id=original_payment_reference_id,
-    )
 
 
 def replace_payment_actor(
@@ -309,55 +294,83 @@ def new_get_info_request(
     )
 
 
-def new_payment_info_object(
-    reference_id: str,
-    receiver_address: str,
-    name: str,
-    legal_name: str,
-    city: str,
-    country: str,
-    line1: str,
-    line2: str,
-    postal_code: str,
-    state: str,
-    amount: int,
-    currency: str,
-    action: str,
-    timestamp: int,
-    valid_until: typing.Optional[int] = None,
-    description: typing.Optional[str] = None,
-):
-    return PaymentInfoObject(
-        receiver=PaymentReceiverObject(
-            address=receiver_address,
-            business_data=BusinessDataObject(
-                name=name,
-                legal_name=legal_name,
-                address=AddressObject(
-                    city=city,
-                    country=country,
-                    line1=line1,
-                    line2=line2,
-                    postal_code=postal_code,
-                    state=state,
-                ),
+def new_init_auth_command(
+    reference_id,
+    vasp_address,
+    sender_name,
+    sender_sure_name,
+    sender_city,
+    sender_country,
+    sender_line1,
+    sender_line2,
+    sender_postal_code,
+    sender_state,
+    sender_national_id_value,
+    sender_national_id_type,
+) -> CommandRequestObject:
+    return CommandRequestObject(
+        cid=reference_id,
+        command_type=CommandType.InitAuthorizeCommand,
+        command=InitAuthorizeCommand(
+            reference_id=reference_id,
+            sender=PaymentSenderObject.new_payment_sender_object(
+                sender_city,
+                sender_country,
+                sender_line1,
+                sender_line2,
+                sender_name,
+                sender_sure_name,
+                sender_national_id_type,
+                sender_national_id_value,
+                sender_postal_code,
+                sender_state,
+                vasp_address,
             ),
         ),
-        action=PaymentActionObject(
-            amount=amount,
-            currency=currency,
-            action=action,
-            timestamp=timestamp,
-            valid_until=valid_until,
+    )
+
+
+def new_init_charge_command(
+    reference_id,
+    vasp_address,
+    sender_name,
+    sender_sure_name,
+    sender_city,
+    sender_country,
+    sender_line1,
+    sender_line2,
+    sender_postal_code,
+    sender_state,
+    sender_national_id_value,
+    sender_national_id_type,
+) -> CommandRequestObject:
+    return CommandRequestObject(
+        cid=reference_id,
+        command_type=CommandType.InitChargePayment,
+        command=InitChargePayment(
+            reference_id=reference_id,
+            sender=PaymentSenderObject.new_payment_sender_object(
+                sender_city,
+                sender_country,
+                sender_line1,
+                sender_line2,
+                sender_name,
+                sender_sure_name,
+                sender_national_id_type,
+                sender_national_id_value,
+                sender_postal_code,
+                sender_state,
+                vasp_address,
+            ),
         ),
-        reference_id=reference_id,
-        description=description,
     )
 
 
 def reply_request(
     cid: typing.Optional[str],
-    result_object: typing.Optional[typing.Union[GetInfoCommandResponse]] = None,
+    result_object: typing.Optional[
+        typing.Union[GetInfoCommandResponse, InitChargePaymentResponse]
+    ] = None,
     err: typing.Optional[OffChainErrorObject] = None,
 ) -> CommandResponseObject:
     return CommandResponseObject(

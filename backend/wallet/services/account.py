@@ -180,7 +180,10 @@ def calc_account_balance(account_id: int, transactions: List[Transaction]) -> Ba
         if tx.destination_id == account_id and tx.status == TransactionStatus.COMPLETED:
             account_balance.total[DiemCurrency[tx.currency]] += tx.amount
         if tx.source_id == account_id:
-            if tx.status == TransactionStatus.PENDING:
+            if (
+                tx.status == TransactionStatus.PENDING
+                or tx.status == TransactionStatus.LOCKED
+            ):
                 account_balance.frozen[DiemCurrency[tx.currency]] += tx.amount
             if tx.status != TransactionStatus.CANCELED:
                 account_balance.total[DiemCurrency[tx.currency]] -= tx.amount
