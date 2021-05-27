@@ -4,11 +4,9 @@ from datetime import datetime
 from diem import txnmetadata
 from offchain import CommandRequestObject, GetInfoCommandObject
 from offchain.types import (
-    new_payment_info_object,
     GetInfoCommandResponse,
-    InitChargePayment,
     InitChargePaymentResponse,
-    InitAuthorizeCommand,
+    PaymentInfoObject,
 )
 from wallet import storage
 from wallet.services.offchain import utils
@@ -24,7 +22,7 @@ def handle_get_info_command(request: CommandRequestObject):
 
     payment_model = storage.get_payment_details(reference_id)
 
-    payment_info_object = new_payment_info_object(
+    payment_info_object = PaymentInfoObject.new_payment_info_object(
         reference_id=reference_id,
         receiver_address=payment_model.vasp_address,
         name=payment_model.merchant_name,

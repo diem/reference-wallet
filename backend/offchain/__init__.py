@@ -35,7 +35,6 @@ from .types import (
     CurrencyObject,
     FieldError,
     InvalidOverwriteError,
-    new_payment_object,
     new_payment_request,
     replace_payment_actor,
     reply_request,

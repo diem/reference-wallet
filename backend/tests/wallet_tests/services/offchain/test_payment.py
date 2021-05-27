@@ -8,11 +8,11 @@ from offchain import (
     PaymentActionObject,
     OffChainErrorObject,
     CommandResponseError,
+    AddressObject,
 )
 from offchain.types import (
     GetInfoCommandResponse,
     PaymentInfoObject,
-    new_address_object,
 )
 from offchain.types.payment_types import (
     PaymentReceiverObject,
@@ -132,7 +132,7 @@ def test_approve_payment_success(mock_method):
 
 
 def test_approve_payment_fail_because_payment_not_exist():
-    with pytest.raises(payment_service.P2MGeneralError):
+    with pytest.raises(payment_service.PaymentNotFoundError):
         payment_service.approve_payment(1, REFERENCE_ID)
 
 
@@ -166,7 +166,7 @@ def generate_success_get_info_command_response_object():
                     business_data=BusinessDataObject(
                         name=MERCHANT_NAME,
                         legal_name=MERCHANT_NAME,
-                        address=new_address_object(
+                        address=AddressObject.new_address_object(
                             city="CityOfDogs",
                             country="DG",
                             line1="Dog Street 11",
