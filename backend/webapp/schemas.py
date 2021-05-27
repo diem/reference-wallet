@@ -253,7 +253,7 @@ class GetPaymentInfoRequest(Schema):
     reference_id = fields.Str(required=True)
 
 
-class PaymentInfo(Schema):
+class Payment(Schema):
     vasp_address = fields.Str(required=True)
     reference_id = fields.Str(required=True)
     merchant_name = fields.Str(required=True)
@@ -345,7 +345,7 @@ class CreatePaymentCommand(Schema):
     expiration = fields.Int(required=True)
 
 
-class CreatePaymentAsSenderCommand(CreatePaymentCommand):
+class CreatePayment(CreatePaymentCommand):
     vasp_address = fields.Str(required=True)
     merchant_name = fields.Str(required=True)
 
@@ -353,3 +353,7 @@ class CreatePaymentAsSenderCommand(CreatePaymentCommand):
 class PreparePaymentInfoResponse(Schema):
     reference_id = fields.Str(required=True)
     address = fields.Str(required=False)
+
+
+class ApprovePaymentSchema(Schema):
+    init_offchain_required = fields.Bool(required=False, default=False)

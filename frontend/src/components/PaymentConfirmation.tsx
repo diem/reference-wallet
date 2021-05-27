@@ -57,7 +57,7 @@ function PaymentConfirmation() {
               PaymentParams.fromPaymentInfo(payment_info, paymentParams.redirectUrl)
             );
           } else {
-            await backendClient.addPaymentCommand(paymentParams);
+            await backendClient.addPayment(paymentParams);
           }
         }
       } catch (e) {

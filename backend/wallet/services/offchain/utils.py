@@ -4,7 +4,10 @@ import context
 import typing
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from diem import identifier
-from offchain.types import PaymentInfoObject
+from offchain.types import (
+    GetInfoCommandResponse,
+    InitChargePaymentResponse,
+)
 from wallet.services import kyc, account
 from wallet.storage import get_account_id_from_subaddr
 import offchain
@@ -22,9 +25,9 @@ def offchain_client() -> offchain.Client:
     return context.get().offchain_client
 
 
-def account_address_and_subaddress(account_id: str) -> Tuple[str, Optional[str]]:
+def account_address_and_subaddress(address: str) -> Tuple[str, Optional[str]]:
     account_address, sub = identifier.decode_account(
-        account_id, context.get().config.diem_address_hrp()
+        address, context.get().config.diem_address_hrp()
     )
     return account_address.to_hex(), sub.hex() if sub else None
 
@@ -64,7 +67,9 @@ def _send_kyc_data_and_recipient_signature(
 
 def jws_response(
     cid: Optional[str],
-    result_object: typing.Optional[typing.Union[PaymentInfoObject]] = None,
+    result_object: typing.Optional[
+        typing.Union[GetInfoCommandResponse, InitChargePaymentResponse]
+    ] = None,
     err: Optional[offchain.OffChainErrorObject] = None,
 ):
     code = 400 if err else 200

@@ -2,19 +2,21 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import typing
-from typing import Optional
 
 import context
 import offchain
 from offchain import CommandType
-from offchain.types import PaymentInfoObject
 from wallet.services.kyc import xstr
 from wallet.services.offchain import utils
 from wallet.services.offchain.fund_pull_pre_approval import (
     process_funds_pull_pre_approvals_requests,
     handle_fund_pull_pre_approval_command,
 )
-from wallet.services.offchain.info_command import handle_get_info_command
+from wallet.services.offchain.payment_as_receiver import (
+    handle_get_info_command,
+    handle_init_charge_command,
+    handle_init_authorize_command,
+)
 from wallet.services.offchain.payment_command import (
     process_payment_by_status,
     lock_and_save_inbound_command,
@@ -46,9 +48,13 @@ def process_inbound_command(
             request_sender_address, request_body_bytes
         )
 
-        # LRW in RECEIVER role
+        # LRW as RECEIVER
         if request.command_type == CommandType.GetInfoCommand:
             return handle_get_info_command(request)
+        elif request.command_type == CommandType.InitChargePayment:
+            return handle_init_charge_command(request)
+        elif request.command_type == CommandType.InitAuthorizeCommand:
+            return handle_init_authorize_command(request)
 
         command = utils.offchain_client().process_inbound_request(
             request, request_sender_address

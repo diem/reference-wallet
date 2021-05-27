@@ -1,15 +1,11 @@
-import uuid
 from typing import Optional, List
-from datetime import datetime
 
-import pytest
-from offchain import Status
-from flask import Response
-from flask.testing import Client
-from wallet.services.offchain import payment_command as pc_service
-from wallet.services.offchain import info_command
 import offchain
-
+import pytest
+from flask import Response
+from offchain import Status, AddressObject
+from wallet.services.offchain import payment_command as pc_service
+from werkzeug.test import Client
 
 CURRENCY = "XUS"
 ADDRESS = "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
@@ -21,34 +17,6 @@ CID = "1cea3243-4ea6-44b2-8590-ec5bf4a101b1"
 CHARGE_ACTION = "charge"
 AMOUNT = 200_000_000
 EXPIRATION = 1802010490
-
-
-@pytest.fixture
-def mock_get_payment_info_exist_object(monkeypatch):
-    def mock(
-        account_id, reference_id, vasp_address
-    ) -> Optional[info_command.PaymentInfo]:
-        return info_command.PaymentInfo(
-            vasp_address=ADDRESS,
-            reference_id=REFERENCE_ID,
-            merchant_name="Bond's Per Store",
-            action=CHARGE_ACTION,
-            currency=CURRENCY,
-            amount=AMOUNT,
-            expiration=EXPIRATION,
-        )
-
-    monkeypatch.setattr(info_command, "get_payment_info", mock)
-
-
-@pytest.fixture
-def mock_get_payment_info_not_exist_object(monkeypatch):
-    def mock(
-        account_id, reference_id, vasp_address
-    ) -> Optional[info_command.PaymentInfo]:
-        return None
-
-    monkeypatch.setattr(info_command, "get_payment_info", mock)
 
 
 @pytest.fixture
@@ -66,9 +34,9 @@ def mock_get_payment_command(monkeypatch):
                         payload_version=1,
                         given_name="Bond",
                         surname="Marton",
-                        address=offchain.AddressObject(
+                        address=AddressObject.new_address_object(
                             city="Dogcity",
-                            country="Dogland",
+                            country="DL",
                             line1="1234 Puppy Street",
                             line2="dogpalace 3",
                             postal_code="123456",
@@ -87,9 +55,9 @@ def mock_get_payment_command(monkeypatch):
                         payload_version=1,
                         given_name="Gurki",
                         surname="Silver",
-                        address=offchain.AddressObject(
+                        address=AddressObject.new_address_object(
                             city="Dogcity",
-                            country="Dogland",
+                            country="DL",
                             line1="567 Puppy Street",
                             line2="doggarden 3",
                             postal_code="123456",
@@ -150,9 +118,9 @@ def mock_get_account_payment_commands(monkeypatch):
                             payload_version=1,
                             given_name="Bond",
                             surname="Marton",
-                            address=offchain.AddressObject(
+                            address=AddressObject.new_address_object(
                                 city="Dogcity",
-                                country="Dogland",
+                                country="DL",
                                 line1="1234 Puppy Street",
                                 line2="dogpalace 3",
                                 postal_code="123456",
@@ -173,9 +141,9 @@ def mock_get_account_payment_commands(monkeypatch):
                             payload_version=1,
                             given_name="Gurki",
                             surname="Silver",
-                            address=offchain.AddressObject(
+                            address=AddressObject.new_address_object(
                                 city="Dogcity",
-                                country="Dogland",
+                                country="DL",
                                 line1="567 Puppy Street",
                                 line2="doggarden 3",
                                 postal_code="123456",
@@ -213,9 +181,9 @@ def mock_get_account_payment_commands(monkeypatch):
                             payload_version=1,
                             given_name="Bond",
                             surname="Marton",
-                            address=offchain.AddressObject(
+                            address=AddressObject.new_address_object(
                                 city="Dogcity",
-                                country="Dogland",
+                                country="DL",
                                 line1="1234 Puppy Street",
                                 line2="dogpalace 3",
                                 postal_code="123456",
@@ -236,9 +204,9 @@ def mock_get_account_payment_commands(monkeypatch):
                             payload_version=1,
                             given_name="Gurki",
                             surname="Silver",
-                            address=offchain.AddressObject(
+                            address=AddressObject.new_address_object(
                                 city="Dogcity",
-                                country="Dogland",
+                                country="DL",
                                 line1="567 Puppy Street",
                                 line2="doggarden 3",
                                 postal_code="123456",
@@ -305,38 +273,6 @@ class TestGetPaymentCommand:
         payment_object = rv.get_json()["payment"]
         assert payment_object is not None
         assert rv.get_json()["my_actor_address"] == ADDRESS
-
-
-class TestGetPaymentInfo:
-    def test_get_payment_info_exist_object(
-        self, authorized_client: Client, mock_get_payment_info_exist_object
-    ) -> None:
-        rv: Response = authorized_client.get(
-            f"/offchain/query/payment_info?reference_id={REFERENCE_ID}&vasp_address={ADDRESS}",
-        )
-
-        assert rv.status_code == 200
-        assert rv.get_data() is not None
-        assert rv.get_json()["action"] == CHARGE_ACTION
-        assert rv.get_json()["amount"] == AMOUNT
-        assert rv.get_json()["currency"] == CURRENCY
-        assert rv.get_json()["expiration"] == EXPIRATION
-        assert rv.get_json()["merchant_name"] == "Bond's Per Store"
-        assert rv.get_json()["reference_id"] == REFERENCE_ID
-        assert rv.get_json()["vasp_address"] == ADDRESS
-
-    def test_get_payment_info_not_exist_object(
-        self, authorized_client: Client, mock_get_payment_info_not_exist_object
-    ) -> None:
-        rv: Response = authorized_client.get(
-            f"/offchain/query/payment_info?reference_id={REFERENCE_ID}&vasp_address={ADDRESS}",
-        )
-
-        assert rv.status_code == 404
-        assert (
-            rv.get_json()["error"]
-            == f"Failed finding payment info for reference id {REFERENCE_ID}"
-        )
 
 
 class TestGetAccountPaymentCommands:

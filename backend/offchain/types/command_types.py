@@ -14,10 +14,13 @@ class CommandType:
     PaymentCommand = "PaymentCommand"
     FundPullPreApprovalCommand = "FundPullPreApprovalCommand"
     GetInfoCommand = "GetInfoCommand"
+    InitChargePayment = "InitChargePayment"
+    InitAuthorizeCommand = "InitAuthorizeCommand"
 
 
 class ResponseType:
     GetInfoCommandResponse = "GetInfoCommandResponse"
+    InitChargePaymentResponse = "InitChargePaymentResponse"
 
 
 class CommandResponseStatus:
@@ -94,9 +97,15 @@ class OffChainErrorType:
 
 
 # Late import to solve circular dependency and be able to list all the command types
-from .payment_types import PaymentCommandObject
+from .payment_command_types import PaymentCommandObject
 from .fund_pull_pre_approval_types import FundPullPreApprovalCommandObject
-from .info_types import GetInfoCommandObject, GetInfoCommandResponse
+from .payment_types import (
+    GetInfoCommandObject,
+    GetInfoCommandResponse,
+    InitChargePaymentResponse,
+    InitChargePayment,
+    InitAuthorizeCommand,
+)
 
 
 @dataclass(frozen=True)
@@ -110,11 +119,17 @@ class CommandRequestObject:
                 CommandType.PaymentCommand,
                 CommandType.FundPullPreApprovalCommand,
                 CommandType.GetInfoCommand,
+                CommandType.InitChargePayment,
+                CommandType.InitAuthorizeCommand,
             ]
         }
     )
     command: typing.Union[
-        PaymentCommandObject, FundPullPreApprovalCommandObject, GetInfoCommandObject
+        PaymentCommandObject,
+        FundPullPreApprovalCommandObject,
+        GetInfoCommandObject,
+        InitChargePayment,
+        InitAuthorizeCommand,
     ]
     _ObjectType: str = datafield(
         default="CommandRequestObject",
@@ -152,9 +167,9 @@ class CommandResponseObject:
             ]
         }
     )
-    result: typing.Optional[typing.Union[GetInfoCommandResponse]] = datafield(
-        default=None
-    )
+    result: typing.Optional[
+        typing.Union[GetInfoCommandResponse, InitChargePaymentResponse]
+    ] = datafield(default=None)
     # The fixed string CommandResponseObject.
     _ObjectType: str = datafield(
         default="CommandResponseObject",
