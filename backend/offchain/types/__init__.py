@@ -208,37 +208,6 @@ def _join_field_path(path: str, field: str) -> str:
     return f"{path}.{field}" if path else field
 
 
-def new_payment_object(
-    sender_account_id: str,
-    sender_kyc_data: KycDataObject,
-    receiver_account_id: str,
-    amount: int,
-    currency: str,
-    original_payment_reference_id: typing.Optional[str] = None,
-    description: typing.Optional[str] = None,
-) -> PaymentObject:
-    """Initialize a payment request command
-
-    returns generated reference_id and created `CommandRequestObject`
-    """
-
-    return PaymentObject(
-        reference_id=str(uuid.uuid4()),
-        sender=PaymentActorObject(
-            address=sender_account_id,
-            kyc_data=sender_kyc_data,
-            status=StatusObject(status=Status.needs_kyc_data),
-        ),
-        receiver=PaymentActorObject(
-            address=receiver_account_id,
-            status=StatusObject(status=Status.none),
-        ),
-        action=PaymentActionObject(amount=amount, currency=currency),
-        description=description,
-        original_payment_reference_id=original_payment_reference_id,
-    )
-
-
 def replace_payment_actor(
     actor: PaymentActorObject,
     status: typing.Optional[str] = None,
@@ -325,52 +294,6 @@ def new_get_info_request(
     )
 
 
-def new_payment_info_object(
-    reference_id: str,
-    receiver_address: str,
-    name: str,
-    legal_name: str,
-    city: str,
-    country: str,
-    line1: str,
-    line2: str,
-    postal_code: str,
-    state: str,
-    amount: int,
-    currency: str,
-    action: str,
-    timestamp: int,
-    valid_until: typing.Optional[int] = None,
-    description: typing.Optional[str] = None,
-):
-    return PaymentInfoObject(
-        receiver=PaymentReceiverObject(
-            address=receiver_address,
-            business_data=BusinessDataObject(
-                name=name,
-                legal_name=legal_name,
-                address=new_address_object(
-                    city=city,
-                    country=country,
-                    line1=line1,
-                    line2=line2,
-                    postal_code=postal_code,
-                    state=state,
-                ),
-            ),
-        ),
-        action=PaymentActionObject(
-            amount=amount,
-            currency=currency,
-            action=action,
-            timestamp=timestamp,
-            valid_until=valid_until,
-        ),
-        reference_id=reference_id,
-        description=description,
-    )
-
-
 def new_init_auth_command(
     reference_id,
     vasp_address,
@@ -384,13 +307,13 @@ def new_init_auth_command(
     sender_state,
     sender_national_id_value,
     sender_national_id_type,
-):
+) -> CommandRequestObject:
     return CommandRequestObject(
         cid=reference_id,
         command_type=CommandType.InitAuthorizeCommand,
         command=InitAuthorizeCommand(
             reference_id=reference_id,
-            sender=new_payment_sender_object(
+            sender=PaymentSenderObject.new_payment_sender_object(
                 sender_city,
                 sender_country,
                 sender_line1,
@@ -420,13 +343,13 @@ def new_init_charge_command(
     sender_state,
     sender_national_id_value,
     sender_national_id_type,
-):
+) -> CommandRequestObject:
     return CommandRequestObject(
         cid=reference_id,
         command_type=CommandType.InitChargePayment,
         command=InitChargePayment(
             reference_id=reference_id,
-            sender=new_payment_sender_object(
+            sender=PaymentSenderObject.new_payment_sender_object(
                 sender_city,
                 sender_country,
                 sender_line1,
@@ -440,84 +363,6 @@ def new_init_charge_command(
                 vasp_address,
             ),
         ),
-    )
-
-
-def new_payment_sender_object(
-    city,
-    country,
-    line1,
-    line2,
-    my_name,
-    my_sure_name,
-    national_id_type,
-    national_id_value,
-    postal_code,
-    state,
-    vasp_address,
-):
-    return PaymentSenderObject(
-        account_address=vasp_address,
-        payer_data=new_payer_data_object(
-            city,
-            country,
-            line1,
-            line2,
-            my_name,
-            my_sure_name,
-            national_id_type,
-            national_id_value,
-            postal_code,
-            state,
-        ),
-    )
-
-
-def new_payer_data_object(
-    city,
-    country,
-    line1,
-    line2,
-    my_name,
-    my_sure_name,
-    national_id_type,
-    national_id_value,
-    postal_code,
-    state,
-):
-    return PayerDataObject(
-        given_name=my_name,
-        surname=my_sure_name,
-        address=new_address_object(
-            city=city,
-            country=country,
-            line1=line1,
-            line2=line2,
-            postal_code=postal_code,
-            state=state,
-        ),
-        national_id=new_national_id_object(
-            country, national_id_type, national_id_value
-        ),
-    )
-
-
-def new_national_id_object(country, national_id_type, national_id_value):
-    return NationalIdObject(
-        id_value=national_id_value,
-        country=country,
-        type=national_id_type,
-    )
-
-
-def new_address_object(city, country, line1, line2, postal_code, state):
-    return AddressObject(
-        city=city,
-        country=country,
-        line1=line1,
-        line2=line2,
-        postal_code=postal_code,
-        state=state,
     )
 
 

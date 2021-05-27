@@ -3,6 +3,7 @@
 
 import time
 import typing
+import uuid
 
 from dataclasses import dataclass, field as datafield
 
@@ -62,6 +63,16 @@ class NationalIdObject:
     # Indicates the type of the ID
     type: typing.Optional[str] = datafield(default=None)
 
+    @staticmethod
+    def new_national_id_object(
+        country, national_id_type, national_id_value
+    ) -> "NationalIdObject":
+        return NationalIdObject(
+            id_value=national_id_value,
+            country=country,
+            type=national_id_type,
+        )
+
 
 @dataclass(frozen=True)
 class AddressObject:
@@ -77,6 +88,19 @@ class AddressObject:
     postal_code: typing.Optional[str] = datafield(default=None)
     # State, county, province, region.
     state: typing.Optional[str] = datafield(default=None)
+
+    @staticmethod
+    def new_address_object(
+        city, country, line1, line2, postal_code, state
+    ) -> "AddressObject":
+        return AddressObject(
+            city=city,
+            country=country,
+            line1=line1,
+            line2=line2,
+            postal_code=postal_code,
+            state=state,
+        )
 
 
 @dataclass(frozen=True)
@@ -146,6 +170,37 @@ class PaymentObject:
     description: typing.Optional[str] = datafield(
         default=None, metadata={"write_once": True}
     )
+
+    @staticmethod
+    def new_payment_object(
+        sender_account_id: str,
+        sender_kyc_data: KycDataObject,
+        receiver_account_id: str,
+        amount: int,
+        currency: str,
+        original_payment_reference_id: typing.Optional[str] = None,
+        description: typing.Optional[str] = None,
+    ) -> "PaymentObject":
+        """Initialize a payment request command
+
+        returns generated reference_id and created `CommandRequestObject`
+        """
+
+        return PaymentObject(
+            reference_id=str(uuid.uuid4()),
+            sender=PaymentActorObject(
+                address=sender_account_id,
+                kyc_data=sender_kyc_data,
+                status=StatusObject(status=Status.needs_kyc_data),
+            ),
+            receiver=PaymentActorObject(
+                address=receiver_account_id,
+                status=StatusObject(status=Status.none),
+            ),
+            action=PaymentActionObject(amount=amount, currency=currency),
+            description=description,
+            original_payment_reference_id=original_payment_reference_id,
+        )
 
 
 @dataclass(frozen=True)
