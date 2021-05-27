@@ -6,7 +6,7 @@ import { BlockchainTransaction, VASPAccount } from "./blockchain";
 
 export type TransactionDirection = "received" | "sent";
 
-export type TransactionStatus = "completed" | "pending" | "canceled";
+export type TransactionStatus = "completed" | "pending" | "canceled" | "locked";
 
 export interface Transaction {
   id: number;

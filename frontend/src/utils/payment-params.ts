@@ -94,7 +94,7 @@ export class PaymentParams {
       throw new PaymentParamError("checkoutDataType contains invalid value");
     }
 
-    if (action !== PaymentAction.CHARGE) {
+    if (action !== PaymentAction.CHARGE && action !== PaymentAction.AUTHORIZATION) {
       throw new PaymentParamError("action contains invalid value");
     }
 

@@ -12,7 +12,7 @@ import { Quote, QuoteAction, Rate } from "../interfaces/cico";
 import { Debt } from "../interfaces/settlement";
 import { Chain } from "../interfaces/system";
 import { Approval } from "../interfaces/approval";
-import { PaymentParams } from "../utils/payment-params";
+import { PaymentAction, PaymentParams } from "../utils/payment-params";
 import { PaymentInfo } from "../interfaces/payment_info";
 
 export default class BackendClient {
@@ -463,6 +463,36 @@ export default class BackendClient {
     }
   }
 
+  async addPayment(paymentParams: PaymentParams): Promise<void> {
+    let action;
+
+    try {
+      if (paymentParams.action !== undefined) {
+        if (paymentParams.action === PaymentAction.AUTHORIZATION) {
+          action = "auth";
+        } else {
+          action = paymentParams.action.toLowerCase();
+        }
+      }
+
+      await this.client.post(`/offchain/payment`, {
+        vasp_address: paymentParams.vaspAddress,
+        reference_id: paymentParams.referenceId,
+        merchant_name: paymentParams.merchantName,
+        action: action,
+        currency: paymentParams.currency,
+        amount: paymentParams.amount,
+        expiration:
+          paymentParams.expiration !== undefined
+            ? paymentParams.expiration!.getTime() / 1000
+            : undefined,
+      });
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
   async getPaymentInfo(reference_id: string, vasp_address: string): Promise<PaymentInfo> {
     try {
       const response = await this.client.get(
@@ -479,6 +509,17 @@ export default class BackendClient {
   async approvePaymentCommand(reference_id): Promise<void> {
     try {
       await this.client.post(`/offchain/payment_command/${reference_id}/actions/approve`);
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async approvePayment(reference_id, is_full: boolean = false): Promise<void> {
+    try {
+      await this.client.post(`/offchain/payment/${reference_id}/actions/approve`, {
+        init_offchain_required: !is_full,
+      });
     } catch (e) {
       BackendClient.handleError(e);
       throw e;

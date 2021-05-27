@@ -16,7 +16,7 @@ from wallet.services import transaction as transaction_service
 from wallet.services.transaction import get_transaction_direction, FundsTransfer
 from wallet.storage import Transaction
 from wallet.types import TransactionType, TransactionDirection, TransactionSortOption
-from webapp.routes.offchain import payment_command_to_dict
+from webapp.routes.offchain.payment_command import payment_command_to_dict
 from webapp.routes.strict_schema_view import (
     response_definition,
     path_string_param,

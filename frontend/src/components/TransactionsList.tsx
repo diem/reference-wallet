@@ -11,17 +11,27 @@ import {
   diemAmountToHumanFriendly,
 } from "../utils/amount-precision";
 import { classNames } from "../utils/class-names";
+import { TFunction } from "i18next";
 
 const STATUS_COLORS = {
   completed: "success",
   pending: "warning",
   canceled: "danger",
+  locked: "primary",
 };
 
 interface TransactionsListProps {
   transactions: Transaction[];
   onSelect?: (transaction: Transaction) => void;
   bottom?: ReactElement;
+}
+
+function getStatusTitle(t: TFunction, transaction: Transaction) {
+  if (transaction.status === "locked") {
+    return t("locked_status");
+  }
+
+  return t(transaction.direction);
 }
 
 function TransactionsList({ transactions, onSelect, bottom }: TransactionsListProps) {
@@ -69,8 +79,12 @@ function TransactionsList({ transactions, onSelect, bottom }: TransactionsListPr
               {transaction.direction === "sent" && (
                 <>
                   <span className="text-black mr-4 overflow-auto">
-                    <strong className="text-capitalize-first">{t(transaction.direction)}</strong>{" "}
-                    {t("to")} <span>{transaction.destination.full_addr}</span>
+                    <strong className="text-capitalize-first">
+                      {getStatusTitle(t, transaction)}
+                    </strong>
+                    {transaction.status !== "locked" && " " + t("to") + " "}
+                    {transaction.status === "locked" && <br />}
+                    <span>{transaction.destination.full_addr}</span>
                   </span>
 
                   <span className="text-black ml-auto text-nowrap">
