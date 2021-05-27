@@ -29,7 +29,6 @@ from .types import (
     Status,
     FieldError,
     InvalidOverwriteError,
-    new_payment_object,
     new_payment_request,
     replace_payment_actor,
     validate_write_once_fields,
@@ -56,7 +55,7 @@ class PaymentCommand(Command):
     ) -> "PaymentCommand":
         return PaymentCommand(
             my_actor_address=sender_account_id,
-            payment=new_payment_object(
+            payment=PaymentObject.new_payment_object(
                 sender_account_id,
                 sender_kyc_data,
                 receiver_account_id,

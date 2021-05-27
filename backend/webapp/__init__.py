@@ -23,7 +23,18 @@ from wallet.storage.setup import setup_wallet_storage
 from wallet.types import UsernameExistsError
 from .debug import root
 from .errors import errors
-from .routes import admin, cico, user, account, system, offchain, validation_tool
+from .routes import (
+    admin,
+    cico,
+    user,
+    account,
+    system,
+    offchain,
+    validation_tool,
+    funds_pull_pre_approval,
+    payment,
+    payment_command,
+)
 from .swagger import swagger_template
 
 
@@ -86,6 +97,9 @@ def _create_app() -> Flask:
     app.register_blueprint(admin)
     app.register_blueprint(system)
     app.register_blueprint(offchain)
+    app.register_blueprint(funds_pull_pre_approval)
+    app.register_blueprint(payment)
+    app.register_blueprint(payment_command)
     app.register_blueprint(validation_tool)
 
     # pyre-ignore[8]

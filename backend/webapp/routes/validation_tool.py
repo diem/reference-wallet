@@ -72,7 +72,7 @@ class ValidationToolRoutes:
                 HTTPStatus.OK,
             )
 
-    class PreparePaymentInfo(ValidationToolView):
+    class PreparePaymentAsReceiver(ValidationToolView):
         summary = "Create internal payment info record for testing purpose"
         parameters = [
             path_string_param(
@@ -87,7 +87,10 @@ class ValidationToolRoutes:
         }
 
         def post(self, action: str = "charge"):
-            reference_id, my_address = validation_tool_service.prepare_payment_info(
+            (
+                reference_id,
+                my_address,
+            ) = validation_tool_service.prepare_payment_as_receiver(
                 self.user.account_id, action
             )
 

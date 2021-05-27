@@ -17,7 +17,7 @@ from .models import (
     OffChainSequenceInfo,
     TransactionId,
     FundsTransfer,
-    PaymentInfo,
+    PaymentDetails,
     PreparePaymentInfoResponse,
 )
 from .models_fppa import (
@@ -128,23 +128,30 @@ class ReferenceWalletProxy:
 
         self._request_authorized("POST", "offchain/payment_command", json=request)
 
-    def get_payment_info(self, reference_id, vasp_address) -> PaymentInfo:
+    def get_payment_details(self, reference_id, vasp_address) -> PaymentDetails:
         response = self._request_authorized(
             "GET",
-            f"offchain/query/payment_info?"
+            f"offchain/query/payment_details?"
             f"vasp_address={vasp_address}&"
             f"reference_id={reference_id}",
         )
 
-        return PaymentInfo.from_json(response.text) if response.text else None
+        return PaymentDetails.from_json(response.text) if response.text else None
 
-    def prepare_payment_info(self, action: str = "charge") -> (str, str):
+    def prepare_payment_as_receiver(self, action: str = "charge") -> (str, str):
         response = self._request_authorized(
             "POST", f"/validation/payment_info/{action}"
         )
         response_object = PreparePaymentInfoResponse.from_json(response.text)
 
         return response_object.reference_id, response_object.address
+
+    def approve_payment(self, reference_id: str, init_offchain: bool):
+        self._request_authorized(
+            "POST",
+            f"/offchain/payment/{reference_id}/actions/approve",
+            json={"init_offchain_required": init_offchain},
+        )
 
     def approve_payment_command(self, reference_id):
         self._request_authorized(

@@ -1,8 +1,6 @@
-import uuid
-
 import context
 from diem import identifier
-from offchain import Status
+from offchain import Status, AddressObject
 from diem_utils.types.currencies import DiemCurrency
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from tests.wallet_tests.resources.seeds.payment_command_seeder import (
@@ -12,9 +10,8 @@ from wallet.services.offchain import payment_command as pc_service
 from wallet.storage import db_session, TransactionStatus
 from wallet import storage
 from wallet.storage.models import PaymentCommand as PaymentCommandModel
-from datetime import datetime, timedelta
+from datetime import datetime
 import offchain
-from typing import List
 import time
 
 CREATED_AT = int(time.time())
@@ -79,27 +76,27 @@ def test_payment_command_to_model():
                     payload_version=1,
                     given_name="Bond",
                     surname="Marton",
-                    address=offchain.AddressObject(
+                    address=AddressObject.new_address_object(
                         city="CityOfDogs",
-                        country="DogsCountry",
+                        country="DG",
                         line1="Dog Street 11",
                         line2="",
                         postal_code="123456",
                         state="DogsState",
                     ),
                     dob="2010-01-21",
-                    place_of_birth=offchain.AddressObject(
+                    place_of_birth=AddressObject.new_address_object(
                         city="CityOfPuppies",
-                        country="PuppiesCountry",
+                        country="PC",
                         line1="Puppy Street 1",
                         line2="",
                         postal_code="34567",
                         state="PuppiesState",
                     ),
                     national_id=offchain.NationalIdObject(
-                        id_value="234121234",
-                        country="DogsCountry",
-                        type="",
+                        id_value="123-45-6789",
+                        country="DG",
+                        type="SSN",
                     ),
                     legal_entity_name="Prince Bond",
                 ),
@@ -114,27 +111,27 @@ def test_payment_command_to_model():
                     payload_version=1,
                     given_name="Gurki",
                     surname="Marton",
-                    address=offchain.AddressObject(
+                    address=AddressObject.new_address_object(
                         city="CityOfDogs",
-                        country="DogsCountry",
+                        country="DG",
                         line1="Dog Street 11",
                         line2="",
                         postal_code="123456",
                         state="DogsState",
                     ),
                     dob="2011-11-11",
-                    place_of_birth=offchain.AddressObject(
+                    place_of_birth=AddressObject.new_address_object(
                         city="CityOfPuppies",
-                        country="PuppiesCountry",
+                        country="PC",
                         line1="Puppy Street 1",
                         line2="",
                         postal_code="34567",
                         state="PuppiesState",
                     ),
                     national_id=offchain.NationalIdObject(
-                        id_value="234121234",
-                        country="DogsCountry",
-                        type="",
+                        id_value="123-45-6789",
+                        country="DG",
+                        type="SSN",
                     ),
                     legal_entity_name="Prince Bond",
                 ),
