@@ -46,7 +46,7 @@ def deserialize_string(msg: bytes) -> typing.Tuple[str, bytes, bytes]:
         )
 
     header, body, sig = parts
-    if header.encode(ENCODING) != PROTECTED_HEADER:
+    if header.encode(ENCODING)["alg"] != PROTECTED_HEADER["alg"]:
         raise ValueError(
             f"invalid JWS message header: {header}, expect {PROTECTED_HEADER}"
         )
