@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import dataclasses
-import math
 import requests
 import typing
 import uuid
@@ -145,6 +144,7 @@ class Client:
             headers={
                 http_header.X_REQUEST_ID: str(uuid.uuid4()),
                 http_header.X_REQUEST_SENDER_ADDRESS: request_sender_address,
+                "Content-Type": "text/plain; charset=UTF-8",
             },
             timeout=self.timeout,
         )
