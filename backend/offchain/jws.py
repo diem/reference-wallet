@@ -6,7 +6,11 @@ import base64, typing
 from . import CommandRequestObject, CommandResponseObject, to_json, from_json
 
 
-PROTECTED_HEADER: bytes = base64.urlsafe_b64encode(b'{"alg":"EdDSA"}')
+def base64url_encode(json):
+    return base64.urlsafe_b64encode(json).rstrip(b"=")
+
+
+PROTECTED_HEADER: bytes = base64url_encode(b'{"alg":"EdDSA"}')
 ENCODING: str = "UTF-8"
 
 T = typing.TypeVar("T")
@@ -31,9 +35,9 @@ def deserialize(
 
 
 def serialize_string(json: str, sign: typing.Callable[[bytes], bytes]) -> bytes:
-    payload = base64.urlsafe_b64encode(json.encode(ENCODING))
+    payload = base64url_encode(json.encode(ENCODING))
     msg = signing_message(payload)
-    return b".".join([msg, base64.urlsafe_b64encode(sign(msg))])
+    return b".".join([msg, base64url_encode(sign(msg))])
 
 
 def deserialize_string(msg: bytes) -> typing.Tuple[str, bytes, bytes]:
