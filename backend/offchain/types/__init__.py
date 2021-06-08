@@ -35,7 +35,7 @@ from .fund_pull_pre_approval_types import (
     FundPullPreApprovalCommandObject,
 )
 from .payment_types import (
-    GetInfoCommandObject,
+    GetPaymentInfo,
     GetInfoCommandResponse,
     PaymentInfoObject,
     PaymentReceiverObject,
@@ -76,7 +76,7 @@ _OBJECT_TYPES: typing.Dict[str, typing.Any] = {
     "CommandRequestObject": CommandRequestObject,
     CommandType.PaymentCommand: PaymentCommandObject,
     CommandType.FundPullPreApprovalCommand: FundPullPreApprovalCommandObject,
-    CommandType.GetInfoCommand: GetInfoCommandObject,
+    CommandType.GetPaymentInfo: GetPaymentInfo,
     CommandType.InitChargePayment: InitChargePayment,
     CommandType.InitAuthorizeCommand: InitAuthorizeCommand,
     ResponseType.GetInfoCommandResponse: GetInfoCommandResponse,
@@ -286,9 +286,9 @@ def new_get_info_request(
 ) -> CommandRequestObject:
     return CommandRequestObject(
         cid=cid or reference_id or str(uuid.uuid4()),
-        command_type=CommandType.GetInfoCommand,
-        command=GetInfoCommandObject(
-            _ObjectType=CommandType.GetInfoCommand,
+        command_type=CommandType.GetPaymentInfo,
+        command=GetPaymentInfo(
+            _ObjectType=CommandType.GetPaymentInfo,
             reference_id=reference_id,
         ),
     )

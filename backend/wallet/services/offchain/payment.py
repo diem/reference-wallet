@@ -9,7 +9,6 @@ from offchain import (
 )
 from offchain.types import (
     new_get_info_request,
-    GetInfoCommandResponse,
     new_init_charge_command,
     new_init_auth_command,
     InitChargePaymentResponse,
