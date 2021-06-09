@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import base64, typing
+import json
 
 from . import CommandRequestObject, CommandResponseObject, to_json, from_json
 
@@ -34,9 +35,9 @@ def deserialize(
     return from_json(decoded_body, klass)
 
 
-def serialize_string(json: str, sign: typing.Callable[[bytes], bytes]) -> bytes:
-    payload = base64url_encode(json.encode(ENCODING))
-    msg = signing_message(payload)
+def serialize_string(string: str, sign: typing.Callable[[bytes], bytes]) -> bytes:
+    payload = base64url_encode(string.encode(ENCODING))
+    msg = signing_message(payload, PROTECTED_HEADER)
     return b".".join([msg, base64url_encode(sign(msg))])
 
 
@@ -50,21 +51,24 @@ def deserialize_string(msg: bytes) -> typing.Tuple[str, bytes, bytes]:
         )
 
     header, body, sig = parts
-    if header.encode(ENCODING)["alg"] != PROTECTED_HEADER["alg"]:
+    if (
+        json.loads(decode(header.encode(ENCODING)).decode(ENCODING))["alg"]
+        != json.loads(decode(PROTECTED_HEADER).decode(ENCODING))["alg"]
+    ):
         raise ValueError(
-            f"invalid JWS message header: {header}, expect {PROTECTED_HEADER}"
+            f"invalid JWS message header: {header}, header must contain {PROTECTED_HEADER}"
         )
 
     body_bytes = body.encode(ENCODING)
     return (
         decode(body_bytes).decode(ENCODING),
         decode(sig.encode(ENCODING)),
-        signing_message(body_bytes),
+        signing_message(body_bytes, header.encode(ENCODING)),
     )
 
 
-def signing_message(payload: bytes) -> bytes:
-    return b".".join([PROTECTED_HEADER, payload])
+def signing_message(payload: bytes, header: bytes) -> bytes:
+    return b".".join([header, payload])
 
 
 def decode(msg: bytes) -> bytes:
