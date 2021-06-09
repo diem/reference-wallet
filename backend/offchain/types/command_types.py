@@ -16,6 +16,8 @@ class CommandType:
     GetPaymentInfo = "GetPaymentInfo"
     InitChargePayment = "InitChargePayment"
     InitAuthorizeCommand = "InitAuthorizeCommand"
+    InitChargePayment = "InitChargePayment"
+    InitAuthorizeCommand = "InitAuthorizeCommand"
 
 
 class ResponseType:
@@ -119,6 +121,8 @@ class CommandRequestObject:
                 CommandType.PaymentCommand,
                 CommandType.FundPullPreApprovalCommand,
                 CommandType.GetPaymentInfo,
+                CommandType.InitChargePayment,
+                CommandType.InitAuthorizeCommand,
                 CommandType.InitChargePayment,
                 CommandType.InitAuthorizeCommand,
             ]

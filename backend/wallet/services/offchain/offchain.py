@@ -55,6 +55,10 @@ def process_inbound_command(
             return handle_init_charge_command(request)
         elif request.command_type == CommandType.InitAuthorizeCommand:
             return handle_init_authorize_command(request)
+        elif request.command_type == CommandType.InitChargePayment:
+            return handle_init_charge_command(request)
+        elif request.command_type == CommandType.InitAuthorizeCommand:
+            return handle_init_authorize_command(request)
 
         command = utils.offchain_client().process_inbound_request(
             request, request_sender_address
