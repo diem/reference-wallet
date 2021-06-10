@@ -13,7 +13,7 @@ from wallet.services.offchain.fund_pull_pre_approval import (
     handle_fund_pull_pre_approval_command,
 )
 from wallet.services.offchain.payment_as_receiver import (
-    handle_get_info_command,
+    handle_get_payment_info_incoming_request,
     handle_init_charge_command,
     handle_init_authorize_command,
 )
@@ -49,8 +49,12 @@ def process_inbound_command(
         )
 
         # LRW as RECEIVER
-        if request.command_type == CommandType.GetInfoCommand:
-            return handle_get_info_command(request)
+        if request.command_type == CommandType.GetPaymentInfo:
+            return handle_get_payment_info_incoming_request(request)
+        elif request.command_type == CommandType.InitChargePayment:
+            return handle_init_charge_command(request)
+        elif request.command_type == CommandType.InitAuthorizeCommand:
+            return handle_init_authorize_command(request)
         elif request.command_type == CommandType.InitChargePayment:
             return handle_init_charge_command(request)
         elif request.command_type == CommandType.InitAuthorizeCommand:
