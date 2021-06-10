@@ -13,7 +13,9 @@ UUID_REGEX: typing.Pattern[str] = re.compile(
 class CommandType:
     PaymentCommand = "PaymentCommand"
     FundPullPreApprovalCommand = "FundPullPreApprovalCommand"
-    GetInfoCommand = "GetInfoCommand"
+    GetPaymentInfo = "GetPaymentInfo"
+    InitChargePayment = "InitChargePayment"
+    InitAuthorizeCommand = "InitAuthorizeCommand"
     InitChargePayment = "InitChargePayment"
     InitAuthorizeCommand = "InitAuthorizeCommand"
 
@@ -100,7 +102,7 @@ class OffChainErrorType:
 from .payment_command_types import PaymentCommandObject
 from .fund_pull_pre_approval_types import FundPullPreApprovalCommandObject
 from .payment_types import (
-    GetInfoCommandObject,
+    GetPaymentInfo,
     GetInfoCommandResponse,
     InitChargePaymentResponse,
     InitChargePayment,
@@ -118,7 +120,9 @@ class CommandRequestObject:
             "valid-values": [
                 CommandType.PaymentCommand,
                 CommandType.FundPullPreApprovalCommand,
-                CommandType.GetInfoCommand,
+                CommandType.GetPaymentInfo,
+                CommandType.InitChargePayment,
+                CommandType.InitAuthorizeCommand,
                 CommandType.InitChargePayment,
                 CommandType.InitAuthorizeCommand,
             ]
@@ -127,7 +131,7 @@ class CommandRequestObject:
     command: typing.Union[
         PaymentCommandObject,
         FundPullPreApprovalCommandObject,
-        GetInfoCommandObject,
+        GetPaymentInfo,
         InitChargePayment,
         InitAuthorizeCommand,
     ]
