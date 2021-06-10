@@ -6,11 +6,11 @@ from .payment_command_types import AddressObject, PaymentActionObject, NationalI
 
 
 @dataclass(frozen=True)
-class GetInfoCommandObject:
+class GetPaymentInfo:
     reference_id: str
     _ObjectType: str = datafield(
-        default=CommandType.GetInfoCommand,
-        metadata={"valid-values": [CommandType.GetInfoCommand]},
+        default=CommandType.GetPaymentInfo,
+        metadata={"valid-values": [CommandType.GetPaymentInfo]},
     )
 
 

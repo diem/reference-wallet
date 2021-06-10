@@ -2,7 +2,7 @@ import typing
 from datetime import datetime
 
 from diem import txnmetadata
-from offchain import CommandRequestObject, GetInfoCommandObject
+from offchain import CommandRequestObject, GetPaymentInfo
 from offchain.types import (
     GetInfoCommandResponse,
     InitChargePaymentResponse,
@@ -12,11 +12,11 @@ from wallet import storage
 from wallet.services.offchain import utils
 
 
-def handle_get_info_command(request: CommandRequestObject):
+def handle_get_payment_info_incoming_request(request: CommandRequestObject):
     # The get_info command arrive only when LRW playing the Merchant\Receiver role in the communication,
     # and therefore we can assume that the payment info already been saved in DB
     # and the missing data we can mock
-    get_info_command_object = typing.cast(GetInfoCommandObject, request.command)
+    get_info_command_object = typing.cast(GetPaymentInfo, request.command)
 
     reference_id = get_info_command_object.reference_id
 
