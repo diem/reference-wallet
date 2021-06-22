@@ -375,6 +375,7 @@ class DiemReferenceWallet(Deployment):
             db_name=db_name,
             db_username='drwuser',
             db_password=db_password,
+            namespace=self.env_prefix,
         )
 
     def _deploy(self):
