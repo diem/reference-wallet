@@ -79,8 +79,6 @@ _OBJECT_TYPES: typing.Dict[str, typing.Any] = {
     CommandType.GetPaymentInfo: GetPaymentInfo,
     CommandType.InitChargePayment: InitChargePayment,
     CommandType.InitAuthorizeCommand: InitAuthorizeCommand,
-    CommandType.InitChargePayment: InitChargePayment,
-    CommandType.InitAuthorizeCommand: InitAuthorizeCommand,
     ResponseType.GetInfoCommandResponse: GetInfoCommandResponse,
     ResponseType.InitChargePaymentResponse: InitChargePaymentResponse,
 }
