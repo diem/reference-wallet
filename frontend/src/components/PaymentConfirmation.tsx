@@ -57,14 +57,14 @@ function PaymentConfirmation() {
             let payment_info;
 
             while (!payment_info) {
-              payment_info = await backendClient.getPaymentInfo(
+              payment_info = await backendClient.getPaymentDetails(
                 paymentParams.referenceId,
                 paymentParams.vaspAddress
               );
             }
 
             setPaymentParams(
-              PaymentParams.fromPaymentInfo(payment_info, paymentParams.redirectUrl)
+              PaymentParams.fromPaymentDetails(payment_info, paymentParams.redirectUrl)
             );
           } else {
             await backendClient.addPayment(paymentParams);
