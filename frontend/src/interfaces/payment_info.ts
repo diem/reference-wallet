@@ -1,4 +1,4 @@
-export interface PaymentDetails {
+export interface PaymentInfo {
   action: string;
   amount: number;
   currency: string;
