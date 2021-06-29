@@ -8,11 +8,11 @@
     "merchant": "Merchant",
     "receiver": "Receiver",
     "expiration": "Expiration",
-    "referenceId": "Reference Id",
+    "reference_id": "Reference Id",
     "approve": "Approve",
     "reject": "Reject",
     "close": "All Good, back to merchant",
-    "invalidPayment": "Invalid payment request.",
+    "invalid_payment": "Invalid payment request.",
     "processing": "Processing"
   }
 }

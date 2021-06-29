@@ -109,7 +109,7 @@ function PaymentConfirmationModal({
               <p className="text-black">{paymentParams.merchantName}</p>
             </div>
             <div>
-              <small>{t("confirmation.referenceId")}</small>
+              <small>{t("confirmation.reference_id")}</small>
               <p className="text-black">{paymentParams.referenceId}</p>
             </div>
             <div>
