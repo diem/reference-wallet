@@ -88,7 +88,7 @@ function PaymentConfirmation() {
         fade={false}
         className="my-5"
       >
-        {t("confirmation.invalidPayment")}
+        {t("confirmation.invalid_payment")}
       </Alert>
 
       {!!queryString && !!paymentParams && (
