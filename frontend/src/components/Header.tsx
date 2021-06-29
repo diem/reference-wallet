@@ -16,7 +16,7 @@ const Header = () => {
     <>
       <header className="fixed-top d-inline-flex justify-content-between align-items-center">
         <div className="small">
-          {t("actions.runningOn")} <strong className="text-capitalize">{settings.network}</strong>
+          {t("actions.running_on")} <strong className="text-capitalize">{settings.network}</strong>
         </div>
         <div className="logo">
           <Link to="/">

@@ -25,7 +25,7 @@ function PaymentConfirmation() {
     history.push("/");
   };
 
-  const handleBackToMerchant = () => {
+  const handleRedirect = () => {
     setShowError(false);
     if (!!paymentParams && paymentParams.redirectUrl !== undefined) {
       let redirect = paymentParams.redirectUrl;
@@ -96,7 +96,7 @@ function PaymentConfirmation() {
           open={!!paymentParams}
           paymentParams={paymentParams}
           onClose={onPaymentRequestHandlingComplete}
-          backToMerchant={handleBackToMerchant}
+          redirect={handleRedirect}
         />
       )}
     </>
