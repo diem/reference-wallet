@@ -15,7 +15,8 @@
     "send": "Send",
     "request": "Request",
     "transfer": "Transfer",
-    "settings": "Settings"
+    "settings": "Settings",
+    "runningOn": "Runnin on"
   },
   "verification_pending": {
     "title": "Verification Pending",

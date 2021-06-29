@@ -30,3 +30,6 @@ build
 
 # CocoaPods
 /ios/Pods/
+
+backend/.eggs/
+backend/pyproject.toml

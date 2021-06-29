@@ -1,6 +1,8 @@
 {
   "confirmation": {
     "title": "Payment Awaiting Approval",
+    "titlePaymentApproved": "Payment Approved!",
+    "paymentApproved": "Your payment to {{amount}} was completed successfully. You can now safely return to the merchant website",
     "summary": "Do you approve payment of {{amount}} {{currency}} to {{merchant}}?",
     "amount": "Amount",
     "merchant": "Merchant",

@@ -1,7 +1,7 @@
 // Copyright (c) The Diem Core Contributors
 // SPDX-License-Identifier: Apache-2.0
 import { parse as uuidParse, stringify as uuidStringify } from "uuid";
-import { PaymentDetails } from "../interfaces/payment_details";
+import { PaymentInfo } from "../interfaces/payment_info";
 
 export class PaymentParamError extends Error {}
 
@@ -130,7 +130,7 @@ export class PaymentParams {
     return value;
   }
 
-  static fromPaymentDetails(paymentInfo: PaymentDetails, redirectUrl?: string) {
+  static fromPaymentInfo(paymentInfo: PaymentInfo, redirectUrl?: string) {
     return new PaymentParams(
       true,
       paymentInfo.vasp_address,

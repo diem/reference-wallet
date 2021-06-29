@@ -1,13 +1,18 @@
 {
   "confirmation": {
     "title": "Payment Awaiting Approval",
+    "titlePaymentApproved": "Payment Approved!",
+    "paymentApproved": "Your payment to {{merchant}} was completed successfully. You can now safely return to the merchant website",
     "summary": "Do you approve payment of {{amount}} {{currency}} to {{merchant}}?",
     "amount": "Amount",
     "merchant": "Merchant",
     "receiver": "Receiver",
     "expiration": "Expiration",
+    "referenceId": "Reference Id",
     "approve": "Approve",
     "reject": "Reject",
-    "close": "Close"
+    "close": "All Good, back to merchant",
+    "invalidPayment": "Invalid payment request.",
+    "processing": "Processing"
   }
 }
