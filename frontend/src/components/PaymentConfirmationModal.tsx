@@ -14,13 +14,13 @@ interface PaymentConfirmationProps {
   open: boolean;
   onClose: () => void;
   paymentParams: PaymentParams;
-  backToMerchant: () => void;
+  redirect: () => void;
 }
 
 function PaymentConfirmationModal({
   open,
   onClose,
-  backToMerchant,
+  redirect,
   paymentParams,
 }: PaymentConfirmationProps) {
   const { t } = useTranslation("payment");
@@ -66,7 +66,7 @@ function PaymentConfirmationModal({
         <CloseButton onClick={onClose} />
         {submitStatus === "edit" && <h4 style={{ fontWeight: 500 }}>{t("confirmation.title")}</h4>}
         {submitStatus === "success" && (
-          <h3 style={{ fontWeight: 500 }}>{t("confirmation.titlePaymentApproved")}</h3>
+          <h3 style={{ fontWeight: 500 }}>{t("confirmation.title_payment_approved")}</h3>
         )}
         {!paymentParams.isFull && (
           <div className="d-flex justify-content-center my-5">
@@ -142,14 +142,14 @@ function PaymentConfirmationModal({
         {paymentParams.isFull && submitStatus === "success" && (
           <>
             <p>
-              {t("confirmation.paymentApproved", {
+              {t("confirmation.payment_approved", {
                 replace: {
                   merchant: paymentParams.merchantName,
                 },
               })}
             </p>
             {submitStatus === "success" && (
-              <Button outline color="black" block onClick={backToMerchant}>
+              <Button outline color="black" block onClick={redirect}>
                 {t("confirmation.close")}
               </Button>
             )}
