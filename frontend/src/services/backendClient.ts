@@ -493,10 +493,10 @@ export default class BackendClient {
     }
   }
 
-  async getPaymentDetails(reference_id: string, vasp_address: string): Promise<PaymentDetails> {
+  async getPaymentDetails(reference_id: string, vasp_address: string, demo: boolean): Promise<PaymentDetails> {
     try {
       const response = await this.client.get(
-        `/offchain/query/payment_details?vasp_address=${vasp_address}&reference_id=${reference_id}`
+        `/offchain/query/payment_details?vasp_address=${vasp_address}&reference_id=${reference_id}&demo=${demo}`
       );
 
       return response.data;

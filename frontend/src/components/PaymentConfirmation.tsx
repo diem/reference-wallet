@@ -59,7 +59,8 @@ function PaymentConfirmation() {
             while (!payment_details) {
               payment_details = await backendClient.getPaymentDetails(
                 paymentParams.referenceId,
-                paymentParams.vaspAddress
+                paymentParams.vaspAddress,
+                !!paymentParams.demo
               );
             }
 
