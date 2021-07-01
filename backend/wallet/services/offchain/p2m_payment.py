@@ -45,7 +45,7 @@ class PaymentNotFoundError(Exception):
 
 def get_payment_details(
     account_id: int, reference_id: str, vasp_address: str
-):
+, demo: bool):
     payment_model = storage.get_payment_details(reference_id)
 
     if payment_model is None:
@@ -73,7 +73,8 @@ def get_payment_details(
                     action=action_object.action,
                     currency=action_object.currency,
                     amount=action_object.amount,
-                    expiration=datetime.fromtimestamp(action_object.valid_until)
+                    expiration=datetime.fromtimestamp(action_object.valid_until),
+                    demo=demo
                     if action_object.valid_until
                     else None,
                 )
@@ -89,7 +90,8 @@ def get_payment_details(
         action=payment_model.action,
         currency=payment_model.currency,
         amount=payment_model.amount,
-        expiration=int(datetime.timestamp(payment_model.expiration))
+        expiration=int(datetime.timestamp(payment_model.expiration)),
+        demo=payment_model.demo
         if payment_model.expiration
         else None,
     )
@@ -115,6 +117,7 @@ def add_new_payment(
         currency=currency,
         amount=amount,
         expiration=datetime.fromtimestamp(expiration) if expiration else None,
+        demo=demo,
     )
 
     save_payment(payment_command)
