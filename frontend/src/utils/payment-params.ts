@@ -25,7 +25,8 @@ export class PaymentParams {
     readonly currency?: string,
     readonly amount?: number,
     readonly expiration?: Date,
-    readonly redirectUrl?: string
+    readonly redirectUrl?: string,
+    readonly demo?: boolean,
   ) {}
 
   public static fromUrlQueryString(queryString: string): PaymentParams {
@@ -33,12 +34,14 @@ export class PaymentParams {
 
     const vaspAddress = PaymentParams.getParam(params, "vaspAddress");
     const referenceId = PaymentParams.getParam(params, "referenceId");
+    const demo = PaymentParams.isDemo(params, "demo");
 
     if (Array.from(params).length === 2) {
       return new PaymentParams(
         false,
         vaspAddress,
         referenceId,
+        undefined,
         undefined,
         undefined,
         undefined,
@@ -68,7 +71,8 @@ export class PaymentParams {
         undefined,
         undefined,
         undefined,
-        redirectUrl
+        redirectUrl,
+        undefined
       );
     }
 
@@ -118,7 +122,8 @@ export class PaymentParams {
       currency,
       amount,
       new Date(expiration),
-      redirectUrl
+      redirectUrl,
+      demo
     );
   }
 
@@ -128,6 +133,18 @@ export class PaymentParams {
       throw new PaymentParamError(`Parameter ${paramName} not found in the URL query string`);
     }
     return value;
+  }
+
+  private static isDemo(searchParams: URLSearchParams, paramName: string): boolean {
+    if (searchParams.has(paramName)){
+      const value = searchParams.get(paramName);
+      if (value?.toLowerCase() !== "true" && value?.toLowerCase() !== "false") {
+        throw new PaymentParamError("demo should be a boolean");
+      }
+      return true;
+    } else {
+      return false
+    }
   }
 
   static fromPaymentDetails(paymentInfo: PaymentDetails, redirectUrl?: string) {

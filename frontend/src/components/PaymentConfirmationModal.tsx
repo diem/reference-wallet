@@ -45,7 +45,9 @@ function PaymentConfirmationModal({
   }, []);
 
   const onConfirm = async () => {
-    await new BackendClient().approvePayment(paymentParams.referenceId, paymentParams.isFull);
+    if (!paymentParams.demo){
+      await new BackendClient().approvePayment(paymentParams.referenceId, paymentParams.isFull);
+    }
     setSubmitStatus("sending");
     setTimeout(() => {
       setSubmitStatus("success");
@@ -89,7 +91,7 @@ function PaymentConfirmationModal({
               <Col xs="1">
                 <img
                   src={require("../assets/img/logo.svg")}
-                  alt={t("name")}
+                  alt={t("confirmation.store_name")}
                   width={30}
                   height={30}
                 />
@@ -133,7 +135,7 @@ function PaymentConfirmationModal({
                   t("confirmation.approve")
                 )}
               </Button>
-              <Button outline color="black" block onClick={onReject}>
+              <Button outline color="black" block onClick={onReject} disabled={submitStatus==="sending"}>
                 {t("confirmation.reject")}
               </Button>
             </>

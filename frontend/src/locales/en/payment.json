@@ -13,6 +13,7 @@
     "reject": "Reject",
     "close": "All Good, back to merchant",
     "invalid_payment": "Invalid payment request.",
-    "processing": "Processing"
+    "processing": "Processing",
+    "store_name": "Store Name"
   }
 }
