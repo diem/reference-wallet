@@ -9,9 +9,12 @@ import typing
 
 
 class Command(ABC):
+    """Command defines common interface for all commands """
+
     @abstractmethod
     def id(self) -> str:
         """Returns cid of command object"""
+        ...
 
     def command_type(self) -> str:
         ...

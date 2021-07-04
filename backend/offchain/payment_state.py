@@ -1,20 +1,10 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-import typing
-from enum import Enum
+""" This module defines states of `PaymentCommand` / `PaymentObject` for validating transitions
+when an actor tries to update the `PaymentObject`.
+"""
 
-from .action import Action
-from .state import (
-    Field,
-    Machine,
-    State,
-    Value,
-    build_machine,
-    new_transition,
-    require,
-    OneOfValues,
-)
 from .types import (
     StatusObject,
     Status,
@@ -22,6 +12,19 @@ from .types import (
     PaymentObject,
     KycDataObject,
 )
+from .state import (
+    Field,
+    Machine,
+    State,
+    Value,
+    build_machine,
+    new_transition,
+    require, OneOfValues,
+)
+from .action import Action
+from enum import Enum
+
+import typing
 
 
 class Actor(Enum):
@@ -111,6 +114,7 @@ R_SEND: State[PaymentObject] = State(
     ),
 )
 
+
 MACHINE: Machine[PaymentObject] = build_machine(
     [
         new_transition(S_INIT, R_SEND),
@@ -120,13 +124,16 @@ MACHINE: Machine[PaymentObject] = build_machine(
         new_transition(R_SEND, S_ABORT),
         new_transition(R_SEND, S_SOFT),
         new_transition(R_SOFT, S_SOFT_SEND),
+        new_transition(R_SOFT, S_ABORT),
         new_transition(S_SOFT_SEND, R_ABORT),
         new_transition(S_SOFT_SEND, R_SEND),
         new_transition(S_SOFT, R_SOFT_SEND),
+        new_transition(S_SOFT, R_ABORT),
         new_transition(R_SOFT_SEND, S_ABORT),
         new_transition(R_SOFT_SEND, READY),
     ]
 )
+
 
 FOLLOW_UP: typing.Dict[
     State[PaymentObject], typing.Optional[typing.Tuple[Actor, Action]]
@@ -154,6 +161,8 @@ def trigger_actor(state: State[PaymentObject]) -> Actor:
 def follow_up_action(
     actor: Actor, state: State[PaymentObject]
 ) -> typing.Optional[Action]:
+    """For the given actor and state, returns following up action"""
+
     followup = FOLLOW_UP[state]
     if not followup:
         return None
@@ -171,6 +180,18 @@ def summary(
         None,
     ]
 ) -> str:
+    """summary returns a short summary string for a `PaymentObject`.
+
+    flags:
+
+    - `-`: value is not exist or not set
+    - `s`: status is set
+    - `k`: KYC data object is set
+    - `+`: additional KYC data is set
+    - `_`: flags connector
+    - `?`: unknown data
+    """
+
     if obj is None:
         return "-"
     if isinstance(obj, str):

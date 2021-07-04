@@ -1,6 +1,12 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
+""" This module defines off-chain protocol data structures and PaymentCommand data structures.
+
+It also defines `to_json` and `from_json` functions for serializing objects to json string for sending
+out command and deserializing objects from json string for processing inbound request command.
+"""
+
 from .command_types import (
     OffChainErrorType,
     ErrorCode,
@@ -8,6 +14,9 @@ from .command_types import (
     OffChainErrorObject,
     CommandRequestObject,
     CommandResponseStatus,
+    ReferenceIDCommandObject,
+    ReferenceIDCommandResultObject,
+    UUID_REGEX,
     ResponseType,
 )
 from .payment_command_types import (
@@ -87,13 +96,17 @@ _OBJECT_TYPE_FIELD_NAME = "_ObjectType"
 
 
 def to_json(obj: T, indent: typing.Optional[int] = None) -> str:
+    return json.dumps(to_dict(obj), indent=indent)
+
+
+def to_dict(obj: T) -> typing.Dict[str, typing.Any]:
     if dataclasses.is_dataclass(obj):
         raw = dataclasses.asdict(obj)
     elif isinstance(obj, list):
         raw = list(map(dataclasses.asdict, obj))
     else:
         raw = obj
-    return json.dumps(raw, indent=indent)
+    return _delete_none(raw)
 
 
 def from_json(data: str, klass: typing.Optional[typing.Type[T]] = None) -> T:
@@ -101,7 +114,7 @@ def from_json(data: str, klass: typing.Optional[typing.Type[T]] = None) -> T:
 
 
 def from_dict(
-    obj: typing.Any, klass: typing.Optional[typing.Type[T]], field_path: str = ""
+    obj: typing.Any, klass: typing.Optional[typing.Type[T]] = None, field_path: str = ""
 ) -> T:  # pyre-ignore
     if klass is None or _is_union(klass):
         if not isinstance(obj, dict):
@@ -147,10 +160,11 @@ def _from_dict(
         return obj
 
     unknown_fields = list(obj.keys())
+    fields = {}
     for field in dataclasses.fields(klass):
         if field.name in unknown_fields:
             unknown_fields.remove(field.name)
-        obj[field.name] = _field_value_from_dict(field, obj, field_path)
+        fields[field.name] = _field_value_from_dict(field, obj, field_path)
 
     if len(unknown_fields) > 0:
         unknown_fields.sort()
@@ -159,7 +173,7 @@ def _from_dict(
         raise FieldError(
             ErrorCode.unknown_field, full_name, f"{field_path}: {field_names}"
         )
-    return klass(**obj)
+    return klass(**fields)
 
 
 def _field_value_from_dict(
@@ -195,7 +209,11 @@ def _field_value_from_dict(
                 full_name,
                 f"expect one of {valid_values}, but got: {val}",
             )
-        if isinstance(valid_values, re.Pattern) and not valid_values.match(val):
+        if (
+            isinstance(val, str)
+            and isinstance(valid_values, re.Pattern)
+            and not valid_values.match(val)
+        ):
             raise FieldError(
                 ErrorCode.invalid_field_value,
                 full_name,
@@ -259,11 +277,14 @@ def new_payment_request(
     return CommandRequestObject(
         cid=cid or str(uuid.uuid4()),
         command_type=CommandType.PaymentCommand,
-        command=PaymentCommandObject(
-            _ObjectType=CommandType.PaymentCommand,
-            payment=payment,
+        command=to_dict(
+            PaymentCommandObject(
+                _ObjectType=CommandType.PaymentCommand,
+                payment=payment,
+            )
         ),
     )
+
 
 
 def new_funds_pull_pre_approval_request(
@@ -368,7 +389,7 @@ def new_init_charge_command(
 
 def reply_request(
     cid: typing.Optional[str],
-    result_object: typing.Optional[
+    result: typing.Optional[
         typing.Union[GetInfoCommandResponse, InitChargePaymentResponse]
     ] = None,
     err: typing.Optional[OffChainErrorObject] = None,
@@ -377,7 +398,7 @@ def reply_request(
         status=CommandResponseStatus.failure if err else CommandResponseStatus.success,
         error=err,
         cid=cid,
-        result=result_object,
+        result=result,
     )
 
 

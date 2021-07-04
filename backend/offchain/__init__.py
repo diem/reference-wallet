@@ -20,6 +20,8 @@ from .types import (
     PaymentObject,
     PaymentActorObject,
     PaymentActionObject,
+    ReferenceIDCommandResultObject,
+    ReferenceIDCommandObject,
     Status,
     StatusObject,
     KycDataObjectType,
@@ -41,9 +43,11 @@ from .types import (
     individual_kyc_data,
     entity_kyc_data,
     to_json,
+    to_dict,
     from_json,
     from_dict,
     validate_write_once_fields,
+    UUID_REGEX,
     FundPullPreApprovalType,
     GetPaymentInfo,
 )
@@ -56,4 +60,4 @@ from .funds_pull_pre_approval_command import FundsPullPreApprovalCommand
 
 from .client import Client, CommandResponseError
 
-from . import jws, http_server, state, payment_state
+from . import jws, state, payment_state

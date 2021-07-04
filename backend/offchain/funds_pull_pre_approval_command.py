@@ -11,7 +11,6 @@ from .command import Command
 from .error import command_error
 from .payment_state import Action
 from .types import (
-    new_funds_pull_pre_approval_request,
     ErrorCode,
     FieldError,
     validate_write_once_fields,

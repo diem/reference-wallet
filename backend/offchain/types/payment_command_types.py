@@ -180,6 +180,7 @@ class PaymentObject:
         currency: str,
         original_payment_reference_id: typing.Optional[str] = None,
         description: typing.Optional[str] = None,
+        reference_id: typing.Optional[str] = None,
     ) -> "PaymentObject":
         """Initialize a payment request command
 
@@ -187,7 +188,7 @@ class PaymentObject:
         """
 
         return PaymentObject(
-            reference_id=str(uuid.uuid4()),
+            reference_id=reference_id or str(uuid.uuid4()),
             sender=PaymentActorObject(
                 address=sender_account_id,
                 kyc_data=sender_kyc_data,
