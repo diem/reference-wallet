@@ -14,6 +14,7 @@
     "close": "All Good, back to merchant",
     "invalid_payment": "Invalid payment request.",
     "processing": "Processing",
-    "store_name": "Store Name"
+    "store_name": "Store Name",
+    "error_occured": "An error occured. Please contact support."
   }
 }

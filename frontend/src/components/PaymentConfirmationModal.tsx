@@ -45,14 +45,26 @@ function PaymentConfirmationModal({
   }, []);
 
   const onConfirm = async () => {
-    if (!paymentParams.demo){
-      await new BackendClient().approvePayment(paymentParams.referenceId, paymentParams.isFull);
+    if (paymentParams.demo) {
+      setSubmitStatus("sending");
+    } else {
+      try {
+        await new BackendClient().approvePayment(paymentParams.referenceId, paymentParams.isFull);
+      } catch (e) {
+        console.error(e);
+        setSubmitStatus("fail");
+      }
     }
-    setSubmitStatus("sending");
-    setTimeout(() => {
-      setSubmitStatus("success");
-    }, 1000);
   };
+
+  useEffect(() => {
+    if (paymentParams.demo && submitStatus === "sending") {
+      setTimeout(() => {
+        setSubmitStatus("success");
+      }, 1000);
+    }
+  }, [submitStatus, paymentParams]);
+
   const onReject = async () => {
     await new BackendClient().rejectPaymentCommand(paymentParams.referenceId);
     setSubmitStatus("success");
@@ -67,6 +79,9 @@ function PaymentConfirmationModal({
       <ModalBody>
         <CloseButton onClick={onClose} />
         {submitStatus === "edit" && <h4 style={{ fontWeight: 500 }}>{t("confirmation.title")}</h4>}
+        {submitStatus === "fail" && (
+          <h4 style={{ fontWeight: 500 }}>{t("confirmation.error_occured")}</h4>
+        )}
         {submitStatus === "success" && (
           <h3 style={{ fontWeight: 500 }}>{t("confirmation.title_payment_approved")}</h3>
         )}
@@ -135,7 +150,13 @@ function PaymentConfirmationModal({
                   t("confirmation.approve")
                 )}
               </Button>
-              <Button outline color="black" block onClick={onReject} disabled={submitStatus==="sending"}>
+              <Button
+                outline
+                color="black"
+                block
+                onClick={onReject}
+                disabled={submitStatus === "sending"}
+              >
                 {t("confirmation.reject")}
               </Button>
             </>
