@@ -26,7 +26,7 @@ export class PaymentParams {
     readonly amount?: number,
     readonly expiration?: Date,
     readonly redirectUrl?: string,
-    readonly demo?: boolean,
+    readonly demo?: boolean
   ) {}
 
   public static fromUrlQueryString(queryString: string): PaymentParams {
@@ -136,14 +136,15 @@ export class PaymentParams {
   }
 
   private static isDemo(searchParams: URLSearchParams, paramName: string): boolean {
-    if (searchParams.has(paramName)){
+    if (searchParams.has(paramName)) {
       const value = searchParams.get(paramName);
-      if (value?.toLowerCase() !== "true" && value?.toLowerCase() !== "false") {
-        throw new PaymentParamError("demo should be a boolean");
+      if (value?.toLowerCase() === "true") {
+        return true;
+      } else {
+        return false;
       }
-      return true;
     } else {
-      return false
+      return false;
     }
   }
 
