@@ -47,7 +47,7 @@ class ProcessInboundCommand:
 
         mock_method(
             context.get().offchain_client,
-            "deserialize_jws_request",
+            "deserialize_inbound_request",
             will_return=self.command,
         )
         mock_method(
