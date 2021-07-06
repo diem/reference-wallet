@@ -14,6 +14,7 @@ from .types import (
     ErrorCode,
     FieldError,
     validate_write_once_fields,
+    new_funds_pull_pre_approval_request,
 )
 
 

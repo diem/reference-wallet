@@ -8,7 +8,6 @@ from cryptography.exceptions import InvalidSignature
 from json.decoder import JSONDecodeError
 
 from diem import diem_types, jsonrpc, identifier, utils
-from diem.jsonrpc.client import Client
 
 from .command import Command
 from .payment_command import PaymentCommand
@@ -99,7 +98,7 @@ class Client:
     """
 
     my_compliance_key_account_address: diem_types.AccountAddress
-    jsonrpc_client: Client
+    jsonrpc_client: jsonrpc.Client
     hrp: str
     supported_currency_codes: typing.Optional[typing.List[str]] = dataclasses.field(
         default=None
