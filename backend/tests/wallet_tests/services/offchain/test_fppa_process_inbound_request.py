@@ -56,9 +56,9 @@ class ProcessInboundCommand:
             will_return=self.command,
         )
 
-    def assert_command_stored(self):
+    async def assert_command_stored(self):
         _ = b"Unused because process_inbound_request is mocked"
-        code, resp = offchain_service.process_inbound_command(
+        code, resp = await offchain_service.process_inbound_command(
             request_sender_address=self.request_sender_address, request_body_bytes=_
         )
         assert code == 200
@@ -68,7 +68,7 @@ class ProcessInboundCommand:
         for prop, value in self.command_properties.items():
             assert getattr(command_in_db, prop) == value
 
-    def assert_error_raised(self):
+    async def assert_error_raised(self):
         with pytest.raises(FundsPullPreApprovalStateError):
             _ = b"Unused because process_inbound_request is mocked"
             offchain_service.process_inbound_command(self.request_sender_address, _)
@@ -128,10 +128,10 @@ class ProcessInboundCommand:
         return funds_pull_pre_approval
 
 
-def test_process_inbound_command_as_payer_with_incoming_pending_and_no_record_in_db(
-    mock_method, my_user, random_bech32_address, process_inbound_command
+async def test_process_inbound_command_as_payer_with_incoming_pending_and_no_record_in_db(
+    my_user, random_bech32_address, process_inbound_command
 ):
-    process_inbound_command(
+    await process_inbound_command(
         request_sender_address=my_user.address,
         command_properties=dict(
             address=my_user.address,
@@ -142,7 +142,7 @@ def test_process_inbound_command_as_payer_with_incoming_pending_and_no_record_in
     ).assert_command_stored()
 
 
-def test_process_inbound_command_as_payer_with_incoming_pending_while_record_db_exist(
+async def test_process_inbound_command_as_payer_with_incoming_pending_while_record_db_exist(
     mock_method, my_user, random_bech32_address, process_inbound_command
 ):
     biller_address = random_bech32_address
@@ -159,7 +159,7 @@ def test_process_inbound_command_as_payer_with_incoming_pending_while_record_db_
         role=Role.PAYER,
     )
 
-    process_inbound_command(
+    await process_inbound_command(
         request_sender_address=my_user.address,
         command_properties=dict(
             address=my_user.address,
@@ -201,7 +201,7 @@ def test_failure_as_payer_without_record_in_db(
         (FundPullPreApprovalStatus.closed, FundPullPreApprovalStatus.closed),
     ],
 )
-def test_success_as_payer_with_record_in_db(
+async def test_success_as_payer_with_record_in_db(
     new_status, stored_status, my_user, random_bech32_address, process_inbound_command
 ):
     biller_address = random_bech32_address
@@ -216,7 +216,7 @@ def test_success_as_payer_with_record_in_db(
         role=Role.PAYER,
     )
 
-    process_inbound_command(
+    await process_inbound_command(
         request_sender_address=my_user.address,
         command_properties=dict(
             address=my_user.address,
@@ -301,7 +301,7 @@ def test_failure_as_payee_without_record_in_db(
         (FundPullPreApprovalStatus.closed, FundPullPreApprovalStatus.closed),
     ],
 )
-def test_success_as_payee_with_record_in_db(
+async def test_success_as_payee_with_record_in_db(
     new_status, stored_status, my_user, random_bech32_address, process_inbound_command
 ):
     address = random_bech32_address
@@ -316,7 +316,7 @@ def test_success_as_payee_with_record_in_db(
         role=Role.PAYEE,
     )
 
-    process_inbound_command(
+    await process_inbound_command(
         request_sender_address=address,
         command_properties=dict(
             address=address,

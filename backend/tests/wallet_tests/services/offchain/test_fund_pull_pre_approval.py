@@ -386,7 +386,7 @@ def test_create_and_approve_while_command_already_exist_in_db():
         )
 
 
-def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_exist_with_pending_status_and_no_address(
+async def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_exist_with_pending_status_and_no_address(
     mock_method,
 ):
     address = generate_address()
@@ -411,7 +411,7 @@ def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_ex
     )
     mock_method(
         context.get().offchain_client,
-        "deserialize_jws_request",
+        "deserialize_inbound_request",
         will_return=cmd,
     )
     mock_method(
@@ -423,7 +423,7 @@ def test_process_inbound_command_as_payee_with_incoming_valid_while_record_db_ex
     command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
     assert command_in_db.address is None
 
-    code, resp = process_inbound_command(address, cmd)
+    code, resp = await process_inbound_command(address, cmd)
     assert code == 200
     assert resp
     command_in_db = get_command_by_id(FUNDS_PULL_PRE_APPROVAL_ID)
@@ -542,7 +542,9 @@ def test_process_inbound_command_as_both__payee_close_valid_request(mock_method)
     payee_close_request_check(mock_method, payee_bech32, payee_user, payer_bech32)
 
 
-def payee_close_request_check(mock_method, payee_bech32, payee_user, payer_bech32):
+async def payee_close_request_check(
+    mock_method, payee_bech32, payee_user, payer_bech32
+):
     # payee generate closed command to payer
     cmd = generate_funds_pull_pre_approval_command(
         address=payer_bech32,
@@ -563,7 +565,7 @@ def payee_close_request_check(mock_method, payee_bech32, payee_user, payer_bech3
         will_return=cmd,
     )
     unused = b"Unused because process_inbound_request is mocked"
-    code, resp = process_inbound_command(payee_bech32, unused)
+    code, resp = await process_inbound_command(payee_bech32, unused)
     assert code == 200
     assert resp
     payer_command_in_db = get_command_from_bech32(
@@ -584,7 +586,9 @@ def payee_close_request_check(mock_method, payee_bech32, payee_user, payer_bech3
     )
 
 
-def payer_close_request_check(mock_method, payee_bech32, payer_bech32, payer_user):
+async def payer_close_request_check(
+    mock_method, payee_bech32, payer_bech32, payer_user
+):
     # payer generate closed command to payer
     cmd = generate_funds_pull_pre_approval_command(
         address=payer_bech32,
@@ -605,7 +609,7 @@ def payer_close_request_check(mock_method, payee_bech32, payer_bech32, payer_use
         will_return=cmd,
     )
     unused = b"Unused because process_inbound_request is mocked"
-    code, resp = process_inbound_command(payee_bech32, unused)
+    code, resp = await process_inbound_command(payee_bech32, unused)
     assert code == 200
     assert resp
     payer_command_in_db = get_command_from_bech32(
@@ -626,7 +630,7 @@ def payer_close_request_check(mock_method, payee_bech32, payer_bech32, payer_use
     )
 
 
-def payer_response_to_new_request_check(
+async def payer_response_to_new_request_check(
     mock_method, payee_bech32, payer_bech32, payer_user, response_status
 ):
     # payer generate valid command to payer
@@ -649,7 +653,7 @@ def payer_response_to_new_request_check(
         will_return=cmd,
     )
     unused = b"Unused because process_inbound_request is mocked"
-    code, resp = process_inbound_command(payee_bech32, unused)
+    code, resp = await process_inbound_command(payee_bech32, unused)
     assert code == 200
     assert resp
     payer_command_in_db = get_command_from_bech32(
@@ -664,7 +668,7 @@ def payer_response_to_new_request_check(
     assert payee_command_in_db.funds_pull_pre_approval.status == response_status
 
 
-def payee_initiate_completely_new_funds_pull_pre_approval_request_check(
+async def payee_initiate_completely_new_funds_pull_pre_approval_request_check(
     mock_method, payee_bech32, payee_user, payer_bech32
 ):
     # payee generate command in DB before sending
@@ -686,7 +690,7 @@ def payee_initiate_completely_new_funds_pull_pre_approval_request_check(
     )
     mock_method(
         context.get().offchain_client,
-        "deserialize_jws_request",
+        "deserialize_inbound_request",
         will_return=cmd,
     )
     mock_method(
@@ -695,7 +699,7 @@ def payee_initiate_completely_new_funds_pull_pre_approval_request_check(
         will_return=cmd,
     )
     unused = b"Unused because process_inbound_request is mocked"
-    code, resp = process_inbound_command(payee_bech32, unused)
+    code, resp = await process_inbound_command(payee_bech32, unused)
     assert code == 200
     assert resp
     payer_command_in_db = get_command_from_bech32(
