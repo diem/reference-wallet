@@ -283,11 +283,13 @@ class Client:
             raise protocol_error(ErrorCode.invalid_http_header, str(e)) from e
         return public_key
 
-    def validate_recipient_signature(
+    async def validate_recipient_signature(
         self, cmd: PaymentCommand, request_sender_address
     ) -> None:
         try:
-            _, public_key = self.get_base_url_and_compliance_key(request_sender_address)
+            _, public_key = await self.get_base_url_and_compliance_key(
+                request_sender_address
+            )
         except ValueError as e:
             raise protocol_error(ErrorCode.invalid_http_header, str(e)) from e
 
@@ -413,14 +415,16 @@ class Client:
 
         raise command_error(ErrorCode.unknown_address, "unknown actor addresses: {obj}")
 
-    def deserialize_jws_request(self, request_sender_address, request_bytes):
+    async def deserialize_jws_request(self, request_sender_address, request_bytes):
         if not request_sender_address:
             raise protocol_error(
                 ErrorCode.missing_http_header,
                 f"missing {http_header.X_REQUEST_SENDER_ADDRESS}",
             )
 
-        _, public_key = self.get_base_url_and_compliance_key(request_sender_address)
+        _, public_key = await self.get_base_url_and_compliance_key(
+            request_sender_address
+        )
 
         return _deserialize_jws(request_bytes, CommandRequestObject, public_key)
 

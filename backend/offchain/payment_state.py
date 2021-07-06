@@ -19,7 +19,8 @@ from .state import (
     Value,
     build_machine,
     new_transition,
-    require, OneOfValues,
+    require,
+    OneOfValues,
 )
 from .action import Action
 from enum import Enum

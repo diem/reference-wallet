@@ -75,7 +75,7 @@ def jws_response(
     code = 400 if err else 200
     resp = offchain.reply_request(
         cid=cid,
-        result_object=result_object,
+        result=result_object,
         err=err,
     )
     return code, offchain.jws.serialize(resp, compliance_private_key().sign)

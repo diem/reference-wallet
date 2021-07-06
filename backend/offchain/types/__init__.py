@@ -286,7 +286,6 @@ def new_payment_request(
     )
 
 
-
 def new_funds_pull_pre_approval_request(
     funds_pull_pre_approval: FundPullPreApprovalObject,
     cid: typing.Optional[str] = None,
