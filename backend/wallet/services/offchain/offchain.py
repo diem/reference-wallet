@@ -38,7 +38,7 @@ from wallet.types import (
 logger = logging.getLogger(__name__)
 
 
-async def process_inbound_command(
+def process_inbound_command(
     request_sender_address: str,
     request_body_bytes: bytes,
 ) -> (int, bytes):

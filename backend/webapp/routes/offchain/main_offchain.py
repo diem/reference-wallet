@@ -25,14 +25,14 @@ class OffchainMainRoute:
         tags = ["Offchain"]
 
     class OffchainV2View(MethodView):
-        async def dispatch_request(self, *args, **kwargs):
+        def dispatch_request(self, *args, **kwargs):
             x_request_id = request.headers.get(X_REQUEST_ID)
             sender_address = request.headers.get(X_REQUEST_SENDER_ADDRESS)
             request_body = request.get_data()
 
             logger.info(f"[{sender_address}:{x_request_id}] offchain v2 income request")
 
-            code, response = await offchain_service.process_inbound_command(
+            code, response = offchain_service.process_inbound_command(
                 sender_address, request_body
             )
 

@@ -8,7 +8,7 @@ from cryptography.exceptions import InvalidSignature
 from json.decoder import JSONDecodeError
 
 from diem import diem_types, jsonrpc, identifier, utils
-from diem.jsonrpc.async_client import AsyncClient
+from diem.jsonrpc.client import Client
 
 from .command import Command
 from .payment_command import PaymentCommand
@@ -20,11 +20,9 @@ from .types import (
     CommandResponseStatus,
     PaymentObject,
     PaymentActorObject,
-    PaymentActionObject,
     PaymentCommandObject,
     ErrorCode,
     FieldError,
-    to_json,
     from_dict,
     to_dict,
     ReferenceIDCommandObject,
@@ -65,12 +63,10 @@ class Client:
 
     Initialization:
     ```
-    >>> from diem import offchain, testing
+    >>> from diem import offchain, testnet
     >>>
-    >>> jsonrpc_client = testing.create_client()
-    >>> faucet = testing.Faucet(jsonrpc_client)
-    >>> account = await faucet.gen_account()
-    >>> await account.rotate_dual_attestation_info(jsonrpc_client, base_url="http://vasp.com/offchain")
+    >>> jsonrpc_client = testnet.create_client()
+    >>> account = testnet.gen_account(client, base_url="http://vasp.com/offchain")
     >>> compliance_key_account_address = account.account_address
     >>> client = offchain.Client(compliance_key_account_address, jsonrpc_client, identifier.TDM)
     ```
@@ -78,14 +74,32 @@ class Client:
     Send command:
     ```
     >>> # for command: offchain.PaymentCommand
-    >>> await client.send_command(command, account.compliance_key.sign)
+    >>> client.send_command(command, account.compliance_key.sign)
+    ```
+
+    Pre-process inbound request data:
+    ```
+    from http import server
+    from offchain import X_REQUEST_ID, X_REQUEST_SENDER_ADDRESS
+
+    class Handler(server.BaseHTTPRequestHandler):
+        def do_POST(self):
+            x_request_id = self.headers[X_REQUEST_ID]
+            jws_key_address = self.headers[X_REQUEST_SENDER_ADDRESS]
+            length = int(self.headers["content-length"])
+            content = self.rfile.read(length)
+
+            command = client.process_inbound_request(jws_key_address, content)
+            # validate and save command
+            ...
+
     ```
 
     See [mini-wallet application](https://diem.github.io/client-sdk-python/diem/testing/miniwallet/app/app.html) for full example
     """
 
     my_compliance_key_account_address: diem_types.AccountAddress
-    jsonrpc_client: AsyncClient
+    jsonrpc_client: Client
     hrp: str
     supported_currency_codes: typing.Optional[typing.List[str]] = dataclasses.field(
         default=None
@@ -98,7 +112,7 @@ class Client:
         )
 
     # test purpose only (miniwallet)
-    async def ping(
+    def ping(
         self,
         counterparty_account_identifier: str,
         sign: typing.Callable[[bytes], bytes],
@@ -110,12 +124,12 @@ class Client:
             command={"_ObjectType": CommandType.PingCommand},
         )
         jws_msg = jws.serialize(request, sign)
-        return await self.send_request(
+        return self.send_request(
             self.my_compliance_key_account_id, counterparty_account_identifier, jws_msg
         )
 
     # test purpose only (miniwallet)
-    async def ref_id_exchange_request(
+    def ref_id_exchange_request(
         self,
         sender: str,
         sender_address: str,
@@ -137,26 +151,26 @@ class Client:
             command=to_dict(reference_id_command_object),
         )
         jws_msg = jws.serialize(request, sign)
-        return await self.send_request(
+        return self.send_request(
             self.my_compliance_key_account_id, counterparty_account_identifier, jws_msg
         )
 
-    async def send_command(
+    def send_command(
         self, command: Command, sign: typing.Callable[[bytes], bytes]
     ) -> CommandResponseObject:
-        return await self.send_request(
+        return self.send_request(
             request_sender_address=command.my_address(),
             counterparty_account_id=command.counterparty_address(),
             request_bytes=jws.serialize(command.new_request(), sign),
         )
 
-    async def send_request(
+    def send_request(
         self,
         request_sender_address: str,
         counterparty_account_id: str,
         request_bytes: bytes,
     ) -> CommandResponseObject:
-        base_url, public_key = await self.get_base_url_and_compliance_key(
+        base_url, public_key = self.get_base_url_and_compliance_key(
             counterparty_account_id
         )
         headers = {
@@ -165,21 +179,19 @@ class Client:
             "Content-Type": "text/plain; charset=UTF-8",
         }
         url = f"{base_url.rstrip('/')}/v2/command"
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                url, data=request_bytes, headers=headers
-            ) as response:
+        with aiohttp.ClientSession() as session:
+            with session.post(url, data=request_bytes, headers=headers) as response:
                 if response.status not in [200, 400]:
                     response.raise_for_status()
 
                 cmd_resp = _deserialize_jws(
-                    await response.read(), CommandResponseObject, public_key
+                    response.read(), CommandResponseObject, public_key
                 )
                 if cmd_resp.status == CommandResponseStatus.failure:
                     raise CommandResponseError(cmd_resp)
                 return cmd_resp
 
-    async def process_inbound_request(
+    def process_inbound_request(
         self, request_sender_address: str, request_bytes: bytes
     ) -> Command:
         """Validate and decode the `request_bytes` into `diem.offchain.command.CommandRequestObject`,
@@ -196,25 +208,25 @@ class Client:
         - `request_sender_address` is not sender or receiver actor address.
         - When receiver actor statis is `ready_for_settlement`, the `recipient_signature` is not set or is invalid (verifying transaction metadata failed).
         """
-        request = await self.deserialize_inbound_request(
+        request = self.deserialize_inbound_request(
             request_sender_address, request_bytes
         )
 
         if request.command_type == CommandType.PaymentCommand:
-            return await self.process_inbound_payment_command_request(
+            return self.process_inbound_payment_command_request(
                 request_sender_address, request
             )
         elif request.command_type == CommandType.FundPullPreApprovalCommand:
             fund_pull_pre_approval = deserialize_command(
                 request.command, FundPullPreApprovalCommandObject
             ).fund_pull_pre_approval
-            return await self.create_inbound_funds_pull_pre_approval_command(
+            return self.create_inbound_funds_pull_pre_approval_command(
                 request.cid, fund_pull_pre_approval
             )
         else:
             return request
 
-    async def deserialize_inbound_request(
+    def deserialize_inbound_request(
         self, request_sender_address: str, request_bytes: bytes
     ) -> CommandRequestObject:
         """Validate and decode the `request_bytes` into `diem.offchain.command.CommandRequestObject` object.
@@ -234,12 +246,10 @@ class Client:
                 ErrorCode.missing_http_header,
                 f"missing {http_header.X_REQUEST_SENDER_ADDRESS}",
             )
-        public_key = await self.get_inbound_request_sender_public_key(
-            request_sender_address
-        )
+        public_key = self.get_inbound_request_sender_public_key(request_sender_address)
         return _deserialize_jws(request_bytes, CommandRequestObject, public_key)
 
-    async def process_inbound_payment_command_request(
+    def process_inbound_payment_command_request(
         self, request_sender_address: str, request: CommandRequestObject
     ) -> PaymentCommand:
         """Validate the `PaymentCommand` and returns a command wrapper object for next processing step.
@@ -262,34 +272,29 @@ class Client:
 
         payment = deserialize_command(request.command, PaymentCommandObject).payment
         self.validate_addresses(payment, request_sender_address)
-        cmd = await self.create_inbound_payment_command(request.cid, payment)
+        cmd = self.create_inbound_payment_command(request.cid, payment)
         if cmd.is_rsend():
-            public_key = await self.get_inbound_request_sender_public_key(
+            public_key = self.get_inbound_request_sender_public_key(
                 request_sender_address
             )
             self.validate_recipient_signature(cmd, public_key)
         return cmd
 
-    async def get_inbound_request_sender_public_key(
+    def get_inbound_request_sender_public_key(
         self, request_sender_address: str
     ) -> Ed25519PublicKey:
         """find the public key of the request sender address, raises protocol error if not found or public key is invalid"""
-
         try:
-            _, public_key = await self.get_base_url_and_compliance_key(
-                request_sender_address
-            )
+            _, public_key = self.get_base_url_and_compliance_key(request_sender_address)
         except ValueError as e:
             raise protocol_error(ErrorCode.invalid_http_header, str(e)) from e
         return public_key
 
-    async def validate_recipient_signature(
+    def validate_recipient_signature(
         self, cmd: PaymentCommand, request_sender_address
     ) -> None:
         try:
-            _, public_key = await self.get_base_url_and_compliance_key(
-                request_sender_address
-            )
+            _, public_key = self.get_base_url_and_compliance_key(request_sender_address)
         except ValueError as e:
             raise protocol_error(ErrorCode.invalid_http_header, str(e)) from e
 
@@ -306,13 +311,13 @@ class Client:
                 "command.payment.recipient_signature",
             ) from e
 
-    async def validate_currency_code(
+    def validate_currency_code(
         self,
         currency: str,
         currencies: typing.Optional[typing.List[jsonrpc.CurrencyInfo]] = None,
     ) -> None:
         if currencies is None:
-            currencies = await self.jsonrpc_client.get_currencies()
+            currencies = self.jsonrpc_client.get_currencies()
         currency_codes = list(map(lambda c: c.code, currencies))
         supported_codes = _filter_supported_currency_codes(
             self.supported_currency_codes, currency_codes
@@ -354,14 +359,14 @@ class Client:
                 f"address {request_sender_address} is not one of {addresses}",
             )
 
-    async def create_inbound_payment_command(
+    def create_inbound_payment_command(
         self, cid: str, obj: PaymentObject
     ) -> PaymentCommand:
-        if await self.is_my_account_id(obj.sender.address):
+        if self.is_my_account_id(obj.sender.address):
             return PaymentCommand(
                 cid=cid, my_actor_address=obj.sender.address, payment=obj, inbound=True
             )
-        if await self.is_my_account_id(obj.receiver.address):
+        if self.is_my_account_id(obj.receiver.address):
             return PaymentCommand(
                 cid=cid,
                 my_actor_address=obj.receiver.address,
@@ -371,11 +376,11 @@ class Client:
 
         raise command_error(ErrorCode.unknown_address, "unknown actor addresses: {obj}")
 
-    async def is_my_account_id(self, account_id: str) -> bool:
+    def is_my_account_id(self, account_id: str) -> bool:
         account_address, _ = identifier.decode_account(account_id, self.hrp)
         if self.my_compliance_key_account_id == self.account_id(account_address):
             return True
-        account = await self.jsonrpc_client.get_account(account_address)
+        account = self.jsonrpc_client.get_account(account_address)
         if account and account.role.parent_vasp_address:
             return self.my_compliance_key_account_id == self.account_id(
                 account.role.parent_vasp_address
@@ -387,25 +392,23 @@ class Client:
     ) -> str:
         return identifier.encode_account(utils.account_address(address), None, self.hrp)
 
-    async def get_base_url_and_compliance_key(
+    def get_base_url_and_compliance_key(
         self, account_id: str
     ) -> typing.Tuple[str, Ed25519PublicKey]:
         account_address, _ = identifier.decode_account(account_id, self.hrp)
-        return await self.jsonrpc_client.get_base_url_and_compliance_key(
-            account_address
-        )
+        return self.jsonrpc_client.get_base_url_and_compliance_key(account_address)
 
-    async def create_inbound_funds_pull_pre_approval_command(
+    def create_inbound_funds_pull_pre_approval_command(
         self, cid: str, fund_pull_pre_approval: FundPullPreApprovalObject
     ) -> FundsPullPreApprovalCommand:
-        if await self.is_my_account_id(fund_pull_pre_approval.address):
+        if self.is_my_account_id(fund_pull_pre_approval.address):
             return FundsPullPreApprovalCommand(
                 cid=cid,
                 my_actor_address=fund_pull_pre_approval.address,
                 funds_pull_pre_approval=fund_pull_pre_approval,
                 inbound=True,
             )
-        elif await self.is_my_account_id(fund_pull_pre_approval.biller_address):
+        elif self.is_my_account_id(fund_pull_pre_approval.biller_address):
             return FundsPullPreApprovalCommand(
                 cid=cid,
                 my_actor_address=fund_pull_pre_approval.biller_address,
@@ -415,16 +418,14 @@ class Client:
 
         raise command_error(ErrorCode.unknown_address, "unknown actor addresses: {obj}")
 
-    async def deserialize_jws_request(self, request_sender_address, request_bytes):
+    def deserialize_jws_request(self, request_sender_address, request_bytes):
         if not request_sender_address:
             raise protocol_error(
                 ErrorCode.missing_http_header,
                 f"missing {http_header.X_REQUEST_SENDER_ADDRESS}",
             )
 
-        _, public_key = await self.get_base_url_and_compliance_key(
-            request_sender_address
-        )
+        _, public_key = self.get_base_url_and_compliance_key(request_sender_address)
 
         return _deserialize_jws(request_bytes, CommandRequestObject, public_key)
 
