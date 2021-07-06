@@ -27,7 +27,7 @@ export class PaymentParams {
     readonly amount?: number,
     readonly expiration?: Date,
     readonly redirectUrl?: string,
-    readonly demo?: boolean,
+    readonly demo?: boolean
   ) {}
 
   public static fromUrlQueryString(queryString: string): PaymentParams {
