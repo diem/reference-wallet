@@ -140,10 +140,7 @@ export class PaymentParams {
       const value = searchParams.get(paramName);
       if (value?.toLowerCase() === "true") {
         return true;
-      } else {
-        return false;
       }
-    } else {
       return false;
     }
   }
