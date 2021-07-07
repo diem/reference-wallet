@@ -142,6 +142,8 @@ export class PaymentParams {
         return true;
       }
       return false;
+    } else {
+      return false;
     }
   }
 
