@@ -90,8 +90,9 @@ def get_payment_details(
         action=payment_model.action,
         currency=payment_model.currency,
         amount=payment_model.amount,
-        expiration=int(datetime.timestamp(payment_model.expiration)),
-        demo=payment_model.demo if payment_model.expiration else None,
+        demo=payment_model.demo,
+        expiration=int(datetime.timestamp(payment_model.expiration))
+        if payment_model.expiration else None,
     )
 
 
