@@ -45,6 +45,7 @@ function PaymentConfirmationModal({
   }, []);
 
   const onConfirm = async () => {
+    // If on demo don't call the backend
     if (paymentParams.demo) {
       setSubmitStatus("sending");
     } else {
@@ -66,8 +67,12 @@ function PaymentConfirmationModal({
   }, [submitStatus, paymentParams]);
 
   const onReject = async () => {
-    await new BackendClient().rejectPaymentCommand(paymentParams.referenceId);
-    setSubmitStatus("success");
+    // If on demo don't call the backend
+    if (paymentParams.demo) {
+    } else {
+      await new BackendClient().rejectPaymentCommand(paymentParams.referenceId);
+      setSubmitStatus("success");
+    }
   };
 
   const humanFriendlyAmount = paymentParams.amount

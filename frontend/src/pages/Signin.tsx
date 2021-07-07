@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as React from "react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect, useMemo } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Button, Container, Form, FormGroup, Input } from "reactstrap";
 import { Link, Redirect, useLocation } from "react-router-dom";
@@ -10,6 +10,7 @@ import SessionStorage from "../services/sessionStorage";
 import BackendClient from "../services/backendClient";
 import { BackendError } from "../services/errors";
 import ErrorMessage from "../components/Messages/ErrorMessage";
+import { PaymentParams } from "../utils/payment-params";
 
 function Signin() {
   const { t } = useTranslation("auth");
@@ -19,6 +20,7 @@ function Signin() {
   const [submitStatus, setSubmitStatus] = useState<"edit" | "sending" | "fail" | "success">("edit");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showError, setShowError] = useState<boolean>(false);
 
   const backendClient = new BackendClient();
 
@@ -27,9 +29,15 @@ function Signin() {
     try {
       setErrorMessage(undefined);
       setSubmitStatus("sending");
-      const authToken = await backendClient.signinUser(username, password);
-      SessionStorage.storeAccessToken(authToken);
-      setSubmitStatus("success");
+      // Disallow signing with demo credents if not on demo mode
+      if (!paymentParams?.demo && username === "demo_customer@diem.com") {
+        setSubmitStatus("fail");
+        setErrorMessage("Error. Can't sign in with demo account while not in demo mode");
+      } else {
+        const authToken = await backendClient.signinUser(username, password);
+        SessionStorage.storeAccessToken(authToken);
+        setSubmitStatus("success");
+      }
     } catch (e) {
       setSubmitStatus("fail");
       if (e instanceof BackendError) {
@@ -40,6 +48,60 @@ function Signin() {
       }
     }
   };
+
+  // Only if the query string changes, recalculate the payment params
+  const paymentParamsFromUrl: PaymentParams | undefined = useMemo(() => {
+    try {
+      if (queryString) {
+        return PaymentParams.fromUrlQueryString(queryString);
+      }
+    } catch (e) {
+      setShowError(true);
+    }
+  }, [queryString]);
+
+  const [paymentParams, setPaymentParams] = useState(paymentParamsFromUrl);
+
+  useEffect(() => {
+    const addPaymentCommand = async () => {
+      try {
+        if (queryString && paymentParams) {
+          let backendClient = new BackendClient();
+
+          if (!paymentParams.isFull) {
+            let payment_details;
+
+            while (!payment_details) {
+              payment_details = await backendClient.getPaymentDetails(
+                paymentParams.referenceId,
+                paymentParams.vaspAddress,
+                !!paymentParams.demo
+              );
+            }
+
+            setPaymentParams(
+              PaymentParams.fromPaymentDetails(payment_details, paymentParams.redirectUrl)
+            );
+          } else {
+            await backendClient.addPayment(paymentParams);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    // noinspection JSIgnoredPromiseFromCall
+    addPaymentCommand();
+  }, [queryString]);
+
+  useEffect(() => {
+    // Pre-fill demo credents if on demo mode
+    if (paymentParams?.demo) {
+      setUsername("demo_customer@diem.com");
+      setPassword("Demo_customer1@");
+    }
+  }, [paymentParams]);
 
   return (
     <>
