@@ -47,6 +47,8 @@ from .payment_types import (
     InitChargePaymentResponse,
 )
 
+from .cid import generate_cid
+
 import dataclasses, json, re, typing, uuid
 
 
@@ -116,50 +118,52 @@ def from_dict(
                 f"expect json object, but got {type(obj).__name__}: {obj}",
             )
         klass = _find_object_type(obj, field_path)
+
     return _from_dict(obj, klass, field_path)
 
 
 def _from_dict(
     obj: typing.Any, klass: typing.Type[typing.Any], field_path: str
 ) -> typing.Any:  # pyre-ignore
-    if not isinstance(obj, dict) or not dataclasses.is_dataclass(klass):
-        item_type = None
-        if (
-            hasattr(klass, "__origin__")
-            and klass.__origin__ == list
-            and hasattr(klass, "__args__")
-        ):
-            item_type = klass.__args__[0]
-            klass = list
-        if not isinstance(obj, klass):
-            code = (
-                ErrorCode.invalid_field_value
-                if field_path
-                else ErrorCode.invalid_object
-            )
-            raise FieldError(
-                code,
-                field_path,
-                f"expect type {klass.__name__}, but got {type(obj).__name__}",
-            )
-        if klass == list and item_type:
-            return [from_dict(item, item_type, field_path) for item in obj]
-        return obj
-
-    unknown_fields = list(obj.keys())
-    for field in dataclasses.fields(klass):
-        if field.name in unknown_fields:
-            unknown_fields.remove(field.name)
-        obj[field.name] = _field_value_from_dict(field, obj, field_path)
-
-    if len(unknown_fields) > 0:
-        unknown_fields.sort()
-        full_name = _join_field_path(field_path, unknown_fields[0])
-        field_names = ", ".join(unknown_fields)
-        raise FieldError(
-            ErrorCode.unknown_field, full_name, f"{field_path}: {field_names}"
-        )
     return klass(**obj)
+    # if not isinstance(obj, dict) or not dataclasses.is_dataclass(klass):
+    #     item_type = None
+    #     if (
+    #         hasattr(klass, "__origin__")
+    #         and klass.__origin__ == list
+    #         and hasattr(klass, "__args__")
+    #     ):
+    #         item_type = klass.__args__[0]
+    #         klass = list
+    #     if not isinstance(obj, klass):
+    #         code = (
+    #             ErrorCode.invalid_field_value
+    #             if field_path
+    #             else ErrorCode.invalid_object
+    #         )
+    #         raise FieldError(
+    #             code,
+    #             field_path,
+    #             f"expect type {klass.__name__}, but got {type(obj).__name__}",
+    #         )
+    #     if klass == list and item_type:
+    #         return [from_dict(item, item_type, field_path) for item in obj]
+    #     return obj
+    #
+    # unknown_fields = list(obj.keys())
+    # for field in dataclasses.fields(klass):
+    #     if field.name in unknown_fields:
+    #         unknown_fields.remove(field.name)
+    #     obj[field.name] = _field_value_from_dict(field, obj, field_path)
+    #
+    # if len(unknown_fields) > 0:
+    #     unknown_fields.sort()
+    #     full_name = _join_field_path(field_path, unknown_fields[0])
+    #     field_names = ", ".join(unknown_fields)
+    #     raise FieldError(
+    #         ErrorCode.unknown_field, full_name, f"{field_path}: {field_names}"
+    #     )
+    # return klass(**obj)
 
 
 def _field_value_from_dict(
@@ -257,7 +261,7 @@ def new_payment_request(
     cid: typing.Optional[str] = None,
 ) -> CommandRequestObject:
     return CommandRequestObject(
-        cid=cid or str(uuid.uuid4()),
+        cid=cid or generate_cid(),
         command_type=CommandType.PaymentCommand,
         command=PaymentCommandObject(
             _ObjectType=CommandType.PaymentCommand,
@@ -271,7 +275,7 @@ def new_funds_pull_pre_approval_request(
     cid: typing.Optional[str] = None,
 ) -> CommandRequestObject:
     return CommandRequestObject(
-        cid=cid or str(uuid.uuid4()),
+        cid=cid or generate_cid(),
         command_type=CommandType.FundPullPreApprovalCommand,
         command=FundPullPreApprovalCommandObject(
             _ObjectType=CommandType.FundPullPreApprovalCommand,
@@ -285,7 +289,7 @@ def new_get_info_request(
     cid: typing.Optional[str] = None,
 ) -> CommandRequestObject:
     return CommandRequestObject(
-        cid=cid or reference_id or str(uuid.uuid4()),
+        cid=cid or generate_cid(),
         command_type=CommandType.GetPaymentInfo,
         command=GetPaymentInfo(
             _ObjectType=CommandType.GetPaymentInfo,
@@ -309,7 +313,7 @@ def new_init_auth_command(
     sender_national_id_type,
 ) -> CommandRequestObject:
     return CommandRequestObject(
-        cid=reference_id,
+        cid=generate_cid(),
         command_type=CommandType.InitAuthorizeCommand,
         command=InitAuthorizeCommand(
             reference_id=reference_id,
@@ -345,7 +349,7 @@ def new_init_charge_command(
     sender_national_id_type,
 ) -> CommandRequestObject:
     return CommandRequestObject(
-        cid=reference_id,
+        cid=generate_cid(),
         command_type=CommandType.InitChargePayment,
         command=InitChargePayment(
             reference_id=reference_id,
@@ -376,7 +380,7 @@ def reply_request(
     return CommandResponseObject(
         status=CommandResponseStatus.failure if err else CommandResponseStatus.success,
         error=err,
-        cid=cid,
+        cid=cid or generate_cid(),
         result=result_object,
     )
 

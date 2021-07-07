@@ -53,7 +53,7 @@ def get_payment_details(account_id: int, reference_id: str, vasp_address: str):
                 request_sender_address=my_address,
                 counterparty_account_id=vasp_address,
                 request_bytes=jws.serialize(
-                    new_get_info_request(reference_id=reference_id, cid=reference_id),
+                    new_get_info_request(reference_id=reference_id),
                     utils.compliance_private_key().sign,
                 ),
             )
