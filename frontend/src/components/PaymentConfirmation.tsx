@@ -21,11 +21,8 @@ function PaymentConfirmation() {
   // All flows end eventually with redirection to the home page, without the query string
   const history = useHistory();
   const onPaymentRequestHandlingComplete = () => {
-    // If on demo mode, disallow user to close the payment options modal
-    if (!paymentParams?.demo) {
-      setShowError(false);
-      history.push("/");
-    }
+    setShowError(false);
+    history.push("/");
   };
 
   const handleRedirect = () => {
