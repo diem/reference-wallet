@@ -26,8 +26,7 @@ export class PaymentParams {
     readonly currency?: string,
     readonly amount?: number,
     readonly expiration?: Date,
-    readonly redirectUrl?: string,
-    readonly demo?: boolean
+    readonly redirectUrl?: string
   ) {}
 
   public static fromUrlQueryString(queryString: string): PaymentParams {
@@ -73,8 +72,7 @@ export class PaymentParams {
         undefined,
         undefined,
         undefined,
-        redirectUrl,
-        undefined
+        redirectUrl
       );
     }
 
@@ -125,8 +123,7 @@ export class PaymentParams {
       currency,
       amount,
       new Date(expiration),
-      redirectUrl,
-      demo
+      redirectUrl
     );
   }
 
