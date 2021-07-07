@@ -43,7 +43,9 @@ class PaymentNotFoundError(Exception):
     pass
 
 
-def get_payment_details(account_id: int, reference_id: str, vasp_address: str, demo: bool):
+def get_payment_details(
+    account_id: int, reference_id: str, vasp_address: str, demo: bool
+):
     payment_model = storage.get_payment_details(reference_id)
 
     if payment_model is None:
@@ -71,10 +73,9 @@ def get_payment_details(account_id: int, reference_id: str, vasp_address: str, d
                     action=action_object.action,
                     currency=action_object.currency,
                     amount=action_object.amount,
-                    expiration=datetime.fromtimestamp(action_object.valid_until),
-                    demo=demo
-                    if action_object.valid_until
-                    else None,
+                    demo=demo,
+                    expiration=datetime.fromtimestamp(action_object.valid_until)
+                    if action_object.valid_until else None,
                 )
             )
         except Exception as e:
@@ -88,10 +89,9 @@ def get_payment_details(account_id: int, reference_id: str, vasp_address: str, d
         action=payment_model.action,
         currency=payment_model.currency,
         amount=payment_model.amount,
-        expiration=int(datetime.timestamp(payment_model.expiration)),
-        demo=payment_model.demo
-        if payment_model.expiration
-        else None,
+        demo=payment_model.demo,
+        expiration=int(datetime.timestamp(payment_model.expiration))
+        if payment_model.expiration else None,
     )
 
 

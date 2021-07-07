@@ -66,8 +66,11 @@ function PaymentConfirmationModal({
   }, [submitStatus, paymentParams]);
 
   const onReject = async () => {
-    await new BackendClient().rejectPaymentCommand(paymentParams.referenceId);
-    setSubmitStatus("success");
+    // If on demo don't call the backend
+    if (!paymentParams.demo) {
+      await new BackendClient().rejectPaymentCommand(paymentParams.referenceId);
+      setSubmitStatus("success");
+    }
   };
 
   const humanFriendlyAmount = paymentParams.amount

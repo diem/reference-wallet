@@ -173,4 +173,5 @@ def payment_details_to_dict(
         "currency": payment_details.currency,
         "amount": payment_details.amount,
         "expiration": payment_details.expiration,
+        "demo": payment_details.demo,
     }

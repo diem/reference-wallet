@@ -14,6 +14,6 @@
     "close": "All Good, back to merchant",
     "invalid_payment": "Invalid payment request.",
     "processing": "Processing",
-    "error_occured": "An error occured"
+    "error_occured": "An unexpected error occured. Please try again later."
   }
 }
