@@ -1,14 +1,15 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
-
-import context
 import dataclasses
 
+import context
 import wallet.services.offchain.payment_command as pc_service
 import wallet.services.offchain.utils as utils
 from diem import identifier, LocalAccount, jsonrpc
 from diem_utils.types.currencies import DiemCurrency
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
+from wallet import storage
+from wallet.services import offchain as offchain_service
 from wallet.services.account import (
     generate_new_subaddress,
 )
@@ -18,6 +19,8 @@ from wallet.storage import db_session
 from wallet import storage
 import offchain
 from wallet.types import TransactionStatus
+
+CID = "35a1b548-3170-438f-bf3a-6ca0fef85d15"
 
 currency = DiemCurrency.XUS
 

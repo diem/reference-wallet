@@ -6,15 +6,12 @@
 from datetime import datetime
 from typing import Optional, List, Callable
 
+from diem_utils.types.currencies import DiemCurrency
 from sqlalchemy import func, and_, or_
 
 from . import db_session, get_user
 from .models import Transaction, TransactionLog
 from ..types import TransactionStatus, TransactionType
-from diem_utils.types.currencies import DiemCurrency
-import logging
-
-logger = logging.getLogger(name="wallet-service:storage")
 
 
 def add_transaction(
@@ -30,7 +27,7 @@ def add_transaction(
     destination_subaddress: str = None,
     sequence: Optional[int] = None,
     blockchain_version: Optional[int] = None,
-    original_txn_id: Optional[int] = None,
+    original_txn_id: Optional[str] = None,
     refund_reason: Optional[str] = None,
     reference_id: Optional[str] = None,
 ) -> Transaction:

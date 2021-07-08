@@ -7,7 +7,6 @@ import pytest
 from diem import identifier, LocalAccount
 from offchain import (
     FundPullPreApprovalStatus,
-    FundPullPreApprovalObject,
 )
 from diem_utils.types.currencies import FiatCurrency, DiemCurrency
 from tests.wallet_tests.resources.seeds.one_funds_pull_pre_approval import (

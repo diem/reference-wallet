@@ -5,17 +5,15 @@ import logging
 import os
 import random
 import string
+import time
 from typing import List
 
-import time
-
 from .models import OffChainSequenceInfo, TransactionStatus, RegistrationStatus
-from .reference_wallet_proxy import ReferenceWalletProxy
+from .models_fppa import FundPullPreApprovalScope, FundsPullPreApproval
 from .models_fppa import (
-    FundPullPreApprovalScope,
-    FundsPullPreApproval,
     FundPullPreApprovalStatus,
 )
+from .reference_wallet_proxy import ReferenceWalletProxy
 from .vasp_proxy import VaspProxy, TxStatus, TxState
 
 RETRIES_COUNT = os.getenv("RETRIES_COUNT", 20)

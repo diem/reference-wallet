@@ -1,11 +1,10 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
+import logging
 from dataclasses import dataclass
 from typing import Optional
 
 import context
-import logging
-
 import wallet.services.offchain.payment_command as pc_service
 from diem import diem_types, offchain, identifier
 from diem_utils.types.currencies import DiemCurrency
@@ -323,7 +322,7 @@ def send_transaction(
     destination_address: str,
     destination_subaddress: Optional[str] = None,
     payment_type: Optional[TransactionType] = None,
-    original_txn_id: Optional[int] = None,
+    original_txn_id: Optional[str] = None,
 ) -> Optional[str]:
     log_execution(
         f"transfer from sender {sender_id} to receiver (dest addr: {destination_address} subaddr: {destination_subaddress})"
@@ -531,7 +530,7 @@ def external_transaction(
     amount: int,
     currency: DiemCurrency,
     payment_type: TransactionType,
-    original_txn_id: int,
+    original_txn_id: str,
 ) -> Transaction:
     logger.info(
         f"external_transaction {sender_id} to receiver {receiver_address}, "
@@ -546,7 +545,6 @@ def external_transaction(
     sender_onchain_address = context.get().config.vasp_address
 
     sender_subaddress = None
-
     if (
         payment_type == TransactionType.EXTERNAL
         or payment_type == TransactionType.REFUND
