@@ -19,14 +19,14 @@ export class PaymentParams {
     readonly isFull: boolean,
     readonly vaspAddress: string,
     readonly referenceId: string,
-    readonly demo: boolean,
     readonly merchantName?: string,
     readonly checkoutDataType?: CheckoutDataType,
     readonly action?: PaymentAction,
     readonly currency?: string,
     readonly amount?: number,
     readonly expiration?: Date,
-    readonly redirectUrl?: string
+    readonly redirectUrl?: string,
+    readonly demo?: boolean
   ) {}
 
   public static fromUrlQueryString(queryString: string): PaymentParams {
@@ -36,12 +36,12 @@ export class PaymentParams {
     const referenceId = PaymentParams.getParam(params, "referenceId");
     const demo = PaymentParams.isDemo(params, "demo");
 
-    if (Array.from(params).length === 3) {
+    if (Array.from(params).length === 2) {
       return new PaymentParams(
         false,
         vaspAddress,
         referenceId,
-        false,
+        undefined,
         undefined,
         undefined,
         undefined,
@@ -60,19 +60,19 @@ export class PaymentParams {
       throw new PaymentParamError("redirectUrl contains invalid URL");
     }
 
-    if (Array.from(params).length === 4) {
+    if (Array.from(params).length === 3) {
       return new PaymentParams(
         false,
         vaspAddress,
         referenceId,
-        false,
         undefined,
         undefined,
         undefined,
         undefined,
         undefined,
         undefined,
-        redirectUrl
+        redirectUrl,
+        undefined
       );
     }
 
