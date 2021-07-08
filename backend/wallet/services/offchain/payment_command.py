@@ -15,9 +15,15 @@ from wallet.services.offchain.utils import (
     user_kyc_data,
     generate_my_address,
 )
-from wallet.storage import models
 from wallet.storage import (
-    save_payment_command,
+    models,
+    TransactionStatus,
+    lock_for_update,
+    get_account_id_from_subaddr,
+    Transaction,
+    TransactionType,
+)
+from wallet.storage import save_payment_command
 
 # noinspection PyUnresolvedReferences
 from wallet.storage.funds_pull_pre_approval_command import (
@@ -25,13 +31,6 @@ from wallet.storage.funds_pull_pre_approval_command import (
     FundsPullPreApprovalCommandNotFound,
     commit_command,
     update_command,
-)
-from wallet.types import TransactionStatus, TransactionType
-
-from ..storage import (
-    lock_for_update,
-    get_account_id_from_subaddr,
-    Transaction,
 )
 
 logger = logging.getLogger(__name__)

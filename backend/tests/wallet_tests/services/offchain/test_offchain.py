@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import dataclasses
 
+import context
 import wallet.services.offchain.payment_command as pc_service
 import wallet.services.offchain.utils as utils
 from diem import identifier, LocalAccount, jsonrpc

@@ -24,6 +24,8 @@ from wallet.storage.funds_pull_pre_approval_command import (
     update_command,
     get_account_command_by_id,
     get_account_commands_by_status,
+    get_command_by_id_and_role,
+    FundsPullPreApprovalCommandNotFound,
 )
 
 from .fund_pull_pre_approval_sm import (
@@ -346,7 +348,7 @@ def get_command_from_bech32(
         account_id = get_account_id_from_subaddr(sub_address.hex())
         command = get_account_command_by_id(account_id, funds_pull_pre_approval_id)
         if command:
-            return preapproval_model_to_command(command, address_bech32)
+            return preapproval_model_to_command(command)
 
     return None
 

@@ -27,7 +27,7 @@ def add_transaction(
     destination_subaddress: str = None,
     sequence: Optional[int] = None,
     blockchain_version: Optional[int] = None,
-    original_txn_id: Optional[int] = None,
+    original_txn_id: Optional[str] = None,
     refund_reason: Optional[str] = None,
     reference_id: Optional[str] = None,
 ) -> Transaction:
