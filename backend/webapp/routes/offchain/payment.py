@@ -19,7 +19,7 @@ payment = Blueprint("payment", __name__)
 
 class PaymentRoutes:
     class PaymentView(StrictSchemaView):
-        tags = ["PaymentC"]
+        tags = ["Payment"]
 
     class GetPaymentDetails(PaymentView):
         summary = "Get Payment Details"

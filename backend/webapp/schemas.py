@@ -274,11 +274,6 @@ class PaymentCommands(Schema):
     payment_commands = fields.List(fields.Nested(PaymentCommand))
 
 
-class FundsTransfer(Schema):
-    transaction = fields.Nested(Transaction, required=False, allow_none=True)
-    payment_command = fields.Nested(PaymentCommand, required=False, allow_none=True)
-
-
 class Currency(Schema):
     amount = fields.Int(required=True)
     currency = diem_currency_code_field(required=True)
@@ -318,6 +313,11 @@ class FundsPullPreApprovalList(Schema):
 class FundsPullPreApprovalRequestCreationResponse(Schema):
     funds_pull_pre_approval_id = fields.Str(required=True)
     address = fields.Str(required=False)
+
+
+class FundsTransfer(Schema):
+    transaction = fields.Nested(Transaction, required=False, allow_none=True)
+    payment_command = fields.Nested(PaymentCommand, required=False, allow_none=True)
 
 
 class UpdateFundsPullPreApproval(Schema):
