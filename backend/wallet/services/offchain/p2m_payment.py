@@ -76,7 +76,8 @@ def get_payment_details(
                     amount=action_object.amount,
                     demo=demo,
                     expiration=datetime.fromtimestamp(action_object.valid_until)
-                    if action_object.valid_until else None,
+                    if action_object.valid_until
+                    else None,
                 )
             )
         except Exception as e:
@@ -92,7 +93,8 @@ def get_payment_details(
         amount=payment_model.amount,
         demo=payment_model.demo,
         expiration=int(datetime.timestamp(payment_model.expiration))
-        if payment_model.expiration else None,
+        if payment_model.expiration
+        else None,
     )
 
 
