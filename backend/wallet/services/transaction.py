@@ -1,11 +1,10 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
+import logging
 from dataclasses import dataclass
 from typing import Optional
 
 import context
-import logging
-
 import wallet.services.offchain.payment_command as pc_service
 from diem import diem_types, offchain, identifier
 from diem_utils.types.currencies import DiemCurrency

@@ -85,6 +85,21 @@ def mock_get_payment_command(monkeypatch):
     monkeypatch.setattr(pc_service, "get_payment_command", mock)
 
 
+class TestGetPaymentCommand:
+    def test_get_payment_command_json(
+        self, authorized_client: Client, mock_get_payment_command_json
+    ) -> None:
+        rv: Response = authorized_client.get(
+            "/offchain/query/payment_command/22",
+        )
+
+        assert rv.status_code == 200
+        assert rv.get_data() is not None
+        payment_command = rv.get_json()["payment_command"]
+        assert payment_command is not None
+        assert payment_command["my_actor_address"] == ADDRESS
+
+
 @pytest.fixture
 def mock_get_account_payment_commands(monkeypatch):
     def mock(account_id: int) -> List[str]:

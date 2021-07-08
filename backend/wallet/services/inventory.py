@@ -30,7 +30,7 @@ from wallet.types import (
 logger = logging.getLogger(__name__)
 
 INVENTORY_COVER_CURRENCY = Currency.USD
-INVENTORY_AMOUNT = os.getenv("INVENTORY_AMOUNT", 100_000_000_000)
+INVENTORY_AMOUNT = 100_000_000_000
 
 
 def wait_for_trade_to_complete(trade_id):
@@ -192,6 +192,7 @@ def _transfer_funds_to_lp(order: Order) -> int:
         destination_address=lp_details.vasp,
         destination_subaddress=lp_details.sub_address,
     )
+    # TODO tx is None in case of travel rule
     return _wait_for_lp_deposit_transaction_to_complete(tx_id)
 
 
