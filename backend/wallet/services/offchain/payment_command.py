@@ -27,7 +27,7 @@ from wallet.storage.funds_pull_pre_approval_command import (
 )
 from wallet.types import TransactionStatus, TransactionType
 
-from wallet.storage  import (
+from wallet.storage import (
     lock_for_update,
     get_account_id_from_subaddr,
     Transaction,
@@ -218,7 +218,7 @@ def payment_command_to_model(
 
 
 def get_command_account_id(command: offchain.PaymentCommand) -> int:
-    """ Find the account id for the command """
+    """Find the account id for the command"""
     sender_address_bech32 = command.payment.sender.address
     sender_address, sender_sub_address = identifier.decode_account(
         sender_address_bech32, context.get().config.diem_address_hrp()
