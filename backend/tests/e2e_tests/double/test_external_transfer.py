@@ -125,7 +125,9 @@ def transfer(user1: UserClient, user2: UserClient, transfer_amount: int, currenc
     user1.transfer(addr2, transfer_amount, currency)
 
     # sent
-    user1.wait_for_balance(currency, user1_balance_before_transfer - transfer_amount, 20)
+    user1.wait_for_balance(
+        currency, user1_balance_before_transfer - transfer_amount, 20
+    )
     user1_sent_transactions = get_user_transaction_by_direction(user1, "sent")
     assert len(user1_sent_transactions) == 1
     assert user1_sent_transactions[0].get("amount") == transfer_amount
@@ -147,6 +149,8 @@ def get_user_transaction_by_direction(user1, direction):
         if len(sent_txns) == 0:
             time.sleep(0.5)
             user1_transactions = user1.get_transactions()
-            sent_txns = [txn for txn in user1_transactions if txn.get("direction") == direction]
+            sent_txns = [
+                txn for txn in user1_transactions if txn.get("direction") == direction
+            ]
 
     return sent_txns
