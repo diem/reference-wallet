@@ -180,33 +180,33 @@ def offchain_api_routes():
     # p2p payments end points
     p2p_payments.add_url_rule(
         rule="/offchain/query/payment_command/<reference_id>",
-        view_func=P2PPaymentRoutes.GetPaymentCommand.as_view("get p2p payments"),
+        view_func=P2PPaymentRoutes.GetP2PPayment.as_view("get p2p payments"),
         methods=["GET"],
     )
     p2p_payments.add_url_rule(
         rule="/offchain/query/payment_command",
-        view_func=P2PPaymentRoutes.GetAccountPaymentCommands.as_view(
+        view_func=P2PPaymentRoutes.GetAccountP2PPayments.as_view(
             "get account p2p payments"
         ),
         methods=["GET"],
     )
     p2p_payments.add_url_rule(
         rule="/offchain/payment_command",
-        view_func=P2PPaymentRoutes.AddPaymentCommandAsSender.as_view(
+        view_func=P2PPaymentRoutes.CreateP2PPaymentAsSender.as_view(
             "create p2p payment command"
         ),
         methods=["POST"],
     )
     p2p_payments.add_url_rule(
         rule="/offchain/payment_command/<reference_id>/actions/approve",
-        view_func=P2PPaymentRoutes.ApprovePaymentCommand.as_view(
+        view_func=P2PPaymentRoutes.ApproveP2PPayment.as_view(
             "approve p2p payment command"
         ),
         methods=["POST"],
     )
     p2p_payments.add_url_rule(
         rule="/offchain/payment_command/<reference_id>/actions/reject",
-        view_func=P2PPaymentRoutes.RejectPaymentCommand.as_view(
+        view_func=P2PPaymentRoutes.RejectP2PPayment.as_view(
             "reject p2p payment"
         ),
         methods=["POST"],
@@ -236,22 +236,22 @@ def offchain_api_routes():
     # p2m payments end points
     p2m_payments.add_url_rule(
         rule="/offchain/query/payment_details",
-        view_func=P2MPaymentRoutes.GetPaymentDetails.as_view("get p2m payment details"),
+        view_func=P2MPaymentRoutes.GetP2MPaymentDetails.as_view("get p2m payment details"),
         methods=["GET"],
     )
     p2m_payments.add_url_rule(
         rule="/offchain/payment/<reference_id>/actions/approve",
-        view_func=P2MPaymentRoutes.ApprovePayment.as_view("approve p2m payment"),
+        view_func=P2MPaymentRoutes.ApproveP2MPayment.as_view("approve p2m payment"),
         methods=["POST"],
     )
     p2m_payments.add_url_rule(
         rule="/offchain/payment/<reference_id>/actions/reject",
-        view_func=P2MPaymentRoutes.RejectPayment.as_view("reject p2m payment"),
+        view_func=P2MPaymentRoutes.RejectP2MPayment.as_view("reject p2m payment"),
         methods=["POST"],
     )
     p2m_payments.add_url_rule(
         rule="/offchain/payment",
-        view_func=P2MPaymentRoutes.AddPayment.as_view("create new p2m payment"),
+        view_func=P2MPaymentRoutes.CreateNewP2MPayment.as_view("create new p2m payment"),
         methods=["POST"],
     )
 

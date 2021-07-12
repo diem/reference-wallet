@@ -21,7 +21,7 @@ class P2MPaymentRoutes:
     class PaymentView(StrictSchemaView):
         tags = ["Payment"]
 
-    class GetPaymentDetails(PaymentView):
+    class GetP2MPaymentDetails(PaymentView):
         summary = "Get Payment Details"
 
         parameters = [
@@ -81,7 +81,7 @@ class P2MPaymentRoutes:
             except payment_service.P2MGeneralError as e:
                 return self.respond_with_error(HTTPStatus.UNPROCESSABLE_ENTITY, str(e))
 
-    class AddPayment(PaymentView):
+    class CreateNewP2MPayment(PaymentView):
         summary = "Create New Payment"
 
         parameters = [body_parameter(CreatePaymentSchema)]
@@ -113,7 +113,7 @@ class P2MPaymentRoutes:
 
             return "OK", HTTPStatus.NO_CONTENT
 
-    class ApprovePayment(PaymentView):
+    class ApproveP2MPayment(PaymentView):
         summary = "Approve Payment"
 
         parameters = [
@@ -152,7 +152,7 @@ class P2MPaymentRoutes:
 
             return "OK", HTTPStatus.NO_CONTENT
 
-    class RejectPayment(PaymentView):
+    class RejectP2MPayment(PaymentView):
         ...
 
 

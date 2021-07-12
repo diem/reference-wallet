@@ -20,7 +20,7 @@ class P2PPaymentRoutes:
     class PaymentCommandView(StrictSchemaView):
         tags = ["PaymentCommand"]
 
-    class GetPaymentCommand(PaymentCommandView):
+    class GetP2PPayment(PaymentCommandView):
         summary = "Get Payment Command"
 
         parameters = [
@@ -39,7 +39,7 @@ class P2PPaymentRoutes:
                 HTTPStatus.OK,
             )
 
-    class GetAccountPaymentCommands(PaymentCommandView):
+    class GetAccountP2PPayments(PaymentCommandView):
         summary = "Get Account Payment Commands"
 
         responses = {
@@ -62,7 +62,7 @@ class P2PPaymentRoutes:
                 HTTPStatus.OK,
             )
 
-    class AddPaymentCommandAsSender(PaymentCommandView):
+    class CreateP2PPaymentAsSender(PaymentCommandView):
         summary = "Create New Payment Command"
 
         parameters = [body_parameter(CreatePaymentSchema)]
@@ -94,7 +94,7 @@ class P2PPaymentRoutes:
 
             return "OK", HTTPStatus.NO_CONTENT
 
-    class ApprovePaymentCommand(PaymentCommandView):
+    class ApproveP2PPayment(PaymentCommandView):
         summary = "Approve Payment Command"
 
         parameters = [
@@ -118,7 +118,7 @@ class P2PPaymentRoutes:
 
             return "OK", HTTPStatus.NO_CONTENT
 
-    class RejectPaymentCommand(PaymentCommandView):
+    class RejectP2PPayment(PaymentCommandView):
         summary = "Reject Payment Command"
 
         parameters = [
