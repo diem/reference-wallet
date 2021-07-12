@@ -45,6 +45,8 @@ from .p2m_payment_types import (
     PayerDataObject,
     InitAuthorizeCommand,
     InitChargePaymentResponse,
+    AbortPayment,
+    P2MAbortCode,
 )
 
 from .cid import generate_cid
@@ -81,6 +83,7 @@ _OBJECT_TYPES: typing.Dict[str, typing.Any] = {
     CommandType.GetPaymentInfo: GetPaymentInfo,
     CommandType.InitChargePayment: InitChargePayment,
     CommandType.InitAuthorizeCommand: InitAuthorizeCommand,
+    CommandType.AbortPayment: AbortPayment,
     ResponseType.GetInfoCommandResponse: GetInfoCommandResponse,
     ResponseType.InitChargePaymentResponse: InitChargePaymentResponse,
 }
@@ -378,6 +381,20 @@ def new_init_charge_command(
                 sender_state,
                 vasp_address,
             ),
+        ),
+    )
+
+
+def new_abort_payment_command(
+    reference_id: str, abort_code: P2MAbortCode = None, abort_message: str = None
+):
+    return CommandRequestObject(
+        cid=reference_id,
+        command_type=CommandType.AbortPayment,
+        command=AbortPayment(
+            reference_id=reference_id,
+            abort_code=abort_code,
+            abort_message=abort_message,
         ),
     )
 

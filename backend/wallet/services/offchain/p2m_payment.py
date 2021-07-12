@@ -12,6 +12,8 @@ from offchain.types import (
     new_init_charge_command,
     new_init_auth_command,
     InitChargePaymentResponse,
+    new_abort_payment_command,
+    P2MAbortCode,
 )
 from wallet import storage
 from wallet.services.offchain import utils
@@ -138,6 +140,38 @@ def approve_payment(
         lock_funds(account_id, payment_model, reference_id)
     else:
         raise P2MGeneralError(f"Unsupported action type {payment_model.action}")
+
+
+def reject_payment(reference_id: str):
+    payment_model = storage.get_payment(reference_id)
+
+    if not payment_model:
+        raise PaymentNotFoundError(f"Could not find payment {reference_id}")
+
+    try:
+        command_response_object = utils.offchain_client().send_request(
+            request_sender_address=payment_model.my_address,
+            counterparty_account_id=payment_model.vasp_address,
+            request_bytes=jws.serialize(
+                new_abort_payment_command(
+                    reference_id=payment_model.reference_id,
+                    abort_message="customer rejected payment request",
+                    abort_code=P2MAbortCode.CUSTOMER_DECLINED,
+                ),
+                utils.compliance_private_key().sign,
+            ),
+        )
+
+        if command_response_object:
+            if command_response_object.status == "success":
+                return
+            else:
+                # throw?
+                ...
+    except Exception as e:
+        error = P2MGeneralError(e)
+        logger.error(error)
+        raise error
 
 
 def lock_funds(account_id, payment_model, reference_id):
