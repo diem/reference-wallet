@@ -1,5 +1,6 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
+import time
 
 import requests
 import json
@@ -127,6 +128,9 @@ def transfer(user1: UserClient, user2: UserClient, transfer_amount: int, currenc
     user1.wait_for_balance(
         currency, user1_balance_before_transfer - transfer_amount, 20
     )
+
+    time.sleep(5)
+
     sent_txns = [
         txn for txn in user1.get_transactions() if txn.get("direction") == "sent"
     ]
