@@ -8,7 +8,7 @@ from tests.wallet_tests.resources.seeds.one_p2m_payment_seeder import (
     OneP2MPaymentSeeder,
 )
 from wallet.services.offchain.p2m_payment_as_receiver import (
-    handle_get_payment_info_incoming_request,
+    handle_incoming_get_payment_info_request,
     handle_init_charge_command,
     handle_init_authorize_command,
 )
@@ -30,7 +30,7 @@ def test_handle_get_info_command(mock_method):
 
     get_info_request = new_get_info_request(reference_id=REFERENCE_ID, cid=REFERENCE_ID)
 
-    response = handle_get_payment_info_incoming_request(get_info_request)
+    response = handle_incoming_get_payment_info_request(get_info_request)
 
     assert response[0] == 200
     assert (
