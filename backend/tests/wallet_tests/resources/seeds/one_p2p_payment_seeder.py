@@ -1,12 +1,9 @@
-import uuid
-
 from diem_utils.types.currencies import DiemCurrency
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet.storage import models, TransactionStatus
-from datetime import datetime
 
 
-class PaymentCommandSeeder:
+class OneP2PPaymentSeeder:
     @staticmethod
     def run(
         db_session,

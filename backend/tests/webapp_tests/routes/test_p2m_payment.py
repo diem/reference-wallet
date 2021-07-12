@@ -89,7 +89,7 @@ class TestAddPayment:
         assert rv.status_code == 204, rv.get_data()
 
 
-class TestApprovePayment:
+class TestApproveP2MPayment:
     def test_payment_not_found(self, authorized_client: Client, mock_method):
         mock_method(payment_service, "approve_payment", will_raise=PaymentNotFoundError)
 
