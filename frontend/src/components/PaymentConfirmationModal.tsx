@@ -43,7 +43,7 @@ function PaymentConfirmationModal({ open, onClose, paymentParams }: PaymentConfi
     setSubmitStatus("success");
   };
   const onReject = async () => {
-    await new BackendClient().rejectPaymentCommand(paymentParams.referenceId);
+    await new BackendClient().rejectPayment(paymentParams.referenceId);
     setSubmitStatus("success");
   };
 

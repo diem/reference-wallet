@@ -1,4 +1,5 @@
 import typing
+from enum import Enum
 
 from .command_types import CommandType, ResponseType
 from dataclasses import dataclass, field as datafield
@@ -178,3 +179,20 @@ class InitAuthorizeCommand:
     sender: PaymentSenderObject
     reference_id: str
     _ObjectType: str = datafield(default=CommandType.InitAuthorizeCommand)
+
+
+class P2MAbortCode(str, Enum):
+    INSUFFICIENT_FUNDS = "insufficient_funds"
+    CUSTOMER_DECLINED = "customer_declined"
+    BUSINESS_NOT_VERIFIED = "business_not_verified"
+    MISSING_RECIPIENT_SIGNATURE = "missing_recipient_signature"
+    COULD_NOT_PUT_TRANSACTION = "could_not_put_transaction"
+    UNSPECIFIED_ERROR = "unspecified_error"
+
+
+@dataclass(frozen=True)
+class AbortPayment:
+    reference_id: str
+    abort_code: typing.Optional[P2MAbortCode] = None
+    abort_message: typing.Optional[P2MAbortCode] = None
+    _ObjectType: str = datafield(default=CommandType.AbortPayment)

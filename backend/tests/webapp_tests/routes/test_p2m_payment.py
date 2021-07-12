@@ -109,3 +109,24 @@ class TestApproveP2MPayment:
         )
 
         assert rv.status_code == 204, rv.get_data()
+
+
+class TestRejectP2MPayment:
+    def test_payment_not_found(self, authorized_client: Client, mock_method):
+        mock_method(payment_service, "reject_payment", will_raise=PaymentNotFoundError)
+
+        rv: Response = authorized_client.post(
+            f"/offchain/payment/{REFERENCE_ID}/actions/reject",
+            json={"init_offchain_required": False},
+        )
+
+        assert rv.status_code == 404, rv.get_data()
+
+    def test_successful_payment(self, authorized_client: Client, mock_method):
+        mock_method(payment_service, "reject_payment", will_return=None)
+
+        rv: Response = authorized_client.post(
+            f"/offchain/payment/{REFERENCE_ID}/actions/reject",
+        )
+
+        assert rv.status_code == 204, rv.get_data()

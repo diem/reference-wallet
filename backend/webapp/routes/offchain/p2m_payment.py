@@ -153,7 +153,34 @@ class P2MPaymentRoutes:
             return "OK", HTTPStatus.NO_CONTENT
 
     class RejectP2MPayment(PaymentView):
-        ...
+        summary = "Reject p2m payment"
+
+        parameters = [
+            path_string_param(
+                name="reference_id",
+                description="reference id",
+            ),
+        ]
+
+        responses = {
+            HTTPStatus.NO_CONTENT: response_definition("Request accepted"),
+            HTTPStatus.NOT_FOUND: response_definition(
+                "Payment not found", schema=Error
+            ),
+            HTTPStatus.INTERNAL_SERVER_ERROR: response_definition(
+                "INTERNAL_SERVER_ERROR"
+            ),
+        }
+
+        def post(self, reference_id: str):
+            try:
+                payment_service.reject_payment(reference_id)
+            except PaymentNotFoundError as e:
+                return self.respond_with_error(HTTPStatus.NOT_FOUND, str(e))
+            except P2MGeneralError as e:
+                return self.respond_with_error(HTTPStatus.INTERNAL_SERVER_ERROR, str(e))
+
+            return "OK", HTTPStatus.NO_CONTENT
 
 
 def payment_details_to_dict(
