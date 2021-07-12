@@ -206,9 +206,7 @@ def offchain_api_routes():
     )
     p2p_payments.add_url_rule(
         rule="/offchain/payment_command/<reference_id>/actions/reject",
-        view_func=P2PPaymentRoutes.RejectP2PPayment.as_view(
-            "reject p2p payment"
-        ),
+        view_func=P2PPaymentRoutes.RejectP2PPayment.as_view("reject p2p payment"),
         methods=["POST"],
     )
     # funds pull pre approval (consent) end points
@@ -236,7 +234,9 @@ def offchain_api_routes():
     # p2m payments end points
     p2m_payments.add_url_rule(
         rule="/offchain/query/payment_details",
-        view_func=P2MPaymentRoutes.GetP2MPaymentDetails.as_view("get p2m payment details"),
+        view_func=P2MPaymentRoutes.GetP2MPaymentDetails.as_view(
+            "get p2m payment details"
+        ),
         methods=["GET"],
     )
     p2m_payments.add_url_rule(
@@ -251,7 +251,9 @@ def offchain_api_routes():
     )
     p2m_payments.add_url_rule(
         rule="/offchain/payment",
-        view_func=P2MPaymentRoutes.CreateNewP2MPayment.as_view("create new p2m payment"),
+        view_func=P2MPaymentRoutes.CreateNewP2MPayment.as_view(
+            "create new p2m payment"
+        ),
         methods=["POST"],
     )
 
