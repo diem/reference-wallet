@@ -1,8 +1,8 @@
 from http import HTTPStatus
 
 from diem.jsonrpc import AccountNotFoundError
-from wallet.services.offchain import payment as payment_service
-from wallet.services.offchain.payment import P2MGeneralError, PaymentNotFoundError
+from wallet.services.offchain import p2m_payment as payment_service
+from wallet.services.offchain.p2m_payment import P2MGeneralError, PaymentNotFoundError
 from webapp.routes.strict_schema_view import (
     StrictSchemaView,
     query_str_param,
@@ -14,10 +14,10 @@ from webapp.schemas import Error, ApprovePaymentSchema
 from flask import Blueprint, request
 from webapp.schemas import CreatePayment as CreatePaymentSchema, Payment
 
-payment = Blueprint("payment", __name__)
+p2m_payments = Blueprint("payment", __name__)
 
 
-class PaymentRoutes:
+class P2MPaymentRoutes:
     class PaymentView(StrictSchemaView):
         tags = ["Payment"]
 

@@ -3,7 +3,7 @@ import logging
 import offchain
 from offchain import Status
 from wallet import storage
-from wallet.services.offchain import payment_command as pc_service
+from wallet.services.offchain import p2p_payment as pc_service
 from wallet.types import TransactionStatus
 
 logger = logging.getLogger(__name__)

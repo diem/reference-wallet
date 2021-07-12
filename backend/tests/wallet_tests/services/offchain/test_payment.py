@@ -22,7 +22,7 @@ from offchain.types.payment_types import (
 from tests.wallet_tests.resources.seeds.one_payment_seeder import OnePaymentSeeder
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet import storage
-from wallet.services.offchain import payment as payment_service
+from wallet.services.offchain import p2m_payment as payment_service
 from wallet.storage import db_session
 
 CREATED_AT = datetime(2021, 5, 12)

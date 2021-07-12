@@ -5,7 +5,7 @@ from offchain.types import (
     new_init_auth_command,
 )
 from tests.wallet_tests.resources.seeds.one_payment_seeder import OnePaymentSeeder
-from wallet.services.offchain.payment_as_receiver import (
+from wallet.services.offchain.p2m_payment_as_receiver import (
     handle_get_payment_info_incoming_request,
     handle_init_charge_command,
     handle_init_authorize_command,

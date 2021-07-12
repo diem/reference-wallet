@@ -32,8 +32,8 @@ from .routes import (
     offchain,
     validation_tool,
     funds_pull_pre_approval,
-    payment,
-    payment_command,
+    p2m_payments,
+    p2p_payments,
 )
 from .swagger import swagger_template
 
@@ -98,8 +98,8 @@ def _create_app() -> Flask:
     app.register_blueprint(system)
     app.register_blueprint(offchain)
     app.register_blueprint(funds_pull_pre_approval)
-    app.register_blueprint(payment)
-    app.register_blueprint(payment_command)
+    app.register_blueprint(p2m_payments)
+    app.register_blueprint(p2p_payments)
     app.register_blueprint(validation_tool)
 
     # pyre-ignore[8]

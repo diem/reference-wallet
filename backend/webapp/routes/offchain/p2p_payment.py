@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 import offchain as diem_offchain
 from offchain import Status
-from wallet.services.offchain import payment_command as pc_service
+from wallet.services.offchain import p2p_payment as pc_service
 from webapp.routes.strict_schema_view import (
     StrictSchemaView,
     path_string_param,
@@ -13,10 +13,10 @@ from webapp.schemas import PaymentCommand, PaymentCommands, Error
 from flask import Blueprint, request
 from webapp.schemas import CreatePayment as CreatePaymentSchema
 
-payment_command = Blueprint("payment_command", __name__)
+p2p_payments = Blueprint("payment_command", __name__)
 
 
-class PaymentCommandRoutes:
+class P2PPaymentRoutes:
     class PaymentCommandView(StrictSchemaView):
         tags = ["PaymentCommand"]
 
