@@ -7,10 +7,13 @@ import { BackendError, ErrorMessage, UsernameAlreadyExistsError } from "./errors
 import { PaymentMethod, User, UserInfo } from "../interfaces/user";
 import { Account, CurrencyBalance } from "../interfaces/account";
 import { Transaction, TransactionDirection } from "../interfaces/transaction";
-import { FiatCurrency, Currency } from "../interfaces/currencies";
+import { DiemCurrency, FiatCurrency } from "../interfaces/currencies";
 import { Quote, QuoteAction, Rate } from "../interfaces/cico";
 import { Debt } from "../interfaces/settlement";
 import { Chain } from "../interfaces/system";
+import { Approval } from "../interfaces/approval";
+import { PaymentAction, PaymentParams } from "../utils/payment-params";
+import { PaymentDetails } from "../interfaces/payment_details";
 
 export default class BackendClient {
   private client: AxiosInstance;
@@ -201,7 +204,7 @@ export default class BackendClient {
   }
 
   async getTransactions(
-    currency?: Currency,
+    currency?: DiemCurrency,
     direction?: TransactionDirection,
     sort?: string,
     limit?: number
@@ -218,7 +221,7 @@ export default class BackendClient {
   }
 
   async createTransaction(
-    currency: Currency,
+    currency: DiemCurrency,
     amount: number,
     receiver_address: string
   ): Promise<Transaction> {
@@ -239,14 +242,14 @@ export default class BackendClient {
 
   async requestDepositQuote(
     fromFiatCurrency: FiatCurrency,
-    toCurrency: Currency,
+    toCurrency: DiemCurrency,
     amount: number
   ): Promise<Quote> {
     return this.requestQuote("buy", toCurrency, fromFiatCurrency, amount);
   }
 
   async requestWithdrawQuote(
-    fromCurrency: Currency,
+    fromCurrency: DiemCurrency,
     toFiatCurrency: FiatCurrency,
     amount: number
   ): Promise<Quote> {
@@ -254,8 +257,8 @@ export default class BackendClient {
   }
 
   async requestConvertQuote(
-    fromCurrency: Currency,
-    toCurrency: Currency,
+    fromCurrency: DiemCurrency,
+    toCurrency: DiemCurrency,
     amount: number
   ): Promise<Quote> {
     return this.requestQuote("sell", fromCurrency, toCurrency, amount);
@@ -263,8 +266,8 @@ export default class BackendClient {
 
   private async requestQuote(
     action: QuoteAction,
-    baseCurrency: Currency,
-    quoteCurrency: Currency | FiatCurrency,
+    baseCurrency: DiemCurrency,
+    quoteCurrency: DiemCurrency | FiatCurrency,
     amount: number
   ): Promise<Quote> {
     try {
@@ -398,6 +401,134 @@ export default class BackendClient {
       const response = await this.client.get("/network");
 
       return response.data;
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  // Offchain
+
+  async getNewFundsPullPreApprovals(): Promise<Approval[]> {
+    try {
+      const response = await this.client.get("/offchain/funds_pull_pre_approvals?status=pending");
+
+      return response.data.funds_pull_pre_approvals;
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async getAllFundsPullPreApprovals(): Promise<Approval[]> {
+    try {
+      const response = await this.client.get("/offchain/funds_pull_pre_approvals");
+
+      return response.data.funds_pull_pre_approvals;
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async updateApprovalStatus(funds_pull_pre_approval_id, status): Promise<void> {
+    try {
+      await this.client.put(`/offchain/funds_pull_pre_approvals/${funds_pull_pre_approval_id}`, {
+        status,
+      });
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async addPaymentCommand(paymentParams: PaymentParams): Promise<void> {
+    try {
+      await this.client.post(`/offchain/payment_command`, {
+        vasp_address: paymentParams.vaspAddress,
+        reference_id: paymentParams.referenceId,
+        merchant_name: paymentParams.merchantName,
+        action:
+          paymentParams.action !== undefined ? paymentParams.action!.toLowerCase() : undefined,
+        currency: paymentParams.currency,
+        amount: paymentParams.amount,
+        expiration:
+          paymentParams.expiration !== undefined
+            ? paymentParams.expiration!.getTime() / 1000
+            : undefined,
+      });
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async addPayment(paymentParams: PaymentParams): Promise<void> {
+    let action;
+
+    try {
+      if (paymentParams.action !== undefined) {
+        if (paymentParams.action === PaymentAction.AUTHORIZATION) {
+          action = "auth";
+        } else {
+          action = paymentParams.action.toLowerCase();
+        }
+      }
+
+      await this.client.post(`/offchain/payment`, {
+        vasp_address: paymentParams.vaspAddress,
+        reference_id: paymentParams.referenceId,
+        merchant_name: paymentParams.merchantName,
+        action: action,
+        currency: paymentParams.currency,
+        amount: paymentParams.amount,
+        expiration:
+          paymentParams.expiration !== undefined
+            ? paymentParams.expiration!.getTime() / 1000
+            : undefined,
+      });
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async getPaymentDetails(reference_id: string, vasp_address: string): Promise<PaymentDetails> {
+    try {
+      const response = await this.client.get(
+        `/offchain/query/payment_details?vasp_address=${vasp_address}&reference_id=${reference_id}`
+      );
+
+      return response.data;
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async approvePaymentCommand(reference_id): Promise<void> {
+    try {
+      await this.client.post(`/offchain/payment_command/${reference_id}/actions/approve`);
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async approvePayment(reference_id, is_full: boolean = false): Promise<void> {
+    try {
+      await this.client.post(`/offchain/payment/${reference_id}/actions/approve`, {
+        init_offchain_required: !is_full,
+      });
+    } catch (e) {
+      BackendClient.handleError(e);
+      throw e;
+    }
+  }
+
+  async rejectPaymentCommand(reference_id): Promise<void> {
+    try {
+      await this.client.post(`/offchain/payment_command/${reference_id}/actions/reject`);
     } catch (e) {
       BackendClient.handleError(e);
       throw e;

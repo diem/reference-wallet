@@ -17,7 +17,7 @@ import {
 } from "reactstrap";
 import { Trans, useTranslation } from "react-i18next";
 import SelectDropdown from "../select";
-import { Currency } from "../../interfaces/currencies";
+import { DiemCurrency } from "../../interfaces/currencies";
 import { settingsContext } from "../../contexts/app";
 import { ConvertData } from "./interfaces";
 import {
@@ -37,10 +37,10 @@ function ConvertForm({ value, onSubmit }: ConvertFormProps) {
   const [settings] = useContext(settingsContext)!;
   const { errors, handleSubmit, control, setValue, watch } = useForm<ConvertData>();
 
-  const [selectedFromCurrency, setSelectedFromCurrency] = useState<Currency | undefined>(
+  const [selectedFromCurrency, setSelectedFromCurrency] = useState<DiemCurrency | undefined>(
     value.fromCurrency
   );
-  const [selectedToCurrency, setSelectedToCurrency] = useState<Currency | undefined>(
+  const [selectedToCurrency, setSelectedToCurrency] = useState<DiemCurrency | undefined>(
     value.toCurrency
   );
   const amount = watch("amount") || 0;

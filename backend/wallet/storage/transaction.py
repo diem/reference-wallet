@@ -6,34 +6,12 @@
 from datetime import datetime
 from typing import Optional, List, Callable
 
+from diem_utils.types.currencies import DiemCurrency
 from sqlalchemy import func, and_, or_
 
 from . import db_session, get_user
 from .models import Transaction, TransactionLog
 from ..types import TransactionStatus, TransactionType
-from diem_utils.types.currencies import DiemCurrency
-import logging
-
-logger = logging.getLogger(name="wallet-service:storage")
-
-
-def lock_for_update(
-    reference_id: str,
-    callback: Callable[[Optional[Transaction]], Transaction],
-) -> Transaction:
-    try:
-        txn = (
-            Transaction.query.filter_by(reference_id=reference_id)
-            .populate_existing()
-            .with_for_update(nowait=True)
-            .one_or_none()
-        )
-        txn = callback(txn)
-        commit_transaction(txn)
-    except Exception:
-        db_session.rollback()
-        raise
-    return txn
 
 
 def add_transaction(
@@ -49,13 +27,13 @@ def add_transaction(
     destination_subaddress: str = None,
     sequence: Optional[int] = None,
     blockchain_version: Optional[int] = None,
-    original_txn_id: Optional[int] = None,
+    original_txn_id: Optional[str] = None,
     refund_reason: Optional[str] = None,
     reference_id: Optional[str] = None,
-    command_json: Optional[str] = None,
 ) -> Transaction:
     return commit_transaction(
         Transaction(
+            id=reference_id,
             amount=amount,
             currency=currency,
             type=payment_type,
@@ -72,7 +50,6 @@ def add_transaction(
             original_txn_id=original_txn_id,
             refund_reason=refund_reason,
             reference_id=reference_id,
-            command_json=command_json,
         )
     )
 
@@ -109,7 +86,7 @@ def get_transaction_by_reference_id(reference_id: str) -> Transaction:
     return Transaction.query.filter_by(reference_id=reference_id).first()
 
 
-def get_transaction(transaction_id: int) -> Transaction:
+def get_transaction(transaction_id: str) -> Transaction:
     return Transaction.query.filter_by(id=transaction_id).first()
 
 

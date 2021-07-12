@@ -1,43 +1,32 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
-
+import logging
+from dataclasses import dataclass
 from typing import Optional
 
-from diem import diem_types, jsonrpc, txnmetadata
+import context
+import wallet.services.offchain.payment_command as pc_service
+from diem import diem_types, offchain, identifier
 from diem_utils.types.currencies import DiemCurrency
 from wallet.services import (
     account as account_service,
-    kyc,
-    offchain as offchain_service,
 )
 from wallet.services.risk import risk_check
+from wallet.storage import Transaction
+
 from . import INVENTORY_ACCOUNT_NAME
 from .log import add_transaction_log
 from .. import storage, services
 from ..logging import log_execution
-from time import time
-from ..storage import (
-    add_transaction,
-    Transaction,
-    get_transaction_by_details,
-    get_total_currency_credits,
-    get_total_currency_debits,
-    get_transaction_status,
-    get_transaction_by_reference_id,
-    get_transaction_by_blockchain_version,
-)
-from ..storage import get_account_id_from_subaddr, get_account
+from wallet import storage
 from ..types import (
     TransactionDirection,
     TransactionType,
     TransactionStatus,
     BalanceError,
     Balance,
-    RefundReason,
     to_refund_reason,
 )
-
-import context, logging
 
 logger = logging.getLogger(name="wallet-service:transaction")
 
@@ -105,7 +94,7 @@ def process_incoming_transaction(
         if general_v0.from_subaddress:
             sender_subaddress = general_v0.from_subaddress.hex()
 
-        if get_transaction_by_details(
+        if storage.get_transaction_by_details(
             source_address=sender_address,
             source_subaddress=sender_subaddress,
             sequence=sequence,
@@ -123,14 +112,16 @@ def process_incoming_transaction(
                 f"sender: {sender_address}, receiver: {receiver_address}, "
                 f"seq: {sequence}, amount: {amount}"
             )
-            add_transaction(
+            storage.add_transaction(
                 amount=amount,
                 currency=currency,
                 payment_type=TransactionType.EXTERNAL,
                 status=TransactionStatus.COMPLETED,
                 source_address=sender_address,
                 source_subaddress=sender_subaddress,
-                destination_id=get_account(account_name=INVENTORY_ACCOUNT_NAME).id,
+                destination_id=storage.get_account(
+                    account_name=INVENTORY_ACCOUNT_NAME
+                ).id,
                 destination_address=receiver_address,
                 destination_subaddress=receiver_subaddr,
                 sequence=sequence,
@@ -138,7 +129,7 @@ def process_incoming_transaction(
             )
             return
 
-        receiver_id = get_account_id_from_subaddr(receiver_subaddr)
+        receiver_id = storage.get_account_id_from_subaddr(receiver_subaddr)
 
         # Could not find receiver for the given non-zero subaddress, so send back a refund from inventory account
         if receiver_id is None:
@@ -148,8 +139,10 @@ def process_incoming_transaction(
                 f"blockchain version {blockchain_version}, seq {sequence}"
             )
             # Record the received transaction as a regular transaction to inventory account
-            inventory_account_id = get_account(account_name=INVENTORY_ACCOUNT_NAME).id
-            tx = add_transaction(
+            inventory_account_id = storage.get_account(
+                account_name=INVENTORY_ACCOUNT_NAME
+            ).id
+            tx = storage.add_transaction(
                 amount=amount,
                 currency=currency,
                 payment_type=TransactionType.EXTERNAL,
@@ -177,7 +170,7 @@ def process_incoming_transaction(
                 f"sender address: {sender_address} and sender_subaddress: {sender_subaddress}, amount {amount}, "
                 f"blockchain version {blockchain_version}, seq {sequence}"
             )
-            add_transaction(
+            storage.add_transaction(
                 amount=amount,
                 currency=currency,
                 payment_type=TransactionType.EXTERNAL,
@@ -208,29 +201,41 @@ def process_incoming_transaction(
                 f"Invalid Travel Rule metadata : reference_id None"
             )
 
-        transaction = get_transaction_by_reference_id(reference_id)
+        payment_command = storage.get_payment_command(reference_id)
+
+        payment_command_sender_address, _ = identifier.decode_account(
+            payment_command.sender_address, context.get().config.diem_address_hrp()
+        )
+        payment_command_receiver_address, _ = identifier.decode_account(
+            payment_command.receiver_address, context.get().config.diem_address_hrp()
+        )
+        payment_command_receiver_address_hex = payment_command_receiver_address.to_hex()
+        payment_command_sender_address_hex = payment_command_sender_address.to_hex()
         if (
-            transaction.amount == amount
-            and transaction.status == TransactionStatus.OFF_CHAIN_READY
-            and transaction.source_address == sender_address
-            and transaction.destination_address == receiver_address
+            payment_command.amount == amount
+            and payment_command.status == TransactionStatus.OFF_CHAIN_READY
+            and payment_command_sender_address_hex == sender_address
+            and payment_command_receiver_address_hex == receiver_address
         ):
-            logger.info(f"transaction completed: {transaction.id}")
-            update_transaction(
-                transaction_id=transaction.id,
+            transaction = pc_service.add_transaction_based_on_payment_command(
+                command=pc_service.model_to_payment_command(payment_command),
                 status=TransactionStatus.COMPLETED,
                 sequence=sequence,
-                blockchain_tx_version=blockchain_version,
+                blockchain_version=blockchain_version,
             )
+            payment_command.status = TransactionStatus.COMPLETED
+            storage.save_payment_command(payment_command)
+
+            logger.info(f"transaction completed: {transaction.id}")
 
             return
 
         raise InvalidTravelRuleMetadata(
-            f"Travel Rule metadata decode failed: Transaction {transaction.id} with reference ID {reference_id} "
-            f"should have amount: {transaction.amount}, status: {TransactionStatus.OFF_CHAIN_READY}, "
-            f"source address: {transaction.source_address}, destination address: {transaction.destination_address},"
-            f" but received transaction has amount: {amount}, status: {transaction.status}, "
-            f"source address: {sender_address}, destination address: {receiver_address}"
+            f"Travel Rule metadata decode failed: PaymentCommand {payment_command} "
+            f"with reference ID {reference_id} should have amount: {payment_command.amount}, "
+            f"status: {TransactionStatus.OFF_CHAIN_READY}, sender address: {payment_command.sender_address}, "
+            f"receiver address: {payment_command.receiver_address}, but received transaction has amount: {amount}, "
+            f"status: {payment_command.status}, sender address: {sender_address}, receiver address: {receiver_address}"
         )
 
     if isinstance(metadata, diem_types.Metadata__RefundMetadata) and isinstance(
@@ -246,7 +251,7 @@ def process_incoming_transaction(
 
         logger.info(f"Refund metadata: txn version: {txn_version}, reason: {reason}")
 
-        original_txn = get_transaction_by_blockchain_version(txn_version)
+        original_txn = storage.get_transaction_by_blockchain_version(txn_version)
 
         logger.info(f"Refund metadata: original txn id: {original_txn}")
 
@@ -256,8 +261,10 @@ def process_incoming_transaction(
                 f"Refund metadata invalid: txn version: {txn_version} does not exist"
             )
             # Record the received transaction as a regular transaction to inventory account
-            inventory_account_id = get_account(account_name=INVENTORY_ACCOUNT_NAME).id
-            add_transaction(
+            inventory_account_id = storage.get_account(
+                account_name=INVENTORY_ACCOUNT_NAME
+            ).id
+            storage.add_transaction(
                 amount=amount,
                 currency=currency,
                 payment_type=TransactionType.EXTERNAL,
@@ -271,13 +278,13 @@ def process_incoming_transaction(
             return
 
         refund_reason = to_refund_reason(reason)
-        original_txn = get_transaction_by_blockchain_version(txn_version)
+        original_txn = storage.get_transaction_by_blockchain_version(txn_version)
         receiver_id = original_txn.source_id
         receiver_subaddr = original_txn.source_subaddress
         sender_subaddress = original_txn.destination_subaddress
         original_txn_id = original_txn.id
 
-        if get_transaction_by_details(
+        if storage.get_transaction_by_details(
             source_address=sender_address,
             source_subaddress=sender_subaddress,
             sequence=sequence,
@@ -287,7 +294,7 @@ def process_incoming_transaction(
             )
             return
 
-        add_transaction(
+        storage.add_transaction(
             amount=amount,
             currency=currency,
             payment_type=TransactionType.REFUND,
@@ -315,8 +322,8 @@ def send_transaction(
     destination_address: str,
     destination_subaddress: Optional[str] = None,
     payment_type: Optional[TransactionType] = None,
-    original_txn_id: Optional[int] = None,
-) -> Optional[Transaction]:
+    original_txn_id: Optional[str] = None,
+) -> Optional[str]:
     log_execution(
         f"transfer from sender {sender_id} to receiver (dest addr: {destination_address} subaddr: {destination_subaddress})"
     )
@@ -348,16 +355,17 @@ def send_transaction(
             payment_type=payment_type,
             amount=amount,
             currency=currency,
-        )
+        ).id
     else:
         if not risk_check(sender_id, amount):
-            return offchain_service.save_outbound_transaction(
+            payment_command = pc_service.save_outbound_payment_command(
                 sender_id=sender_id,
                 destination_address=destination_address,
                 destination_subaddress=destination_subaddress,
                 amount=amount,
                 currency=currency,
             )
+            return payment_command.reference_id()
 
         return _send_transaction_external(
             sender_id=sender_id,
@@ -367,7 +375,7 @@ def send_transaction(
             amount=amount,
             currency=currency,
             original_txn_id=original_txn_id,
-        )
+        ).id
 
 
 def _unhosted_wallet_transfer(sender_id, destination_address):
@@ -388,7 +396,7 @@ def _send_transaction_external(
     original_txn_id,
 ) -> Optional[Transaction]:
     log_execution(
-        f"external transfer type {payment_type} from {sender_id} to receiver {destination_address}, "
+        f"external transfer from {sender_id} to receiver {destination_address}, "
         f"receiver subaddress {destination_subaddress}"
     )
     payment_type = TransactionType.EXTERNAL if payment_type is None else payment_type
@@ -409,7 +417,7 @@ def _send_transaction_internal(
     log_execution(
         f"internal transfer from {sender_id} to receiver {destination_subaddress}"
     )
-    receiver_id = get_account_id_from_subaddr(subaddr=destination_subaddress)
+    receiver_id = storage.get_account_id_from_subaddr(subaddr=destination_subaddress)
     payment_type = TransactionType.INTERNAL if payment_type is None else payment_type
 
     return internal_transaction(
@@ -422,7 +430,7 @@ def _send_transaction_internal(
 
 
 def update_transaction(
-    transaction_id: int,
+    transaction_id: str,
     status: Optional[TransactionStatus] = None,
     sequence: Optional[int] = None,
     blockchain_tx_version: Optional[int] = None,
@@ -435,8 +443,21 @@ def update_transaction(
     )
 
 
+@dataclass
+class FundsTransfer:
+    transaction: Transaction
+    payment_command: offchain.PaymentCommand
+
+
+def get_funds_transfer(reference_id: str) -> FundsTransfer:
+    return FundsTransfer(
+        transaction=storage.get_transaction(reference_id),
+        payment_command=pc_service.get_payment_command(reference_id=reference_id),
+    )
+
+
 def get_transaction(
-    transaction_id: Optional[int] = None, blockchain_version: Optional[int] = None
+    transaction_id: Optional[str] = None, blockchain_version: Optional[int] = None
 ) -> Transaction:
     if transaction_id:
         return storage.get_transaction(transaction_id)
@@ -482,7 +503,7 @@ def internal_transaction(
     receiver_subaddress = account_service.generate_new_subaddress(receiver_id)
     internal_vasp_address = context.get().config.vasp_address
 
-    transaction = add_transaction(
+    transaction = storage.add_transaction(
         amount=amount,
         currency=currency,
         payment_type=payment_type,
@@ -509,7 +530,7 @@ def external_transaction(
     amount: int,
     currency: DiemCurrency,
     payment_type: TransactionType,
-    original_txn_id: int,
+    original_txn_id: str,
 ) -> Transaction:
     logger.info(
         f"external_transaction {sender_id} to receiver {receiver_address}, "
@@ -532,7 +553,7 @@ def external_transaction(
             account_id=sender_id
         )
 
-    transaction = add_transaction(
+    transaction = storage.add_transaction(
         amount=amount,
         currency=currency,
         payment_type=payment_type,
@@ -556,7 +577,7 @@ def external_transaction(
     return transaction
 
 
-def submit_onchain(transaction_id: int) -> None:
+def submit_onchain(transaction_id: str) -> None:
     transaction = get_transaction(transaction_id)
     if transaction.status == TransactionStatus.PENDING:
         try:
@@ -621,8 +642,8 @@ def submit_onchain(transaction_id: int) -> None:
 
 
 def get_total_balance() -> Balance:
-    credits = get_total_currency_credits()
-    debits = get_total_currency_debits()
+    credits = storage.get_total_currency_credits()
+    debits = storage.get_total_currency_debits()
 
     balance = Balance()
     for credit in credits:

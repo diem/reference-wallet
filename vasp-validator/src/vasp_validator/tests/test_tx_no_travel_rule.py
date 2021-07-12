@@ -20,7 +20,7 @@ def test_send_tx_no_travel_rule(validator, vasp_proxy: VaspProxy):
 
     # VASP sent the transaction successfully. Validate that it was received
     # by the validator
-    assert validator.knows_transaction(
+    assert validator.knows_transaction_by_version(
         tx.onchain_version
     ), f"Transaction {tx.onchain_version} is not recognized by the validator"
 
@@ -39,6 +39,6 @@ def test_receive_tx_no_travel_rule(validator, vasp_proxy: VaspProxy):
 
     # Validator sent the transaction successfully. Validate that it was received
     # by the VASP
-    assert vasp_proxy.knows_transaction(
+    assert vasp_proxy.knows_transaction_by_version(
         tx.onchain_version
     ), f"Transaction {tx.onchain_version} is not recognized by the VASP"

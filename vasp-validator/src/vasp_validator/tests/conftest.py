@@ -1,10 +1,12 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
 
-import os
 import importlib
 import logging
+import os
+
 import pytest
+import requests
 
 from diem import testnet, identifier
 
@@ -51,3 +53,26 @@ def vasp_proxy(pytestconfig) -> VaspProxy:
     log.debug(f"Proxy object {vasp_proxy} created using command line arguments")
 
     return vasp_proxy
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_exception_interact(node, call, report):
+    """
+    Intercept all HTTPError exceptions and improve how they are reported.
+    """
+    err = call.excinfo.value
+
+    if report.when == "call" and isinstance(err, requests.exceptions.HTTPError):
+        error_message = str(err)
+        if err.response is not None:
+            error_message += "\n" + err.response.text
+
+        try:
+            raise requests.exceptions.HTTPError(
+                error_message, request=err.request, response=err.response
+            ) from err
+        except requests.exceptions.HTTPError as updated_err:
+            call.excinfo._excinfo = (type(updated_err), updated_err)
+            report.longrepr = node.repr_failure(call.excinfo)
+
+    yield

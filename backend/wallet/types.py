@@ -32,6 +32,10 @@ class TransactionStatus(str, Enum):
     OFF_CHAIN_INBOUND = "off_chain_inbound"
     # wait for opponent VASP send update command
     OFF_CHAIN_WAIT = "off_chain_wait"
+    # payment command should be send (as receiver) back to sender
+    OFF_CHAIN_RECEIVER_OUTBOUND = "off_chain_receiver_outbound"
+    # authorization
+    LOCKED = "locked"
 
 
 class TransactionType(str, Enum):

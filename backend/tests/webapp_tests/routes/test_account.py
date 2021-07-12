@@ -9,7 +9,9 @@ from http import HTTPStatus
 from typing import Optional
 
 import pytest
+from offchain import Status, AddressObject
 from flask import Response
+from wallet.services.transaction import FundsTransfer
 from werkzeug import Client
 
 from diem_utils.types.currencies import DiemCurrency
@@ -23,6 +25,7 @@ from wallet.types import (
     TransactionType,
     TransactionSortOption,
 )
+import offchain
 
 INTERNAL_TX = Transaction(
     id=1,
@@ -37,6 +40,81 @@ INTERNAL_TX = Transaction(
     destination_address="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     destination_subaddress="75b12ccd3ab503a6",
     created_timestamp=datetime.fromisoformat("2020-06-23T19:49:26.989849"),
+)
+INTERNAL_FUNDS_TRANSFER = FundsTransfer(
+    transaction=Transaction(
+        id=1,
+        type=TransactionType.INTERNAL.value,
+        amount=100,
+        currency=DiemCurrency.XUS.value,
+        status=TransactionStatus.COMPLETED.value,
+        source_id=1,
+        source_address="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        source_subaddress="863bc063df8b2bf3",
+        destination_id=2,
+        destination_address="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        destination_subaddress="75b12ccd3ab503a6",
+        created_timestamp=datetime.fromisoformat("2020-06-23T19:49:26.989849"),
+    ),
+    payment_command=offchain.PaymentCommand(
+        my_actor_address="tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
+        payment=offchain.PaymentObject(
+            reference_id="c6f7e351-e1c3-4da7-9310-4e87296febf2",
+            sender=offchain.PaymentActorObject(
+                address="tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp",
+                status=offchain.StatusObject(status=Status.ready_for_settlement),
+                kyc_data=offchain.KycDataObject(
+                    type="individual",
+                    payload_version=1,
+                    given_name="Bond",
+                    surname="Marton",
+                    address=AddressObject.new_address_object(
+                        city="Dogcity",
+                        country="DL",
+                        line1="1234 Puppy Street",
+                        line2="dogpalace 3",
+                        postal_code="123456",
+                        state="",
+                    ),
+                    dob="2010-21-01",
+                ),
+                additional_kyc_data="",
+                metadata=[],
+            ),
+            receiver=offchain.PaymentActorObject(
+                address="tdm1pwm5m35ayknjr0s67pk9xdf5mwqft4rvgxplmckcxr9lwd",
+                status=offchain.StatusObject(status=Status.ready_for_settlement),
+                kyc_data=offchain.KycDataObject(
+                    type="individual",
+                    payload_version=1,
+                    given_name="Gurki",
+                    surname="Silver",
+                    address=AddressObject.new_address_object(
+                        city="Dogcity",
+                        country="DL",
+                        line1="567 Puppy Street",
+                        line2="doggarden 3",
+                        postal_code="123456",
+                        state="",
+                    ),
+                    dob="2011-11-11",
+                ),
+                additional_kyc_data="",
+                metadata=[],
+            ),
+            action=offchain.PaymentActionObject(
+                amount=2000000000,
+                currency="XUS",
+                action="charge",
+                timestamp=1609064370,
+            ),
+            recipient_signature="ce9daec5599dc5afd5955d45664cb07be4e2104e32034b8356c3f0e99782d86288ed735d5ac3ffd6b08bba78a001e1b084284453a09400e1e1cbae9a9ac0d108",
+            original_payment_reference_id="",
+            description="",
+        ),
+        inbound=False,
+        cid="1cea3243-4ea6-44b2-8590-ec5bf4a101b1",
+    ),
 )
 FULL_ADDRESS = "tdm1pztdjx2z8wp0q25jakqeklk0nxj2wmk2kg9whu8c3fdm9u"
 
@@ -89,17 +167,15 @@ def account_transactions_mock(monkeypatch):
 def get_transaction_by_id_mock(monkeypatch):
     saved = {}
 
-    def get_mock(
-        transaction_id: Optional[int] = None, blockchain_version: Optional[int] = None
-    ) -> Transaction:
-        saved["transaction_id"] = transaction_id
-        if transaction_id == 1:
-            return INTERNAL_TX
-        tx = deepcopy(INTERNAL_TX)
-        tx.source_id = 3
-        return tx
+    def mock(reference_id: str) -> FundsTransfer:
+        saved["transaction_id"] = reference_id
+        if reference_id == "1":
+            return INTERNAL_FUNDS_TRANSFER
+        funds_transfer = deepcopy(INTERNAL_FUNDS_TRANSFER)
+        funds_transfer.transaction.source_id = 3
+        return funds_transfer
 
-    monkeypatch.setattr(transaction_service, "get_transaction", get_mock)
+    monkeypatch.setattr(transaction_service, "get_funds_transfer", mock)
     yield saved
 
 
@@ -114,7 +190,7 @@ def send_transaction_mock(monkeypatch):
         destination_address: str,
         destination_subaddress: Optional[str] = None,
         payment_type: Optional[TransactionType] = None,
-    ) -> Optional[Transaction]:
+    ) -> Optional[int]:
         saved.update(
             {
                 "sender_id": sender_id,
@@ -125,22 +201,7 @@ def send_transaction_mock(monkeypatch):
                 "payment_type": payment_type,
             }
         )
-        tx = Transaction(
-            id=5,
-            type=TransactionType.EXTERNAL.value,
-            amount=amount,
-            currency=currency.value,
-            status=TransactionStatus.PENDING.value,
-            source_id=sender_id,
-            source_subaddress="122ce7420f15bec5",
-            source_address="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            destination_address=destination_address,
-            destination_subaddress=destination_subaddress,
-            created_timestamp=datetime.fromisoformat("2020-06-23T19:50:26.989849"),
-            blockchain_version=55,
-            sequence=10,
-        )
-        return tx
+        return 5
 
     monkeypatch.setattr(transaction_service, "send_transaction", send_mock)
     yield saved
@@ -180,10 +241,9 @@ class TestAccountTransactions:
         rv: Response = authorized_client.get(
             "/account/transactions/1",
         )
-        assert rv.status_code == 200
-        transaction = rv.get_json()
-        assert get_transaction_by_id_mock["transaction_id"] == 1
-        assert transaction == {
+        assert rv.status_code == 200, rv.data
+        funds_transfer = rv.get_json()
+        assert funds_transfer["transaction"] == {
             "id": 1,
             "amount": 100,
             "currency": DiemCurrency.XUS.value,
@@ -202,6 +262,7 @@ class TestAccountTransactions:
             },
             "blockchain_tx": None,
             "is_internal": True,
+            "reference_id": None,
         }
 
     def test_get_transaction_by_id_other_user(
@@ -213,7 +274,7 @@ class TestAccountTransactions:
         rv: Response = authorized_client.get(
             "/account/transactions/2",
         )
-        assert get_transaction_by_id_mock["transaction_id"] == 2
+        assert get_transaction_by_id_mock["transaction_id"] == "2"
         assert rv.status_code == 404
 
     def test_get_account_transactions(
@@ -248,6 +309,7 @@ class TestAccountTransactions:
                 },
                 "blockchain_tx": None,
                 "is_internal": True,
+                "reference_id": None,
             }
         ]
 
@@ -288,35 +350,7 @@ class TestSendTransaction:
             "/account/transactions", json=TestSendTransaction.tx_data
         )
         assert rv.status_code == 200
-        transaction = rv.get_json()
-        assert transaction == {
-            "id": 5,
-            "amount": 100,
-            "currency": DiemCurrency.XUS.value,
-            "direction": TransactionDirection.SENT.value,
-            "status": TransactionStatus.PENDING.value,
-            "timestamp": "2020-06-23T19:50:26.989849",
-            "source": {
-                "full_addr": "tdm1p4242424242424242424242424gfzee6zpu2ma3g3765hu",
-                "user_id": "122ce7420f15bec5",
-                "vasp_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            },
-            "destination": {
-                "user_id": TestSendTransaction.receiver_subaddress,
-                "vasp_name": TestSendTransaction.receiver_address,
-                "full_addr": "tdm1pztdjx2z8wp0q25jakqeklk0nxj2wmk2kg9whu8c3fdm9u",
-            },
-            "blockchain_tx": {
-                "amount": TestSendTransaction.amount,
-                "destination": TestSendTransaction.receiver_address,
-                "expirationTime": "",
-                "sequenceNumber": 10,
-                "source": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-                "status": "pending",
-                "version": 55,
-            },
-            "is_internal": False,
-        }
+        assert rv.get_json()["id"] == 5
 
     def test_send_transaction_risk_error(self, authorized_client: Client, monkeypatch):
         def send_transaction_mock_risk_failure(

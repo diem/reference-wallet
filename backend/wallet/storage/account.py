@@ -46,4 +46,4 @@ def add_subaddress(account_id: int, subaddr: str) -> str:
 
 
 def is_subaddress_exists(subaddr: str) -> bool:
-    return SubAddress.query.filter(SubAddress.address == subaddr).first()
+    return SubAddress.query.filter(SubAddress.address == subaddr).first() is not None

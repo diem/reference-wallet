@@ -7,7 +7,7 @@ import { Redirect } from "react-router";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { settingsContext } from "../contexts/app";
-import { Currency } from "../interfaces/currencies";
+import { DiemCurrency } from "../interfaces/currencies";
 import { RegistrationStatus } from "../interfaces/user";
 import { Transaction } from "../interfaces/transaction";
 import VerifyingMessage from "../components/VerifyingMessage";
@@ -21,9 +21,13 @@ import WalletLoader from "../components/WalletLoader";
 import TransactionsList from "../components/TransactionsList";
 import BackendClient from "../services/backendClient";
 import TransactionModal from "../components/TransactionModal";
-import TestnetWarning from "components/TestnetWarning";
+import TestnetWarning from "../components/TestnetWarning";
+import PaymentConfirmation from "../components/PaymentConfirmation";
+import FundsPullPreApprovalsList from "../components/FundsPullPreApproval/FundsPullPreApprovalsList";
+import { Approval } from "../interfaces/approval";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
+const REFRESH_APPROVALS_INTERVAL = 3000;
 
 function Home() {
   const { t } = useTranslation("layout");
@@ -36,8 +40,9 @@ function Home() {
       user.registration_status as RegistrationStatus
     );
 
-  const [activeCurrency, setActiveCurrency] = useState<Currency | undefined>();
+  const [activeCurrency, setActiveCurrency] = useState<DiemCurrency | undefined>();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [approvals, setApprovals] = useState<Approval[]>([]);
   const [transactionModal, setTransactionModal] = useState<Transaction>();
 
   const [transferModalOpen, setTransferModalOpen] = useState<boolean>(false);
@@ -78,7 +83,29 @@ function Home() {
     return () => {
       refreshTransactions = false;
     };
-  }, []);
+  }, [setTransactions]);
+
+  let refreshApprovals = true;
+
+  useEffect(() => {
+    const fetchApprovals = async () => {
+      try {
+        if (refreshApprovals) {
+          setApprovals(await new BackendClient().getNewFundsPullPreApprovals());
+        }
+        setTimeout(fetchApprovals, REFRESH_APPROVALS_INTERVAL);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    // noinspection JSIgnoredPromiseFromCall
+    fetchApprovals();
+
+    return () => {
+      refreshApprovals = false;
+    };
+  }, [setApprovals]);
 
   if (!user) {
     return <WalletLoader />;
@@ -95,6 +122,8 @@ function Home() {
           <VerifyingMessage />
         ) : (
           <>
+            <PaymentConfirmation />
+
             <h1 className="h5 font-weight-normal text-body text-center">
               {user.first_name} {user.last_name}
             </h1>
@@ -147,6 +176,18 @@ function Home() {
                 />
               </section>
             )}
+
+            <section className="my-5">
+              <h2 className="h5 font-weight-normal text-body">{t("approvals")}</h2>
+              <ul className="list-group my-4">
+                <FundsPullPreApprovalsList approvals={approvals} disableRevokeButton />
+                <li className="list-group-item text-center">
+                  <Link to="/fundsPullPreApprovals" className="text-black font-weight-bold">
+                    {t("all_approvals")}
+                  </Link>
+                </li>
+              </ul>
+            </section>
 
             <SendModal open={sendModalOpen} onClose={() => setSendModalOpen(false)} />
             <ReceiveModal open={receiveModalOpen} onClose={() => setReceiveModalOpen(false)} />

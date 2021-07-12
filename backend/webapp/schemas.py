@@ -172,8 +172,12 @@ class BlockchainTransaction(Schema):
     version = fields.Int(allow_none=True)
 
 
+class TransactionId(Schema):
+    id = fields.Str(required=True)
+
+
 class Transaction(Schema):
-    id = fields.Int(required=True)
+    id = fields.Str(required=True)
     amount = diem_amount_field(required=True)
     currency = diem_currency_code_field(required=True)
     direction = transaction_direction_field(required=True)
@@ -184,6 +188,7 @@ class Transaction(Schema):
     blockchain_tx = fields.Nested(
         BlockchainTransaction, required=False, allow_none=True
     )
+    reference_id: str
 
 
 class CreateTransaction(Schema):
@@ -214,9 +219,141 @@ class Chain(Schema):
     display_name = fields.Str(required=True)
 
 
+class StatusObject(Schema):
+    status = fields.Str(required=True)
+
+
+class PaymentActorObject(Schema):
+    address = fields.Str(required=True, allow_none=False)
+    status = fields.Nested(StatusObject)
+    kyc_data = fields.Str(required=False)
+    metadata = fields.Str(required=False)
+    additional_kyc_data = fields.Str(required=False)
+
+
+class PaymentActionObject(Schema):
+    amount = fields.Int(required=True)
+    currency = fields.Str(required=True)
+    action = fields.Str(required=True, validate=OneOf(["charge", "auth", "capture"]))
+    timestamp = fields.Int(required=True)
+
+
+class PaymentObject(Schema):
+    reference_id = fields.Str(required=True, allow_none=False)
+    sender = fields.Nested(PaymentActorObject)
+    receiver = fields.Nested(PaymentActorObject)
+    action = fields.Nested(PaymentActionObject)
+    original_payment_reference_id = fields.Str(required=False)
+    recipient_signature = fields.Str(required=False)
+    description = fields.Str(required=False)
+
+
+class GetPaymentInfoRequest(Schema):
+    vasp_address = fields.Str(required=True)
+    reference_id = fields.Str(required=True)
+
+
+class Payment(Schema):
+    vasp_address = fields.Str(required=True)
+    reference_id = fields.Str(required=True)
+    merchant_name = fields.Str(required=True)
+    action = fields.Str(required=True, validate=OneOf(["charge", "auth"]))
+    currency = diem_currency_code_field(required=True)
+    amount = fields.Int(required=True)
+    expiration = fields.Int(required=False, allow_none=True)
+
+
 class PaymentCommand(Schema):
-    payment_command = fields.Str(required=False, allow_none=True, missing=None)
+    my_actor_address = fields.Str(required=True, allow_none=False)
+    payment = fields.Nested(PaymentObject)
+    inbound = fields.Bool(required=True)
+    cid = fields.Str(required=True)
 
 
 class PaymentCommands(Schema):
     payment_commands = fields.List(fields.Nested(PaymentCommand))
+
+
+class Currency(Schema):
+    amount = fields.Int(required=True)
+    currency = diem_currency_code_field(required=True)
+
+
+class ScopedCumulativeAmount(Schema):
+    unit = fields.Str(required=True, validate=OneOf(["day", "week", "month", "year"]))
+    value = fields.Int(required=True)
+    max_amount = fields.Nested(Currency)
+
+
+class Scope(Schema):
+    type = fields.Str(required=True, validate=OneOf(["consent", "save_sub_account"]))
+    expiration_timestamp = fields.Int(required=True)
+    max_cumulative_amount = fields.Nested(ScopedCumulativeAmount, required=False)
+    max_transaction_amount = fields.Nested(Currency, required=False)
+
+
+class FundsPullPreApproval(Schema):
+    address = fields.Str(required=True)
+    biller_address = fields.Str(required=True)
+    funds_pull_pre_approval_id = fields.Str(required=True)
+    scope = fields.Nested(Scope)
+    description = fields.Str(required=False)
+    status = fields.Str(
+        required=True, validate=OneOf(["pending", "valid", "rejected", "closed"])
+    )
+    biller_name = fields.Str(required=False)
+    created_timestamp = fields.DateTime(required=True)
+    updated_at = fields.DateTime(required=True)
+
+
+class FundsPullPreApprovalList(Schema):
+    funds_pull_pre_approval_list = fields.List(fields.Nested(FundsPullPreApproval))
+
+
+class FundsPullPreApprovalRequestCreationResponse(Schema):
+    funds_pull_pre_approval_id = fields.Str(required=True)
+    address = fields.Str(required=False)
+
+
+class FundsTransfer(Schema):
+    transaction = fields.Nested(Transaction, required=False, allow_none=True)
+    payment_command = fields.Nested(PaymentCommand, required=False, allow_none=True)
+
+
+class UpdateFundsPullPreApproval(Schema):
+    status = fields.Str(required=True, validate=OneOf(["valid", "rejected", "closed"]))
+
+
+class CreateAndApproveFundPullPreApproval(Schema):
+    biller_address = fields.Str(required=True)
+    funds_pull_pre_approval_id = fields.Str(required=True)
+    scope = fields.Nested(Scope)
+    description = fields.Str(required=False)
+
+
+class FundsPullPreApprovalRequest(Schema):
+    payer_address = fields.Str(required=False, allow_none=True)
+    scope = fields.Nested(Scope)
+    description = fields.Str(required=False)
+
+
+class CreatePaymentCommand(Schema):
+    reference_id = fields.Str(required=True)
+    action = fields.Str(required=True, validate=OneOf(["charge", "auth", "capture"]))
+    currency = fields.Str(required=True)
+    amount = fields.Int(required=True)
+    expiration = fields.Int(required=True)
+
+
+class CreatePayment(CreatePaymentCommand):
+    vasp_address = fields.Str(required=True)
+    merchant_name = fields.Str(required=True)
+
+
+class PreparePaymentInfoResponse(Schema):
+    reference_id = fields.Str(required=True)
+    address = fields.Str(required=False)
+
+
+class ApprovePaymentSchema(Schema):
+    init_offchain_required = fields.Bool(required=False, default=False)

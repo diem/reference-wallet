@@ -83,7 +83,7 @@ class PaymentMethod(Base):
 class Transaction(Base):
     __tablename__ = "transaction"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     type = Column(String, nullable=False)
     amount = Column(BigInteger, nullable=False)
     currency = Column(String, nullable=False)
@@ -96,7 +96,7 @@ class Transaction(Base):
     destination_subaddress = Column(String, nullable=True)
     created_timestamp = Column(DateTime, nullable=False)
     blockchain_version = Column(Integer, nullable=True)
-    original_txn_id = Column(Integer, nullable=True)
+    original_txn_id = Column(String, nullable=True)
     refund_reason = Column(String, nullable=True)
     sequence = Column(Integer, nullable=True)
     logs = relationship("TransactionLog", backref="tx", lazy=True)
@@ -107,15 +107,69 @@ class Transaction(Base):
         "Account", backref="received_transactions", foreign_keys=[destination_id]
     )
 
-    reference_id = Column(String, nullable=True, unique=True, index=True)
-    command_json = Column(String, nullable=True)
+    reference_id = Column(
+        String,
+        nullable=True,
+        unique=True,
+        index=True,
+    )
+
+
+class PaymentCommand(Base):
+    __tablename__ = "paymentcommand"
+
+    reference_id = Column(
+        String, primary_key=True, nullable=False, unique=True, index=True
+    )
+    status = Column(String, nullable=False)
+    account_id = Column(Integer, ForeignKey("account.id"), nullable=False)
+    my_actor_address = Column(String, nullable=False)
+    inbound = Column(Boolean, nullable=False)
+    cid = Column(String, nullable=False)
+    sender_address = Column(String, nullable=True)
+    sender_status = Column(String, nullable=False, default="none")
+    sender_kyc_data = Column(String, nullable=True)
+    sender_metadata = Column(String, nullable=True)
+    sender_additional_kyc_data = Column(String, nullable=True)
+    receiver_address = Column(String, nullable=False)
+    receiver_status = Column(String, nullable=False, default="none")
+    receiver_kyc_data = Column(String, nullable=True)
+    receiver_metadata = Column(String, nullable=True)
+    receiver_additional_kyc_data = Column(String, nullable=True)
+    amount = Column(Integer, nullable=False)
+    currency = Column(String, nullable=False)
+    action = Column(String, nullable=False, default="charge")
+    created_at = Column(
+        DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+    )
+    original_payment_reference_id = Column(String, nullable=True)
+    recipient_signature = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    merchant_name = Column(String, nullable=True)
+    expiration = Column(DateTime, nullable=True)
+
+    def update(self, updated_command):
+        new_command_attributes = [
+            a for a in dir(updated_command) if not a.startswith("_")
+        ]
+        for key in new_command_attributes:
+            try:
+                updated_value = getattr(updated_command, key)
+                if not callable(updated_value) and getattr(self, key) != updated_value:
+                    setattr(self, key, updated_value)
+            except AttributeError:
+                # An attribute in updated_command does not exist in 'self'
+                # We assume this has nothing to do with us and continue to next attribute
+                ...
 
 
 # Execution log for transaction
 class TransactionLog(Base):
     __tablename__ = "transactionlog"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    tx_id = Column(Integer, ForeignKey("transaction.id"), nullable=False)
+    tx_id = Column(String, ForeignKey("transaction.id"), nullable=False)
     log = Column(String, nullable=False)
     timestamp = Column(DateTime, nullable=False)
 
@@ -142,14 +196,14 @@ class Order(Base):
     quote_expiration = Column(DateTime, nullable=True)
     order_expiration = Column(DateTime, nullable=False)
     rate = Column(Integer, nullable=True)
-    internal_ledger_tx = Column(Integer, ForeignKey("transaction.id"), nullable=True)
+    internal_ledger_tx = Column(String, ForeignKey("transaction.id"), nullable=True)
     last_update = Column(DateTime, nullable=True)
     order_status = Column(String, nullable=False)
     cover_status = Column(String, nullable=False)
     payment_method = Column(String, nullable=True)
     charge_token = Column(String, nullable=True)
     order_type = Column(String, nullable=False)
-    correlated_tx = Column(Integer, ForeignKey("transaction.id"), nullable=True)
+    correlated_tx = Column(String, ForeignKey("transaction.id"), nullable=True)
 
 
 class Token(Base):
@@ -157,3 +211,77 @@ class Token(Base):
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid1()))
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     expiration_time = Column(Float, nullable=False)
+
+
+class FundsPullPreApprovalCommand(Base):
+    __tablename__ = "fundspullpreapprovalcommands"
+    funds_pull_pre_approval_id = Column(String, primary_key=True, nullable=False)
+    account_id = Column(
+        Integer, ForeignKey("account.id"), primary_key=True, nullable=True
+    )
+    address = Column(String, nullable=True)
+    biller_address = Column(String, nullable=False)
+    funds_pull_pre_approval_type = Column(String, nullable=False)
+    expiration_timestamp = Column(DateTime, nullable=False)
+    max_cumulative_unit = Column(String, nullable=True)
+    max_cumulative_unit_value = Column(Integer, nullable=True)
+    max_cumulative_amount = Column(Integer, nullable=True)
+    max_cumulative_amount_currency = Column(String, nullable=True)
+    max_transaction_amount = Column(Integer, nullable=True)
+    max_transaction_amount_currency = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    status = Column(String, nullable=False)
+    role = Column(String, nullable=False)
+    offchain_sent = Column(Boolean, default=False)
+    biller_name = Column(String, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    approved_at = Column(DateTime, nullable=True)
+
+    def update(self, updated_command):
+        new_command_attributes = [
+            a for a in dir(updated_command) if not a.startswith("_")
+        ]
+        for key in new_command_attributes:
+            try:
+                if getattr(self, key) != getattr(updated_command, key):
+                    setattr(self, key, getattr(updated_command, key))
+            except AttributeError:
+                # An attribute in updated_command does not exist in 'self'
+                # We assume this has nothing to do with us and continue to next attribute
+                ...
+
+
+class Payment(Base):
+    __tablename__ = "payment"
+    reference_id = Column(
+        String, primary_key=True, nullable=False, unique=True, index=True
+    )
+    my_address = Column(String)
+    vasp_address = Column(String)
+    merchant_name = Column(String)
+    action = Column(String)
+    currency = Column(String)
+    amount = Column(Integer)
+    expiration = Column(DateTime, nullable=True)
+    created_at = Column(
+        DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+    )
+    description = Column(String, nullable=True)
+    recipient_signature = Column(String, nullable=True)
+
+    def update(self, updated_command):
+        new_command_attributes = [
+            a for a in dir(updated_command) if not a.startswith("_")
+        ]
+        for key in new_command_attributes:
+            try:
+                updated_value = getattr(updated_command, key)
+                if not callable(updated_value) and getattr(self, key) != updated_value:
+                    setattr(self, key, updated_value)
+            except AttributeError:
+                # An attribute in updated_command does not exist in 'self'
+                # We assume this has nothing to do with us and continue to next attribute
+                ...

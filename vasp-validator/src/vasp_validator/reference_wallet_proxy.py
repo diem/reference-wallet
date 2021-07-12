@@ -1,7 +1,7 @@
 #  Copyright (c) The Diem Core Contributors
 #  SPDX-License-Identifier: Apache-2.0
 
-from typing import List
+from typing import List, Callable, Optional
 
 import requests
 
@@ -15,13 +15,26 @@ from .models import (
     CreateTransaction,
     AccountInfo,
     OffChainSequenceInfo,
+    TransactionId,
+    FundsTransfer,
+    PaymentDetails,
+    PreparePaymentInfoResponse,
 )
+from .models_fppa import (
+    FundPullPreApprovalScope,
+    FundsPullPreApprovalRequest,
+    FundsPullPreApproval,
+    FundPullPreApprovalStatus,
+)
+
+RequestSender = Callable[[str, str, Optional[dict]], requests.Response]
 
 
 class ReferenceWalletProxy:
     def __init__(self, base_url):
         self.base_url = base_url
         self.authorization_header = {}
+        self.funds_pull_preapproval = ReferenceWalletProxyFPPA(self._request_authorized)
 
     def create_new_user(self, username, password):
         add_user_json = {"username": username, "password": password}
@@ -82,7 +95,7 @@ class ReferenceWalletProxy:
         #      state. Should be implemented.
         return OffChainSequenceInfo()
 
-    def send_transaction(self, address, amount, currency) -> Transaction:
+    def send_transaction(self, address, amount, currency) -> TransactionId:
         tx_request = CreateTransaction(
             currency=currency,
             amount=amount,
@@ -91,11 +104,68 @@ class ReferenceWalletProxy:
         send_transaction_response = self._request_authorized(
             "POST", "account/transactions", json=tx_request.to_dict()
         )
-        return Transaction.from_json(send_transaction_response.text)
+        return TransactionId.from_json(send_transaction_response.text)
 
-    def get_transaction(self, tx_id) -> Transaction:
+    def create_payment_command_as_sender(
+        self,
+        reference_id,
+        vasp_address,
+        merchant_name,
+        action,
+        currency,
+        amount,
+        expiration,
+    ):
+        request = {
+            "reference_id": reference_id,
+            "vasp_address": vasp_address,
+            "merchant_name": merchant_name,
+            "action": action,
+            "currency": currency,
+            "amount": amount,
+            "expiration": expiration,
+        }
+
+        self._request_authorized("POST", "offchain/payment_command", json=request)
+
+    def get_payment_details(self, reference_id, vasp_address) -> PaymentDetails:
+        response = self._request_authorized(
+            "GET",
+            f"offchain/query/payment_details?"
+            f"vasp_address={vasp_address}&"
+            f"reference_id={reference_id}",
+        )
+
+        return PaymentDetails.from_json(response.text) if response.text else None
+
+    def prepare_payment_as_receiver(self, action: str = "charge") -> (str, str):
+        response = self._request_authorized(
+            "POST", f"/validation/payment_info/{action}"
+        )
+        response_object = PreparePaymentInfoResponse.from_json(response.text)
+
+        return response_object.reference_id, response_object.address
+
+    def approve_payment(self, reference_id: str, init_offchain: bool):
+        self._request_authorized(
+            "POST",
+            f"/offchain/payment/{reference_id}/actions/approve",
+            json={"init_offchain_required": init_offchain},
+        )
+
+    def approve_payment_command(self, reference_id):
+        self._request_authorized(
+            "POST", f"/offchain/payment_command/{reference_id}/actions/approve"
+        )
+
+    def reject_payment_command(self, reference_id):
+        self._request_authorized(
+            "POST", f"/offchain/payment_command/{reference_id}/actions/reject"
+        )
+
+    def get_transaction(self, tx_id) -> FundsTransfer:
         response = self._request_authorized("GET", f"account/transactions/{tx_id}")
-        return Transaction.from_json(response.text)
+        return FundsTransfer.from_json(response.text)
 
     def _set_authorization_token(self, token):
         self.authorization_header = {"Authorization": "Bearer " + token}
@@ -107,7 +177,7 @@ class ReferenceWalletProxy:
         response.raise_for_status()
         return response
 
-    def _request_authorized(self, method, endpoint, json=None):
+    def _request_authorized(self, method, endpoint, json=None) -> requests.Response:
         response = requests.request(
             method,
             url=f"{self.base_url}/{endpoint}",
@@ -116,3 +186,75 @@ class ReferenceWalletProxy:
         )
         response.raise_for_status()
         return response
+
+
+class ReferenceWalletProxyFPPA:
+    """
+    Sends to the reference wallet funds pull pre-approval related requests.
+    """
+
+    def __init__(self, request_wallet_authorized: RequestSender):
+        self._request_authorized = request_wallet_authorized
+
+    def get_all_preapprovals(self) -> List[FundsPullPreApproval]:
+        r = self._request_authorized("GET", "offchain/funds_pull_pre_approvals")
+        preapprovals = r.json()
+        return [
+            FundsPullPreApproval.from_dict(x)
+            for x in preapprovals["funds_pull_pre_approvals"]
+        ]
+
+    def request_preapproval_from_another(
+        self,
+        payer_addr_bech32: str,
+        scope: FundPullPreApprovalScope,
+        description: str = None,
+    ) -> str:
+        fppa_request = FundsPullPreApprovalRequest(
+            payer_address=payer_addr_bech32,
+            description=description,
+            scope=scope,
+        )
+        r = self._request_authorized(
+            "POST", "validation/funds_pull_pre_approvals", fppa_request.to_dict()
+        )
+        return r.json()["funds_pull_pre_approval_id"]
+
+    def create_fppa_request_for_unknown_payer(
+        self,
+        scope: FundPullPreApprovalScope,
+        description: str = None,
+    ) -> (str, str):
+        r = self._request_authorized(
+            "POST",
+            "validation/funds_pull_pre_approvals",
+            {"description": description, "scope": scope.to_dict()},
+        )
+        return r.json()["funds_pull_pre_approval_id"], r.json()["address"]
+
+    def update_preapproval_status(
+        self, fppa_id: str, status: FundPullPreApprovalStatus
+    ):
+        self._request_authorized(
+            "PUT",
+            f"offchain/funds_pull_pre_approvals/{fppa_id}",
+            {"status": status.value},
+        )
+
+    def create_and_approve(
+        self,
+        biller_address: str,
+        funds_pull_pre_approval_id: str,
+        scope: FundPullPreApprovalScope,
+        description: str,
+    ):
+        self._request_authorized(
+            "POST",
+            "offchain/funds_pull_pre_approvals",
+            {
+                "biller_address": biller_address,
+                "funds_pull_pre_approval_id": funds_pull_pre_approval_id,
+                "scope": scope.to_dict(),
+                "description": description,
+            },
+        )

@@ -5,7 +5,7 @@ import * as React from "react";
 import { FormEvent, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Button, Container, Form, FormGroup, Input } from "reactstrap";
-import { Link, Redirect } from "react-router-dom";
+import { Link, Redirect, useLocation } from "react-router-dom";
 import SessionStorage from "../services/sessionStorage";
 import BackendClient from "../services/backendClient";
 import { BackendError } from "../services/errors";
@@ -13,6 +13,7 @@ import ErrorMessage from "../components/Messages/ErrorMessage";
 
 function Signin() {
   const { t } = useTranslation("auth");
+  const queryString = useLocation().search;
 
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [submitStatus, setSubmitStatus] = useState<"edit" | "sending" | "fail" | "success">("edit");
@@ -42,7 +43,7 @@ function Signin() {
 
   return (
     <>
-      {submitStatus === "success" && <Redirect to="/" />}
+      {submitStatus === "success" && <Redirect to={`/${queryString}`} />}
       <Container className="py-5 d-flex flex-column">
         <section className="slim-section m-auto">
           {errorMessage && <ErrorMessage message={errorMessage} />}
