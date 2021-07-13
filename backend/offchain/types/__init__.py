@@ -164,11 +164,11 @@ def _from_dict(
         )
     return klass(**obj)
 
-COMMAND_RESPONSE_RESULTS = {
+_RESULT_TYPES = {
     ResponseType.InitChargePaymentResponse: InitChargePaymentResponse,
     ResponseType.GetInfoCommandResponse: GetInfoCommandResponse
 }
-COMMAND_RESPONSE_RESULT_NAME = 'result'
+_RESULT_TYPE_FIELD_NAME = 'result'
 
 def _field_value_from_dict(
     field: dataclasses.Field, obj: typing.Any, field_path: str
@@ -210,10 +210,10 @@ def _field_value_from_dict(
                 f"{val} does not match pattern {valid_values.pattern}",
             )
 
-    if full_name == COMMAND_RESPONSE_RESULT_NAME:
+    if full_name == _RESULT_TYPE_FIELD_NAME:
         object_type = val.get('_ObjectType')
-        if object_type in COMMAND_RESPONSE_RESULTS:
-            return from_dict(val, COMMAND_RESPONSE_RESULTS[object_type], full_name)
+        if object_type in _RESULT_TYPES:
+            return from_dict(val, _RESULT_TYPES[object_type], full_name)
 
     return from_dict(val, field_type, full_name)
 
