@@ -154,7 +154,7 @@ def approve_payment(
 
 
 def reject_payment(reference_id: str):
-    payment_model = storage.get_payment(reference_id)
+    payment_model = storage.get_payment_details(reference_id)
 
     if not payment_model:
         raise P2MPaymentNotFoundError(f"Could not find payment {reference_id}")
@@ -175,9 +175,12 @@ def reject_payment(reference_id: str):
 
         if command_response_object:
             if command_response_object.status == "success":
-                return
+                storage.update_payment(
+                    reference_id=payment_model.reference_id,
+                    status=P2MPaymentStatus.REJECTED,
+                )
             else:
-                # throw?
+                # todo throw?
                 ...
     except Exception as e:
         error = P2MGeneralError(e)
