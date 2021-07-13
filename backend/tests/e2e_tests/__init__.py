@@ -156,7 +156,7 @@ class UserClient:
         return res.json()
 
     def get_transactions(self) -> list:
-        params = {"limit": 10}
+        params = {"limit": 10, "sort": "date_desc"}
         res = requests.get(
             f"{self.backend}/api/account/transactions",
             headers=self.auth_headers(),

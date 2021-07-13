@@ -1,5 +1,6 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
+import time
 
 import requests
 import json
@@ -127,16 +128,29 @@ def transfer(user1: UserClient, user2: UserClient, transfer_amount: int, currenc
     user1.wait_for_balance(
         currency, user1_balance_before_transfer - transfer_amount, 20
     )
-    sent_txns = [
-        txn for txn in user1.get_transactions() if txn.get("direction") == "sent"
-    ]
+    user1_sent_transactions = get_user_transaction_by_direction(user1, "sent")
+    assert len(user1_sent_transactions) == 1
+    assert user1_sent_transactions[0].get("amount") == transfer_amount
 
-    assert len(sent_txns) == 1
-    assert sent_txns[0].get("amount") == transfer_amount
-
-    user2.wait_for_balance(currency, transfer_amount, 20)
     # received
-    txns2 = user2.get_transactions()
-    assert len(txns2) == 1
-    assert txns2[0].get("amount") == transfer_amount
-    assert txns2[0].get("status") == "completed"
+    user2.wait_for_balance(currency, transfer_amount, 20)
+    user2_received_transactions = get_user_transaction_by_direction(user2, "received")
+    assert len(user2_received_transactions) == 1
+    assert user2_received_transactions[0].get("amount") == transfer_amount
+
+    assert user2_received_transactions[0].get("status") == "completed"
+
+
+def get_user_transaction_by_direction(user1, direction):
+    user1_transactions = user1.get_transactions()
+    sent_txns = [txn for txn in user1_transactions if txn.get("direction") == direction]
+
+    for _ in range(10):
+        if len(sent_txns) == 0:
+            time.sleep(0.5)
+            user1_transactions = user1.get_transactions()
+            sent_txns = [
+                txn for txn in user1_transactions if txn.get("direction") == direction
+            ]
+
+    return sent_txns
