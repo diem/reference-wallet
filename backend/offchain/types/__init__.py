@@ -125,8 +125,6 @@ def from_dict(
 def _from_dict(
     obj: typing.Any, klass: typing.Type[typing.Any], field_path: str
 ) -> typing.Any:  # pyre-ignore
-    # logger.info('=====================================> about to init class=%s ,dict=%', klass, obj)
-    # return klass(**obj)
     if not isinstance(obj, dict) or not dataclasses.is_dataclass(klass):
         item_type = None
         if (
