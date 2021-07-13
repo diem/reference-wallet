@@ -165,7 +165,8 @@ def _from_dict(
     return klass(**obj)
 
 COMMAND_RESPONSE_RESULTS = {
-    ResponseType.InitChargePaymentResponse: InitChargePaymentResponse
+    ResponseType.InitChargePaymentResponse: InitChargePaymentResponse,
+    ResponseType.GetInfoCommandResponse: GetInfoCommandResponse
 }
 COMMAND_RESPONSE_RESULT_NAME = 'result'
 
