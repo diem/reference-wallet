@@ -70,6 +70,9 @@ def handle_init_charge_command(request: CommandRequestObject):
             amount=payment_amount,
         )
 
+        storage.update_payment(reference_id=reference_id, recipient_signature=recipient_signature,
+                               status=P2MPaymentStatus.APPROVED)
+
         return utils.jws_response(
             reference_id,
             result_object=InitChargePaymentResponse(
@@ -77,6 +80,7 @@ def handle_init_charge_command(request: CommandRequestObject):
             ),
         )
     else:
+        storage.update_payment(reference_id=reference_id, status=P2MPaymentStatus.APPROVED)
         return utils.jws_response(reference_id)
 
 

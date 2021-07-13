@@ -190,6 +190,17 @@ class UserClient:
         res.raise_for_status()
         return res.json()
 
+    def approve_payment(self, reference_id):
+        payload = {"init_offchain_required": True}
+
+        res = requests.post(
+            f"{self.backend}/api/offchain/payment/{reference_id}/actions/approve",
+            headers=self.auth_headers(),
+            json=payload,
+        )
+        res.raise_for_status()
+        return res.status_code
+
     def reject_payment(self, reference_id):
         res = requests.post(
             f"{self.backend}/api/offchain/payment/{reference_id}/actions/reject",
