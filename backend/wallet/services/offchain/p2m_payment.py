@@ -32,7 +32,7 @@ class PaymentDetails:
     currency: str
     amount: int
     expiration: int
-    demo: bool
+    demo: bool = False
 
 
 class P2MGeneralError(Exception):
@@ -44,7 +44,7 @@ class PaymentNotFoundError(Exception):
 
 
 def get_payment_details(
-    account_id: int, reference_id: str, vasp_address: str, demo: bool
+    account_id: int, reference_id: str, vasp_address: str
 ):
     payment_model = storage.get_payment_details(reference_id)
 
@@ -73,7 +73,6 @@ def get_payment_details(
                     action=action_object.action,
                     currency=action_object.currency,
                     amount=action_object.amount,
-                    demo=demo,
                     expiration=datetime.fromtimestamp(action_object.valid_until)
                     if action_object.valid_until
                     else None,
@@ -90,7 +89,6 @@ def get_payment_details(
         action=payment_model.action,
         currency=payment_model.currency,
         amount=payment_model.amount,
-        demo=payment_model.demo,
         expiration=int(datetime.timestamp(payment_model.expiration))
         if payment_model.expiration
         else None,
@@ -106,7 +104,7 @@ def add_new_payment(
     currency,
     amount,
     expiration,
-    demo,
+    demo: bool = False,
 ):
     payment_command = PaymentModel(
         vasp_address=vasp_address,
@@ -117,7 +115,6 @@ def add_new_payment(
         currency=currency,
         amount=amount,
         expiration=datetime.fromtimestamp(expiration) if expiration else None,
-        demo=demo,
     )
 
     save_payment(payment_command)

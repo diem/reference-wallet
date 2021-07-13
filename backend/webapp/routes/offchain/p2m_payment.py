@@ -35,11 +35,6 @@ class P2MPaymentRoutes:
                 description="payment destination address",
                 required=True,
             ),
-            query_str_param(
-                name="demo",
-                description="demo mode",
-                required=False,
-            ),
         ]
 
         responses = {
@@ -60,11 +55,10 @@ class P2MPaymentRoutes:
                 account_id = self.user.account_id
                 vasp_address = request.args["vasp_address"]
                 reference_id = request.args["reference_id"]
-                demo = request.args["demo"]
 
                 try:
                     payment_details = payment_service.get_payment_details(
-                        account_id, reference_id, vasp_address, demo
+                        account_id, reference_id, vasp_address
                     )
                 except P2MGeneralError as e:
                     return self.respond_with_error(
@@ -173,5 +167,4 @@ def payment_details_to_dict(
         "currency": payment_details.currency,
         "amount": payment_details.amount,
         "expiration": payment_details.expiration,
-        "demo": payment_details.demo,
     }

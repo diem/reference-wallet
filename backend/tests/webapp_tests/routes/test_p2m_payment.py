@@ -34,7 +34,7 @@ class TestGetPaymentDetails:
                 currency=CURRENCY,
                 amount=AMOUNT,
                 expiration=EXPIRATION,
-                demo=DEMO,
+                # demo=DEMO,
             ),
         )
         rv: Response = authorized_client.get(
