@@ -193,6 +193,6 @@ class P2MAbortCode(str, Enum):
 @dataclass(frozen=True)
 class AbortPayment:
     reference_id: str
-    abort_code: typing.Optional[P2MAbortCode] = None
-    abort_message: typing.Optional[P2MAbortCode] = None
+    abort_code: typing.Optional[str] = None
+    abort_message: typing.Optional[str] = None
     _ObjectType: str = datafield(default=CommandType.AbortPayment)
