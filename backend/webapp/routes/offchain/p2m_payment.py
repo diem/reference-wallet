@@ -2,7 +2,10 @@ from http import HTTPStatus
 
 from diem.jsonrpc import AccountNotFoundError
 from wallet.services.offchain import p2m_payment as payment_service
-from wallet.services.offchain.p2m_payment import P2MGeneralError, PaymentNotFoundError
+from wallet.services.offchain.p2m_payment import (
+    P2MGeneralError,
+    P2MPaymentNotFoundError,
+)
 from webapp.routes.strict_schema_view import (
     StrictSchemaView,
     query_str_param,
@@ -145,7 +148,7 @@ class P2MPaymentRoutes:
                 payment_service.approve_payment(
                     self.user.account_id, reference_id, init_offchain_required
                 )
-            except PaymentNotFoundError as e:
+            except P2MPaymentNotFoundError as e:
                 return self.respond_with_error(HTTPStatus.NOT_FOUND, str(e))
             except P2MGeneralError as e:
                 return self.respond_with_error(HTTPStatus.INTERNAL_SERVER_ERROR, str(e))
@@ -175,7 +178,7 @@ class P2MPaymentRoutes:
         def post(self, reference_id: str):
             try:
                 payment_service.reject_payment(reference_id)
-            except PaymentNotFoundError as e:
+            except P2MPaymentNotFoundError as e:
                 return self.respond_with_error(HTTPStatus.NOT_FOUND, str(e))
             except P2MGeneralError as e:
                 return self.respond_with_error(HTTPStatus.INTERNAL_SERVER_ERROR, str(e))

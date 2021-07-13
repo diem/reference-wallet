@@ -1,7 +1,7 @@
 import pytest
 from offchain.types import (
-    new_get_info_request,
-    new_init_charge_command,
+    new_get_payment_info_request,
+    new_init_charge_payment_request,
     new_init_auth_command,
 )
 from tests.wallet_tests.resources.seeds.one_p2m_payment_seeder import (
@@ -28,7 +28,9 @@ ORIGINAL_REFERENCE_ID = "35a1b548-3170-438f-bf3a-6ca0fef85d15"
 def test_handle_get_info_command(mock_method):
     OneP2MPaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
 
-    get_info_request = new_get_info_request(reference_id=REFERENCE_ID, cid=REFERENCE_ID)
+    get_info_request = new_get_payment_info_request(
+        reference_id=REFERENCE_ID, cid=REFERENCE_ID
+    )
 
     response = handle_incoming_get_payment_info_request(get_info_request)
 
@@ -52,7 +54,7 @@ def test_handle_init_charge_command_success_with_recipient_signature(mock_method
 
 
 def successful_init_charge_command():
-    return new_init_charge_command(
+    return new_init_charge_payment_request(
         reference_id=REFERENCE_ID,
         vasp_address=OTHER_ADDRESS,
         sender_name="Bond",
@@ -72,7 +74,7 @@ def test_handle_init_charge_command_fail(mock_method):
     OneP2MPaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
 
     handle_init_charge_command(
-        new_init_charge_command(
+        new_init_charge_payment_request(
             reference_id=REFERENCE_ID,
             vasp_address=OTHER_ADDRESS,
             sender_name="Bond",

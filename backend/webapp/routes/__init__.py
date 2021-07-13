@@ -268,8 +268,8 @@ def validation_tool_routes():
     )
     validation_tool.add_url_rule(
         rule="/validation/payment_info/<action>",
-        view_func=ValidationToolRoutes.PreparePaymentAsReceiver.as_view(
-            "prepare p2m payment as receiver"
+        view_func=ValidationToolRoutes.CreateP2MPaymentAsReceiver.as_view(
+            "create p2m payment as receiver"
         ),
         methods=["POST"],
     )

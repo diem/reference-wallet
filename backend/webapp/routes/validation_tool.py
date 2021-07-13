@@ -72,7 +72,7 @@ class ValidationToolRoutes:
                 HTTPStatus.OK,
             )
 
-    class PreparePaymentAsReceiver(ValidationToolView):
+    class CreateP2MPaymentAsReceiver(ValidationToolView):
         summary = "Create internal payment info record for testing purpose"
         parameters = [
             path_string_param(
