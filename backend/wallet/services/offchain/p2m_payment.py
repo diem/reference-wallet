@@ -49,6 +49,10 @@ class P2MGeneralError(Exception):
     pass
 
 
+class P2MStorageError(Exception):
+    pass
+
+
 class P2MPaymentNotFoundError(Exception):
     pass
 
@@ -269,19 +273,22 @@ def send_init_charge_payment_request(payment_model, account_id):
             ),
         )
 
+        recipient_signature = None
+
         if (
-            command_response_object.result
+            payment_model.amount > 1_000_000_000
+            and command_response_object.result
             and type(command_response_object.result) is InitChargePaymentResponse
         ):
             recipient_signature = command_response_object.result.recipient_signature
 
-            storage.update_payment(
-                payment_model.reference_id,
-                recipient_signature,
-                P2MPaymentStatus.APPROVED,
-            )
-
-            # todo submit on-chain transaction ??
+        storage.update_payment(
+            reference_id=payment_model.reference_id,
+            recipient_signature=recipient_signature,
+            status=P2MPaymentStatus.APPROVED,
+        )
+        # todo verify response status?
+        # todo submit on-chain transaction ??
     except Exception as e:
         error = P2MGeneralError(e)
         logger.error(error)
