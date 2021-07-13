@@ -8,8 +8,8 @@ from offchain import (
     jws,
 )
 from offchain.types import (
-    new_get_info_request,
-    new_init_charge_command,
+    new_get_payment_info_request,
+    new_init_charge_payment_request,
     new_init_auth_command,
     InitChargePaymentResponse,
     new_abort_payment_command,
@@ -40,7 +40,7 @@ class P2MGeneralError(Exception):
     pass
 
 
-class PaymentNotFoundError(Exception):
+class P2MPaymentNotFoundError(Exception):
     pass
 
 
@@ -124,7 +124,7 @@ def approve_payment(
     payment_model = storage.get_payment_details(reference_id)
 
     if not payment_model:
-        raise PaymentNotFoundError(f"Could not find payment {reference_id}")
+        raise P2MPaymentNotFoundError(f"Could not find payment {reference_id}")
 
     if payment_model.action == "charge":
         if init_required:
@@ -142,7 +142,7 @@ def reject_payment(reference_id: str):
     payment_model = storage.get_payment(reference_id)
 
     if not payment_model:
-        raise PaymentNotFoundError(f"Could not find payment {reference_id}")
+        raise P2MPaymentNotFoundError(f"Could not find payment {reference_id}")
 
     try:
         command_response_object = utils.offchain_client().send_request(
@@ -231,7 +231,7 @@ def send_init_charge_payment_request(payment_model, account_id):
             request_sender_address=payment_model.my_address,
             counterparty_account_id=payment_model.vasp_address,
             request_bytes=jws.serialize(
-                new_init_charge_command(
+                new_init_charge_payment_request(
                     reference_id=payment_model.reference_id,
                     vasp_address=payment_model.vasp_address,
                     sender_name=user.first_name,

@@ -283,7 +283,7 @@ def new_funds_pull_pre_approval_request(
     )
 
 
-def new_get_info_request(
+def new_get_payment_info_request(
     reference_id: str,
     cid: typing.Optional[str] = None,
 ) -> CommandRequestObject:
@@ -333,7 +333,7 @@ def new_init_auth_command(
     )
 
 
-def new_init_charge_command(
+def new_init_charge_payment_request(
     reference_id,
     vasp_address,
     sender_name,

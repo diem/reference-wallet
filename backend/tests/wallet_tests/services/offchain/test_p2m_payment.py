@@ -134,7 +134,7 @@ def test_approve_payment_success(mock_method):
 
 
 def test_approve_payment_fail_because_payment_not_exist():
-    with pytest.raises(payment_service.PaymentNotFoundError):
+    with pytest.raises(payment_service.P2MPaymentNotFoundError):
         payment_service.approve_payment(1, REFERENCE_ID)
 
 
