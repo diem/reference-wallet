@@ -47,6 +47,8 @@ from .payment_types import (
     InitChargePaymentResponse,
 )
 
+from .cid import generate_cid
+
 import dataclasses, json, re, typing, uuid
 
 
@@ -116,6 +118,7 @@ def from_dict(
                 f"expect json object, but got {type(obj).__name__}: {obj}",
             )
         klass = _find_object_type(obj, field_path)
+
     return _from_dict(obj, klass, field_path)
 
 
@@ -161,6 +164,11 @@ def _from_dict(
         )
     return klass(**obj)
 
+_RESULT_TYPES = {
+    ResponseType.InitChargePaymentResponse: InitChargePaymentResponse,
+    ResponseType.GetInfoCommandResponse: GetInfoCommandResponse
+}
+_RESULT_TYPE_FIELD_NAME = 'result'
 
 def _field_value_from_dict(
     field: dataclasses.Field, obj: typing.Any, field_path: str
@@ -201,6 +209,12 @@ def _field_value_from_dict(
                 full_name,
                 f"{val} does not match pattern {valid_values.pattern}",
             )
+
+    if full_name == _RESULT_TYPE_FIELD_NAME:
+        object_type = val.get('_ObjectType')
+        if object_type in _RESULT_TYPES:
+            return from_dict(val, _RESULT_TYPES[object_type], full_name)
+
     return from_dict(val, field_type, full_name)
 
 
@@ -257,7 +271,7 @@ def new_payment_request(
     cid: typing.Optional[str] = None,
 ) -> CommandRequestObject:
     return CommandRequestObject(
-        cid=cid or str(uuid.uuid4()),
+        cid=cid or generate_cid(),
         command_type=CommandType.PaymentCommand,
         command=PaymentCommandObject(
             _ObjectType=CommandType.PaymentCommand,
@@ -271,7 +285,7 @@ def new_funds_pull_pre_approval_request(
     cid: typing.Optional[str] = None,
 ) -> CommandRequestObject:
     return CommandRequestObject(
-        cid=cid or str(uuid.uuid4()),
+        cid=cid or generate_cid(),
         command_type=CommandType.FundPullPreApprovalCommand,
         command=FundPullPreApprovalCommandObject(
             _ObjectType=CommandType.FundPullPreApprovalCommand,
@@ -285,7 +299,7 @@ def new_get_info_request(
     cid: typing.Optional[str] = None,
 ) -> CommandRequestObject:
     return CommandRequestObject(
-        cid=cid or reference_id or str(uuid.uuid4()),
+        cid=cid or generate_cid(),
         command_type=CommandType.GetPaymentInfo,
         command=GetPaymentInfo(
             _ObjectType=CommandType.GetPaymentInfo,
@@ -309,7 +323,7 @@ def new_init_auth_command(
     sender_national_id_type,
 ) -> CommandRequestObject:
     return CommandRequestObject(
-        cid=reference_id,
+        cid=generate_cid(),
         command_type=CommandType.InitAuthorizeCommand,
         command=InitAuthorizeCommand(
             reference_id=reference_id,
@@ -345,7 +359,7 @@ def new_init_charge_command(
     sender_national_id_type,
 ) -> CommandRequestObject:
     return CommandRequestObject(
-        cid=reference_id,
+        cid=generate_cid(),
         command_type=CommandType.InitChargePayment,
         command=InitChargePayment(
             reference_id=reference_id,
@@ -376,7 +390,7 @@ def reply_request(
     return CommandResponseObject(
         status=CommandResponseStatus.failure if err else CommandResponseStatus.success,
         error=err,
-        cid=cid,
+        cid=cid or generate_cid(),
         result=result_object,
     )
 
