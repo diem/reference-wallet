@@ -125,46 +125,51 @@ def from_dict(
 def _from_dict(
     obj: typing.Any, klass: typing.Type[typing.Any], field_path: str
 ) -> typing.Any:  # pyre-ignore
-    return klass(**obj)
-    # if not isinstance(obj, dict) or not dataclasses.is_dataclass(klass):
-    #     item_type = None
-    #     if (
-    #         hasattr(klass, "__origin__")
-    #         and klass.__origin__ == list
-    #         and hasattr(klass, "__args__")
-    #     ):
-    #         item_type = klass.__args__[0]
-    #         klass = list
-    #     if not isinstance(obj, klass):
-    #         code = (
-    #             ErrorCode.invalid_field_value
-    #             if field_path
-    #             else ErrorCode.invalid_object
-    #         )
-    #         raise FieldError(
-    #             code,
-    #             field_path,
-    #             f"expect type {klass.__name__}, but got {type(obj).__name__}",
-    #         )
-    #     if klass == list and item_type:
-    #         return [from_dict(item, item_type, field_path) for item in obj]
-    #     return obj
-    #
-    # unknown_fields = list(obj.keys())
-    # for field in dataclasses.fields(klass):
-    #     if field.name in unknown_fields:
-    #         unknown_fields.remove(field.name)
-    #     obj[field.name] = _field_value_from_dict(field, obj, field_path)
-    #
-    # if len(unknown_fields) > 0:
-    #     unknown_fields.sort()
-    #     full_name = _join_field_path(field_path, unknown_fields[0])
-    #     field_names = ", ".join(unknown_fields)
-    #     raise FieldError(
-    #         ErrorCode.unknown_field, full_name, f"{field_path}: {field_names}"
-    #     )
+    # logger.info('=====================================> about to init class=%s ,dict=%', klass, obj)
     # return klass(**obj)
+    if not isinstance(obj, dict) or not dataclasses.is_dataclass(klass):
+        item_type = None
+        if (
+            hasattr(klass, "__origin__")
+            and klass.__origin__ == list
+            and hasattr(klass, "__args__")
+        ):
+            item_type = klass.__args__[0]
+            klass = list
+        if not isinstance(obj, klass):
+            code = (
+                ErrorCode.invalid_field_value
+                if field_path
+                else ErrorCode.invalid_object
+            )
+            raise FieldError(
+                code,
+                field_path,
+                f"expect type {klass.__name__}, but got {type(obj).__name__}",
+            )
+        if klass == list and item_type:
+            return [from_dict(item, item_type, field_path) for item in obj]
+        return obj
 
+    unknown_fields = list(obj.keys())
+    for field in dataclasses.fields(klass):
+        if field.name in unknown_fields:
+            unknown_fields.remove(field.name)
+        obj[field.name] = _field_value_from_dict(field, obj, field_path)
+
+    if len(unknown_fields) > 0:
+        unknown_fields.sort()
+        full_name = _join_field_path(field_path, unknown_fields[0])
+        field_names = ", ".join(unknown_fields)
+        raise FieldError(
+            ErrorCode.unknown_field, full_name, f"{field_path}: {field_names}"
+        )
+    return klass(**obj)
+
+COMMAND_RESPONSE_RESULTS = {
+    ResponseType.InitChargePaymentResponse: InitChargePaymentResponse
+}
+COMMAND_RESPONSE_RESULT_NAME = 'result'
 
 def _field_value_from_dict(
     field: dataclasses.Field, obj: typing.Any, field_path: str
@@ -205,6 +210,12 @@ def _field_value_from_dict(
                 full_name,
                 f"{val} does not match pattern {valid_values.pattern}",
             )
+
+    if full_name == COMMAND_RESPONSE_RESULT_NAME:
+        object_type = val.get('_ObjectType')
+        if object_type in COMMAND_RESPONSE_RESULTS:
+            return from_dict(val, COMMAND_RESPONSE_RESULTS[object_type], full_name)
+
     return from_dict(val, field_type, full_name)
 
 
