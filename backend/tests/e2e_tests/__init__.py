@@ -180,6 +180,9 @@ class UserClient:
         return res.json().get("reference_id"), res.json().get("address")
 
     def create_payment_as_sender(self, reference_id, vasp_address):
+        return self.get_payment_details(reference_id, vasp_address)
+
+    def get_payment_details(self, reference_id, vasp_address):
         res = requests.get(
             f"{self.backend}/api/offchain/query/payment_details?vasp_address={vasp_address}&reference_id={reference_id}",
             headers=self.auth_headers(),
@@ -188,13 +191,13 @@ class UserClient:
         return res.json()
 
     def reject_payment(self, reference_id):
-        # /offchain/payment/<reference_id>/actions/reject
         res = requests.post(
             f"{self.backend}/api/offchain/payment/{reference_id}/actions/reject",
             headers=self.auth_headers(),
         )
         res.raise_for_status()
-        return res.json().get("reference_id"), res.json().get("address")
+
+        return res.status_code
 
     def get_balance(self, currency: str) -> int:
         self.log_fn(f"Getting balance for {currency} for '{self.name}'")
