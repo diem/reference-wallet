@@ -41,6 +41,7 @@ class PaymentDetails:
     currency: str
     amount: int
     expiration: int
+    status: P2MPaymentStatus
 
 
 class P2MGeneralError(Exception):
@@ -101,6 +102,7 @@ def get_payment_details(account_id: int, reference_id: str, vasp_address: str):
         expiration=int(datetime.timestamp(payment_model.expiration))
         if payment_model.expiration
         else None,
+        status=payment_model.status,
     )
 
 

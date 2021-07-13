@@ -2,7 +2,10 @@ from typing import Optional
 
 from flask import Response
 from wallet.services.offchain import p2m_payment as payment_service
-from wallet.services.offchain.p2m_payment import P2MPaymentNotFoundError
+from wallet.services.offchain.p2m_payment import (
+    P2MPaymentNotFoundError,
+    P2MPaymentStatus,
+)
 from werkzeug.test import Client
 
 CURRENCY = "XUS"
@@ -33,6 +36,7 @@ class TestGetPaymentDetails:
                 currency=CURRENCY,
                 amount=AMOUNT,
                 expiration=EXPIRATION,
+                status=P2MPaymentStatus.READY_FOR_USER,
             ),
         )
         rv: Response = authorized_client.get(

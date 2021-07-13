@@ -7,6 +7,7 @@ from diem import identifier
 import offchain
 from wallet.services.account import generate_new_subaddress
 from wallet.services.offchain.fund_pull_pre_approval import Role
+from wallet.services.offchain.p2m_payment import P2MPaymentStatus
 from wallet.services.offchain.utils import generate_my_address
 from wallet.storage import (
     funds_pull_pre_approval_command as fppa_storage,
@@ -33,6 +34,7 @@ def prepare_payment_as_receiver(account_id: int, action="charge"):
             if action == "auth"
             else None,
             description="description",
+            status=P2MPaymentStatus.READY_FOR_USER,
         )
     )
 
