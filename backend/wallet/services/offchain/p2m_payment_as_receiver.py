@@ -10,6 +10,10 @@ from offchain.types import (
 )
 from wallet import storage
 from wallet.services.offchain import utils
+from wallet.services.offchain.p2m_payment import (
+    P2MPaymentStatus,
+    P2MPaymentNotFoundError,
+)
 
 
 def handle_incoming_get_payment_info_request(request: CommandRequestObject):
@@ -52,9 +56,12 @@ def handle_incoming_get_payment_info_request(request: CommandRequestObject):
 def handle_init_charge_command(request: CommandRequestObject):
     reference_id = request.command.reference_id
 
-    payment = storage.get_payment_details(reference_id)
+    payment_model = storage.get_payment_details(reference_id)
 
-    payment_amount = payment.amount
+    if not payment_model:
+        raise P2MPaymentNotFoundError(f"Could not find payment {reference_id}")
+
+    payment_amount = payment_model.amount
 
     if payment_amount > 1_000_000_000:
         recipient_signature = sign_as_receiver(
@@ -83,5 +90,18 @@ def sign_as_receiver(reference_id, sender_address, amount):
 
 def handle_init_authorize_command(request: CommandRequestObject):
     reference_id = request.command.reference_id
+
+    return utils.jws_response(reference_id)
+
+
+def handle_abort_payment_command(request: CommandRequestObject):
+    reference_id = request.command.reference_id
+
+    payment_model = storage.get_payment_details(reference_id)
+
+    if not payment_model:
+        raise P2MPaymentNotFoundError(f"Could not find payment {reference_id}")
+
+    storage.update_payment(reference_id=reference_id, status=P2MPaymentStatus.REJECTED)
 
     return utils.jws_response(reference_id)
