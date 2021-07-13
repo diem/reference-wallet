@@ -145,7 +145,7 @@ def get_user_transaction_by_direction(user1, direction):
     user1_transactions = user1.get_transactions()
     sent_txns = [txn for txn in user1_transactions if txn.get("direction") == direction]
 
-    for _ in range(10):
+    for _ in range(20):
         if len(sent_txns) == 0:
             time.sleep(0.5)
             user1_transactions = user1.get_transactions()
