@@ -271,6 +271,7 @@ class Payment(Base):
     )
     description = Column(String, nullable=True)
     recipient_signature = Column(String, nullable=True)
+    status = Column(String, nullable=False)
 
     def update(self, updated_command):
         new_command_attributes = [

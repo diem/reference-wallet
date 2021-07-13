@@ -1,6 +1,7 @@
 import dataclasses
 import logging
 from datetime import datetime
+from enum import Enum
 from typing import Optional
 
 from diem_utils.types.currencies import DiemCurrency
@@ -23,6 +24,12 @@ from wallet.storage.p2m_payment import save_payment
 from wallet.types import TransactionType, TransactionStatus
 
 logger = logging.getLogger(__name__)
+
+
+class P2MPaymentStatus(str, Enum):
+    READY_FOR_USER = "ready_for_user"
+    APPROVED = "approved"
+    REJECTED = "rejected"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -78,6 +85,7 @@ def get_payment_details(
                     expiration=datetime.fromtimestamp(action_object.valid_until)
                     if action_object.valid_until
                     else None,
+                    status=P2MPaymentStatus.READY_FOR_USER,
                 )
             )
         except Exception as e:
@@ -117,6 +125,7 @@ def add_new_payment(
         currency=currency,
         amount=amount,
         expiration=datetime.fromtimestamp(expiration) if expiration else None,
+        status=P2MPaymentStatus.READY_FOR_USER,
     )
 
     save_payment(payment_command)
@@ -259,7 +268,13 @@ def send_init_charge_payment_request(payment_model, account_id):
         ):
             recipient_signature = command_response_object.result.recipient_signature
 
-            storage.update_payment(payment_model.reference_id, recipient_signature)
+            storage.update_payment(
+                payment_model.reference_id,
+                recipient_signature,
+                P2MPaymentStatus.APPROVED,
+            )
+
+            # todo submit on-chain transaction ??
     except Exception as e:
         error = P2MGeneralError(e)
         logger.error(error)
