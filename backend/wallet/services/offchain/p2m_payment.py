@@ -41,6 +41,7 @@ class PaymentDetails:
     currency: str
     amount: int
     expiration: int
+    status: P2MPaymentStatus
     demo: bool = False
 
 
@@ -104,6 +105,7 @@ def get_payment_details(
         expiration=int(datetime.timestamp(payment_model.expiration))
         if payment_model.expiration
         else None,
+        status=payment_model.status,
     )
 
 
