@@ -124,12 +124,7 @@ def create_order(
 
 
 def process_order(order_id: OrderId, payment_method: str):
-    if services.run_bg_tasks():
-        from ..background_tasks.background import async_execute_order
-
-        async_execute_order.send(order_id, payment_method)
-    else:
-        execute_order(order_id=order_id, payment_method=payment_method)
+    execute_order(order_id=order_id, payment_method=payment_method)
 
 
 def execute_order(order_id: OrderId, payment_method: Optional[str] = None):
@@ -146,12 +141,7 @@ def execute_order(order_id: OrderId, payment_method: Optional[str] = None):
 
     if order.order_type == OrderType.Trade:
         if execute_trade(order):
-            if services.run_bg_tasks():
-                from ..background_tasks.background import async_cover_order
-
-                async_cover_order.send(order_id)
-            else:
-                cover_order(order_id=order_id)
+            cover_order(order_id=order_id)
     else:
         execute_convert(order)
 

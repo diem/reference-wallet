@@ -11,7 +11,7 @@ set -euo pipefail
 
 # NOTE:
 # each of these test modules need to be run independently due to how they
-# instantiate dramatiq and other test dependencies in conftest.py
+# instantiate test dependencies in conftest.py
 pipenv run python3 $DIR/setup.py pytest --addopts="$DIR/tests/wallet_tests $@"
 pipenv run python3 $DIR/setup.py pytest --addopts="$DIR/tests/webapp_tests $@"
 pipenv run python3 $DIR/setup.py pytest --addopts="$DIR/tests/pubsub_tests $@"

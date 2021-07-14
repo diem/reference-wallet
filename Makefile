@@ -66,7 +66,7 @@ double-env:
 
 # run all e2e tests
 e2e-test:
-	./scripts/wait_for_server_ready.sh 12 # 12 services should have log, 2 gateways has no log
+	./scripts/wait_for_server_ready.sh 6 # 12 services should have log, 2 gateways has no log
 	cat double.vars
 	source double.vars && PIPENV_PIPFILE=backend/Pipfile pipenv run pytest \
 		backend/tests/e2e_tests -k "$(T)" -W ignore::DeprecationWarning

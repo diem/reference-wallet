@@ -28,7 +28,7 @@ Then run the following to build the images from source and stand up a local depl
 
 The default gateway port is 8080, so you can visit http://localhost:8080. Develop mode also exposes the other ports from the backend services onto the host. The main backend webserver is on 5000. Swagger API docs can be found at http://localhost:5000/apidocs.
 
-Getting started in the code, we've provided detailed logs through each of the [workflows](wallet/background_tasks), which can be found at http://localhost:5000/execution_logs.
+Getting started in the code, we've provided detailed logs through each of the [workflows](wallet), which can be found at http://localhost:5000/execution_logs.
 
 ### Docker Compose
 
@@ -54,15 +54,6 @@ If you want to go the extra mile, you can also use helm to install the Diem Refe
 ### Manually
 
 The Python backend relies on pipenv. To set up, run `pipenv install --dev` in /backend directory.
-
-The workflows use [dramatiq](https://dramatiq.io/) with the Redis broker. Install Redis and run it as a daemon:
-
-    $ redis-server --daemonize yes
-
-After ensuring you have Redis running:
-
-    $ ./run_web.sh  # runs main webserver
-    $ ./run_worker.sh  # runs dramatiq workers
 
 To test:
 

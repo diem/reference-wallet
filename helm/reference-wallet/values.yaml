@@ -39,16 +39,6 @@ workers:
   numThreads: 2
 
 peripherals:
-  redis:
-    # Should a database service be created?
-    # If false, host:port should point to an existing DB instance
-    create: false
-    image: "redis:5"
-    # if redis is created by this helm chart, there is no need to fill the following
-    host: ""
-    port: 6379
-    persistence: {}
-
   database:
     # Should a database service be created?
     # If false, host:port should point to an existing DB instance

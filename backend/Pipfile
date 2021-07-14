@@ -7,7 +7,6 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-fakeredis = "*"
 black = "*"
 pyre-check = "*"
 pyre-extensions = "*"
@@ -17,9 +16,6 @@ ipython = "*"
 
 [packages]
 diem-sample-wallet = {editable = true,path = "."}
-dramatiq = {extras = ["redis", "watch"],version = "*"}
-flask-redis = "*"
-redis = "*"
 Flask = ">=1.1.1"
 Flask-WTF = "*"
 WTForms = "*"

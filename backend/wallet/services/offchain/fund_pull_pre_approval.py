@@ -63,7 +63,7 @@ def create_and_approve(
     max_transaction_amount_currency: str = None,
     description: str = None,
 ) -> None:
-    """ Create and approve fund pull pre approval by payer """
+    """Create and approve fund pull pre approval by payer"""
     validate_expiration_timestamp(expiration_timestamp)
 
     command = get_command_by_id(funds_pull_pre_approval_id)

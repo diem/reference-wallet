@@ -10,6 +10,9 @@ import uuid
 from threading import Thread
 from flasgger import Swagger
 from flask import Flask
+
+from pubsub import DEFL_CONFIG
+from pubsub.client import LRWPubSubClient
 from wallet.services.system import sync_db
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -86,6 +89,11 @@ def _offchain_tasks() -> None:
     Thread(target=run, daemon=True).start()
 
 
+def _onchain_pubsub() -> None:
+    client = LRWPubSubClient()
+    Thread(target=client.start, daemon=True).start()
+
+
 def _create_app() -> Flask:
     app = Flask(__name__)
     # register api endpoints
@@ -126,6 +134,7 @@ def init():
         _init_with_log("update_rates_thread", _schedule_update_rates)
         _init_with_log("sync-db", _sync_db)
         _init_with_log("offchain-tasks", _offchain_tasks)
+        _init_with_log("onchain-pubsub", _onchain_pubsub)
     return app
 
 
