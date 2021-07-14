@@ -10,7 +10,7 @@ from .command_types import (
     CommandResponseStatus,
     ResponseType,
 )
-from .payment_command_types import (
+from .p2p_payment_types import (
     AbortCode,
     NationalIdObject,
     AddressObject,
@@ -34,7 +34,7 @@ from .fund_pull_pre_approval_types import (
     FundPullPreApprovalType,
     FundPullPreApprovalCommandObject,
 )
-from .payment_types import (
+from .p2m_payment_types import (
     GetPaymentInfo,
     GetInfoCommandResponse,
     PaymentInfoObject,
