@@ -46,7 +46,9 @@ def test_approve_p2m_charge_payment():
     # sender approve payment
     sender.approve_payment(reference_id)
 
-    sender_payment_after_approval = sender.get_payment_details(reference_id, vasp_address)
+    sender_payment_after_approval = sender.get_payment_details(
+        reference_id, vasp_address
+    )
 
     receiver_payment_after_approval = receiver.get_payment_details(
         reference_id, vasp_address
@@ -54,8 +56,12 @@ def test_approve_p2m_charge_payment():
 
     compare(receiver_payment_after_approval, sender_payment_after_approval, "action")
     compare(receiver_payment_after_approval, sender_payment_after_approval, "amount")
-    compare(receiver_payment_after_approval, sender_payment_after_approval, "expiration")
-    compare(receiver_payment_after_approval, sender_payment_after_approval, "merchant_name")
+    compare(
+        receiver_payment_after_approval, sender_payment_after_approval, "expiration"
+    )
+    compare(
+        receiver_payment_after_approval, sender_payment_after_approval, "merchant_name"
+    )
     compare_to_expected_value(
         receiver_payment_after_approval,
         sender_payment_after_approval,
@@ -140,10 +146,10 @@ def compare(receiver_payment, sender_payment, key_to_compare):
 
 
 def compare_to_expected_value(
-        receiver_payment, sender_payment, key_to_compare, expected_value
+    receiver_payment, sender_payment, key_to_compare, expected_value
 ):
     assert (
-            receiver_payment[key_to_compare]
-            == sender_payment[key_to_compare]
-            == expected_value
+        receiver_payment[key_to_compare]
+        == sender_payment[key_to_compare]
+        == expected_value
     )
