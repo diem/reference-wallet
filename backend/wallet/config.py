@@ -26,3 +26,6 @@ ADMIN_LOGIN_ENABLED: bool = (
 )
 
 SECRET_KEY: str = os.getenv("SECRET_KEY", "you-will-never-guess")
+
+if "VASP_ADDR" in os.environ:
+    context.set(context.from_env())

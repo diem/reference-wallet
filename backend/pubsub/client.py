@@ -10,7 +10,10 @@ import logging
 import json
 
 from .types import LRWPubSubEvent
+from wallet.services.transaction import process_incoming_transaction
+from diem_utils.types.currencies import DiemCurrency
 from diem import jsonrpc
+from . import DEFL_CONFIG
 
 
 class FileProgressStorage:
@@ -30,14 +33,14 @@ class FileProgressStorage:
 
 
 class LRWPubSubClient:
-    def __init__(self, config: Dict[str, Any]) -> None:
+    def __init__(self, config: Dict[str, Any] = DEFL_CONFIG) -> None:
         self.sync_interval_ms = config["sync_interval_ms"]
         self.accounts = config["accounts"]
 
         self.diem_node_uri = config["diem_node_uri"]
         self.progress_file_path = config["progress_file_path"]
         self.fetch_batch_size = 10
-        self.processor = config.get("processor", process_incoming_txn)
+        self.processor = config.get("processor", LRWPubSubClient.process_incoming_txn)
 
         logging.info(f"Loaded LRWPubSubClient with config: {config}")
 
@@ -62,7 +65,7 @@ class LRWPubSubClient:
                 )
                 for event in events:
                     lrw_event = LRWPubSubEvent.from_jsonrpc_event(event)
-                    self.processor.send(lrw_event)
+                    self.processor(lrw_event)
                     logging.info(f"SUCCESS: sent to wallet onchain {lrw_event}")
 
                 after_sync_state[key] = sequence_num + len(events)
@@ -86,3 +89,23 @@ class LRWPubSubClient:
             if account.received_events_key not in state:
                 state[account.received_events_key] = 0
         return state
+
+    @staticmethod
+    def process_incoming_txn(txn: LRWPubSubEvent) -> None:
+        metadata = txn.metadata
+        blockchain_version = txn.version
+        sender_address = txn.sender
+        receiver_address = txn.receiver
+        sequence = txn.sequence
+        amount = txn.amount
+        currency = DiemCurrency[txn.currency]
+        process_incoming_transaction(
+            blockchain_version=blockchain_version,
+            sender_address=sender_address,
+            receiver_address=receiver_address,
+            sequence=sequence,
+            amount=amount,
+            currency=currency,
+            metadata=metadata,
+        )
+
