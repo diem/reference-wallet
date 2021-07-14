@@ -99,9 +99,8 @@ def refund_transfer(
     user1.wait_for_balance(
         currency, user1_balance_before_transfer - transfer_amount, 20
     )
-    sent_txns = [
-        txn for txn in user1.get_transactions() if txn.get("direction") == "sent"
-    ]
+
+    sent_txns = get_user_transaction_by_direction(user1, "sent")
 
     assert len(sent_txns) == 1
     assert sent_txns[0].get("amount") == transfer_amount
