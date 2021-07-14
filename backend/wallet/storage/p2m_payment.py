@@ -1,7 +1,5 @@
 import logging
 
-from wallet.services.offchain.p2m_payment import P2MStorageError
-
 from . import db_session, models
 
 logger = logging.getLogger(__name__)
@@ -30,6 +28,5 @@ def update_payment(reference_id: str, status: str, recipient_signature: str = No
         payment_in_db.update(payment_in_db)
         db_session.commit()
     except Exception as e:
-        error = P2MStorageError(f"Failed update payment following: {e}")
         logger.error(error)
         raise error

@@ -49,10 +49,6 @@ class P2MGeneralError(Exception):
     pass
 
 
-class P2MStorageError(Exception):
-    pass
-
-
 class P2MPaymentNotFoundError(Exception):
     pass
 
