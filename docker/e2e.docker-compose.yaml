@@ -1,24 +1,24 @@
 version: '3.4'
 services:
-  wallet-gateway:
+  gateway:
     volumes:
       - ../gateway/nginx.conf:/etc/nginx/nginx.conf
 
-  wallet-backend-web-server:
+  backend-web-server:
     environment:
       - COMPOSE_ENV="development"
     ports:
       - "5000"
 
-  wallet-backend-worker:
+  backend-worker:
     environment:
       - COMPOSE_ENV="development"
 
-  wallet-backend-pubsub-worker:
+  backend-pubsub-worker:
     environment:
       - COMPOSE_ENV="development"
 
-  wallet-liquidity:
+  liquidity:
     environment:
       - COMPOSE_ENV="development"
     ports:
