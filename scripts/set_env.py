@@ -13,7 +13,7 @@ ENV_FILE_NAME = os.getenv("ENV_FILE_NAME", ".env")
 
 GW_PORT = int(os.getenv("GW_PORT", 8080))
 VASP_BASE_URL = os.getenv("VASP_BASE_URL", "http://localhost:5000/api/offchain")
-LIQUIDITY_SERVICE_HOST = os.getenv("LIQUIDITY_SERVICE_HOST", "wallet-liquidity")
+LIQUIDITY_SERVICE_HOST = os.getenv("LIQUIDITY_SERVICE_HOST", "liquidity")
 LIQUIDITY_SERVICE_PORT = int(os.getenv("LIQUIDITY_SERVICE_PORT", 5000))
 
 
