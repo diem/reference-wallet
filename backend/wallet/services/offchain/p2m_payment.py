@@ -17,7 +17,7 @@ from wallet import storage
 from wallet.services.offchain import utils
 from wallet.services.offchain.utils import generate_my_address
 from wallet.storage.models import Payment as PaymentModel
-from wallet.storage.payment import save_payment
+from wallet.storage.p2m_payment import save_payment
 from wallet.types import TransactionType, TransactionStatus
 
 logger = logging.getLogger(__name__)

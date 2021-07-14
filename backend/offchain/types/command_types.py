@@ -97,9 +97,9 @@ class OffChainErrorType:
 
 
 # Late import to solve circular dependency and be able to list all the command types
-from .payment_command_types import PaymentCommandObject
+from .p2p_payment_types import PaymentCommandObject
 from .fund_pull_pre_approval_types import FundPullPreApprovalCommandObject
-from .payment_types import (
+from .p2m_payment_types import (
     GetPaymentInfo,
     GetInfoCommandResponse,
     InitChargePaymentResponse,

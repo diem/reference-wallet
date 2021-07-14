@@ -1,8 +1,8 @@
 from typing import Optional
 
 from flask import Response
-from wallet.services.offchain import payment as payment_service
-from wallet.services.offchain.payment import PaymentNotFoundError
+from wallet.services.offchain import p2m_payment as payment_service
+from wallet.services.offchain.p2m_payment import PaymentNotFoundError
 from werkzeug.test import Client
 
 CURRENCY = "XUS"
@@ -89,7 +89,7 @@ class TestAddPayment:
         assert rv.status_code == 204, rv.get_data()
 
 
-class TestApprovePayment:
+class TestApproveP2MPayment:
     def test_payment_not_found(self, authorized_client: Client, mock_method):
         mock_method(payment_service, "approve_payment", will_raise=PaymentNotFoundError)
 

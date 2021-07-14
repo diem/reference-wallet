@@ -4,7 +4,7 @@ import offchain
 import pytest
 from flask import Response
 from offchain import Status, AddressObject
-from wallet.services.offchain import payment_command as pc_service
+from wallet.services.offchain import p2p_payment as pc_service
 from werkzeug.test import Client
 
 CURRENCY = "XUS"

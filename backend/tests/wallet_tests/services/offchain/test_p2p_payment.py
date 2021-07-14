@@ -3,10 +3,10 @@ from diem import identifier
 from offchain import Status, AddressObject
 from diem_utils.types.currencies import DiemCurrency
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
-from tests.wallet_tests.resources.seeds.payment_command_seeder import (
-    PaymentCommandSeeder,
+from tests.wallet_tests.resources.seeds.one_p2p_payment_seeder import (
+    OneP2PPaymentSeeder,
 )
-from wallet.services.offchain import payment_command as pc_service
+from wallet.services.offchain import p2p_payment as pc_service
 from wallet.storage import db_session, TransactionStatus
 from wallet import storage
 from wallet.storage.models import PaymentCommand as PaymentCommandModel
@@ -250,7 +250,7 @@ def test_update_payment_command_status():
     sender_status = Status.none
     receiver_status = Status.none
 
-    PaymentCommandSeeder.run(
+    OneP2PPaymentSeeder.run(
         db_session,
         reference_id=REFERENCE_ID,
         amount=AMOUNT,

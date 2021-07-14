@@ -3,7 +3,7 @@
 import dataclasses
 
 import context
-import wallet.services.offchain.payment_command as pc_service
+import wallet.services.offchain.p2p_payment as pc_service
 import wallet.services.offchain.utils as utils
 from diem import identifier, LocalAccount, jsonrpc
 from diem_utils.types.currencies import DiemCurrency

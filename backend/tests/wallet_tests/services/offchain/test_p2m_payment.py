@@ -14,15 +14,17 @@ from offchain.types import (
     GetInfoCommandResponse,
     PaymentInfoObject,
 )
-from offchain.types.payment_types import (
+from offchain.types.p2m_payment_types import (
     PaymentReceiverObject,
     BusinessDataObject,
     InitChargePaymentResponse,
 )
-from tests.wallet_tests.resources.seeds.one_payment_seeder import OnePaymentSeeder
+from tests.wallet_tests.resources.seeds.one_p2m_payment_seeder import (
+    OneP2MPaymentSeeder,
+)
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet import storage
-from wallet.services.offchain import payment as payment_service
+from wallet.services.offchain import p2m_payment as payment_service
 from wallet.storage import db_session
 
 CREATED_AT = datetime(2021, 5, 12)
@@ -116,7 +118,7 @@ def test_approve_payment_success(mock_method):
         db_session, account_amount=100_000_000_000, account_currency=DiemCurrency.XUS
     )
 
-    OnePaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
+    OneP2MPaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
 
     mock_method(
         context.get().offchain_client,
@@ -141,7 +143,7 @@ def test_approve_payment_unsupported_action_type():
         db_session, account_amount=100_000_000_000, account_currency=DiemCurrency.XUS
     )
 
-    OnePaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID, action="dog")
+    OneP2MPaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID, action="dog")
 
     with pytest.raises(payment_service.P2MGeneralError):
         payment_service.approve_payment(user.account_id, REFERENCE_ID)
