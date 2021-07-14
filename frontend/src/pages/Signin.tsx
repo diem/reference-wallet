@@ -32,9 +32,15 @@ function Signin() {
     try {
       setErrorMessage(undefined);
       setSubmitStatus("sending");
-      const authToken = await backendClient.signinUser(username, password);
-      SessionStorage.storeAccessToken(authToken);
-      setSubmitStatus("success");
+      // Disallow signing with demo credents if not on demo mode
+      if (!demoMode && username === "demo_customer@diem.com") {
+        setSubmitStatus("fail");
+        setErrorMessage("Error. Can't sign in with demo account while not in demo mode");
+      } else {
+        const authToken = await backendClient.signinUser(username, password);
+        SessionStorage.storeAccessToken(authToken);
+        setSubmitStatus("success");
+      }
     } catch (e) {
       setSubmitStatus("fail");
       if (e instanceof BackendError) {
