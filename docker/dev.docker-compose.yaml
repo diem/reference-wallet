@@ -17,21 +17,6 @@ services:
       - /wallet/src
       - /tmp:/tmp
 
-  backend-worker:
-    environment:
-      COMPOSE_ENV: development
-    volumes:
-      - ../backend:/wallet
-      - /wallet/src
-      - /tmp:/tmp
-
-  backend-pubsub-worker:
-    environment:
-      COMPOSE_ENV: development
-    volumes:
-      - ../backend:/wallet
-      - /wallet/src
-
   liquidity:
     environment:
       COMPOSE_ENV: development

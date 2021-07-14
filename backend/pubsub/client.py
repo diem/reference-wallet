@@ -9,7 +9,6 @@ from typing import Any, Dict, Optional
 import logging
 import json
 
-from wallet.background_tasks.background import process_incoming_txn
 from .types import LRWPubSubEvent
 from diem import jsonrpc
 

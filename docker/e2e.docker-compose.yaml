@@ -10,14 +10,6 @@ services:
     ports:
       - "5000"
 
-  backend-worker:
-    environment:
-      - COMPOSE_ENV="development"
-
-  backend-pubsub-worker:
-    environment:
-      - COMPOSE_ENV="development"
-
   liquidity:
     environment:
       - COMPOSE_ENV="development"

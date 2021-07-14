@@ -62,14 +62,6 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
-{{- define "reference-wallet.peripherals.redis.url" -}}
-{{- if .Values.peripherals.redis.create }}
-{{- (include "reference-wallet.fullname" .) }}-redis
-{{- else }}
-{{ .Values.peripherals.redis.host }}
-{{- end }}
-{{- end }}
-
 {{- define "reference-wallet.peripherals.database.url" -}}
 {{- if .Values.peripherals.database.create }}
 {{- $host := printf "%s-db" (include "reference-wallet.fullname" .) }}

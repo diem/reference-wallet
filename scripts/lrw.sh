@@ -181,9 +181,6 @@ develop() {
   local follow=${2:-true}
   echo "debug mode with gw port ${port}"
 
-  # build the entire docker services using compose
-  docker-compose -f ${COMPOSE_YAML} -f ${COMPOSE_DEV_YAML} pull redis
-
   GW_PORT=$port docker-compose -f ${COMPOSE_YAML} -f ${COMPOSE_DEV_YAML} up --detach --no-build
 
   if [ "$follow" == true ]; then
@@ -314,7 +311,6 @@ debug() {
   docker-compose -f ${COMPOSE_YAML} -f ${COMPOSE_DEV_YAML} -f ${COMPOSE_DEBUG_YAML} build $gateway
   docker-compose -f ${COMPOSE_YAML} -f ${COMPOSE_DEV_YAML} -f ${COMPOSE_DEBUG_YAML} up -d --scale $backend=0
   ./build.sh
-  REDIS_HOST=127.0.0.1 ./run_web.sh
 
   docker-compose -f ${COMPOSE_YAML} -f ${COMPOSE_DEV_YAML} -f ${COMPOSE_DEBUG_YAML} rm -fsv $gateway
   docker-compose -f ${COMPOSE_YAML} -f ${COMPOSE_DEV_YAML} build $gateway
@@ -339,7 +335,7 @@ deploy_minikube() {
   build 8080 true
 
   helm upgrade --install lrw helm/reference-wallet \
-    --set peripherals.redis.create=true --set peripherals.database.create=true
+    --set peripherals.database.create=true
 }
 
 watch_test() {

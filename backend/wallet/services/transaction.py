@@ -567,12 +567,7 @@ def external_transaction(
         original_txn_id=original_txn_id,
     )
 
-    if services.run_bg_tasks():
-        from ..background_tasks.background import async_external_transaction
-
-        async_external_transaction.send(transaction.id)
-    else:
-        submit_onchain(transaction_id=transaction.id)
+    submit_onchain(transaction_id=transaction.id)
 
     return transaction
 

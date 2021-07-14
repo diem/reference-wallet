@@ -53,7 +53,7 @@ def test_send_transaction() -> None:
     assert tx.destination_subaddress == "receiver_subaddress"
 
 
-def test_transaction_direction(no_background_tasks) -> None:
+def test_transaction_direction() -> None:
     account_id, send_tx = send_fake_tx()
     assert get_transaction_direction(account_id, send_tx) == TransactionDirection.SENT
 

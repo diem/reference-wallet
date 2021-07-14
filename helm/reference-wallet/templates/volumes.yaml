@@ -1,34 +1,3 @@
-{{- if .Values.peripherals.redis.persistence -}}
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ include "reference-wallet.fullname" . }}-redis-pv-claim
-  labels:
-    app: {{ include "reference-wallet.fullname" . }}-redis
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: {{ .Values.peripherals.redis.persistence.claimSize }}
----
-kind: PersistentVolume
-apiVersion: v1
-metadata:
-  name: {{ include "reference-wallet.fullname" . }}-redis-pv
-  labels:
-    type: local
-    app: {{ include "reference-wallet.fullname" . }}-redis
-spec:
-  storageClassName: manual
-  capacity:
-    storage: {{ .Values.peripherals.redis.persistence.pvSize }}
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: "/mnt/data"
----
-{{- end }}
 {{- if .Values.peripherals.database.persistence -}}
 apiVersion: v1
 kind: PersistentVolumeClaim

@@ -89,14 +89,6 @@ def patch_blockchain(monkeypatch):
     yield network
 
 
-@pytest.fixture(autouse=True)
-def no_background_tasks(monkeypatch) -> None:
-    def mocked() -> bool:
-        return False
-
-    monkeypatch.setattr(services, "run_bg_tasks", mocked)
-
-
 class LpClientMock:
     QUOTES: Dict[QuoteId, QuoteData] = {}
     TRADES: Dict[TradeId, TradeData] = {}
