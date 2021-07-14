@@ -146,6 +146,7 @@ class PaymentDetails:
     currency: str
     amount: int
     expiration: int
+    demo: bool
 
 
 @dataclass_json

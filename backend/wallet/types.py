@@ -173,7 +173,7 @@ class ConvertResult(str, Enum):
 
 
 class BalanceError(Exception):
-    """ Indicates a insufficient funds """
+    """Indicates a insufficient funds"""
 
     pass
 
