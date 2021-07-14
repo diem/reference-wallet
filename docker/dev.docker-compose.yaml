@@ -1,12 +1,12 @@
 version: '3.4'
 services:
-  wallet-gateway:
+  gateway:
     build:
       target: dynamic_conf
     volumes:
       - ../gateway/nginx.dev.conf:/etc/nginx/nginx.conf
 
-  wallet-backend-web-server:
+  backend-web-server:
     environment:
       COMPOSE_ENV: development
       ADMIN_LOGIN_ENABLED: 1
@@ -17,7 +17,7 @@ services:
       - /wallet/src
       - /tmp:/tmp
 
-  wallet-backend-worker:
+  backend-worker:
     environment:
       COMPOSE_ENV: development
     volumes:
@@ -25,14 +25,14 @@ services:
       - /wallet/src
       - /tmp:/tmp
 
-  wallet-backend-pubsub-worker:
+  backend-pubsub-worker:
     environment:
       COMPOSE_ENV: development
     volumes:
       - ../backend:/wallet
       - /wallet/src
 
-  wallet-liquidity:
+  liquidity:
     environment:
       COMPOSE_ENV: development
     volumes:
@@ -41,7 +41,7 @@ services:
     ports:
     - "5001:5000"
 
-  wallet-frontend:
+  frontend:
     image: lrw_frontend
     build:
       context: ../frontend
@@ -50,6 +50,6 @@ services:
       - ../frontend/:/app
       - /app/node_modules/
 
-  wallet-db:
+  db:
     ports:
       - 15432:5432

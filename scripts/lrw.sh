@@ -182,6 +182,7 @@ develop() {
   echo "debug mode with gw port ${port}"
 
   # build the entire docker services using compose
+  docker-compose -f ${COMPOSE_YAML} -f ${COMPOSE_DEV_YAML} pull redis
 
   GW_PORT=$port docker-compose -f ${COMPOSE_YAML} -f ${COMPOSE_DEV_YAML} up --detach --no-build
 
