@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as React from "react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect, useMemo } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Button, Container, Form, FormGroup, Input } from "reactstrap";
 import { Link, Redirect, useLocation } from "react-router-dom";
@@ -19,6 +19,7 @@ function Signin() {
   const [submitStatus, setSubmitStatus] = useState<"edit" | "sending" | "fail" | "success">("edit");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [demoMode, setDemoMode] = useState(false);
 
   const backendClient = new BackendClient();
 
@@ -27,9 +28,15 @@ function Signin() {
     try {
       setErrorMessage(undefined);
       setSubmitStatus("sending");
-      const authToken = await backendClient.signinUser(username, password);
-      SessionStorage.storeAccessToken(authToken);
-      setSubmitStatus("success");
+      // Disallow signing with demo credents if not on demo mode
+      if (!demoMode && username === "demo_customer@diem.com") {
+        setSubmitStatus("fail");
+        setErrorMessage("Error. Can't sign in with demo account while not in demo mode");
+      } else {
+        const authToken = await backendClient.signinUser(username, password);
+        SessionStorage.storeAccessToken(authToken);
+        setSubmitStatus("success");
+      }
     } catch (e) {
       setSubmitStatus("fail");
       if (e instanceof BackendError) {
@@ -40,6 +47,24 @@ function Signin() {
       }
     }
   };
+
+  // Only if the query string changes, recalculate if on demo mode
+  useEffect(() => {
+    if (queryString) {
+      const params = new URLSearchParams(queryString);
+      if (params.has("demo")) {
+        setDemoMode(true);
+      }
+    }
+  }, [queryString]);
+
+  useEffect(() => {
+    // Pre-fill demo credents if on demo mode
+    if (demoMode) {
+      setUsername("demo_customer@diem.com");
+      setPassword("Demo_customer1@");
+    }
+  }, [demoMode]);
 
   return (
     <>

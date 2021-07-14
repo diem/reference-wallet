@@ -15,6 +15,7 @@ CID = "1cea3243-4ea6-44b2-8590-ec5bf4a101b1"
 CHARGE_ACTION = "charge"
 AMOUNT = 200_000_000
 EXPIRATION = 1802010490
+DEMO = False
 
 
 class TestGetPaymentDetails:
@@ -33,6 +34,7 @@ class TestGetPaymentDetails:
                 currency=CURRENCY,
                 amount=AMOUNT,
                 expiration=EXPIRATION,
+                # demo=DEMO,
             ),
         )
         rv: Response = authorized_client.get(
