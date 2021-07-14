@@ -272,7 +272,7 @@ def send_init_charge_payment_request(payment_model, account_id):
         recipient_signature = None
 
         if (
-            payment_model.amount > 1_000_000_000
+            payment_model.amount >= 1000000000
             and command_response_object.result
             and type(command_response_object.result) is InitChargePaymentResponse
         ):

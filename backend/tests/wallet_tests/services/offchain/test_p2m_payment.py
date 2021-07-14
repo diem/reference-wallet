@@ -109,16 +109,16 @@ def test_add_new_payment():
     assert int(datetime.timestamp(payment_details.expiration)) == expiration
 
 
-def test_approve_payment_success(mock_method):
+def test_approve_payment_success_with_recipient_signature(mock_method):
     """
     since we mock the offchain send_request all we left to verify is
     if the payment record in DB are update correctly if any update required
     """
     user = OneUser.run(
-        db_session, account_amount=100_000_000_000, account_currency=DiemCurrency.XUS
+        db_session, account_amount=2_000_000_000, account_currency=DiemCurrency.XUS
     )
 
-    OneP2MPaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
+    OneP2MPaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID, amount=1_000_000_000)
 
     mock_method(
         context.get().offchain_client,
@@ -131,6 +131,30 @@ def test_approve_payment_success(mock_method):
     payment_model = storage.get_payment_details(REFERENCE_ID)
 
     assert payment_model.recipient_signature
+
+
+def test_approve_payment_success_without_recipient_signature(mock_method):
+    """
+    since we mock the offchain send_request all we left to verify is
+    if the payment record in DB are update correctly if any update required
+    """
+    user = OneUser.run(
+        db_session, account_amount=1_000_000_000, account_currency=DiemCurrency.XUS
+    )
+
+    OneP2MPaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID, amount=100_000_000)
+
+    mock_method(
+        context.get().offchain_client,
+        "send_request",
+        will_return=generate_success_init_charge_command_response_object(),
+    )
+
+    payment_service.approve_payment(user.account_id, REFERENCE_ID)
+
+    payment_model = storage.get_payment_details(REFERENCE_ID)
+
+    assert not payment_model.recipient_signature
 
 
 def test_approve_payment_fail_because_payment_not_exist():
