@@ -4,7 +4,7 @@ from diem_utils.types.currencies import DiemCurrency
 from wallet.storage.models import Payment as PaymentModel
 
 
-class OnePaymentSeeder:
+class OneP2MPaymentSeeder:
     @staticmethod
     def run(
         db_session, vasp_address, reference_id, action="charge", amount=100_000_000

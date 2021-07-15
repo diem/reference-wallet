@@ -10,7 +10,7 @@ from .command_types import (
     CommandResponseStatus,
     ResponseType,
 )
-from .payment_command_types import (
+from .p2p_payment_types import (
     AbortCode,
     NationalIdObject,
     AddressObject,
@@ -34,7 +34,7 @@ from .fund_pull_pre_approval_types import (
     FundPullPreApprovalType,
     FundPullPreApprovalCommandObject,
 )
-from .payment_types import (
+from .p2m_payment_types import (
     GetPaymentInfo,
     GetInfoCommandResponse,
     PaymentInfoObject,
@@ -164,11 +164,13 @@ def _from_dict(
         )
     return klass(**obj)
 
+
 _RESULT_TYPES = {
     ResponseType.InitChargePaymentResponse: InitChargePaymentResponse,
-    ResponseType.GetInfoCommandResponse: GetInfoCommandResponse
+    ResponseType.GetInfoCommandResponse: GetInfoCommandResponse,
 }
-_RESULT_TYPE_FIELD_NAME = 'result'
+_RESULT_TYPE_FIELD_NAME = "result"
+
 
 def _field_value_from_dict(
     field: dataclasses.Field, obj: typing.Any, field_path: str
@@ -211,7 +213,7 @@ def _field_value_from_dict(
             )
 
     if full_name == _RESULT_TYPE_FIELD_NAME:
-        object_type = val.get('_ObjectType')
+        object_type = val.get("_ObjectType")
         if object_type in _RESULT_TYPES:
             return from_dict(val, _RESULT_TYPES[object_type], full_name)
 

@@ -218,7 +218,7 @@ def payment_command_to_model(
 
 
 def get_command_account_id(command: offchain.PaymentCommand) -> int:
-    """ Find the account id for the command """
+    """Find the account id for the command"""
     sender_address_bech32 = command.payment.sender.address
     sender_address, sender_sub_address = identifier.decode_account(
         sender_address_bech32, context.get().config.diem_address_hrp()

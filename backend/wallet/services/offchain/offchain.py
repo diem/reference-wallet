@@ -12,12 +12,12 @@ from wallet.services.offchain.fund_pull_pre_approval import (
     process_funds_pull_pre_approvals_requests,
     handle_fund_pull_pre_approval_command,
 )
-from wallet.services.offchain.payment_as_receiver import (
+from wallet.services.offchain.p2m_payment_as_receiver import (
     handle_get_payment_info_incoming_request,
     handle_init_charge_command,
     handle_init_authorize_command,
 )
-from wallet.services.offchain.payment_command import (
+from wallet.services.offchain.p2p_payment import (
     process_payment_by_status,
     lock_and_save_inbound_command,
     model_to_payment_command,
@@ -27,7 +27,7 @@ from wallet.services.offchain.payment_command import (
 )
 
 # noinspection PyUnresolvedReferences
-from wallet.services.offchain.payment_command_as_receiver import (
+from wallet.services.offchain.p2p_payment_as_receiver import (
     save_payment_command_as_receiver,
 )
 from wallet.services.offchain.utils import evaluate_kyc_data

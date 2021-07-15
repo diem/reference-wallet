@@ -4,8 +4,10 @@ from offchain.types import (
     new_init_charge_command,
     new_init_auth_command,
 )
-from tests.wallet_tests.resources.seeds.one_payment_seeder import OnePaymentSeeder
-from wallet.services.offchain.payment_as_receiver import (
+from tests.wallet_tests.resources.seeds.one_p2m_payment_seeder import (
+    OneP2MPaymentSeeder,
+)
+from wallet.services.offchain.p2m_payment_as_receiver import (
     handle_get_payment_info_incoming_request,
     handle_init_charge_command,
     handle_init_authorize_command,
@@ -24,7 +26,7 @@ ORIGINAL_REFERENCE_ID = "35a1b548-3170-438f-bf3a-6ca0fef85d15"
 
 @pytest.mark.skip(reason="cant figure out why the response keep changing")
 def test_handle_get_info_command(mock_method):
-    OnePaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
+    OneP2MPaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
 
     get_info_request = new_get_info_request(reference_id=REFERENCE_ID, cid=REFERENCE_ID)
 
@@ -38,13 +40,13 @@ def test_handle_get_info_command(mock_method):
 
 
 def test_handle_init_charge_command_success(mock_method):
-    OnePaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
+    OneP2MPaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
 
     handle_init_charge_command(successful_init_charge_command())
 
 
 def test_handle_init_charge_command_success_with_recipient_signature(mock_method):
-    OnePaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID, amount=1_000_000_000)
+    OneP2MPaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID, amount=1_000_000_000)
 
     handle_init_charge_command(successful_init_charge_command())
 
@@ -67,7 +69,7 @@ def successful_init_charge_command():
 
 
 def test_handle_init_charge_command_fail(mock_method):
-    OnePaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
+    OneP2MPaymentSeeder.run(db_session, MY_ADDRESS, REFERENCE_ID)
 
     handle_init_charge_command(
         new_init_charge_command(

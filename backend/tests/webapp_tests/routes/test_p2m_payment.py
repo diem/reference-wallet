@@ -1,8 +1,8 @@
 from typing import Optional
 
 from flask import Response
-from wallet.services.offchain import payment as payment_service
-from wallet.services.offchain.payment import PaymentNotFoundError
+from wallet.services.offchain import p2m_payment as payment_service
+from wallet.services.offchain.p2m_payment import PaymentNotFoundError
 from werkzeug.test import Client
 
 CURRENCY = "XUS"
@@ -15,6 +15,7 @@ CID = "1cea3243-4ea6-44b2-8590-ec5bf4a101b1"
 CHARGE_ACTION = "charge"
 AMOUNT = 200_000_000
 EXPIRATION = 1802010490
+DEMO = False
 
 
 class TestGetPaymentDetails:
@@ -33,6 +34,7 @@ class TestGetPaymentDetails:
                 currency=CURRENCY,
                 amount=AMOUNT,
                 expiration=EXPIRATION,
+                # demo=DEMO,
             ),
         )
         rv: Response = authorized_client.get(
@@ -89,7 +91,7 @@ class TestAddPayment:
         assert rv.status_code == 204, rv.get_data()
 
 
-class TestApprovePayment:
+class TestApproveP2MPayment:
     def test_payment_not_found(self, authorized_client: Client, mock_method):
         mock_method(payment_service, "approve_payment", will_raise=PaymentNotFoundError)
 

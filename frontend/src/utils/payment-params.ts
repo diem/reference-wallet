@@ -19,6 +19,7 @@ export class PaymentParams {
     readonly isFull: boolean,
     readonly vaspAddress: string,
     readonly referenceId: string,
+    readonly demo: boolean,
     readonly merchantName?: string,
     readonly checkoutDataType?: CheckoutDataType,
     readonly action?: PaymentAction,
@@ -33,12 +34,14 @@ export class PaymentParams {
 
     const vaspAddress = PaymentParams.getParam(params, "vaspAddress");
     const referenceId = PaymentParams.getParam(params, "referenceId");
+    const demo = PaymentParams.isDemo(params, "demo");
 
-    if (Array.from(params).length === 2) {
+    if (Array.from(params).length === 3) {
       return new PaymentParams(
         false,
         vaspAddress,
         referenceId,
+        false,
         undefined,
         undefined,
         undefined,
@@ -57,11 +60,12 @@ export class PaymentParams {
       throw new PaymentParamError("redirectUrl contains invalid URL");
     }
 
-    if (Array.from(params).length === 3) {
+    if (Array.from(params).length === 4) {
       return new PaymentParams(
         false,
         vaspAddress,
         referenceId,
+        false,
         undefined,
         undefined,
         undefined,
@@ -112,6 +116,7 @@ export class PaymentParams {
       true,
       vaspAddress,
       referenceId,
+      demo,
       merchantName,
       checkoutDataType,
       action,
@@ -130,11 +135,22 @@ export class PaymentParams {
     return value;
   }
 
+  private static isDemo(searchParams: URLSearchParams, paramName: string): boolean {
+    if (searchParams.has(paramName)) {
+      const value = searchParams.get(paramName);
+      if (value?.toLowerCase() === "true") {
+        return true;
+      }
+    }
+    return false;
+  }
+
   static fromPaymentDetails(paymentInfo: PaymentDetails, redirectUrl?: string) {
     return new PaymentParams(
       true,
       paymentInfo.vasp_address,
       paymentInfo.reference_id,
+      paymentInfo.demo,
       paymentInfo.merchant_name,
       CheckoutDataType.PAYMENT_REQUEST,
       PaymentAction[paymentInfo.action],
