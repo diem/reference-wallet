@@ -52,18 +52,36 @@ function Signin() {
   useEffect(() => {
     if (queryString) {
       const params = new URLSearchParams(queryString);
-      if (params.has("demo")) {
+      const isDemo = params.get("demo");
+      if (isDemo === "True") {
         setDemoMode(true);
       }
     }
   }, [queryString]);
 
   useEffect(() => {
+    // If on demo mode auto-create demo account. If it already exists prefill sign in credentials
     // Pre-fill demo credents if on demo mode
-    if (demoMode) {
-      setUsername("demo_customer@diem.com");
-      setPassword("Demo_customer1@");
+    async function signupDemoUser() {
+      if (demoMode) {
+        try {
+          const returnedToken = await backendClient.signupUser(
+            "demo_customer@diem.com",
+            "Demo_customer1@"
+          );
+          setUsername("demo_customer@diem.com");
+          setPassword("Demo_customer1@");
+        } catch (e) {
+          if (e.message === "username demo_customer@diem.com already exists!") {
+            setUsername("demo_customer@diem.com");
+            setPassword("Demo_customer1@");
+          } else {
+            console.error(e);
+          }
+        }
+      }
     }
+    signupDemoUser();
   }, [demoMode]);
 
   return (
