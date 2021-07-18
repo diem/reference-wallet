@@ -484,7 +484,7 @@ export default class BackendClient {
         amount: paymentParams.amount,
         expiration:
           paymentParams.expiration !== undefined
-            ? paymentParams.expiration!.getTime() / 1000
+            ? Math.trunc(paymentParams.expiration!.getTime() / 1000)
             : undefined,
       });
     } catch (e) {
