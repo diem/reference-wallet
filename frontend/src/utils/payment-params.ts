@@ -122,7 +122,7 @@ export class PaymentParams {
       action,
       currency,
       amount,
-      new Date(expiration),
+      expiration,
       redirectUrl
     );
   }
