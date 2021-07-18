@@ -69,10 +69,7 @@ function Signin() {
     async function signupDemoUser() {
       if (demoMode) {
         try {
-          await backendClient.signupUser(
-            DEMO_USER_NAME,
-            DEMO_USER_PASSWORD
-          );
+          await backendClient.signupUser(DEMO_USER_NAME, DEMO_USER_PASSWORD);
         } catch (e) {
           if (e.message !== "username demo_customer@diem.com already exists!") {
             console.error(e);

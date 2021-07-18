@@ -53,9 +53,7 @@ class P2MPaymentNotFoundError(Exception):
     pass
 
 
-def get_payment_details(
-    account_id: int, reference_id: str, vasp_address: str
-):
+def get_payment_details(account_id: int, reference_id: str, vasp_address: str):
     payment_model = storage.get_payment_details(reference_id)
 
     if payment_model is None:
