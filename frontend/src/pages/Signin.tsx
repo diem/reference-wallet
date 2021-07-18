@@ -11,6 +11,10 @@ import BackendClient from "../services/backendClient";
 import { BackendError } from "../services/errors";
 import ErrorMessage from "../components/Messages/ErrorMessage";
 
+const DEMO_USER_NAME = "demo_customer@diem.com";
+
+const DEMO_USER_PASSWORD = "Demo_customer1@";
+
 function Signin() {
   const { t } = useTranslation("auth");
   const queryString = useLocation().search;
@@ -28,15 +32,9 @@ function Signin() {
     try {
       setErrorMessage(undefined);
       setSubmitStatus("sending");
-      // Disallow signing with demo credents if not on demo mode
-      if (!demoMode && username === "demo_customer@diem.com") {
-        setSubmitStatus("fail");
-        setErrorMessage("Error. Can't sign in with demo account while not in demo mode");
-      } else {
-        const authToken = await backendClient.signinUser(username, password);
-        SessionStorage.storeAccessToken(authToken);
-        setSubmitStatus("success");
-      }
+      const authToken = await backendClient.signinUser(username, password);
+      SessionStorage.storeAccessToken(authToken);
+      setSubmitStatus("success");
     } catch (e) {
       setSubmitStatus("fail");
       if (e instanceof BackendError) {
@@ -52,18 +50,34 @@ function Signin() {
   useEffect(() => {
     if (queryString) {
       const params = new URLSearchParams(queryString);
-      if (params.has("demo")) {
+      const isDemo = params.get("demo");
+      if (isDemo && isDemo.toLowerCase() === "true") {
         setDemoMode(true);
       }
     }
   }, [queryString]);
 
   useEffect(() => {
+    // If on demo mode auto-create demo account. If it already exists prefill sign in credentials
     // Pre-fill demo credents if on demo mode
-    if (demoMode) {
-      setUsername("demo_customer@diem.com");
-      setPassword("Demo_customer1@");
+    async function signupDemoUser() {
+      if (demoMode) {
+        try {
+          await backendClient.signupUser(
+            DEMO_USER_NAME,
+            DEMO_USER_PASSWORD
+          );
+        } catch (e) {
+          if (e.message !== "username demo_customer@diem.com already exists!") {
+            console.error(e);
+          }
+        }
+
+        setUsername(DEMO_USER_NAME);
+        setPassword(DEMO_USER_PASSWORD);
+      }
     }
+    signupDemoUser();
   }, [demoMode]);
 
   return (

@@ -34,9 +34,8 @@ export class PaymentParams {
 
     const vaspAddress = PaymentParams.getParam(params, "vaspAddress");
     const referenceId = PaymentParams.getParam(params, "referenceId");
-    const demo = PaymentParams.isDemo(params, "demo");
 
-    if (Array.from(params).length === 3) {
+    if (Array.from(params).length === 2) {
       return new PaymentParams(
         false,
         vaspAddress,
@@ -60,7 +59,7 @@ export class PaymentParams {
       throw new PaymentParamError("redirectUrl contains invalid URL");
     }
 
-    if (Array.from(params).length === 4) {
+    if (Array.from(params).length === 3) {
       return new PaymentParams(
         false,
         vaspAddress,
@@ -76,6 +75,7 @@ export class PaymentParams {
       );
     }
 
+    const demo = PaymentParams.isDemo(params, "demo");
     const merchantName = PaymentParams.getParam(params, "merchantName");
     const checkoutDataType = CheckoutDataType[PaymentParams.getParam(params, "checkoutDataType")];
     const action = PaymentAction[PaymentParams.getParam(params, "action")];
