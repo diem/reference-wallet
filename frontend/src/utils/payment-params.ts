@@ -34,7 +34,6 @@ export class PaymentParams {
 
     const vaspAddress = PaymentParams.getParam(params, "vaspAddress");
     const referenceId = PaymentParams.getParam(params, "referenceId");
-    const demo = PaymentParams.isDemo(params, "demo");
 
     if (Array.from(params).length === 3) {
       return new PaymentParams(
