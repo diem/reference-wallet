@@ -26,7 +26,7 @@ describe("Payment params from URL query string", () => {
       expect(params.action).toBe("CHARGE");
       expect(params.amount).toBe(1000000000);
       expect(params.currency).toBe("XUS");
-      expect(params.expiration.toISOString()).toBe("2020-01-21T00:00:00.000Z");
+      expect(params.expiration!.toISOString()).toBe("2020-01-21T00:00:00.000Z");
       expect(params.redirectUrl).toBe(
         "https://merchant.com/order/93c4963f-7f9e-4f9d-983e-7080ef782534/checkout/complete"
       );
@@ -37,7 +37,7 @@ describe("Payment params from URL query string", () => {
     it("should parse successfully", () => {
       const queryString =
         "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
-        "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&redirectUrl=https://www.ynet.co.il/&demo=true";
+        "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&redirectUrl=https://www.ynet.co.il/";
 
       const params = PaymentParams.fromUrlQueryString(queryString);
 
@@ -52,7 +52,7 @@ describe("Payment params from URL query string", () => {
       const queryString =
         "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
         "checkoutDataType=PAYMENT_REQUEST&" +
-        "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&redirectUrl=https://www.ynet.co.il/&demo=true";
+        "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&redirectUrl=https://www.ynet.co.il/";
 
       expect(() => PaymentParams.fromUrlQueryString(queryString)).toThrow("merchantName");
     });

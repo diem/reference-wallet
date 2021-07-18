@@ -25,6 +25,8 @@ import TestnetWarning from "../components/TestnetWarning";
 import PaymentConfirmation from "../components/PaymentConfirmation";
 import FundsPullPreApprovalsList from "../components/FundsPullPreApproval/FundsPullPreApprovalsList";
 import { Approval } from "../interfaces/approval";
+import moment from "moment";
+import { FiatCurrency } from "../../src/interfaces/currencies";
 
 const REFRESH_TRANSACTIONS_INTERVAL = 3000;
 const REFRESH_APPROVALS_INTERVAL = 3000;
@@ -48,6 +50,42 @@ function Home() {
   const [transferModalOpen, setTransferModalOpen] = useState<boolean>(false);
   const [sendModalOpen, setSendModalOpen] = useState<boolean>(false);
   const [receiveModalOpen, setReceiveModalOpen] = useState<boolean>(false);
+  const [redirectToVerification, setRedirectToVerification] = useState<boolean>(false);
+
+  useEffect(() => {
+    const registerDemoUser = async () => {
+      try {
+        if (settings.user?.username === "demo_customer@diem.com") {
+          if (userVerificationRequired) {
+            const usdValue: FiatCurrency = "USD";
+            const userInfo = {
+              selected_fiat_currency: usdValue,
+              selected_language: "en",
+              first_name: "Demo",
+              last_name: "User",
+              dob: moment(new Date(2018, 10, 10, 10, 10, 30, 0)),
+              phone: "1 123-456-7890",
+              country: "US",
+              state: "California",
+              city: "San Francisco",
+              address_1: "58 Middle Point Rd",
+              address_2: "",
+              zip: "94124",
+            };
+
+            const user = await new BackendClient().updateUserInfo(userInfo);
+          }
+        } else {
+          if (userVerificationRequired) {
+            setRedirectToVerification(true);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    registerDemoUser();
+  }, [userVerificationRequired]);
 
   useEffect(() => {
     async function refreshUser() {
@@ -113,7 +151,7 @@ function Home() {
 
   return (
     <>
-      {userVerificationRequired && <Redirect to="/verify" />}
+      {redirectToVerification && <Redirect to="/verify" />}
       {!!activeCurrency && <Redirect to={"/account/" + activeCurrency} />}
       <TestnetWarning />
 
