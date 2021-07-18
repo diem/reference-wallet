@@ -38,6 +38,7 @@ class TestGetPaymentDetails:
                 amount=AMOUNT,
                 expiration=EXPIRATION,
                 demo=DEMO,
+                status=P2MPaymentStatus.READY_FOR_USER,
             ),
         )
         rv: Response = authorized_client.get(
