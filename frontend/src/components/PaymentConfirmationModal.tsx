@@ -68,7 +68,7 @@ function PaymentConfirmationModal({
   const onReject = async () => {
     // If on demo don't call the backend
     if (!paymentParams.demo) {
-      await new BackendClient().rejectPaymentCommand(paymentParams.referenceId);
+      await new BackendClient().rejectPayment(paymentParams.referenceId);
       setSubmitStatus("success");
     }
   };
@@ -153,7 +153,12 @@ function PaymentConfirmationModal({
                   t("confirmation.approve")
                 )}
               </Button>
-              <Button outline color="black" block onClick={onReject} disabled={submitStatus==="sending"}
+              <Button
+                outline
+                color="black"
+                block
+                onClick={onReject}
+                disabled={submitStatus === "sending"}
               >
                 {t("confirmation.reject")}
               </Button>

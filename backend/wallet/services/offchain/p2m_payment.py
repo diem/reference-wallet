@@ -1,6 +1,7 @@
 import dataclasses
 import logging
 from datetime import datetime
+from enum import Enum
 from typing import Optional
 
 from diem_utils.types.currencies import DiemCurrency
@@ -8,10 +9,12 @@ from offchain import (
     jws,
 )
 from offchain.types import (
-    new_get_info_request,
-    new_init_charge_command,
+    new_get_payment_info_request,
+    new_init_charge_payment_request,
     new_init_auth_command,
     InitChargePaymentResponse,
+    new_abort_payment_command,
+    P2MAbortCode,
 )
 from wallet import storage
 from wallet.services.offchain import utils
@@ -23,6 +26,12 @@ from wallet.types import TransactionType, TransactionStatus
 logger = logging.getLogger(__name__)
 
 
+class P2MPaymentStatus(str, Enum):
+    READY_FOR_USER = "ready_for_user"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
 @dataclasses.dataclass(frozen=True)
 class PaymentDetails:
     vasp_address: str
@@ -32,6 +41,7 @@ class PaymentDetails:
     currency: str
     amount: int
     expiration: int
+    status: P2MPaymentStatus
     demo: bool = False
 
 
@@ -39,13 +49,11 @@ class P2MGeneralError(Exception):
     pass
 
 
-class PaymentNotFoundError(Exception):
+class P2MPaymentNotFoundError(Exception):
     pass
 
 
-def get_payment_details(
-    account_id: int, reference_id: str, vasp_address: str
-):
+def get_payment_details(account_id: int, reference_id: str, vasp_address: str):
     payment_model = storage.get_payment_details(reference_id)
 
     if payment_model is None:
@@ -56,7 +64,9 @@ def get_payment_details(
                 request_sender_address=my_address,
                 counterparty_account_id=vasp_address,
                 request_bytes=jws.serialize(
-                    new_get_info_request(reference_id=reference_id, cid=reference_id),
+                    new_get_payment_info_request(
+                        reference_id=reference_id, cid=reference_id
+                    ),
                     utils.compliance_private_key().sign,
                 ),
             )
@@ -76,6 +86,7 @@ def get_payment_details(
                     expiration=datetime.fromtimestamp(action_object.valid_until)
                     if action_object.valid_until
                     else None,
+                    status=P2MPaymentStatus.READY_FOR_USER,
                 )
             )
         except Exception as e:
@@ -92,6 +103,7 @@ def get_payment_details(
         expiration=int(datetime.timestamp(payment_model.expiration))
         if payment_model.expiration
         else None,
+        status=payment_model.status,
     )
 
 
@@ -115,6 +127,7 @@ def add_new_payment(
         currency=currency,
         amount=amount,
         expiration=datetime.fromtimestamp(expiration) if expiration else None,
+        status=P2MPaymentStatus.READY_FOR_USER,
     )
 
     save_payment(payment_command)
@@ -126,7 +139,7 @@ def approve_payment(
     payment_model = storage.get_payment_details(reference_id)
 
     if not payment_model:
-        raise PaymentNotFoundError(f"Could not find payment {reference_id}")
+        raise P2MPaymentNotFoundError(f"Could not find payment {reference_id}")
 
     if payment_model.action == "charge":
         if init_required:
@@ -138,6 +151,41 @@ def approve_payment(
         lock_funds(account_id, payment_model, reference_id)
     else:
         raise P2MGeneralError(f"Unsupported action type {payment_model.action}")
+
+
+def reject_payment(reference_id: str):
+    payment_model = storage.get_payment_details(reference_id)
+
+    if not payment_model:
+        raise P2MPaymentNotFoundError(f"Could not find payment {reference_id}")
+
+    try:
+        command_response_object = utils.offchain_client().send_request(
+            request_sender_address=payment_model.my_address,
+            counterparty_account_id=payment_model.vasp_address,
+            request_bytes=jws.serialize(
+                new_abort_payment_command(
+                    reference_id=payment_model.reference_id,
+                    abort_message="customer rejected payment request",
+                    abort_code=P2MAbortCode.CUSTOMER_DECLINED,
+                ),
+                utils.compliance_private_key().sign,
+            ),
+        )
+
+        if command_response_object:
+            if command_response_object.status == "success":
+                storage.update_payment(
+                    reference_id=payment_model.reference_id,
+                    status=P2MPaymentStatus.REJECTED,
+                )
+            else:
+                # todo throw?
+                ...
+    except Exception as e:
+        error = P2MGeneralError(e)
+        logger.error(error)
+        raise error
 
 
 def lock_funds(account_id, payment_model, reference_id):
@@ -201,7 +249,7 @@ def send_init_charge_payment_request(payment_model, account_id):
             request_sender_address=payment_model.my_address,
             counterparty_account_id=payment_model.vasp_address,
             request_bytes=jws.serialize(
-                new_init_charge_command(
+                new_init_charge_payment_request(
                     reference_id=payment_model.reference_id,
                     vasp_address=payment_model.vasp_address,
                     sender_name=user.first_name,
@@ -219,13 +267,22 @@ def send_init_charge_payment_request(payment_model, account_id):
             ),
         )
 
+        recipient_signature = None
+
         if (
-            command_response_object.result
+            payment_model.amount >= 1000000000
+            and command_response_object.result
             and type(command_response_object.result) is InitChargePaymentResponse
         ):
             recipient_signature = command_response_object.result.recipient_signature
 
-            storage.update_payment(payment_model.reference_id, recipient_signature)
+        storage.update_payment(
+            reference_id=payment_model.reference_id,
+            recipient_signature=recipient_signature,
+            status=P2MPaymentStatus.APPROVED,
+        )
+        # todo verify response status?
+        # todo submit on-chain transaction ??
     except Exception as e:
         error = P2MGeneralError(e)
         logger.error(error)

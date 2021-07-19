@@ -10,12 +10,16 @@ from offchain.types import (
 )
 from wallet import storage
 from wallet.services.offchain import utils
+from wallet.services.offchain.p2m_payment import (
+    P2MPaymentStatus,
+    P2MPaymentNotFoundError,
+)
 
 
-def handle_get_payment_info_incoming_request(request: CommandRequestObject):
-    # The get_info command arrive only when LRW playing the Merchant\Receiver role in the communication,
-    # and therefore we can assume that the payment info already been saved in DB
-    # and the missing data we can mock
+def handle_incoming_get_payment_info_request(request: CommandRequestObject):
+    # The get_payment_info command arrive only when DRW playing the Merchant\Receiver
+    # role in the communication, and therefore we can assume that the relevant payment
+    # already been saved in DB and all other data we should return we can mock
     get_info_command_object = typing.cast(GetPaymentInfo, request.command)
 
     reference_id = get_info_command_object.reference_id
@@ -52,15 +56,24 @@ def handle_get_payment_info_incoming_request(request: CommandRequestObject):
 def handle_init_charge_command(request: CommandRequestObject):
     reference_id = request.command.reference_id
 
-    payment = storage.get_payment_details(reference_id)
+    payment_model = storage.get_payment_details(reference_id)
 
-    payment_amount = payment.amount
+    if not payment_model:
+        raise P2MPaymentNotFoundError(f"Could not find payment {reference_id}")
+
+    payment_amount = payment_model.amount
 
     if payment_amount > 1_000_000_000:
         recipient_signature = sign_as_receiver(
             reference_id=reference_id,
             sender_address=request.command.sender.account_address,
             amount=payment_amount,
+        )
+
+        storage.update_payment(
+            reference_id=reference_id,
+            recipient_signature=recipient_signature,
+            status=P2MPaymentStatus.APPROVED,
         )
 
         return utils.jws_response(
@@ -70,6 +83,9 @@ def handle_init_charge_command(request: CommandRequestObject):
             ),
         )
     else:
+        storage.update_payment(
+            reference_id=reference_id, status=P2MPaymentStatus.APPROVED
+        )
         return utils.jws_response(reference_id)
 
 
@@ -83,5 +99,18 @@ def sign_as_receiver(reference_id, sender_address, amount):
 
 def handle_init_authorize_command(request: CommandRequestObject):
     reference_id = request.command.reference_id
+
+    return utils.jws_response(reference_id)
+
+
+def handle_abort_payment_command(request: CommandRequestObject):
+    reference_id = request.command.reference_id
+
+    payment_model = storage.get_payment_details(reference_id)
+
+    if not payment_model:
+        raise P2MPaymentNotFoundError(f"Could not find payment {reference_id}")
+
+    storage.update_payment(reference_id=reference_id, status=P2MPaymentStatus.REJECTED)
 
     return utils.jws_response(reference_id)

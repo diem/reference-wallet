@@ -2,7 +2,10 @@ from typing import Optional
 
 from flask import Response
 from wallet.services.offchain import p2m_payment as payment_service
-from wallet.services.offchain.p2m_payment import PaymentNotFoundError
+from wallet.services.offchain.p2m_payment import (
+    P2MPaymentNotFoundError,
+    P2MPaymentStatus,
+)
 from werkzeug.test import Client
 
 CURRENCY = "XUS"
@@ -35,6 +38,7 @@ class TestGetPaymentDetails:
                 amount=AMOUNT,
                 expiration=EXPIRATION,
                 demo=DEMO,
+                status=P2MPaymentStatus.READY_FOR_USER,
             ),
         )
         rv: Response = authorized_client.get(
@@ -93,7 +97,9 @@ class TestAddPayment:
 
 class TestApproveP2MPayment:
     def test_payment_not_found(self, authorized_client: Client, mock_method):
-        mock_method(payment_service, "approve_payment", will_raise=PaymentNotFoundError)
+        mock_method(
+            payment_service, "approve_payment", will_raise=P2MPaymentNotFoundError
+        )
 
         rv: Response = authorized_client.post(
             f"/offchain/payment/{REFERENCE_ID}/actions/approve",
@@ -108,6 +114,29 @@ class TestApproveP2MPayment:
         rv: Response = authorized_client.post(
             f"/offchain/payment/{REFERENCE_ID}/actions/approve",
             json={"init_offchain_required": False},
+        )
+
+        assert rv.status_code == 204, rv.get_data()
+
+
+class TestRejectP2MPayment:
+    def test_payment_not_found(self, authorized_client: Client, mock_method):
+        mock_method(
+            payment_service, "reject_payment", will_raise=P2MPaymentNotFoundError
+        )
+
+        rv: Response = authorized_client.post(
+            f"/offchain/payment/{REFERENCE_ID}/actions/reject",
+            json={"init_offchain_required": False},
+        )
+
+        assert rv.status_code == 404, rv.get_data()
+
+    def test_successful_payment(self, authorized_client: Client, mock_method):
+        mock_method(payment_service, "reject_payment", will_return=None)
+
+        rv: Response = authorized_client.post(
+            f"/offchain/payment/{REFERENCE_ID}/actions/reject",
         )
 
         assert rv.status_code == 204, rv.get_data()

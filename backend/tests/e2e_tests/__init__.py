@@ -1,14 +1,15 @@
 # Copyright (c) The Diem Core Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-import os, time, typing
+import os
 import random
-import requests
+import time
+import typing
 from dataclasses import dataclass
 
+import requests
+from diem_utils.types.currencies import FiatCurrency
 from requests import HTTPError
-
-from diem_utils.types.currencies import DiemCurrency, FiatCurrency
 
 LRW_WEB_1 = os.getenv("LRW_WEB_1")
 LRW_WEB_2 = os.getenv("LRW_WEB_2")
@@ -169,6 +170,45 @@ class UserClient:
         res = requests.get(f"{self.backend}/api/account", headers=self.auth_headers())
         res.raise_for_status()
         return res.json().get("balances")
+
+    def create_payment_as_receiver(self):
+        res = requests.post(
+            f"{self.backend}/api/validation/payment_info/charge",
+            headers=self.auth_headers(),
+        )
+        res.raise_for_status()
+        return res.json().get("reference_id"), res.json().get("address")
+
+    def create_payment_as_sender(self, reference_id, vasp_address):
+        return self.get_payment_details(reference_id, vasp_address)
+
+    def get_payment_details(self, reference_id, vasp_address):
+        res = requests.get(
+            f"{self.backend}/api/offchain/query/payment_details?vasp_address={vasp_address}&reference_id={reference_id}",
+            headers=self.auth_headers(),
+        )
+        res.raise_for_status()
+        return res.json()
+
+    def approve_payment(self, reference_id):
+        payload = {"init_offchain_required": True}
+
+        res = requests.post(
+            f"{self.backend}/api/offchain/payment/{reference_id}/actions/approve",
+            headers=self.auth_headers(),
+            json=payload,
+        )
+        res.raise_for_status()
+        return res.status_code
+
+    def reject_payment(self, reference_id):
+        res = requests.post(
+            f"{self.backend}/api/offchain/payment/{reference_id}/actions/reject",
+            headers=self.auth_headers(),
+        )
+        res.raise_for_status()
+
+        return res.status_code
 
     def get_balance(self, currency: str) -> int:
         self.log_fn(f"Getting balance for {currency} for '{self.name}'")
