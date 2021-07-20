@@ -4,6 +4,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
+import context
+from diem import diem_types, txnmetadata
 from diem_utils.types.currencies import DiemCurrency
 from offchain import (
     jws,
@@ -283,6 +285,31 @@ def send_init_charge_payment_request(payment_model, account_id):
         )
         # todo verify response status?
         # todo submit on-chain transaction ??
+        metadata = txnmetadata.payment_metadata(payment_model.reference_id)
+
+        rpc_txn = context.get().p2p_by_travel_rule(
+            payment_model.vasp_address,
+            payment_model.currency,
+            payment_model.amount,
+            metadata,
+            bytes.fromhex(recipient_signature),
+        )
+        storage.add_transaction(
+            amount=payment_model.amount,
+            currency=DiemCurrency[payment_model.currency],
+            payment_type=TransactionType.OFFCHAIN,
+            status=TransactionStatus.COMPLETED,
+            source_id=account_id,
+            source_address=payment_model.my_address,
+            source_subaddress=None,
+            destination_id=None,
+            destination_address=payment_model.vasp_address,
+            destination_subaddress=None,
+            sequence=rpc_txn.transaction.sequence_number,
+            blockchain_version=rpc_txn.version,
+            reference_id=payment_model.reference_id,
+        )
+
     except Exception as e:
         error = P2MGeneralError(e)
         logger.error(error)
