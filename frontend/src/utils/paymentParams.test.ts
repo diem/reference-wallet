@@ -37,7 +37,7 @@ describe("Payment params from URL query string", () => {
     it("should parse successfully", () => {
       const queryString =
         "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
-        "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&redirectUrl=https://www.ynet.co.il/";
+        "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&redirectUrl=https://www.ynet.co.il/&demo=true";
 
       const params = PaymentParams.fromUrlQueryString(queryString);
 
@@ -52,7 +52,7 @@ describe("Payment params from URL query string", () => {
       const queryString =
         "?vaspAddress=tdm1pgyne6my63v9j0ffwfnvn76mq398909f85gys03crzuwv0&" +
         "checkoutDataType=PAYMENT_REQUEST&" +
-        "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&redirectUrl=https://www.ynet.co.il/";
+        "referenceId=ce74d678-d014-48fc-b61d-2c36683feb29&redirectUrl=https://www.ynet.co.il/&demo=true";
 
       expect(() => PaymentParams.fromUrlQueryString(queryString)).toThrow("merchantName");
     });

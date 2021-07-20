@@ -530,9 +530,9 @@ export default class BackendClient {
     }
   }
 
-  async rejectPaymentCommand(reference_id): Promise<void> {
+  async rejectPayment(reference_id): Promise<void> {
     try {
-      await this.client.post(`/offchain/payment_command/${reference_id}/actions/reject`);
+      await this.client.post(`/offchain/payment/${reference_id}/actions/reject`);
     } catch (e) {
       BackendClient.handleError(e);
       throw e;

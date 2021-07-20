@@ -13,9 +13,10 @@ from wallet.services.offchain.fund_pull_pre_approval import (
     handle_fund_pull_pre_approval_command,
 )
 from wallet.services.offchain.p2m_payment_as_receiver import (
-    handle_get_payment_info_incoming_request,
+    handle_incoming_get_payment_info_request,
     handle_init_charge_command,
     handle_init_authorize_command,
+    handle_abort_payment_command,
 )
 from wallet.services.offchain.p2p_payment import (
     process_payment_by_status,
@@ -50,11 +51,13 @@ def process_inbound_command(
 
         # LRW as RECEIVER
         if request.command_type == CommandType.GetPaymentInfo:
-            return handle_get_payment_info_incoming_request(request)
+            return handle_incoming_get_payment_info_request(request)
         elif request.command_type == CommandType.InitChargePayment:
             return handle_init_charge_command(request)
         elif request.command_type == CommandType.InitAuthorizeCommand:
             return handle_init_authorize_command(request)
+        elif request.command_type == CommandType.AbortPayment:
+            return handle_abort_payment_command(request)
 
         command = utils.offchain_client().process_inbound_request(
             request, request_sender_address

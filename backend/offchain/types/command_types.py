@@ -16,6 +16,7 @@ class CommandType:
     GetPaymentInfo = "GetPaymentInfo"
     InitChargePayment = "InitChargePayment"
     InitAuthorizeCommand = "InitAuthorizeCommand"
+    AbortPayment = "AbortPayment"
 
 
 class ResponseType:
@@ -105,6 +106,7 @@ from .p2m_payment_types import (
     InitChargePaymentResponse,
     InitChargePayment,
     InitAuthorizeCommand,
+    AbortPayment,
 )
 
 
@@ -121,6 +123,7 @@ class CommandRequestObject:
                 CommandType.GetPaymentInfo,
                 CommandType.InitChargePayment,
                 CommandType.InitAuthorizeCommand,
+                CommandType.AbortPayment,
             ]
         }
     )
@@ -130,6 +133,7 @@ class CommandRequestObject:
         GetPaymentInfo,
         InitChargePayment,
         InitAuthorizeCommand,
+        AbortPayment,
     ]
     _ObjectType: str = datafield(
         default="CommandRequestObject",

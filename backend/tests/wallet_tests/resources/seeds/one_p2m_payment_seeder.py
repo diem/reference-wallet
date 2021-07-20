@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from diem_utils.types.currencies import DiemCurrency
+from wallet.services.offchain.p2m_payment import P2MPaymentStatus
 from wallet.storage.models import Payment as PaymentModel
 
 
@@ -19,6 +20,7 @@ class OneP2MPaymentSeeder:
                 amount=amount,
                 expiration=datetime(2021, 5, 17),
                 description="description",
+                status=P2MPaymentStatus.READY_FOR_USER,
             )
         )
 
