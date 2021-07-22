@@ -147,6 +147,32 @@ def process_offchain_tasks() -> None:
             )
             model.status = TransactionStatus.COMPLETED
 
+    def submit_p2m_txn(payment_model, recipient_signature) -> None:
+        logger.info(
+            f"Submitting P2M transaction base on ref id:{payment_model.reference_id} {payment_model.amount} {payment_model.currency}"
+        )
+
+        metadata = txnmetadata.payment_metadata(payment_model.reference_id)
+
+        rpc_txn = context.get().p2p_by_travel_rule(
+            payment_model.vasp_address,
+            payment_model.currency,
+            payment_model.amount,
+            metadata,
+            bytes.fromhex(recipient_signature),
+        )
+
+        transaction = add_transaction_based_on_payment_command(
+            command=cmd,
+            status=TransactionStatus.COMPLETED,
+            sequence=rpc_txn.transaction.sequence_number,
+            blockchain_version=rpc_txn.version,
+        )
+        logger.info(
+            f"Submitted P2M transaction ID:{transaction.id} Ver:{transaction.blockchain_version} {transaction.amount} {transaction.currency}"
+        )
+        model.status = TransactionStatus.COMPLETED
+
     def send_command_as_receiver(model) -> None:
         payment_command = model_to_payment_command(model)
         kyc_data = {

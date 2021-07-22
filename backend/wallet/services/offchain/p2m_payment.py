@@ -283,17 +283,11 @@ def send_init_charge_payment_request(payment_model, account_id):
             recipient_signature=recipient_signature,
             status=P2MPaymentStatus.APPROVED,
         )
+
         # todo verify response status?
         # todo submit on-chain transaction ??
-        metadata = txnmetadata.payment_metadata(payment_model.reference_id)
+        submit_p2m_txn(payment_model, recipient_signature)
 
-        rpc_txn = context.get().p2p_by_travel_rule(
-            payment_model.vasp_address,
-            payment_model.currency,
-            payment_model.amount,
-            metadata,
-            bytes.fromhex(recipient_signature),
-        )
         storage.add_transaction(
             amount=payment_model.amount,
             currency=DiemCurrency[payment_model.currency],
