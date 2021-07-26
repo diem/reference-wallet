@@ -10,8 +10,12 @@ from offchain.types import (
 )
 from wallet.services import kyc, account
 from wallet.storage import get_account_id_from_subaddr
-import offchain
+from diem import txnmetadata
 
+import offchain
+import logging
+
+logger = logging.getLogger(__name__)
 
 def hrp() -> str:
     return context.get().config.diem_address_hrp()
@@ -79,3 +83,44 @@ def jws_response(
         err=err,
     )
     return code, offchain.jws.serialize(resp, compliance_private_key().sign)
+
+def submit_p2m_txn(payment_model, recipient_signature) -> None:
+    metadata = txnmetadata.payment_metadata(payment_model.reference_id)
+
+    #todo: fix error
+    recipient_signature = compliance_private_key().sign(metadata).hex(),
+
+    logger.info(
+        f"Submitting P2M transaction: "
+        f"ref-id:{payment_model.reference_id}, "
+        f"amount:{payment_model.amount}, "
+        f"currency: {payment_model.currency}, "
+        f"vasp-addrs: {payment_model.vasp_address}, "
+        f"recipient-sign: {recipient_signature[0]}, "
+        f"metadata: {metadata}, "
+    )
+
+    recipient_signature_bytes = bytes.fromhex(recipient_signature[0]);
+    logger.info(f"elhay bytes fromhex: {bytes.fromhex(recipient_signature[0])}");
+    logger.info(f"elhay bytes fromhex: {recipient_signature_bytes}");
+    logger.info(payment_model)
+    rpc_txn = context.get().p2p_by_travel_rule(
+        payment_model.vasp_address,
+        payment_model.currency,
+        payment_model.amount,
+        metadata,
+        recipient_signature_bytes
+    )
+
+    logger.info('elhay here')
+
+    transaction = add_transaction_based_on_payment_command(
+        command=cmd,
+        status=TransactionStatus.COMPLETED,
+        sequence=rpc_txn.transaction.sequence_number,
+        blockchain_version=rpc_txn.version,
+    )
+    logger.info(
+        f"Submitted P2M transaction ID:{transaction.id} Ver:{transaction.blockchain_version} {transaction.amount} {transaction.currency}"
+    )
+    model.status = TransactionStatus.COMPLETED
