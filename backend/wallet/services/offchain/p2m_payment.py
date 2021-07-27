@@ -292,7 +292,11 @@ def send_init_charge_payment_request(payment_model, account_id):
         # todo submit on-chain transaction ??
         logger.info('elhay ----- > jest about to submit')
         # utils.submit_p2m_txn(payment_model, recipient_signature)
-        txn = utils.submit_p2m_txn()
+        txn = utils.submit_p2m_txn(payment_model.reference_id,
+                                   payment_model.amount,
+                                   payment_model.currency,
+                                   payment_model.vasp_address,
+                                   recipient_signature)
 
         storage.add_transaction(
             amount=payment_model.amount,

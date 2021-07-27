@@ -1,5 +1,7 @@
 from typing import Tuple, Optional
 
+from diem.diem_types import Metadata
+
 import context
 import typing
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
@@ -85,34 +87,44 @@ def jws_response(
     return code, offchain.jws.serialize(resp, compliance_private_key().sign)
 
 
-def get_p2m_metadata_by_ref_id(reference_id = "d74ace9c-cbd4-495b-9932-ad185e3f3301"):
-   metadata = txnmetadata.payment_metadata(reference_id)
-   return diem_types.Metadata__TravelRuleMetadata.bcs_deserialize(metadata)
+def get_p2m_metadata_by_ref_id(reference_id) -> Metadata:
+    metadata_bytes = txnmetadata.payment_metadata(reference_id)
+    return diem_types.Metadata__TravelRuleMetadata.bcs_deserialize(metadata_bytes)
 
 
-def submit_p2m_txn() -> jsonrpc.Transaction:
-    sender_bech32 = identifier.encode_account("68f626eb8d798f6b618a119d172a2559", None, 'tdm')
-    sender_address = identifier.decode_account_address(sender_bech32, 'tdm')
+# submit transaction on-chain using p2m metadata.
+# recipient signature is needed only if the amount >= 1000 (travel rule)
+# input example: ref-id: 1c5ee1eb-559b-48b3-898c-85b4d4713890,
+#               amount: 100000000,
+#               currency: XUS,
+#               recipient_signature: None,
+#               receiver_address: tdm1paue4j3fqr6nzl5xglqr337surful4nmrx6kn9fgmh5qz6
+def submit_p2m_txn(reference_id: str,
+                   amount: int,
+                   currency: str,
+                   receiver_address_bech32: str,
+                   recipient_signature: str = None,
+                   ) -> jsonrpc.Transaction:
 
-    amount = 1000#2000000000  # there are 6 0's after the real amount. if the amount >= 1000$ then receipient_signature is needed. otherwise, use b'' for empty bytes array
+    logger.info(f"submitting P2M transaction: "
+                f"ref-id: {reference_id}, "
+                f"amount: {amount}, "
+                f"currency: {currency}, "
+                f"recipient_signature: {recipient_signature}, "
+                f"receiver_address: {receiver_address_bech32}")
 
-    metadata = get_p2m_metadata_by_ref_id()
+    metadata = get_p2m_metadata_by_ref_id(reference_id)
 
-    attest = txnmetadata.Attest(metadata=metadata, sender_address=sender_address,
-                                amount=serde_types.uint64(amount))  # pyre-ignore
-    signing_msg = attest.bcs_serialize() + b"@@$$DIEM_ATTEST$$@@"
+    recipient_signature_bytes = b''
+    if recipient_signature is not None:
+        recipient_signature_bytes = bytes.fromhex(recipient_signature)
 
-    reciever_bech32 = identifier.encode_account("17ab529b6d8afc6eb810b83d061eb7e7", None, 'tdm')
-    reciever_address = identifier.decode_account_address(reciever_bech32, 'tdm')
-
-    recipient_signature = Ed25519PrivateKey.from_private_bytes(
-        bytes.fromhex("703fff5c70d55896d9ffcbdaa0e9821f83bd95317bd34bcce10e6507a67a0aa3")
-    ).sign(signing_msg).hex()
+    receiver_account_address = identifier.decode_account_address(receiver_address_bech32, 'tdm')
 
     return context.get().p2p_by_travel_rule(
-        reciever_address,
-        "XUS",
+        receiver_account_address,
+        currency,
         amount,
         metadata.bcs_serialize(),
-        b'' #bytes.fromhex(recipient_signature), #b''
+        recipient_signature_bytes
     )
