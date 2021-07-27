@@ -221,7 +221,7 @@ def generate_success_init_charge_command_response_object():
         status="success",
         result=InitChargePaymentResponse(
             _ObjectType="GetInfoCommandResponse",
-            recipient_signature=b"I have no idea what to write here",
+            recipient_signature=None,
         ),
         cid=REFERENCE_ID,
     )
