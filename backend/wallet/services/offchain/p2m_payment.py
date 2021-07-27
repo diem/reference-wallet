@@ -292,7 +292,7 @@ def send_init_charge_payment_request(payment_model, account_id):
         # todo submit on-chain transaction ??
         logger.info('elhay ----- > jest about to submit')
         # utils.submit_p2m_txn(payment_model, recipient_signature)
-        utils.submit_p2m_txn(payment_model, utils.compliance_private_key().sign)
+        txn = utils.submit_p2m_txn()
 
         storage.add_transaction(
             amount=payment_model.amount,
@@ -305,8 +305,8 @@ def send_init_charge_payment_request(payment_model, account_id):
             destination_id=None,
             destination_address=payment_model.vasp_address,
             destination_subaddress=None,
-            sequence=rpc_txn.transaction.sequence_number,
-            blockchain_version=rpc_txn.version,
+            sequence=txn.transaction.sequence_number,
+            blockchain_version=txn.version,
             reference_id=payment_model.reference_id,
         )
 

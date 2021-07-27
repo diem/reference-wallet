@@ -1,8 +1,7 @@
 from diem import txnmetadata, identifier, diem_types, serde_types
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 import context
-import logging
-from offchain import PaymentCommand
+
 
 def test_p2p():
     sender_bech32 = identifier.encode_account("68f626eb8d798f6b618a119d172a2559", None, 'tdm')
@@ -32,7 +31,7 @@ def test_p2m():
     sender_bech32 = identifier.encode_account("68f626eb8d798f6b618a119d172a2559", None, 'tdm')
     sender_address = identifier.decode_account_address(sender_bech32, 'tdm')
 
-    amount = 2000000000
+    amount = 2000000000 # there are 6 0's after the real amount. if the amount >= 1000$ then receipient_signature is needed. otherwise, use b'' for empty bytes array
 
     metadata = method_name_2()
 
@@ -51,7 +50,7 @@ def test_p2m():
         "XUS",
         amount,
         metadata.bcs_serialize(),
-        bytes.fromhex(recipient_signature),
+        b'' # bytes.fromhex(recipient_signature),
     )
 
 

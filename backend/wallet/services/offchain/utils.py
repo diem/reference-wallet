@@ -3,7 +3,7 @@ from typing import Tuple, Optional
 import context
 import typing
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from diem import identifier
+from diem import identifier, diem_types, serde_types, jsonrpc
 from offchain.types import (
     GetInfoCommandResponse,
     InitChargePaymentResponse,
@@ -84,43 +84,35 @@ def jws_response(
     )
     return code, offchain.jws.serialize(resp, compliance_private_key().sign)
 
-def submit_p2m_txn(payment_model, recipient_signature) -> None:
-    metadata = txnmetadata.payment_metadata(payment_model.reference_id)
 
-    #todo: fix error
-    recipient_signature = compliance_private_key().sign(metadata).hex(),
+def get_p2m_metadata_by_ref_id(reference_id = "d74ace9c-cbd4-495b-9932-ad185e3f3301"):
+   metadata = txnmetadata.payment_metadata(reference_id)
+   return diem_types.Metadata__TravelRuleMetadata.bcs_deserialize(metadata)
 
-    logger.info(
-        f"Submitting P2M transaction: "
-        f"ref-id:{payment_model.reference_id}, "
-        f"amount:{payment_model.amount}, "
-        f"currency: {payment_model.currency}, "
-        f"vasp-addrs: {payment_model.vasp_address}, "
-        f"recipient-sign: {recipient_signature[0]}, "
-        f"metadata: {metadata}, "
+
+def submit_p2m_txn() -> jsonrpc.Transaction:
+    sender_bech32 = identifier.encode_account("68f626eb8d798f6b618a119d172a2559", None, 'tdm')
+    sender_address = identifier.decode_account_address(sender_bech32, 'tdm')
+
+    amount = 1000#2000000000  # there are 6 0's after the real amount. if the amount >= 1000$ then receipient_signature is needed. otherwise, use b'' for empty bytes array
+
+    metadata = get_p2m_metadata_by_ref_id()
+
+    attest = txnmetadata.Attest(metadata=metadata, sender_address=sender_address,
+                                amount=serde_types.uint64(amount))  # pyre-ignore
+    signing_msg = attest.bcs_serialize() + b"@@$$DIEM_ATTEST$$@@"
+
+    reciever_bech32 = identifier.encode_account("17ab529b6d8afc6eb810b83d061eb7e7", None, 'tdm')
+    reciever_address = identifier.decode_account_address(reciever_bech32, 'tdm')
+
+    recipient_signature = Ed25519PrivateKey.from_private_bytes(
+        bytes.fromhex("703fff5c70d55896d9ffcbdaa0e9821f83bd95317bd34bcce10e6507a67a0aa3")
+    ).sign(signing_msg).hex()
+
+    return context.get().p2p_by_travel_rule(
+        reciever_address,
+        "XUS",
+        amount,
+        metadata.bcs_serialize(),
+        b'' #bytes.fromhex(recipient_signature), #b''
     )
-
-    recipient_signature_bytes = bytes.fromhex(recipient_signature[0]);
-    logger.info(f"elhay bytes fromhex: {bytes.fromhex(recipient_signature[0])}");
-    logger.info(f"elhay bytes fromhex: {recipient_signature_bytes}");
-    logger.info(payment_model)
-    rpc_txn = context.get().p2p_by_travel_rule(
-        payment_model.vasp_address,
-        payment_model.currency,
-        payment_model.amount,
-        metadata,
-        recipient_signature_bytes
-    )
-
-    logger.info('elhay here')
-
-    transaction = add_transaction_based_on_payment_command(
-        command=cmd,
-        status=TransactionStatus.COMPLETED,
-        sequence=rpc_txn.transaction.sequence_number,
-        blockchain_version=rpc_txn.version,
-    )
-    logger.info(
-        f"Submitted P2M transaction ID:{transaction.id} Ver:{transaction.blockchain_version} {transaction.amount} {transaction.currency}"
-    )
-    model.status = TransactionStatus.COMPLETED
