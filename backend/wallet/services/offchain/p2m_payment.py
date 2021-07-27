@@ -271,15 +271,10 @@ def send_init_charge_payment_request(payment_model, account_id):
 
         recipient_signature = None
 
-        logger.info(f"elhay commd res:  {command_response_object}")
-        logger.info(f"elhay commd res:  {command_response_object.result}")
-        logger.info(f"elhay commd res:  {type (command_response_object.result)}")
-
         if (
             command_response_object.result
             and type(command_response_object.result) is InitChargePaymentResponse
         ):
-            logger.info('elhay here 1')
             recipient_signature = command_response_object.result.recipient_signature
 
         storage.update_payment(
@@ -289,14 +284,15 @@ def send_init_charge_payment_request(payment_model, account_id):
         )
 
         # todo verify response status?
-        # todo submit on-chain transaction ??
-        logger.info('elhay ----- > jest about to submit')
-        # utils.submit_p2m_txn(payment_model, recipient_signature)
+
         txn = utils.submit_p2m_txn(payment_model.reference_id,
                                    payment_model.amount,
                                    payment_model.currency,
                                    payment_model.vasp_address,
                                    recipient_signature)
+        logger.info(f"p2m txn submitted, "
+                    f"sequnce-number: {txn.transaction.sequence_number}, "
+                    f"txn-version: {txn.version}")
 
         storage.add_transaction(
             amount=payment_model.amount,

@@ -5,7 +5,7 @@ from diem.diem_types import Metadata
 import context
 import typing
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from diem import identifier, diem_types, serde_types, jsonrpc
+from diem import identifier, diem_types, jsonrpc
 from offchain.types import (
     GetInfoCommandResponse,
     InitChargePaymentResponse,
