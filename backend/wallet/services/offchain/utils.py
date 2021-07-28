@@ -1,17 +1,19 @@
 from typing import Tuple, Optional
-
 import context
 import typing
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from diem import identifier
+from diem import identifier, diem_types, jsonrpc
 from offchain.types import (
     GetInfoCommandResponse,
     InitChargePaymentResponse,
 )
 from wallet.services import kyc, account
 from wallet.storage import get_account_id_from_subaddr
-import offchain
 
+import offchain
+import logging
+
+logger = logging.getLogger(__name__)
 
 def hrp() -> str:
     return context.get().config.diem_address_hrp()
@@ -79,3 +81,5 @@ def jws_response(
         err=err,
     )
     return code, offchain.jws.serialize(resp, compliance_private_key().sign)
+
+

@@ -87,6 +87,7 @@ def process_inbound_command(
         return utils.jws_response(command.id() if command else None, e.obj)
 
 
+
 def process_offchain_tasks() -> None:
     def send_command(model) -> None:
         assert not model.inbound
