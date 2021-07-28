@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from diem import jsonrpc
+
 import context
 import pytest
 from diem_utils.types.currencies import DiemCurrency
@@ -24,7 +26,8 @@ from tests.wallet_tests.resources.seeds.one_p2m_payment_seeder import (
 )
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet import storage
-from wallet.services.offchain import p2m_payment as payment_service
+from wallet.services import transaction
+from wallet.services.offchain import p2m_payment as payment_service, utils
 from wallet.storage import db_session
 
 CREATED_AT = datetime(2021, 5, 12)
@@ -38,6 +41,10 @@ MY_ADDRESS = "tdm1pzmhcxpnyns7m035ctdqmexxad8ptgazxhllvyscesqdgp"
 REFERENCE_ID = "2632a018-e492-4487-81f3-775d6ecfb6ef"
 ORIGINAL_REFERENCE_ID = "35a1b548-3170-438f-bf3a-6ca0fef85d15"
 
+RECIPIENT_SIGNATURE = "abcd1234"
+TXN_VERSION = "1234"
+TXN_SEQUENCE_NUMBER = "1111"
+
 
 def test_get_payment_details_for_charge_action_successfully(mock_method):
     user = OneUser.run(
@@ -48,6 +55,12 @@ def test_get_payment_details_for_charge_action_successfully(mock_method):
         context.get().offchain_client,
         "send_request",
         will_return=generate_success_get_info_command_response_object(),
+    )
+
+    mock_method(
+        transaction,
+        "put_p2m_txn_onchain",
+        will_return=generate_success_p2m_txn_result()
     )
 
     payment_info = payment_service.get_payment_details(
@@ -123,14 +136,19 @@ def test_approve_payment_success_with_recipient_signature(mock_method):
     mock_method(
         context.get().offchain_client,
         "send_request",
-        will_return=generate_success_init_charge_command_response_object(),
+        will_return=generate_success_init_charge_command_response_object(recipient_signature=RECIPIENT_SIGNATURE),
+    )
+
+    mock_method(
+        transaction,
+        "put_p2m_txn_onchain",
+        will_return=generate_success_p2m_txn_result()
     )
 
     payment_service.approve_payment(user.account_id, REFERENCE_ID)
-
     payment_model = storage.get_payment_details(REFERENCE_ID)
 
-    assert payment_model.recipient_signature
+    assert payment_model.recipient_signature == RECIPIENT_SIGNATURE
 
 
 def test_approve_payment_success_without_recipient_signature(mock_method):
@@ -147,14 +165,20 @@ def test_approve_payment_success_without_recipient_signature(mock_method):
     mock_method(
         context.get().offchain_client,
         "send_request",
-        will_return=generate_success_init_charge_command_response_object(),
+        will_return=generate_success_init_charge_command_response_object(recipient_signature=None),
+    )
+
+    mock_method(
+        transaction,
+        "put_p2m_txn_onchain",
+        will_return=generate_success_p2m_txn_result()
     )
 
     payment_service.approve_payment(user.account_id, REFERENCE_ID)
 
     payment_model = storage.get_payment_details(REFERENCE_ID)
 
-    assert not payment_model.recipient_signature
+    assert payment_model.recipient_signature is None
 
 
 def test_approve_payment_fail_because_payment_not_exist():
@@ -216,12 +240,25 @@ def generate_success_get_info_command_response_object():
     )
 
 
-def generate_success_init_charge_command_response_object():
+def generate_success_init_charge_command_response_object(recipient_signature):
     return CommandResponseObject(
         status="success",
         result=InitChargePaymentResponse(
             _ObjectType="GetInfoCommandResponse",
-            recipient_signature=b"I have no idea what to write here",
+            recipient_signature=recipient_signature,
         ),
         cid=REFERENCE_ID,
     )
+
+
+def generate_success_p2m_txn_result() -> jsonrpc.Transaction:
+    class MockObject(object):
+        pass
+
+    txn = MockObject()
+    txn.transaction = MockObject()
+    txn.transaction.sequence_number = TXN_SEQUENCE_NUMBER
+    txn.version = TXN_VERSION
+
+    return txn
+
