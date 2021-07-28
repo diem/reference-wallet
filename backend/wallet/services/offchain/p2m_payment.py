@@ -19,6 +19,7 @@ from offchain.types import (
     P2MAbortCode,
 )
 from wallet import storage
+from wallet.services import transaction
 from wallet.services.offchain import utils
 from wallet.services.offchain.utils import generate_my_address
 from wallet.storage.models import Payment as PaymentModel
@@ -145,8 +146,8 @@ def approve_payment(
 
     if payment_model.action == "charge":
         if init_required:
-            #todo: split this func
-            send_init_charge_payment_request(payment_model, account_id)
+            payment_model, account_id, recipient_signature = send_init_charge_payment_request(payment_model, account_id)
+            transaction.register_p2m_transaction(payment_model, account_id, recipient_signature)
     elif payment_model.action == "auth":
         if init_required:
             send_init_auth_payment_request(payment_model, account_id)
@@ -286,31 +287,7 @@ def send_init_charge_payment_request(payment_model, account_id):
 
         # todo verify response status?
 
-        txn = utils.submit_p2m_txn(payment_model.reference_id,
-                                   payment_model.amount,
-                                   payment_model.currency,
-                                   payment_model.vasp_address,
-                                   recipient_signature)
-
-        logger.info(f"p2m txn submitted, "
-                    f"sequnce-number: {txn.transaction.sequence_number}, "
-                    f"txn-version: {txn.version}")
-
-        storage.add_transaction(
-            amount=payment_model.amount,
-            currency=DiemCurrency[payment_model.currency],
-            payment_type=TransactionType.OFFCHAIN,
-            status=TransactionStatus.COMPLETED,
-            source_id=account_id,
-            source_address=payment_model.my_address,
-            source_subaddress=None,
-            destination_id=None,
-            destination_address=payment_model.vasp_address,
-            destination_subaddress=None,
-            sequence=txn.transaction.sequence_number,
-            blockchain_version=txn.version,
-            reference_id=payment_model.reference_id,
-        )
+        return payment_model, account_id, recipient_signature
 
     except Exception as e:
         error = P2MGeneralError(e)

@@ -16,6 +16,7 @@ from wallet.storage import Transaction
 
 from . import INVENTORY_ACCOUNT_NAME
 from .log import add_transaction_log
+from .offchain import utils
 from .. import storage, services
 from ..logging import log_execution
 from wallet import storage
@@ -46,7 +47,44 @@ class InvalidTravelRuleMetadata(Exception):
 class InvalidRefundMetadata(Exception):
     pass
 
+
+class P2MTxnRegistrationError(Exception):
+    pass
+
+
 #todo: add here
+# register p2m transaction on block-chain and database
+def register_p2m_transaction(payment_model, account_id, recipient_signature):
+    try:
+        txn = utils.submit_p2m_txn(payment_model.reference_id,
+                                   payment_model.amount,
+                                   payment_model.currency,
+                                   payment_model.vasp_address,
+                                   recipient_signature)
+
+        logger.info(f"p2m txn submitted, "
+                    f"sequnce-number: {txn.transaction.sequence_number}, "
+                    f"txn-version: {txn.version}")
+
+        storage.add_transaction(
+            amount=payment_model.amount,
+            currency=DiemCurrency[payment_model.currency],
+            payment_type=TransactionType.OFFCHAIN,
+            status=TransactionStatus.COMPLETED,
+            source_id=account_id,
+            source_address=payment_model.my_address,
+            source_subaddress=None,
+            destination_id=None,
+            destination_address=payment_model.vasp_address,
+            destination_subaddress=None,
+            sequence=txn.transaction.sequence_number,
+            blockchain_version=txn.version,
+            reference_id=payment_model.reference_id,
+        )
+    except Exception as e:
+        error = P2MTxnRegistrationError(e)
+        logger.error(error)
+        raise error
 
 def decode_general_metadata_v0(
     metadata_bytes: bytes,
