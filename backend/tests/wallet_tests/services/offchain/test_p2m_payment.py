@@ -145,10 +145,8 @@ def test_approve_payment_success_with_recipient_signature(mock_method):
     )
 
     payment_service.approve_payment(user.account_id, REFERENCE_ID)
-
     payment_model = storage.get_payment_details(REFERENCE_ID)
 
-    # assert that txn was called with the right params
     assert payment_model.recipient_signature == RECIPIENT_SIGNATURE
 
 

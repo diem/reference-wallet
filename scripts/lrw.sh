@@ -263,7 +263,6 @@ e2e() {
     docker-compose -p lrw2 -f $composes down
     echo "# Purging $volumes"
     docker volume rm -f $volumes
-
   else
     echo '# Must specify either `up` or `down` option'
     exit 1

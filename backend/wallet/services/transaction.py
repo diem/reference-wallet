@@ -52,7 +52,6 @@ class P2MTxnRegistrationError(Exception):
     pass
 
 
-#todo: add here
 # register p2m transaction on block-chain and database
 def register_p2m_transaction(payment_model, account_id, recipient_signature):
     try:
