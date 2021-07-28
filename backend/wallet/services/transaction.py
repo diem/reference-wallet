@@ -46,6 +46,7 @@ class InvalidTravelRuleMetadata(Exception):
 class InvalidRefundMetadata(Exception):
     pass
 
+#todo: add here
 
 def decode_general_metadata_v0(
     metadata_bytes: bytes,

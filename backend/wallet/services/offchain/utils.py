@@ -119,7 +119,7 @@ def submit_p2m_txn(reference_id: str,
     if recipient_signature is not None:
         recipient_signature_bytes = bytes.fromhex(recipient_signature)
 
-    receiver_account_address = identifier.decode_account_address(receiver_address_bech32, 'tdm')
+    receiver_account_address = identifier.decode_account_address(receiver_address_bech32, hrp())
 
     return context.get().p2p_by_travel_rule(
         receiver_account_address,

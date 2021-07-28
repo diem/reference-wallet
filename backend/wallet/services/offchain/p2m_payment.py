@@ -145,6 +145,7 @@ def approve_payment(
 
     if payment_model.action == "charge":
         if init_required:
+            #todo: split this func
             send_init_charge_payment_request(payment_model, account_id)
     elif payment_model.action == "auth":
         if init_required:
@@ -290,6 +291,7 @@ def send_init_charge_payment_request(payment_model, account_id):
                                    payment_model.currency,
                                    payment_model.vasp_address,
                                    recipient_signature)
+
         logger.info(f"p2m txn submitted, "
                     f"sequnce-number: {txn.transaction.sequence_number}, "
                     f"txn-version: {txn.version}")
