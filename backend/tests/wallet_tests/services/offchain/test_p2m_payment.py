@@ -26,6 +26,7 @@ from tests.wallet_tests.resources.seeds.one_p2m_payment_seeder import (
 )
 from tests.wallet_tests.resources.seeds.one_user_seeder import OneUser
 from wallet import storage
+from wallet.services import transaction
 from wallet.services.offchain import p2m_payment as payment_service, utils
 from wallet.storage import db_session
 
@@ -57,8 +58,8 @@ def test_get_payment_details_for_charge_action_successfully(mock_method):
     )
 
     mock_method(
-        utils,
-        "submit_p2m_txn",
+        transaction,
+        "put_p2m_txn_onchain",
         will_return=generate_success_p2m_txn_result()
     )
 
@@ -139,8 +140,8 @@ def test_approve_payment_success_with_recipient_signature(mock_method):
     )
 
     mock_method(
-        utils,
-        "submit_p2m_txn",
+        transaction,
+        "put_p2m_txn_onchain",
         will_return=generate_success_p2m_txn_result()
     )
 
@@ -168,8 +169,8 @@ def test_approve_payment_success_without_recipient_signature(mock_method):
     )
 
     mock_method(
-        utils,
-        "submit_p2m_txn",
+        transaction,
+        "put_p2m_txn_onchain",
         will_return=generate_success_p2m_txn_result()
     )
 
@@ -177,7 +178,7 @@ def test_approve_payment_success_without_recipient_signature(mock_method):
 
     payment_model = storage.get_payment_details(REFERENCE_ID)
 
-    assert not payment_model.recipient_signature
+    assert payment_model.recipient_signature is None
 
 
 def test_approve_payment_fail_because_payment_not_exist():

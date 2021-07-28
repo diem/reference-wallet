@@ -6,7 +6,7 @@ from typing import Optional
 
 import context
 import wallet.services.offchain.p2p_payment as pc_service
-from diem import diem_types, offchain, identifier
+from diem import diem_types, offchain, identifier, jsonrpc, txnmetadata
 from diem_utils.types.currencies import DiemCurrency
 from wallet.services import (
     account as account_service,
@@ -52,14 +52,54 @@ class P2MTxnRegistrationError(Exception):
     pass
 
 
+# submit transaction on-chain using p2m metadata.
+# recipient signature is needed only if the amount >= 1000 (travel rule)
+# input example: ref-id: 1c5ee1eb-559b-48b3-898c-85b4d4713890,
+#               amount: 100000000,
+#               currency: XUS,
+#               recipient_signature: None,
+#               receiver_address: tdm1paue4j3fqr6nzl5xglqr337surful4nmrx6kn9fgmh5qz6
+def put_p2m_txn_onchain(reference_id: str,
+                        amount: int,
+                        currency: str,
+                        receiver_address_bech32: str,
+                        recipient_signature: str = None,
+                        ) -> jsonrpc.Transaction:
+
+    logger.info(f"submitting P2M transaction: "
+                f"ref-id: {reference_id}, "
+                f"amount: {amount}, "
+                f"currency: {currency}, "
+                f"recipient_signature: {recipient_signature}, "
+                f"receiver_address: {receiver_address_bech32}")
+
+    metadata_bytes = txnmetadata.payment_metadata(reference_id)
+    metadata = diem_types.Metadata__TravelRuleMetadata.bcs_deserialize(metadata_bytes)
+
+    recipient_signature_bytes = b''
+    if recipient_signature is not None:
+        recipient_signature_bytes = bytes.fromhex(recipient_signature)
+
+    hrp = context.get().config.diem_address_hrp()
+    receiver_account_address = identifier.decode_account_address(receiver_address_bech32, hrp)
+
+    return context.get().p2p_by_travel_rule(
+        receiver_account_address,
+        currency,
+        amount,
+        metadata.bcs_serialize(),
+        recipient_signature_bytes
+    )
+
+
 # register p2m transaction on block-chain and database
-def register_p2m_transaction(payment_model, account_id, recipient_signature):
+def submit_p2m_transaction(payment_model, account_id, recipient_signature):
     try:
-        txn = utils.submit_p2m_txn(payment_model.reference_id,
-                                   payment_model.amount,
-                                   payment_model.currency,
-                                   payment_model.vasp_address,
-                                   recipient_signature)
+        txn = put_p2m_txn_onchain(payment_model.reference_id,
+                                  payment_model.amount,
+                                  payment_model.currency,
+                                  payment_model.vasp_address,
+                                  recipient_signature)
 
         logger.info(f"p2m txn submitted, "
                     f"sequnce-number: {txn.transaction.sequence_number}, "

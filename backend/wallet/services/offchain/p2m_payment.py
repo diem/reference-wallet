@@ -4,8 +4,6 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-import context
-from diem import diem_types, txnmetadata
 from diem_utils.types.currencies import DiemCurrency
 from offchain import (
     jws,
@@ -147,7 +145,7 @@ def approve_payment(
     if payment_model.action == "charge":
         if init_required:
             payment_model, account_id, recipient_signature = send_init_charge_payment_request(payment_model, account_id)
-            transaction.register_p2m_transaction(payment_model, account_id, recipient_signature)
+            transaction.submit_p2m_transaction(payment_model, account_id, recipient_signature)
     elif payment_model.action == "auth":
         if init_required:
             send_init_auth_payment_request(payment_model, account_id)
