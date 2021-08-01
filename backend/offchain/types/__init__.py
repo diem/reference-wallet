@@ -389,7 +389,7 @@ def new_abort_payment_command(
     reference_id: str, abort_code: P2MAbortCode = None, abort_message: str = None
 ):
     return CommandRequestObject(
-        cid=reference_id,
+        cid=generate_cid(),
         command_type=CommandType.AbortPayment,
         command=AbortPayment(
             reference_id=reference_id,
