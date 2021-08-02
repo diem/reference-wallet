@@ -15,6 +15,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def hrp() -> str:
     return context.get().config.diem_address_hrp()
 
@@ -81,5 +82,3 @@ def jws_response(
         err=err,
     )
     return code, offchain.jws.serialize(resp, compliance_private_key().sign)
-
-

@@ -299,12 +299,9 @@ def new_funds_pull_pre_approval_request(
     )
 
 
-def new_get_payment_info_request(
-    reference_id: str,
-    cid: typing.Optional[str] = None,
-) -> CommandRequestObject:
+def new_get_payment_info_request(reference_id: str) -> CommandRequestObject:
     return CommandRequestObject(
-        cid=cid or generate_cid(),
+        cid=generate_cid(),
         command_type=CommandType.GetPaymentInfo,
         command=GetPaymentInfo(
             _ObjectType=CommandType.GetPaymentInfo,
@@ -315,7 +312,6 @@ def new_get_payment_info_request(
 
 def new_init_auth_command(
     reference_id,
-    vasp_address,
     sender_name,
     sender_sure_name,
     sender_city,
@@ -343,7 +339,6 @@ def new_init_auth_command(
                 sender_national_id_value,
                 sender_postal_code,
                 sender_state,
-                vasp_address,
             ),
         ),
     )
@@ -379,7 +374,6 @@ def new_init_charge_payment_request(
                 sender_national_id_value,
                 sender_postal_code,
                 sender_state,
-                vasp_address,
             ),
         ),
     )

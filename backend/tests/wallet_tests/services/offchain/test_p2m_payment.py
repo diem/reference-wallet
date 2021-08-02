@@ -136,13 +136,15 @@ def test_approve_payment_success_with_recipient_signature(mock_method):
     mock_method(
         context.get().offchain_client,
         "send_request",
-        will_return=generate_success_init_charge_command_response_object(recipient_signature=RECIPIENT_SIGNATURE),
+        will_return=generate_success_init_charge_command_response_object(
+            recipient_signature=RECIPIENT_SIGNATURE
+        ),
     )
 
     mock_method(
         transaction,
         "put_p2m_txn_onchain",
-        will_return=generate_success_p2m_txn_result()
+        will_return=generate_success_p2m_txn_result(),
     )
 
     payment_service.approve_payment(user.account_id, REFERENCE_ID)
@@ -165,13 +167,15 @@ def test_approve_payment_success_without_recipient_signature(mock_method):
     mock_method(
         context.get().offchain_client,
         "send_request",
-        will_return=generate_success_init_charge_command_response_object(recipient_signature=None),
+        will_return=generate_success_init_charge_command_response_object(
+            recipient_signature=None
+        ),
     )
 
     mock_method(
         transaction,
         "put_p2m_txn_onchain",
-        will_return=generate_success_p2m_txn_result()
+        will_return=generate_success_p2m_txn_result(),
     )
 
     payment_service.approve_payment(user.account_id, REFERENCE_ID)
@@ -261,4 +265,3 @@ def generate_success_p2m_txn_result() -> jsonrpc.Transaction:
     txn.version = TXN_VERSION
 
     return txn
-
