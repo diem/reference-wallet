@@ -74,7 +74,6 @@ def put_p2m_txn_onchain(reference_id: str,
                 f"receiver_address: {receiver_address_bech32}")
 
     metadata_bytes = txnmetadata.payment_metadata(reference_id)
-    metadata = diem_types.Metadata__TravelRuleMetadata.bcs_deserialize(metadata_bytes)
 
     recipient_signature_bytes = b''
     if recipient_signature is not None:
@@ -87,7 +86,7 @@ def put_p2m_txn_onchain(reference_id: str,
         receiver_account_address,
         currency,
         amount,
-        metadata.bcs_serialize(),
+        metadata_bytes,
         recipient_signature_bytes
     )
 
