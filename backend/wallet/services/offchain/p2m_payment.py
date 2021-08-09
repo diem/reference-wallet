@@ -54,7 +54,7 @@ class P2MPaymentNotFoundError(Exception):
     pass
 
 
-def get_payment_details(account_id: int, reference_id: str, vasp_address: str):
+def get_payment_details(account_id: int, reference_id: str, receiver_address: str):
     payment_model = storage.get_payment_details(reference_id)
 
     if payment_model is None:
@@ -63,11 +63,9 @@ def get_payment_details(account_id: int, reference_id: str, vasp_address: str):
         try:
             command_response_object = utils.offchain_client().send_request(
                 request_sender_address=my_address,
-                counterparty_account_id=vasp_address,
+                counterparty_account_id=receiver_address,
                 request_bytes=jws.serialize(
-                    new_get_payment_info_request(
-                        reference_id=reference_id, cid=reference_id
-                    ),
+                    new_get_payment_info_request(reference_id=reference_id),
                     utils.compliance_private_key().sign,
                 ),
             )
@@ -77,7 +75,7 @@ def get_payment_details(account_id: int, reference_id: str, vasp_address: str):
 
             payment_model = save_payment(
                 PaymentModel(
-                    vasp_address=vasp_address,
+                    vasp_address=receiver_address,
                     my_address=my_address,
                     reference_id=reference_id,
                     merchant_name=payment_info.receiver.business_data.name,
@@ -144,8 +142,14 @@ def approve_payment(
 
     if payment_model.action == "charge":
         if init_required:
-            payment_model, account_id, recipient_signature = send_init_charge_payment_request(payment_model, account_id)
-            transaction.submit_p2m_transaction(payment_model, account_id, recipient_signature)
+            (
+                payment_model,
+                account_id,
+                recipient_signature,
+            ) = send_init_charge_payment_request(payment_model, account_id)
+            transaction.submit_p2m_transaction(
+                payment_model, account_id, recipient_signature
+            )
     elif payment_model.action == "auth":
         if init_required:
             send_init_auth_payment_request(payment_model, account_id)
@@ -222,7 +226,6 @@ def send_init_auth_payment_request(payment_model, account_id):
             request_bytes=jws.serialize(
                 new_init_auth_command(
                     reference_id=payment_model.reference_id,
-                    vasp_address=payment_model.vasp_address,
                     sender_name=user.first_name,
                     sender_sure_name=user.last_name,
                     sender_city=user.city,

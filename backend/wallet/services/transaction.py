@@ -16,8 +16,7 @@ from wallet.storage import Transaction
 
 from . import INVENTORY_ACCOUNT_NAME
 from .log import add_transaction_log
-from .offchain import utils
-from .. import storage, services
+from .. import services
 from ..logging import log_execution
 from wallet import storage
 from ..types import (
@@ -59,51 +58,59 @@ class P2MTxnRegistrationError(Exception):
 #               currency: XUS,
 #               recipient_signature: None,
 #               receiver_address: tdm1paue4j3fqr6nzl5xglqr337surful4nmrx6kn9fgmh5qz6
-def put_p2m_txn_onchain(reference_id: str,
-                        amount: int,
-                        currency: str,
-                        receiver_address_bech32: str,
-                        recipient_signature: str = None,
-                        ) -> jsonrpc.Transaction:
+def put_p2m_txn_onchain(
+    reference_id: str,
+    amount: int,
+    currency: str,
+    receiver_address_bech32: str,
+    recipient_signature: str = None,
+) -> jsonrpc.Transaction:
 
-    logger.info(f"submitting P2M transaction: "
-                f"ref-id: {reference_id}, "
-                f"amount: {amount}, "
-                f"currency: {currency}, "
-                f"recipient_signature: {recipient_signature}, "
-                f"receiver_address: {receiver_address_bech32}")
+    logger.info(
+        f"submitting P2M transaction: "
+        f"ref-id: {reference_id}, "
+        f"amount: {amount}, "
+        f"currency: {currency}, "
+        f"recipient_signature: {recipient_signature}, "
+        f"receiver_address: {receiver_address_bech32}"
+    )
 
     metadata_bytes = txnmetadata.payment_metadata(reference_id)
-    metadata = diem_types.Metadata__TravelRuleMetadata.bcs_deserialize(metadata_bytes)
 
-    recipient_signature_bytes = b''
+    recipient_signature_bytes = b""
     if recipient_signature is not None:
         recipient_signature_bytes = bytes.fromhex(recipient_signature)
 
     hrp = context.get().config.diem_address_hrp()
-    receiver_account_address = identifier.decode_account_address(receiver_address_bech32, hrp)
+    receiver_account_address = identifier.decode_account_address(
+        receiver_address_bech32, hrp
+    )
 
     return context.get().p2p_by_travel_rule(
         receiver_account_address,
         currency,
         amount,
-        metadata.bcs_serialize(),
-        recipient_signature_bytes
+        metadata_bytes,
+        recipient_signature_bytes,
     )
 
 
 # register p2m transaction on block-chain and database
 def submit_p2m_transaction(payment_model, account_id, recipient_signature):
     try:
-        txn = put_p2m_txn_onchain(payment_model.reference_id,
-                                  payment_model.amount,
-                                  payment_model.currency,
-                                  payment_model.vasp_address,
-                                  recipient_signature)
+        txn = put_p2m_txn_onchain(
+            payment_model.reference_id,
+            payment_model.amount,
+            payment_model.currency,
+            payment_model.vasp_address,
+            recipient_signature,
+        )
 
-        logger.info(f"p2m txn submitted, "
-                    f"sequnce-number: {txn.transaction.sequence_number}, "
-                    f"txn-version: {txn.version}")
+        logger.info(
+            f"p2m txn submitted, "
+            f"sequnce-number: {txn.transaction.sequence_number}, "
+            f"txn-version: {txn.version}"
+        )
 
         storage.add_transaction(
             amount=payment_model.amount,
@@ -124,6 +131,7 @@ def submit_p2m_transaction(payment_model, account_id, recipient_signature):
         error = P2MTxnRegistrationError(e)
         logger.error(error)
         raise error
+
 
 def decode_general_metadata_v0(
     metadata_bytes: bytes,

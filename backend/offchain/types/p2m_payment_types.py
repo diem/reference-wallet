@@ -1,10 +1,10 @@
 import typing
 from enum import Enum
 
+import context
 from .command_types import CommandType, ResponseType
 from dataclasses import dataclass, field as datafield
 from .p2p_payment_types import AddressObject, PaymentActionObject, NationalIdObject
-
 
 @dataclass(frozen=True)
 class GetPaymentInfo:
@@ -148,10 +148,9 @@ class PaymentSenderObject:
         national_id_value,
         postal_code,
         state,
-        vasp_address,
     ) -> "PaymentSenderObject":
         return PaymentSenderObject(
-            account_address=vasp_address,
+            account_address=context.get().config.vasp_account_address().to_hex(),
             payer_data=PayerDataObject.new_payer_data_object(
                 city,
                 country,
