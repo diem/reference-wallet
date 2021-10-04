@@ -38,7 +38,9 @@ function PaymentConfirmation() {
   const paymentParamsFromUrl: PaymentParams | undefined = useMemo(() => {
     try {
       if (queryString) {
-        return PaymentParams.fromUrlQueryString(queryString);
+        const params = PaymentParams.fromUrlQueryString(queryString);
+        console.log(params);
+        return params;
       }
     } catch (e) {
       setShowError(true);

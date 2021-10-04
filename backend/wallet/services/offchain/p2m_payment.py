@@ -141,15 +141,14 @@ def approve_payment(
         raise P2MPaymentNotFoundError(f"Could not find payment {reference_id}")
 
     if payment_model.action == "charge":
-        if init_required:
-            (
-                payment_model,
-                account_id,
-                recipient_signature,
-            ) = send_init_charge_payment_request(payment_model, account_id)
-            transaction.submit_p2m_transaction(
-                payment_model, account_id, recipient_signature
-            )
+        (
+            payment_model,
+            account_id,
+            recipient_signature,
+        ) = send_init_charge_payment_request(payment_model, account_id)
+        transaction.submit_p2m_transaction(
+            payment_model, account_id, recipient_signature
+        )
     elif payment_model.action == "auth":
         if init_required:
             send_init_auth_payment_request(payment_model, account_id)

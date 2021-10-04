@@ -49,7 +49,24 @@ function PaymentConfirmationModal({
       setSubmitStatus("sending");
     } else {
       try {
+        setSubmitStatus("sending");
         await new BackendClient().approvePayment(paymentParams.referenceId, paymentParams.isFull);
+
+        const checkStatus = async () => {
+          const details = await new BackendClient().getPaymentDetails(
+            paymentParams.referenceId,
+            paymentParams.vaspAddress,
+            !!paymentParams.demo
+          );
+
+          if (details.status === "approved") {
+            setSubmitStatus("success");
+          } else {
+            setTimeout(checkStatus, 1000);
+          }
+        };
+
+        checkStatus();
       } catch (e) {
         console.error(e);
         setSubmitStatus("fail");

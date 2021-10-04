@@ -60,7 +60,7 @@ def test_get_payment_details_for_charge_action_successfully(mock_method):
     mock_method(
         transaction,
         "put_p2m_txn_onchain",
-        will_return=generate_success_p2m_txn_result()
+        will_return=generate_success_p2m_txn_result(),
     )
 
     payment_info = payment_service.get_payment_details(

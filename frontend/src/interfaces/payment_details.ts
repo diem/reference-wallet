@@ -7,4 +7,5 @@ export interface PaymentDetails {
   reference_id: string;
   vasp_address: string;
   demo: boolean;
+  status: string;
 }

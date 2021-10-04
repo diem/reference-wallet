@@ -6,6 +6,7 @@ from .command_types import CommandType, ResponseType
 from dataclasses import dataclass, field as datafield
 from .p2p_payment_types import AddressObject, PaymentActionObject, NationalIdObject
 
+
 @dataclass(frozen=True)
 class GetPaymentInfo:
     reference_id: str
