@@ -146,6 +146,8 @@ export class PaymentParams {
   }
 
   static fromPaymentDetails(paymentInfo: PaymentDetails, redirectUrl?: string) {
+    console.log("paymentInfo", paymentInfo);
+
     return new PaymentParams(
       true,
       paymentInfo.vasp_address,
@@ -156,7 +158,7 @@ export class PaymentParams {
       PaymentAction[paymentInfo.action],
       paymentInfo.currency,
       paymentInfo.amount,
-      new Date(paymentInfo.expiration),
+      new Date(paymentInfo.expiration * 1000),
       redirectUrl
     );
   }

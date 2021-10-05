@@ -21,7 +21,7 @@ logging.basicConfig(
     format="[%(asctime)s][%(threadName)s][%(levelname)s] %(name)s: %(message)s",
     datefmt="%Y-%m-%d %I:%M:%S %p",
 )
-logging.getLogger().setLevel(logging.DEBUG)
+logging.getLogger().setLevel(logging.INFO)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
 # logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
 

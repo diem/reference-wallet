@@ -6,4 +6,4 @@
 export FLASK_ENV=${COMPOSE_ENV:-development}
 export FLASK_APP="webapp:init()"
 
-pipenv run flask run --host 0.0.0.0 --port ${WALLET_PORT:-5000} --no-reload
+pipenv run flask run --host 0.0.0.0 --port ${WALLET_PORT:-5000}

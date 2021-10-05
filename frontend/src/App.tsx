@@ -33,6 +33,7 @@ import LegalDisclaimer from "./components/LegalDisclaimer";
 import FundsPullPreApprovals from "./pages/FundsPullPreApprovals";
 
 const REFRESH_USER_INTERVAL = 5000;
+const SHOW_LEGAL_DESCLAIMER = process.env.NODE_ENV === "production" ? true : false;
 
 const App = () => {
   const [settings, setSettings] = useState<AppSettings>(initialState);
@@ -144,7 +145,7 @@ const App = () => {
     refreshUser();
   }, []);
 
-  const [legalDisclaimer, setLegalDisclaimer] = useState(true);
+  const [legalDisclaimer, setLegalDisclaimer] = useState(SHOW_LEGAL_DESCLAIMER);
 
   return (
     <settingsContext.Provider value={[settings, setSettings]}>

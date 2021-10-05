@@ -125,8 +125,8 @@ function PaymentConfirmationModal({
             <Row>
               <Col xs="1">
                 <img
-                  src={require("../assets/img/logo.svg")}
-                  alt={t("confirmation.store_name")}
+                  src={require("../assets/img/fake-logo.png")}
+                  alt={paymentParams.merchantName}
                   width={30}
                   height={30}
                 />

@@ -72,6 +72,11 @@ def get_payment_details(account_id: int, reference_id: str, receiver_address: st
 
             payment_info = command_response_object.result.payment_info
             action_object = payment_info.action
+            valid_until = action_object.valid_until
+            if valid_until is None:
+                valid_until = datetime.now().timestamp() + 10 * 60
+
+            logger.info(f"valid_until: {valid_until}")
 
             payment_model = save_payment(
                 PaymentModel(
@@ -82,9 +87,7 @@ def get_payment_details(account_id: int, reference_id: str, receiver_address: st
                     action=action_object.action,
                     currency=action_object.currency,
                     amount=action_object.amount,
-                    expiration=datetime.fromtimestamp(action_object.valid_until)
-                    if action_object.valid_until
-                    else None,
+                    expiration=datetime.fromtimestamp(valid_until),
                     status=P2MPaymentStatus.READY_FOR_USER,
                 )
             )
